@@ -143,6 +143,46 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] DigGravel1 {
+            get {
+                object obj = ResourceManager.GetObject("DigGravel1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DigGravel2 {
+            get {
+                object obj = ResourceManager.GetObject("DigGravel2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DigGravel3 {
+            get {
+                object obj = ResourceManager.GetObject("DigGravel3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DigGravel4 {
+            get {
+                object obj = ResourceManager.GetObject("DigGravel4", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] DigSand1 {
             get {
                 object obj = ResourceManager.GetObject("DigSand1", resourceCulture);
@@ -406,6 +446,46 @@ namespace MvkAssets {
         internal static byte[] StepGrass4 {
             get {
                 object obj = ResourceManager.GetObject("StepGrass4", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] StepGravel1 {
+            get {
+                object obj = ResourceManager.GetObject("StepGravel1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] StepGravel2 {
+            get {
+                object obj = ResourceManager.GetObject("StepGravel2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] StepGravel3 {
+            get {
+                object obj = ResourceManager.GetObject("StepGravel3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] StepGravel4 {
+            get {
+                object obj = ResourceManager.GetObject("StepGravel4", resourceCulture);
                 return ((byte[])(obj));
             }
         }

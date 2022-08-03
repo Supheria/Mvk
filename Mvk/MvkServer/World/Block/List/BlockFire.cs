@@ -1,4 +1,5 @@
-﻿using MvkServer.Glm;
+﻿using MvkServer.Entity;
+using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
 using System;
@@ -21,7 +22,6 @@ namespace MvkServer.World.Block.List
             IsCollidable = false;
             АmbientOcclusion = false;
             NoSideDimming = true;
-            BlocksNotSame = true;
             Shadow = false;
             AllSideForcibly = true;
             UseNeighborBrightness = true;
@@ -36,6 +36,11 @@ namespace MvkServer.World.Block.List
             //samplesStep = new AssetsSample[] { AssetsSample.LiquidSwim1, AssetsSample.LiquidSwim2, AssetsSample.LiquidSwim3, AssetsSample.LiquidSwim4 };
             InitBoxs();
         }
+
+        /// <summary>
+        /// Не однотипные блоки, пример: трава, цветы, кактус
+        /// </summary>
+        public override bool BlocksNotSame(int met) => true;
 
         /// <summary>
         /// Спавн предмета при разрушении этого блока
@@ -187,56 +192,24 @@ namespace MvkServer.World.Block.List
             {
                 world.PlaySound(AssetsSample.Fire, blockPos.ToVec3() + .5f, 1f + (float)random.NextDouble(), (float)random.NextDouble() * .7f + .3f);
             }
-            int i;
             if (world.DoesBlockHaveSolidTopSurface(blockPos.OffsetDown()))
             {
-                for (i = 0; i < 2; i++)
-                {
-                    world.SpawnParticle(Entity.EnumParticle.Smoke, new vec3(
-                        blockPos.X + (float)random.NextDouble() * .1f, 
-                        blockPos.Y + (float)random.NextDouble(), 
-                        blockPos.Z + (float)random.NextDouble()), new vec3(0), 40);
-                }
-                for (i = 0; i < 2; i++)
-                {
-                    world.SpawnParticle(Entity.EnumParticle.Smoke, new vec3(
-                        (blockPos.X + 1f) - (float)random.NextDouble() * .1f,
-                        blockPos.Y + (float)random.NextDouble(),
-                        blockPos.Z + (float)random.NextDouble()), new vec3(0), 40);
-                }
-                for (i = 0; i < 2; i++)
-                {
-                    world.SpawnParticle(Entity.EnumParticle.Smoke, new vec3(
-                        blockPos.X + (float)random.NextDouble(),
-                        blockPos.Y + (float)random.NextDouble(),
-                        blockPos.Z + (float)random.NextDouble() * .1f), new vec3(0), 40);
-                }
-                for (i = 0; i < 2; i++)
-                {
-                    world.SpawnParticle(Entity.EnumParticle.Smoke, new vec3(
-                        blockPos.X + (float)random.NextDouble(),
-                        blockPos.Y + (float)random.NextDouble(),
-                        (blockPos.Z + 1f) - (float)random.NextDouble() * .1f), new vec3(0), 40);
-                }
-                for (i = 0; i < 2; i++)
-                {
-                    world.SpawnParticle(Entity.EnumParticle.Smoke, new vec3(
-                        blockPos.X + (float)random.NextDouble(),
-                        (blockPos.Y + 1) - (float)random.NextDouble() * .1f,
-                        blockPos.Z + (float)random.NextDouble()), new vec3(0), 40);
-                }
+                world.SpawnParticle(EnumParticle.Smoke, 2,
+                    new vec3(blockPos.X, blockPos.Y + .5f, blockPos.Z + .5f), new vec3(.125f, 1f, 1f), 0, 40);
+                world.SpawnParticle(EnumParticle.Smoke, 2,
+                    new vec3(blockPos.X + 1f, blockPos.Y + .5f, blockPos.Z + .5f), new vec3(.125f, 1f, 1f), 0, 40);
+                world.SpawnParticle(EnumParticle.Smoke, 2,
+                    new vec3(blockPos.X + .5f, blockPos.Y + .5f, blockPos.Z), new vec3(1f, 1f, .125f), 0, 40);
+                world.SpawnParticle(EnumParticle.Smoke, 2,
+                    new vec3(blockPos.X + .5f, blockPos.Y + .5f, blockPos.Z + 1f), new vec3(1f, 1f, .125f), 0, 40);
+                world.SpawnParticle(EnumParticle.Smoke, 2,
+                    new vec3(blockPos.X + .5f, blockPos.Y + .75f, blockPos.Z + .5f), new vec3(1f, .5f, 1f), 0, 40);
             }
             else
             {
-                for (i = 0; i < 3; i++)
-                {
-                    world.SpawnParticle(Entity.EnumParticle.Smoke,
-                        new vec3(blockPos.X + (float)random.NextDouble(), blockPos.Y + (float)random.NextDouble() * .5f + .5f, blockPos.Z + (float)random.NextDouble()),
-                        new vec3(0),
-                        40);
-                }
+                world.SpawnParticle(EnumParticle.Smoke, 3,
+                    new vec3(blockPos.X + .5f, blockPos.Y + .5f, blockPos.Z + .5f), new vec3(1f), 0, 40);
             }
-                
         }
     }
 }

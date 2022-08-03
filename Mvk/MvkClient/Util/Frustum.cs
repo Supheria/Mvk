@@ -61,11 +61,6 @@ namespace MvkClient.Util
             frustum[index, 3] /= f;
         }
 
-        private float Multiply(int index, float x, float y, float z)
-        {
-            return frustum[index, 0] * x + frustum[index, 1] * y + frustum[index, 2] * z + frustum[index, 3];
-        }
-
         /// <summary>
         /// Возвращает true, если прямоугольник находится внутри всех 6 плоскостей отсечения,
         /// в противном случае возвращает false.
@@ -74,17 +69,15 @@ namespace MvkClient.Util
         {
             for (int i = 0; i < 6; i++)
             {
-                if (Multiply(i, x1, y1, z1) <= 0f
-                    && Multiply(i, x2, y1, z1) <= 0f
-                    && Multiply(i, x1, y2, z1) <= 0f
-                    && Multiply(i, x2, y2, z1) <= 0f
-                    && Multiply(i, x1, y1, z2) <= 0f
-                    && Multiply(i, x2, y1, z2) <= 0f
-                    && Multiply(i, x1, y2, z2) <= 0f
-                    && Multiply(i, x2, y2, z2) <= 0f)
-                {
-                    return false;
-                }
+                if ((frustum[i, 0] * x1 + frustum[i, 1] * y1 + frustum[i, 2] * z1 + frustum[i, 3] <= 0)
+                    && (frustum[i, 0] * x2 + frustum[i, 1] * y1 + frustum[i, 2] * z1 + frustum[i, 3] <= 0)
+                    && (frustum[i, 0] * x1 + frustum[i, 1] * y2 + frustum[i, 2] * z1 + frustum[i, 3] <= 0)
+                    && (frustum[i, 0] * x2 + frustum[i, 1] * y2 + frustum[i, 2] * z1 + frustum[i, 3] <= 0)
+                    && (frustum[i, 0] * x1 + frustum[i, 1] * y1 + frustum[i, 2] * z2 + frustum[i, 3] <= 0)
+                    && (frustum[i, 0] * x2 + frustum[i, 1] * y1 + frustum[i, 2] * z2 + frustum[i, 3] <= 0)
+                    && (frustum[i, 0] * x1 + frustum[i, 1] * y2 + frustum[i, 2] * z2 + frustum[i, 3] <= 0)
+                    && (frustum[i, 0] * x2 + frustum[i, 1] * y2 + frustum[i, 2] * z2 + frustum[i, 3] <= 0)
+                    ) return false;
             }
 
             return true;

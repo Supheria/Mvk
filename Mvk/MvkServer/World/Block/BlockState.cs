@@ -39,6 +39,12 @@ namespace MvkServer.World.Block
             lightBlock = 0;
             lightSky = 0;
         }
+        public BlockState(ushort data)
+        {
+            this.data = data;
+            lightBlock = 0;
+            lightSky = 0;
+        }
 
         /// <summary>
         /// Пустой ли объект

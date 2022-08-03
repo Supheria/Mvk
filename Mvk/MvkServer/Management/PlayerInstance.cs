@@ -89,6 +89,7 @@ namespace MvkServer.Management
                 //if (chunk.IsPopulated()) 
                 if (chunk != null)
                 {
+                    //playerManager.World.Log.Log("Remove: {0}", CurrentChunk);
                     player.SendPacket(new PacketS21ChunkData(chunk, false, 0));
                 }
 
@@ -216,9 +217,12 @@ namespace MvkServer.Management
                 //}
                 else
                 {
-
                     // больше 64
-                    SendToAllPlayersWatchingChunk(new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate));
+                    ChunkBase chunk = playerManager.World.GetChunk(CurrentChunk);
+                    PacketS21ChunkData packetS21ChunkData = new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate);
+                   // playerManager.World.Log.Log("2PI64: {0} {1} {2} {3}", CurrentChunk, flagsYAreasToUpdate, packetS21ChunkData.GetBuffer().Length,
+                   //    chunk.GetDebugAllSegment());
+                    SendToAllPlayersWatchingChunk(packetS21ChunkData);
                     //SendToAllPlayersWatchingChunk(new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate));
 
                     // Тайлы

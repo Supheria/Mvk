@@ -10,21 +10,17 @@
         /// </summary>
         Air,
         /// <summary>
-        /// Разновидностей камней
+        /// Коренная порода
         /// </summary>
-        Stone,
+        Bedrock,
         /// <summary>
-        /// Земля
+        /// Твёрдое тело
         /// </summary>
-        Dirt,
+        Solid,
         /// <summary>
-        /// Дёрн
+        /// Сыпучая порода
         /// </summary>
-        Turf,
-        /// <summary>
-        /// Трава, цветы
-        /// </summary>
-        Grass,
+        Loose,
         /// <summary>
         /// Вода
         /// </summary>
@@ -33,20 +29,40 @@
         /// Лава
         /// </summary>
         Lava,
-        //Огонь
+        /// <summary>
+        /// Нефть
+        /// </summary>
+        Oil,
+        /// <summary>
+        /// Огонь
+        /// </summary>
         Fire,
+        /// <summary>
+        /// Древесина
+        /// </summary>
+        Wood,
+        /// <summary>
+        /// Листва
+        /// </summary>
+        Leaves,
+        /// <summary>
+        /// Саженец, трава, цветы, кактус
+        /// </summary>
+        Sapling,
+        /// <summary>
+        /// Руда
+        /// </summary>
+        Ore,
         /// <summary>
         /// Стекло
         /// </summary>
         Glass,
         /// <summary>
-        /// Нефть
+        /// Стеклянная панель
         /// </summary>
-        Oil,
-
-        Brol,
+        GlassPane,
         /// <summary>
-        /// Отладочная ступенька
+        /// Отладочный блок
         /// </summary>
         Debug
     }

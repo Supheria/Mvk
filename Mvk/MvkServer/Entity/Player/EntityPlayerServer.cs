@@ -196,14 +196,15 @@ namespace MvkServer.Entity.Player
                         //ServerMain.World.ChunkPrServ.LoadChunk(pos);
 
                     // NULL по сути не должен быть!!!
-                    if (chunk != null && chunk.IsChunkLoaded)
+                    if (chunk != null && chunk.IsChunkLoaded)// && chunk.Light.IsChunkLight())
                     {
                         profiler.EndStartSection("PacketS21ChunckData");
                         int flag = 0;
                         int heightMax = chunk.GetTopFilledSegment() >> 4;
                         for (int y = 0; y <= heightMax; y++) { flag |= 1 << y; }
-                        
+
                         PacketS21ChunkData packet = new PacketS21ChunkData(chunk, true, flag);
+                        //World.Log.Log("1EPSe: {0} {1} {2} {3}", pos, flag, packet.GetBuffer().Length, chunk.GetDebugAllSegment());
                         profiler.EndStartSection("ResponsePacket");
                         SendPacket(packet);
 

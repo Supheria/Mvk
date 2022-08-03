@@ -13,6 +13,7 @@ using MvkServer.World.Chunk;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Sockets;
 
 namespace MvkServer.Management
@@ -39,7 +40,8 @@ namespace MvkServer.Management
         /// <summary>
         /// Чанки игроков vec2i => PlayerInstance
         /// </summary>
-        private Hashtable playerInstances = new Hashtable();
+        //private Hashtable playerInstances = new Hashtable();
+        private Dictionary<vec2i, PlayerInstance> playerInstances = new Dictionary<vec2i, PlayerInstance>();
         /// <summary>
         /// Список PlayerInstance которые надо обновить
         /// </summary>
@@ -634,7 +636,7 @@ namespace MvkServer.Management
                 {
                     EntityPlayerServer player = players[i];
                     //TODO::Количество чанков для загрузки или генерации за такт, было 5
-                    int load = 10;
+                    int load = 5;
                     // Всего проверки чанков за такт
                     int all = 100;
                     while (player.LoadingChunks.Count > 0 && load > 0 && all > 0)
@@ -657,7 +659,6 @@ namespace MvkServer.Management
             }
             profiler.EndSection();
 
-            
             //Hashtable playersClone = players.Clone() as Hashtable;
             //foreach (EntityPlayerServer player in playersClone.Values)
             //{
@@ -732,6 +733,7 @@ namespace MvkServer.Management
                     playerInstancesToUpdate.RemoveAt(0);
                 }
             }
+
         }
 
         /// <summary>
@@ -820,11 +822,15 @@ namespace MvkServer.Management
         public List<vec2i> GetListDebug()
         {
             List<vec2i> list = new List<vec2i>();
-            Hashtable ht = playerInstances.Clone() as Hashtable;
-            foreach (PlayerInstance playerInstance in ht.Values)
+            foreach (PlayerInstance playerInstance in playerInstances.Values)
             {
                 if (playerInstance.CountPlayers() > 0) list.Add(playerInstance.CurrentChunk);
             }
+            //Hashtable ht = playerInstances.Clone() as Hashtable;
+            //foreach (PlayerInstance playerInstance in ht.Values)
+            //{
+            //    if (playerInstance.CountPlayers() > 0) list.Add(playerInstance.CurrentChunk);
+            //}
             return list;
         }
 

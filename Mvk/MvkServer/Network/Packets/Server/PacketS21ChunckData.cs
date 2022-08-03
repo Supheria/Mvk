@@ -54,7 +54,7 @@ namespace MvkServer.Network.Packets.Server
                         storages.Add(chunk.StorageArrays[y]);
                     }
                 }
-                buffer = new byte[CountBuffer() * storages.Count];
+                buffer = new byte[storages.Count * CountBufChunck() + CountBufBiom()];
                 int count = 0;
                 ushort data;
                 int index;
@@ -100,13 +100,22 @@ namespace MvkServer.Network.Packets.Server
         /// <summary>
         /// Получить количество данных в псевдо чанке
         /// </summary>
-        private int CountBuffer()
-        {
-            // количество буфер данных
-            int countBuf = 12288; // 16 * 16 * 16 * 3
-            int countHeight = biom ? 256 : 0; // 16 * 16 
-            return countBuf + countHeight;
-        }
+        //private int CountBuffer()
+        //{
+        //    // количество буфер данных
+        //    int countBuf = 12288; // 16 * 16 * 16 * 3
+        //    int countHeight = biom ? 256 : 0; // 16 * 16 
+        //    return countBuf + countHeight;
+        //}
+
+        /// <summary>
+        /// количество буфер данных псевдо чанка // 16 * 16 * 16 * 3
+        /// </summary>
+        private int CountBufChunck() => 12288;
+        /// <summary>
+        /// количество буфер данных для биома чанка // 16 * 16
+        /// </summary>
+        private int CountBufBiom() => biom ? 256 : 0;
 
         /// <summary>
         /// Количество псевдо чанков по флагу
@@ -128,7 +137,7 @@ namespace MvkServer.Network.Packets.Server
             flagsYAreas = stream.ReadUShort();
             if (flagsYAreas > 0)
             {
-                buffer = stream.ReadBytes(CountChunk() * CountBuffer());
+                buffer = stream.ReadBytes(CountChunk() * CountBufChunck() + CountBufBiom());
             }
         }
 

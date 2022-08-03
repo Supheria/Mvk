@@ -372,7 +372,7 @@ namespace MvkServer.Inventory
             {
                 stacks[i] = mainInventory[i];
             }
-            int j = mainInventory.Length - 1;
+            int j = mainInventory.Length;
             for (int i = 0; i < armorInventory.Length; i++)
             {
                 stacks[i + j] = armorInventory[i];

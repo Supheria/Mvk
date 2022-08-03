@@ -1,19 +1,18 @@
-﻿namespace MvkServer.World.Block.List
+﻿using MvkServer.Glm;
+
+namespace MvkServer.World.Block.List
 {
     /// <summary>
     /// Блок булыжника
     /// </summary>
-    public class BlockCobblestone : BlockBase
+    public class BlockCobblestone : BlockAbSolid
     {
         /// <summary>
         /// Блок булыжника
         /// </summary>
-        public BlockCobblestone()
+        public BlockCobblestone() : base(3, new vec3(.7f))
         {
-            Particle = 1;
             Hardness = 25;
-            Material = EnumMaterial.Stone;
-            InitBoxs(1);
         }
     }
 }

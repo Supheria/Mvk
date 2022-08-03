@@ -85,71 +85,52 @@ namespace MvkClient.World
         /// <summary>
         /// Заносим данные с пакета сервера
         /// </summary>
-        public void PacketChunckData(PacketS21ChunkData packet)
+        public void PacketChunckData(ChunkQueue packet)
         {
+            vec2i pos = packet.GetPos();
+            ChunkRender chunk = null;
+            lock (locker)
+            {
+                for (int i = 0; i < addChunks.Count; i++)
+                {
+                    if (addChunks[i].Position.x == pos.x && addChunks[i].Position.y == pos.y)
+                    {
+                        chunk = addChunks[i];
+                        break;
+                    }
+                }
+            }
+            if (chunk == null) chunk = GetChunkRender(pos);
+            bool isNew = chunk == null;
+
             if (packet.IsRemoved())
             {
-                lock (locker) UnloadChunk((ChunkRender)GetChunk(packet.GetPos()));
+                if (!isNew)
+                {
+                    if (pos.x == 0 && pos.y == 0)
+                    {
+                        return;
+                    }
+                    UnloadChunk(chunk);
+                }
             }
             else
             {
                 //if (Debug.DStart && !packet.GetPos().Equals(new vec2i(-1, -1))) return;
-
-                ChunkRender chunk = GetChunkRender(packet.GetPos());
-                bool isNew = chunk == null;
-                if (isNew)
+                if (isNew) 
                 {
-                    chunk = new ChunkRender(ClientWorld, packet.GetPos());
+                    chunk = new ChunkRender(ClientWorld, pos);
                 }
 
                 chunk.SetBinary(packet.GetBuffer(), packet.IsBiom(), packet.GetFlagsYAreas());
 
                 if (isNew)
                 {
-                    // Для нового чанка у клиента, генерируем высотную карту и осветляем тут же
-                   // chunk.Light.GenerateHeightMapSky();
+                    // Для нового чанка у клиента, генерируем высотную карту
+                    chunk.Light.GenerateHeightMap();
                     lock (locker) addChunks.Add(chunk);
                 }
-                else
-                {
-                    // Пометка для рендера
-                    //ModifiedAreaOne(chunk.Position, packet.GetFlagsYAreas());
-                }
-                //chunk.Light.GenerateHeightMapSky();
-                chunk.Light.GenerateHeightMap();
-                //chunk.Light.ResetRelightChecks();
             }
-        }
-
-        /// <summary>
-        /// Пометить для рендера соседние псевдо чанки
-        /// </summary>
-        private void ModifiedAreaOne(vec2i chPos, int flagsYAreas)
-        {
-            List<vec3i> list = new List<vec3i>();
-            for (int sy = 0; sy < ChunkRender.COUNT_HEIGHT; sy++)
-            {
-                if ((flagsYAreas & 1 << sy) != 0)
-                {
-                    vec3i pos = new vec3i(chPos.x, sy, chPos.y);
-                    //list.Add(pos);
-
-                    vec3i pos2 = new vec3i(pos.x, pos.y + 1, pos.z);
-                    if (!list.Contains(pos2)) list.Add(pos2);
-                    pos2 = new vec3i(pos.x, pos.y - 1, pos.z);
-                    if (!list.Contains(pos2)) list.Add(pos2);
-
-                    list.Add(new vec3i(pos.x + 1, pos.y, pos.z));
-                    list.Add(new vec3i(pos.x - 1, pos.y, pos.z));
-                    list.Add(new vec3i(pos.x, pos.y, pos.z + 1));
-                    list.Add(new vec3i(pos.x, pos.y, pos.z - 1));
-                    //ClientWorld.AreaModifiedToRender(pos - 1, pos + 1);
-                }
-            }
-            //foreach (vec3i pos in list)
-            //{
-            //    ClientWorld.ModifiedToRender(pos);
-            //}
         }
 
         /// <summary>
@@ -159,19 +140,19 @@ namespace MvkClient.World
         {
             if (chunk != null)
             {
-                vec2i pos = chunk.Position;
-                if (chunk.IsChunkLoaded)
+                lock (locker)
                 {
-                    chunk.OnChunkUnload();
-                    // заносим в массив чистки чанков по сетки для основного потока
-                    if (chunk != null)
+                    vec2i pos = chunk.Position;
+                    if (chunk.IsChunkLoaded)
                     {
+                        chunk.OnChunkUnload();
+                        // заносим в массив чистки чанков по сетки для основного потока
                         remoteMeshChunks.Add(pos);
                     }
-                }
-                else
-                {
-                    remoteChunks.Add(pos);
+                    else
+                    {
+                        remoteChunks.Add(pos);
+                    }
                 }
             }
         }
@@ -183,33 +164,37 @@ namespace MvkClient.World
         {
             // Выгрузка чанков, не больше 100 шт за такт
             int count = 100;
-            while (remoteChunks.Count > 0 && count > 0)
+            lock (locker)
             {
-                chunkMapping.Remove(remoteChunks[0]);
-               // chunkListing.Remove(remoteChunks[0]);
-                remoteChunks.RemoveAt(0);
-                count--;
-            }
-            if (isResetLoadingChunk && remoteChunks.Count == 0)
-            {
-                isResetLoadingChunk = false;
-                addChunks.Clear();
-                //ClientWorld.Player.UpFrustumCulling();
-                ClientWorld.ClientMain.TrancivePacket(new PacketC15ClientSetting(ClientWorld.ClientMain.Player.OverviewChunk));
-            }
-            // Загрузка
-            count = 50;
-            while (addChunks.Count > 0 && count > 0)
-            {
-                chunkMapping.Set(addChunks[0]);
-              //  chunkListing.Set(addChunks[0]);
-                vec2i pos = addChunks[0].Position;
-                // надо соседние чанки попросить перерендерить
+                while (remoteChunks.Count > 0 && count > 0)
+                {
+                    chunkMapping.Remove(remoteChunks[0]);
+                   // chunkListing.Remove(remoteChunks[0]);
+                    remoteChunks.RemoveAt(0);
+                    count--;
+                }
+                if (isResetLoadingChunk && remoteChunks.Count == 0)
+                {
+                    isResetLoadingChunk = false;
+                    lock (locker) addChunks.Clear();
+                    //ClientWorld.Player.UpFrustumCulling();
+                    ClientWorld.ClientMain.TrancivePacket(new PacketC15ClientSetting(ClientWorld.ClientMain.Player.OverviewChunk));
+                }
+                // Загрузка
+                count = 50;
+            
+                while (addChunks.Count > 0 && count > 0)
+                {
+                    chunkMapping.Set(addChunks[0]);
+                    //  chunkListing.Set(addChunks[0]);
+                    vec2i pos = addChunks[0].Position;
+                    // надо соседние чанки попросить перерендерить
 
-                ClientWorld.AreaModifiedToRender(pos.x - 1, 0, pos.y - 1, pos.x + 1, ChunkRender.COUNT_HEIGHT - 1, pos.y + 1);
+                    ClientWorld.AreaModifiedToRender(pos.x - 1, 0, pos.y - 1, pos.x + 1, ChunkBase.COUNT_HEIGHT - 1, pos.y + 1);
 
-                addChunks.RemoveAt(0);
-                count--;
+                    addChunks.RemoveAt(0);
+                    count--;
+                }
             }
         }
 
@@ -221,16 +206,25 @@ namespace MvkClient.World
             long time = Client.Time();
             long timeNew = time;
             // 4 мc на чистку чанков
-            while (remoteMeshChunks.Count > 0 && timeNew - time <= 4)
+            lock (locker)
             {
-                ChunkRender chunk = GetChunkRender(remoteMeshChunks[0]);
-                if (chunk != null)
+                vec2i pos;
+                while (remoteMeshChunks.Count > 0 && timeNew - time <= 4)
                 {
-                    if (!chunk.IsChunkLoaded) chunk.MeshDelete();
-                    remoteChunks.Add(remoteMeshChunks[0]);
+
+                    // list.Add(remoteMeshChunks[0]);
+                    pos = remoteMeshChunks[0];
                     remoteMeshChunks.RemoveAt(0);
+                    remoteChunks.Add(pos);
+                    ChunkRender chunk = GetChunkRender(pos);
+                    if (chunk != null)
+                    {
+
+                        if (!chunk.IsChunkLoaded) chunk.MeshDelete();
+                        //remoteChunks.Add(pos);
+                    }
+                    timeNew = Client.Time();
                 }
-                timeNew = Client.Time();
             }
         }
 
@@ -239,23 +233,23 @@ namespace MvkClient.World
         /// для клиента
         /// Tick
         /// </summary>
-        public void FixOverviewChunk(EntityPlayer entity)
-        {
-            // дополнительно к обзору для кэша из-за клона обработки, разных потоков
-            int additional = 6;
-            vec2i chunkCoor = entity.GetChunkPos();
-            vec2i min = chunkCoor - (entity.OverviewChunk + additional);
-            vec2i max = chunkCoor + (entity.OverviewChunk + additional);
+        //public void FixOverviewChunk(EntityPlayer entity)
+        //{
+        //    // дополнительно к обзору для кэша из-за клона обработки, разных потоков
+        //    int additional = 6;
+        //    vec2i chunkCoor = entity.GetChunkPos();
+        //    vec2i min = chunkCoor - (entity.OverviewChunk + additional);
+        //    vec2i max = chunkCoor + (entity.OverviewChunk + additional);
 
-            Hashtable ht = chunkMapping.CloneMap();
-            foreach (ChunkRender chunk in ht.Values)
-            {
-                if (chunk.Position.x < min.x || chunk.Position.x > max.x || chunk.Position.y < min.y || chunk.Position.y > max.y)
-                {
-                    UnloadChunk(chunk);
-                }
-            }
-        }
+        //    Hashtable ht = chunkMapping.CloneMap();
+        //    foreach (ChunkRender chunk in ht.Values)
+        //    {
+        //        if (chunk.Position.x < min.x || chunk.Position.x > max.x || chunk.Position.y < min.y || chunk.Position.y > max.y)
+        //        {
+        //            UnloadChunk(chunk);
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Сделать запрос на обновление близ лежащих псевдо чанков для альфа блоков

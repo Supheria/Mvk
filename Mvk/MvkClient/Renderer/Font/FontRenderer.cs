@@ -9,7 +9,7 @@ namespace MvkClient.Renderer.Font
         /// <summary>
         /// Прорисовка символа
         /// </summary>
-        protected static int RenderChar(char letter, int size)
+        private static int RenderChar(char letter, int size)
         {
             Symbol symbol = FontAdvance.Get(letter, size);
             if (symbol == null) return 0;
@@ -20,7 +20,7 @@ namespace MvkClient.Renderer.Font
         /// <summary>
         /// Узнать ширину символа
         /// </summary>
-        protected static int WidthChar(char letter, int size)
+        private static int WidthChar(char letter, int size)
         {
             Symbol symbol = FontAdvance.Get(letter, size);
             if (symbol == null) return 0;
@@ -50,17 +50,17 @@ namespace MvkClient.Renderer.Font
         public static void RenderString(float x, float y, vec4 color, string text, FontSize size) 
             => RenderString(x, y, color, text, size, true);
 
-        protected static void RenderString(float x, float y, vec4 color, string text, FontSize size, bool isColor)
+        private static void RenderString(float x, float y, vec4 color, string text, FontSize size, bool isColor)
         {
             char[] vc = text.ToCharArray();
+            int i, w0;
             int w = 0;
-
             if (isColor) GLWindow.gl.Color(color.x, color.y, color.z, 1f); 
-            for (int i = 0; i < vc.Length; i++)
+            for (i = 0; i < vc.Length; i++)
             {
                 GLWindow.gl.PushMatrix();
                 GLWindow.gl.Translate(x + w, y, 0);
-                int w0 = RenderChar(vc[i], (int)size);
+                w0 = RenderChar(vc[i], (int)size);
                 if (w0 > 0) w += w0 + Assets.StepFont(size);
                 GLWindow.gl.PopMatrix();
             }
@@ -72,10 +72,11 @@ namespace MvkClient.Renderer.Font
         public static int WidthString(string text, FontSize size)
         {
             char[] vc = text.ToCharArray();
+            int i, w0;
             int w = 0;
-            for (int i = 0; i < vc.Length; i++)
+            for (i = 0; i < vc.Length; i++)
             {
-                int w0 = WidthChar(vc[i], (int)size);
+                w0 = WidthChar(vc[i], (int)size);
                 if (w0 > 0) w += w0 + Assets.StepFont(size);
             }
             return w;

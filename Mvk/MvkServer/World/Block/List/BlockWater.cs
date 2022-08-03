@@ -1,4 +1,5 @@
-﻿using MvkServer.Glm;
+﻿using MvkServer.Entity;
+using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
 using System;
@@ -73,9 +74,8 @@ namespace MvkServer.World.Block.List
             //else 
             if (random.Next(10) == 0)
             {
-                world.SpawnParticle(Entity.EnumParticle.Suspend,
-                    new vec3(blockPos.X + (float)random.NextDouble(), blockPos.Y + (float)random.NextDouble(), blockPos.Z + (float)random.NextDouble()),
-                    new vec3(0));
+                world.SpawnParticle(EnumParticle.Suspend, 1,
+                    new vec3(blockPos.X + .5f, blockPos.Y + .5f, blockPos.Z + .5f), new vec3(1f), 0);
             }
         }
     }

@@ -23,21 +23,57 @@ namespace MvkServer.World.Block
         {
             switch (eBlock)
             {
-              //  case EnumBlock.None: return new BlockAir(true);
                 case EnumBlock.Air: return new BlockAir();
+                case EnumBlock.Debug: return new BlockDebug();
+                case EnumBlock.Bedrock: return new BlockBedrock();
                 case EnumBlock.Stone: return new BlockStone();
                 case EnumBlock.Cobblestone: return new BlockCobblestone();
+                case EnumBlock.Limestone: return new BlockLimestone();
+                case EnumBlock.Granite: return new BlockGranite();
+                case EnumBlock.Sandstone: return new BlockSandstone();
                 case EnumBlock.Dirt: return new BlockDirt();
                 case EnumBlock.Turf: return new BlockTurf();
+                case EnumBlock.Sand: return new BlockSand();
+                case EnumBlock.Gravel: return new BlockGravel();
+                case EnumBlock.Clay: return new BlockClay();
                 case EnumBlock.Water: return new BlockWater();
                 case EnumBlock.Lava: return new BlockLava();
                 case EnumBlock.Oil: return new BlockOil();
                 case EnumBlock.Fire: return new BlockFire();
-                case EnumBlock.Glass: return new BlockGlass();
-               // case EnumBlock.GlassRed: return new BlockGlassRed();
-                case EnumBlock.Brol: return new BlockBrol();
                 case EnumBlock.LogOak: return new BlockLogOak();
+                case EnumBlock.LogBirch: return new BlockLogBirch();
+                case EnumBlock.LogSpruce: return new BlockLogSpruce();
+                case EnumBlock.LogFruit: return new BlockLogFruit();
+                case EnumBlock.LogPalm: return new BlockLogPalm();
+                case EnumBlock.PlanksOak: return new BlockPlanksOak();
+                case EnumBlock.PlanksBirch: return new BlockPlanksBirch();
+                case EnumBlock.PlanksSpruce: return new BlockPlanksSpruce();
+                case EnumBlock.PlanksFruit: return new BlockPlanksFruit();
+                case EnumBlock.PlanksPalm: return new BlockPlanksPalm();
+                case EnumBlock.LeavesOak: return new BlockLeavesOak();
+                case EnumBlock.LeavesBirch: return new BlockLeavesBirch();
+                case EnumBlock.LeavesSpruce: return new BlockLeavesSpruce();
+                case EnumBlock.LeavesFruit: return new BlockLeavesFruit();
+                case EnumBlock.LeavesPalm: return new BlockLeavesPalm();
+                case EnumBlock.SaplingOak: return new BlockSaplingOak();
+                case EnumBlock.SaplingBirch: return new BlockSaplingBirch();
+                case EnumBlock.SaplingSpruce: return new BlockSaplingSpruce();
+                case EnumBlock.SaplingFruit: return new BlockSaplingFruit();
+                case EnumBlock.SaplingPalm: return new BlockSaplingPalm();
+                case EnumBlock.Cactus: return new BlockCactus();
                 case EnumBlock.TallGrass: return new BlockTallGrass();
+                case EnumBlock.FlowerDandelion: return new BlockFlowerDandelion();
+                case EnumBlock.FlowerClover: return new BlockFlowerClover();
+                case EnumBlock.OreCoal: return new BlockOreCoal();
+                case EnumBlock.OreIron: return new BlockOreIron();
+                case EnumBlock.OreGold: return new BlockOreGold();
+                case EnumBlock.Brol: return new BlockBrol();
+                case EnumBlock.Glass: return new BlockGlass();
+                case EnumBlock.GlassWhite: return new BlockGlassWhite();
+                case EnumBlock.GlassRed: return new BlockGlassRed();
+                case EnumBlock.GlassPane: return new BlockGlassPane();
+                case EnumBlock.GlassPaneWhite: return new BlockGlassPaneWhite();
+                case EnumBlock.GlassPaneRed: return new BlockGlassPaneRed();
             }
 
             return new BlockAir(true);
@@ -66,5 +102,9 @@ namespace MvkServer.World.Block
         /// Получить объект блока с кеша, для получения информационных данных
         /// </summary>
         public static BlockBase GetBlockCache(EnumBlock eBlock) => blocksInt[(int)eBlock];
+        /// <summary>
+        /// Получить объект блока с кеша, для получения информационных данных
+        /// </summary>
+        public static BlockBase GetBlockCache(int index) => blocksInt[index];
     }
 }

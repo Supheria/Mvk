@@ -34,9 +34,9 @@
         /// </summary>
         Limestone = 5,
         /// <summary>
-        /// Диорит
+        /// Гранит 
         /// </summary>
-        Diorite = 6,
+        Granite = 6,
         /// <summary>
         /// Песчаник
         /// </summary>
@@ -210,15 +210,21 @@
         /// </summary>
         GlassWhite = 49,
         /// <summary>
+        /// Стекло красное
+        /// </summary>
+        GlassRed = 50,
+        /// <summary>
         /// Стеклянная панель прозрачная
         /// </summary>
-        GlassPane = 50,
+        GlassPane = 51,
         /// <summary>
         /// Стеклянная панель белая
         /// </summary>
-        GlassPaneWhite = 51
-
-        
+        GlassPaneWhite = 52,
+        /// <summary>
+        /// Стеклянная панель красная
+        /// </summary>
+        GlassPaneRed = 53
     }
 
     /// <summary>
@@ -226,6 +232,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 51;
+        public const int COUNT = 53;
     }
 }

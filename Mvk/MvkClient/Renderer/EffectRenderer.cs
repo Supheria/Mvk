@@ -33,6 +33,10 @@ namespace MvkClient.Renderer
         /// Последний id
         /// </summary>
         private ushort lastId = 0;
+        /// <summary>
+        /// Объект заглушка
+        /// </summary>
+        private readonly object locker = new object();
 
         public EffectRenderer(WorldClient world)
         {
@@ -51,7 +55,7 @@ namespace MvkClient.Renderer
                 case EnumParticle.Digging: AddEffect(new EntityDiggingFX(World, pos, motion, (EnumBlock)items[0])); break;
                 case EnumParticle.Smoke: AddEffect(new EntitySmokeFX(World, pos, motion, items[0])); break;
                 case EnumParticle.Suspend: AddEffect(new EntitySuspendFX(World, pos, motion)); break;
-                    
+                case EnumParticle.Bubble: AddEffect(new EntityBubbleFX(World, pos, motion)); break;
             }
         }
 
@@ -62,28 +66,34 @@ namespace MvkClient.Renderer
         public void AddEffect(EntityFX particle)
         {
             particle.SetEntityId(lastId++);
-            map.Add(particle);
-            if (map.Count > 4000) map.FirstRemove();
+            lock (locker)
+            {
+                map.Add(particle);
+                if (map.Count > 4000) map.FirstRemove();
+            }
         }
 
         public void UpdateParticles()
         {
             MapListEntity remove = new MapListEntity();
             // Пробегаемся по всем частица
-            for (int i = 0; i < map.Count; i++)
+            lock (locker)
             {
-                EntityFX entity = (EntityFX)map.GetAt(i);
-                entity.Update();
-                if (entity.IsDead)
+                for (int i = 0; i < map.Count; i++)
                 {
-                    remove.Add(entity);
+                    EntityFX entity = (EntityFX)map.GetAt(i);
+                    entity.Update();
+                    if (entity.IsDead)
+                    {
+                        remove.Add(entity);
+                    }
                 }
-            }
-            // Удаляем мёртвых
-            if (remove.Count > 0)
-            {
-                map.RemoveRange(remove);
-                remove.Clear();
+                // Удаляем мёртвых
+                if (remove.Count > 0)
+                {
+                    map.RemoveRange(remove);
+                    remove.Clear();
+                }
             }
         }
 
@@ -98,10 +108,13 @@ namespace MvkClient.Renderer
         public void Render(float timeIndex)
         {
             GLRender.TextureLightmapEnable();
-            for (int i = 0; i < map.Count; i++)
+            lock (locker)
             {
-                EntityFX entity = (EntityFX)map.GetAt(i);
-                RenderParticles(entity, timeIndex);
+                for (int i = 0; i < map.Count; i++)
+                {
+                    EntityFX entity = (EntityFX)map.GetAt(i);
+                    RenderParticles(entity, timeIndex);
+                }
             }
             GLRender.TextureLightmapDisable();
         }
@@ -116,7 +129,6 @@ namespace MvkClient.Renderer
         public void RenderParticles(EntityFX particle, float timeIndex)
         {
             vec3 pos = particle.GetPositionFrame(timeIndex);
-            pos.y += .2f;
             vec3 offset = renderManager.CameraOffset;
             GLRender.PushMatrix();
             {

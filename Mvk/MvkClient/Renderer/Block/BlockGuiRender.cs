@@ -32,7 +32,7 @@ namespace MvkClient.Renderer.Block
         /// <summary>
         /// Буфер всех блоков чанка
         /// </summary>
-        private ListMvk<byte> buffer;
+        private ArrayMvk<byte> buffer;
 
         /// <summary>
         /// Создание блока генерации для GUI
@@ -44,7 +44,7 @@ namespace MvkClient.Renderer.Block
         /// </summary>
         private void RenderMeshBlock()
         {
-            foreach (Box box in block.GetBoxes(0))
+            foreach (Box box in block.GetBoxesGui())
             {
                 cBox = box;
                 foreach (Face face in box.Faces)
@@ -60,7 +60,7 @@ namespace MvkClient.Renderer.Block
                     }
                     else
                     {
-                        cSide = (int)face.side;
+                        cSide = face.side;
                         RenderMeshFace();
                     }
                 }
@@ -148,7 +148,7 @@ namespace MvkClient.Renderer.Block
         /// </summary>
         public void RenderVBOtoDL()
         {
-            buffer = new ListMvk<byte>(4032);
+            buffer = new ArrayMvk<byte>(4032);
             RenderMeshBlock();
             byte[] buffer2 = buffer.ToArray();
 

@@ -4,9 +4,9 @@ using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk.Light;
-//using MvkServer.World.Light;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MvkServer.World.Chunk
 {
@@ -112,6 +112,20 @@ namespace MvkServer.World.Chunk
             }
             Light = new ChunkLight2(this);
         }
+
+        /// <summary>
+        /// Проверить загружены ли соседние чанки
+        /// </summary>
+        public bool IsLoadChunks8()
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (!World.ChunkPr.IsChunk(MvkStatic.AreaOne8[i] + Position))
+                    return false;
+            }
+            return true;
+        }
+    
 
         /// <summary>
         /// Загружен чанк или сгенерирован
@@ -226,13 +240,30 @@ namespace MvkServer.World.Chunk
         {
             //ChunkLoadGen();
             IsChunkLoaded = true;
-
             for (int y = 0; y < COUNT_HEIGHT; y++)
             {
                 // Продумать загрузку чанка у сущности тип 
                 // ListEntities[y].GetAt(0).OnChunkLoad();
 
                 World.LoadEntities(ListEntities[y]);
+            }
+            if (!World.IsRemote && World is WorldServer worldServer)
+            {
+                ChunkBase chunk;
+                vec2i pos;
+                for (int i = 0; i < 8; i++)
+                {
+                    pos = MvkStatic.AreaOne8[i] + Position;
+                    chunk = World.ChunkPr.GetChunk(pos);
+                    if (chunk != null && chunk.IsChunkLoaded && !chunk.Light.IsChunkLight())
+                    {
+                        worldServer.ChunkPrServ.GenAddChunks.Add(pos);
+                    }
+                }
+                //if (IsLoadChunks8())
+                //{
+                //    worldServer.ChunkPrServ.GenChunks.Add(Position);
+                //}
             }
         }
 
@@ -253,48 +284,58 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public void SetBinary(byte[] buffer, bool biom, int flagsYAreas)
         {
+           // World.Log.Log("SetBinaryBegin {0} {1}", Position, GetDebugAllSegment());
             int i = 0;
             int index;
             byte light;
-            for (int sy = 0; sy < COUNT_HEIGHT; sy++)
+            try
             {
-                if ((flagsYAreas & 1 << sy) != 0)
+                for (int sy = 0; sy < COUNT_HEIGHT; sy++)
                 {
-                    //StorageArrays[sy].CheckDataEmpty();
-                    //StorageArrays[sy].countVoxel = 0;
-                    ChunkStorage storage = StorageArrays[sy];
-                    for (int y = 0; y < 16; y++)
+                    if ((flagsYAreas & 1 << sy) != 0)
                     {
-                        for (int x = 0; x < 16; x++)
+                        //StorageArrays[sy].CheckDataEmpty();
+                        //StorageArrays[sy].countVoxel = 0;
+                        ChunkStorage storage = StorageArrays[sy];
+                        for (int y = 0; y < 16; y++)
                         {
-                            for (int z = 0; z < 16; z++)
+                            for (int x = 0; x < 16; x++)
                             {
-                                index = y << 8 | z << 4 | x;
-                                storage.SetData(index, (ushort)(buffer[i++] | buffer[i++] << 8));
-                                light = buffer[i++];
-                                storage.lightBlock[index] = (byte)(light >> 4);
-                                storage.lightSky[index] = (byte)(light & 0xF);
+                                for (int z = 0; z < 16; z++)
+                                {
+                                    index = y << 8 | z << 4 | x;
+                                    storage.SetData(index, (ushort)(buffer[i++] | buffer[i++] << 8));
+                                    light = buffer[i++];
+                                    storage.lightBlock[index] = (byte)(light >> 4);
+                                    storage.lightSky[index] = (byte)(light & 0xF);
 
-                                //storage.light[y << 8 | z << 4 | x] = buffer[i++];
+                                    //storage.light[y << 8 | z << 4 | x] = buffer[i++];
 
-                                //StorageArrays[sy].data[y, x, z] = (ushort)(buffer[i++] | buffer[i++] << 8);
-                                //if (StorageArrays[sy].data[y, x, z] != 0) StorageArrays[sy].Plus();
-                                //StorageArrays[sy].light[y, x, z] = buffer[i++];
+                                    //StorageArrays[sy].data[y, x, z] = (ushort)(buffer[i++] | buffer[i++] << 8);
+                                    //if (StorageArrays[sy].data[y, x, z] != 0) StorageArrays[sy].Plus();
+                                    //StorageArrays[sy].light[y, x, z] = buffer[i++];
 
 
+                                }
                             }
                         }
+                        //StorageArrays[sy].LightCheckBlock();
+                        ModifiedToRender(sy);
                     }
-                    //StorageArrays[sy].LightCheckBlock();
-                    ModifiedToRender(sy);
                 }
+                // биом
+                if (biom)
+                {
+
+                }
+                IsChunkLoaded = true;
             }
-            // биом
-            if (biom)
+            catch (Exception ex)
             {
-                
+                Logger.Crach(ex);
             }
-            IsChunkLoaded = true;
+
+           //World.Log.Log("SetBinaryEnd {0} {1}", Position, GetDebugAllSegment());
         }
 
         /// <summary>
@@ -379,7 +420,7 @@ namespace MvkServer.World.Chunk
             string s = "";
             for (int y = 0; y < StorageArrays.Length; y++)
             {
-                s += StorageArrays[y].IsEmptyData() ? "." : "*";
+                s += StorageArrays[y].IsEmptyData() ? "." : "*" + StorageArrays[y].countData;
                 s += StorageArrays[y].sky ? "S" : "s";
             }
             return s;
@@ -407,6 +448,10 @@ namespace MvkServer.World.Chunk
                 if (chunkStorage.countData != 0)
                 {
                     return chunkStorage.GetBlockState(x, y & 15, z);
+                } else
+                {
+                    int index = (y & 15) << 8 | z << 4 | x;
+                    return new BlockState(0, chunkStorage.lightBlock[index], chunkStorage.lightSky[index]);
                 }
             }
             return new BlockState().Empty();
@@ -521,11 +566,12 @@ namespace MvkServer.World.Chunk
                 // проверка света
                 //if (World.IsRemote)
 
+                bool differenceOpacity = block.LightOpacity != blockOld.LightOpacity;
                 //Light.CheckLightSetBlock(blockPos, block.LightOpacity, blockOld.LightOpacity, block.LightValue != blockOld.LightValue);
-                if (block.LightOpacity != blockOld.LightOpacity || block.LightValue != blockOld.LightValue)
+                if (differenceOpacity || block.LightValue != blockOld.LightValue)
                 {
                     World.Light.ActionChunk(this);
-                    World.Light.CheckLightFor(blockPos.X, blockPos.Y, blockPos.Z);
+                    World.Light.CheckLightFor(blockPos.X, blockPos.Y, blockPos.Z, differenceOpacity);
                 }
                 else
                 {
@@ -776,8 +822,8 @@ namespace MvkServer.World.Chunk
         public void SetInhabitedTime(uint time) => InhabitedTime = time;
 
 
+        public override string ToString() => Position + " " + IsChunkLoaded;
 
-        
     }
 }
 ;

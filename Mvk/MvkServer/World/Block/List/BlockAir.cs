@@ -11,7 +11,7 @@ namespace MvkServer.World.Block.List
         /// Блок воздуха, пустотаб может сталкиваться
         /// </summary>
         /// <param name="collidable">Выбрать может ли блок сталкиваться</param>
-        public BlockAir(bool collidable)
+        public BlockAir(bool collidable = false)
         {
             IsAir = true;
             IsAction = false;
@@ -22,10 +22,6 @@ namespace MvkServer.World.Block.List
             IsReplaceable = true;
             LightOpacity = 0;
         }
-        /// <summary>
-        /// Блок воздуха, пустота, не сталкивается
-        /// </summary>
-        public BlockAir() : this(false) { }
 
         /// <summary>
         /// Спавн предмета при разрушении этого блока

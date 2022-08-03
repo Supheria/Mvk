@@ -2,7 +2,7 @@
 using MvkClient.Renderer.Font;
 using MvkClient.Util;
 using SharpGL;
-using System.Collections;
+using System.Collections.Generic;
 
 namespace MvkClient.Renderer
 {
@@ -14,7 +14,7 @@ namespace MvkClient.Renderer
         /// <summary>
         /// Массив текстур uint
         /// </summary>
-        protected Hashtable items = new Hashtable();
+        private Dictionary<AssetsTexture, TextureStruct> items = new Dictionary<AssetsTexture, TextureStruct>();
 
         /// <summary>
         /// Первая инициализация текстур
@@ -45,7 +45,7 @@ namespace MvkClient.Renderer
         /// Получить индекс текстуры по ключу
         /// </summary>
         /// <param name="key">ключ текстуры</param>
-        public TextureStruct GetData(AssetsTexture key) => items.ContainsKey(key) ? (TextureStruct)items[key] : new TextureStruct();
+        public TextureStruct GetData(AssetsTexture key) => items.ContainsKey(key) ? items[key] : new TextureStruct();
 
         /// <summary>
         /// Запустить текстуру

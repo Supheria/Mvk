@@ -70,6 +70,7 @@ namespace MvkClient.Network
                         case 0x23: Handle23BlockChange((PacketS23BlockChange)packet); break;
                         case 0x25: Handle25BlockBreakAnim((PacketS25BlockBreakAnim)packet); break;
                         case 0x29: Handle29SoundEffect((PacketS29SoundEffect)packet); break;
+                        case 0x2A: Handle29Particles((PacketS2AParticles)packet); break;
                         case 0x2F: Handle2FSetSlot((PacketS2FSetSlot)packet); break;
                         case 0x30: Handle30WindowItems((PacketS30WindowItems)packet); break;
 
@@ -372,8 +373,9 @@ namespace MvkClient.Network
         }
 
         private void Handle21ChunkData(PacketS21ChunkData packet)
-        { 
-            ClientMain.World.ChunkPrClient.PacketChunckData(packet);
+        {
+            ClientMain.World.AddPacketChunkQueue(packet);
+            //ClientMain.World.ChunkPrClient.PacketChunckData(packet);
         }
 
         private void Handle23BlockChange(PacketS23BlockChange packet)
@@ -390,6 +392,23 @@ namespace MvkClient.Network
         {
             ClientMain.World.PlaySound(ClientMain.Player, packet.GetAssetsSample(), 
                 packet.GetPosition(), packet.GetVolume(), packet.GetPitch());
+        }
+
+        private void Handle29Particles(PacketS2AParticles packet)
+        {
+            ClientMain.World.SpawnParticle(packet.GetParticle(), packet.GetCount(), packet.GetPosition(), packet.GetOffset(), packet.GetMotion(), packet.GetItems());
+            //int count = packet.GetCount();
+            //if (count == 1)
+            //{
+            //    ClientMain.World.SpawnParticle(packet.GetParticle(), packet.GetPosition(), packet.Getoffset(), packet.GetItems());
+            //}
+            //else
+            //{
+            //    for (int i = 0; i < count; i++)
+            //    {
+            //        ClientMain.World.SpawnParticle(packet.GetParticle(), packet.GetPosition(), packet.Getoffset(), packet.GetItems());
+            //    }
+            //}
         }
 
         /// <summary>

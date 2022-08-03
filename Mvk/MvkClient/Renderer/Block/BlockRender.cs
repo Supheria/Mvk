@@ -29,17 +29,19 @@ namespace MvkClient.Renderer.Block
         /// Объект рендера чанков
         /// </summary>
         protected readonly ChunkRender chunk;
-        private ChunkBase chunkCheck;
+        private ChunkRender chunkCheck;
         /// <summary>
         /// Объект блока кэш
         /// </summary>
         public BlockBase block;
         public BlockState blockState;
+        public int met;
         
         /// <summary>
         /// Объект блока для проверки
         /// </summary>
         private BlockBase blockCheck;
+        private int metCheck;
         /// <summary>
         /// Позиция блока в чанке 0..15
         /// </summary>
@@ -82,7 +84,7 @@ namespace MvkClient.Renderer.Block
 
         public int cbX, cbY, cbZ;
 
-        private int xcn, ycn, zcn;
+        private int xcn, zcn;
         private int xc, yc, zc;
         private int xb, yb, zb;
         private int index;
@@ -159,7 +161,10 @@ namespace MvkClient.Renderer.Block
                     xc += xcn;
                     zc += zcn;
                     chunkCheck = chunk.Chunk(xcn, zcn);
-                    if (chunkCheck == null) return 0x0F; // Только яркость неба макс
+                    if (chunkCheck == null || !chunkCheck.IsChunkLoaded)
+                    {
+                        return 0x0F; // Только яркость неба макс
+                    }
                     storage = chunkCheck.StorageArrays[yc];
                 }
             }
@@ -175,9 +180,20 @@ namespace MvkClient.Renderer.Block
             zb = z & 15;
             int i = yb << 8 | zb << 4 | xb;
 
-            if (storage.countData > 0) id = storage.data[i] & 0xFFF;
+            if (storage.countData > 0)
+            {
+                id = storage.data[i];
+                metCheck = id >> 12;
+                id = id & 0xFFF;
+            }
+            else
+            {
+                metCheck = 0;
+                id = 0;
+            }
             
             blockCheck = Blocks.blocksInt[id];
+
 
             isDraw = id == 0 || blockCheck.AllSideForcibly;
             UpIsDraw();
@@ -192,7 +208,7 @@ namespace MvkClient.Renderer.Block
         {
             //isDraw = id == 0 || (blockCheck.AllSideForcibly && cullFace);
 
-            if (isDraw && (blockCheck.Material == block.Material && !blockCheck.BlocksNotSame)
+            if (isDraw && (blockCheck.Material == block.Material && !blockCheck.BlocksNotSame(met) && blockCheck.FlagDifference(metCheck) == block.FlagDifference(met))
                 || (!cullFace && block.Material == EnumMaterial.Water
                     && (blockCheck.Material == EnumMaterial.Glass || blockCheck.Material == EnumMaterial.Lava || blockCheck.Material == EnumMaterial.Oil))) isDraw = false;
         }
@@ -201,7 +217,7 @@ namespace MvkClient.Renderer.Block
         {
             int idB = 0;
             int idF = 0;
-            Box[] boxes = block.GetBoxes(blockState.Met());
+            Box[] boxes = block.GetBoxes(met, xc, zc, posChunkX, posChunkZ);
             int countB = boxes.Length;
             int countF = 0;
             while (idB < countB)
@@ -236,19 +252,17 @@ namespace MvkClient.Renderer.Block
         /// </summary>
         private void RenderMeshSide()
         {
-            if (!block.BlocksNotSame)
+            if (!block.BlocksNotSame(met))
+            if (!cullFace)
             {
-                if (!cullFace)
-                {
-                    vec3i pos = EnumFacing.DirectionVec(cSideInt);
-                    yc = (posChunkY + pos.y) >> 4;
-                    if (yc < 0 || yc > ChunkBase.COUNT_HEIGHT15) stateLight = 0x0F;
-                    else stateLight = GetBlockSideState(posChunkX + pos.x, posChunkY + pos.y, posChunkZ + pos.z, true);
-                }
-                else
-                {
-                    stateLight = resultSide[cSideInt];
-                }
+                vec3i pos = MvkStatic.ArraOne3d6[cSideInt];// EnumFacing.DirectionVec(cSideInt);
+                yc = (posChunkY + pos.y) >> 4;
+                if (yc < 0 || yc > ChunkBase.COUNT_HEIGHT15) stateLight = 0x0F;
+                else stateLight = GetBlockSideState(posChunkX + pos.x, posChunkY + pos.y, posChunkZ + pos.z, true);
+            }
+            else
+            {
+                stateLight = resultSide[cSideInt];
             }
             
             //if (block.LightValue > 0) stateLight = 0xFF;
@@ -520,7 +534,7 @@ namespace MvkClient.Renderer.Block
             yc = pY >> 4;
             // Определяем рабочий чанк соседнего блока
             chunkCheck = (xc == chunk.Position.x && zc == chunk.Position.y) ? chunk : chunk.Chunk(xcn, zcn);
-            if (chunkCheck == null)
+            if (chunkCheck == null || !chunkCheck.IsChunkLoaded)
             {
                 aoLight.lightSky = 15;
                 aoLight.aol = 1;
@@ -536,7 +550,9 @@ namespace MvkClient.Renderer.Block
             }
             yb = pY & 15;
             index = yb << 8 | zb << 4 | xb;
-            id = storage.data[index] & 0xFFF;
+            id = storage.data[index];
+            metCheck = id >> 12;
+            id = id & 0xFFF;
             blockCheck = Blocks.blocksInt[id];
             aoLight.aoc = blockCheck.АmbientOcclusion ? 1 : 0;
             aoLight.aol = blockCheck.IsNotTransparent() ? 0 : 1;

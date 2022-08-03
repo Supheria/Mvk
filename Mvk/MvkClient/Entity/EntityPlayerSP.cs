@@ -345,10 +345,13 @@ namespace MvkClient.Entity
                     SwingItem();
 
                     vec3 pos = entityAtack.Position + new vec3(.5f);
-                    for (int i = 0; i < 5; i++)
-                    {
-                        ClientWorld.SpawnParticle(EnumParticle.Test, pos + new vec3((rand.Next(16) - 8) / 16f, (rand.Next(12) - 6) / 16f, (rand.Next(16) - 8) / 16f), new vec3(0));
-                    }
+
+                    World.SpawnParticle(EnumParticle.Test, 5, pos, new vec3(1), 0);
+
+                    //for (int i = 0; i < 5; i++)
+                    //{
+                    //    ClientWorld.SpawnParticle(EnumParticle.Test, pos + new vec3((rand.Next(16) - 8) / 16f, (rand.Next(12) - 6) / 16f, (rand.Next(16) - 8) / 16f), new vec3(0));
+                    //}
                     ClientWorld.ClientMain.TrancivePacket(new PacketC03UseEntity(entityAtack.Id, entityAtack.Position - Position));
                     entityAtack = null;
                     return true;
@@ -451,7 +454,7 @@ namespace MvkClient.Entity
                 string s1 = ToBlockDebug(chunk, new vec3i(pos.x, pos.y, pos.z));
                 string s2 = ToBlockDebug(chunk, new vec3i(pos.x, pos.y + 1, pos.z));
                 Debug.BlockFocus = string.Format(
-                    "Block: {0} L:{1} L+1:{2}\r\n{3}\r\n",// H:{3}|{4} #{6}\r\n",
+                    "Block: {0} L:{1} L+1:{2}\r\n{4}, {3}\r\n",// H:{3}|{4} #{6}\r\n",
                     MovingObject.Block,
                     s1, s2,
                     //chunk.Light.GetHeight(pos.x, pos.z),
@@ -460,7 +463,8 @@ namespace MvkClient.Entity
                     //chunk.GetTopFilledSegment(),
 
                     //"",
-                    chunk.GetDebugAllSegment()
+                    chunk.GetDebugAllSegment(),
+                    chunk.Light.GetHeight(pos.x, pos.z)
                 );
                 //Debug.DStr = "";
             } else
@@ -478,7 +482,7 @@ namespace MvkClient.Entity
            // if (!chunkStorage.IsEmptyData())
             {
                 int index = (pos.y & 15) << 8 | pos.z << 4 | pos.x;
-                return string.Format("b{0} s{1}", storage.lightBlock[index], storage.lightSky[index]); //, chunkStorage.ToString());
+                return string.Format("[{2}] b{0} s{1}", storage.lightBlock[index], storage.lightSky[index], pos); //, chunkStorage.ToString());
             }
             //return "@-@";
         }
@@ -604,26 +608,30 @@ namespace MvkClient.Entity
             
             List<FrustumStruct> listC = new List<FrustumStruct>();
 
+            
             if (DistSqrt != null)
             {
-                for (int i = 0; i < DistSqrt.Length; i++)
+                int i, xc, zc, xb, zb, x1, y1, z1, x2, y2, z2;
+                FrustumStruct frustum;
+                ChunkRender chunk;
+                vec2i coord;
+                for (i = 0; i < DistSqrt.Length; i++)
                 {
-                    int xc = DistSqrt[i].x;
-                    int zc = DistSqrt[i].y;
-                    int xb = xc << 4;
-                    int zb = zc << 4;
+                    xc = DistSqrt[i].x;
+                    zc = DistSqrt[i].y;
+                    xb = xc << 4;
+                    zb = zc << 4;
 
-                    int x1 = xb - 15;
-                    int y1 = -255;
-                    int z1 = zb - 15;
-                    int x2 = xb + 15;
-                    int y2 = 255;
-                    int z2 = zb + 15;
+                    x1 = xb - 15;
+                    y1 = -255;
+                    z1 = zb - 15;
+                    x2 = xb + 15;
+                    y2 = 255;
+                    z2 = zb + 15;
                     if (FrustumCulling.IsBoxInFrustum(x1, y1, z1, x2, y2, z2))
                     {
-                        vec2i coord = new vec2i(xc + chunkPos.x, zc + chunkPos.z);
-                        ChunkRender chunk = ClientWorld.ChunkPrClient.GetChunkRender(coord);
-                        FrustumStruct frustum;
+                        coord = new vec2i(xc + chunkPos.x, zc + chunkPos.z);
+                        chunk = ClientWorld.ChunkPrClient.GetChunkRender(coord);
                         if (chunk == null) frustum = new FrustumStruct(coord);
                         else frustum = new FrustumStruct(chunk);
 
@@ -652,13 +660,15 @@ namespace MvkClient.Entity
         /// </summary>
         public void CheckChunkFrustumCulling()
         {
-            for (int i = 0; i < ChunkFC.Length; i++)
+            int i;
+            FrustumStruct fs;
+            ChunkRender chunk;
+            for (i = 0; i < ChunkFC.Length; i++)
             {
-                FrustumStruct fs = ChunkFC[i];
-                
+                fs = ChunkFC[i];
                 if (!fs.IsChunk())
                 {
-                    ChunkRender chunk = ClientWorld.ChunkPrClient.GetChunkRender(fs.GetCoord());
+                    chunk = ClientWorld.ChunkPrClient.GetChunkRender(fs.GetCoord());
                     if (chunk != null)
                     {
                         ChunkFC[i] = new FrustumStruct(chunk, fs.GetSortList());

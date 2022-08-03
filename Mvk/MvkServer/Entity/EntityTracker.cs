@@ -1,5 +1,6 @@
 ﻿using MvkServer.Entity.Item;
 using MvkServer.Entity.Player;
+using MvkServer.Glm;
 using MvkServer.Network;
 using MvkServer.World;
 using System;
@@ -211,6 +212,24 @@ namespace MvkServer.Entity
             if (entityTracker != null)
             {
                 entityTracker.SendPacketPlayersCurrent(packet);
+            }
+        }
+
+        /// <summary>
+        /// Отправить пакет игрокам которые в радиуси выбранной позиции
+        /// </summary>
+        public void SendToAllEntityDistance(vec3 pos, float distance, IPacket packet)
+        {
+            for (int i = 0; i < trackedEntities.Count; i++)
+            {
+                EntityTrackerEntry trackerEntry = trackedEntities.GetAt(i);
+                if (trackerEntry != null && trackerEntry.TrackedEntity is EntityPlayerServer entityPlayerServer)
+                {
+                    if (glm.distance(trackerEntry.TrackedEntity.Position, pos) < distance)
+                    {
+                        entityPlayerServer.SendPacket(packet);
+                    }
+                }
             }
         }
 

@@ -14,21 +14,25 @@ namespace MvkServer.World.Block.List
         public BlockDebug()
         {
             //Boxes = new Box[] { new Box(1) };
-
+            Hardness = 100;
             Particle = 1;
             FullBlock = false;
             АmbientOcclusion = false;
             Shadow = false;
             AllSideForcibly = true;
-            BlocksNotSame = true;
             UseNeighborBrightness = true;
            // IsCollidable = false;
             IsReplaceable = true;
             LightOpacity = 0;
             //LightValue = 15;
-            Material = EnumMaterial.Stone;
+            Material = EnumMaterial.Debug;
             InitBoxs();
         }
+
+        /// <summary>
+        /// Не однотипные блоки, пример: трава, цветы, кактус
+        /// </summary>
+        public override bool BlocksNotSame(int met) => true;
 
         /// <summary>
         /// Передать список ограничительных рамок блока
@@ -73,7 +77,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Коробки
         /// </summary>
-        public override Box[] GetBoxes(int met)
+        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb)
         {
             if (met == 0) return boxes[0];
 

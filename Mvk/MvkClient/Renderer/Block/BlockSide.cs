@@ -9,7 +9,7 @@ namespace MvkClient.Renderer.Block
     /// </summary>
     public class BlockSide
     {
-        public ListMvk<byte> buffer;
+        public ArrayMvk<byte> buffer;
 
         public float v1x;
         public float v1y;

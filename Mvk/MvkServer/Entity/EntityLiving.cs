@@ -350,6 +350,12 @@ namespace MvkServer.Entity
             }
         }
 
+        protected void SetOnFireFromLava()
+        {
+            //AttackEntityFrom(EnumDamageSource.Lava, 4f);
+            // SetFire(15);
+        }
+
         /// <summary>
         /// Определение местоположение сущности
         /// </summary>
@@ -363,7 +369,8 @@ namespace MvkServer.Entity
             if (IsInLava())
             {
                 // надо поджечь
-                //AttackEntityFrom(EnumDamageSource.Lava, 4f);
+                SetOnFireFromLava();
+                
                 fallDistance *= .5f;
             }
             if (IsInOil())
@@ -483,10 +490,13 @@ namespace MvkServer.Entity
             Health -= amount;
             if (World is WorldServer worldServer)
             {
-                if (Health <= 0f) worldServer.ServerMain.Log.Log("{1} {0}", source, this.name);
+                if (Health <= 0f && this is EntityPlayer)
+                {
+                    worldServer.ServerMain.Log.Log("{1} {0}", source, this.name);
+                }
                 worldServer.ResponseHealth(this);
             }
-            
+
             return true;
         }
 
@@ -968,6 +978,9 @@ namespace MvkServer.Entity
             vec3 pos = new vec3(0, BoundingBox.Min.y + 1f, 0);
             vec3 motion = Motion;
             float width = Width * 2f;
+            World.SpawnParticle(EnumParticle.Bubble, 10,
+                    new vec3(Position.x, Position.y - .125f, Position.z), new vec3(Width * 2f, .25f, Width * 2f), 0);
+
             //for(int i = 0; i < 10; i++)
             //{
             //    motion.y = Motion.y - (float)rand.NextDouble() * .2f;
@@ -975,13 +988,13 @@ namespace MvkServer.Entity
             //    pos.z = Position.z + ((float)rand.NextDouble() * 2f - 1f) * width;
             //    World.SpawnParticle(EnumParticle.Suspend, pos, motion);
             //}
-            for (int i = 0; i < 10; i++)
-            {
-                motion.y = Motion.y - (float)rand.NextDouble() * .2f;
-                pos.x = Position.x + ((float)rand.NextDouble() * 2f - 1f) * width;
-                pos.z = Position.z + ((float)rand.NextDouble() * 2f - 1f) * width;
-                World.SpawnParticle(EnumParticle.Digging, pos, motion, 1);
-            }
+            //for (int i = 0; i < 10; i++)
+            //{
+            //    motion.y = Motion.y - (float)rand.NextDouble() * .2f;
+            //    pos.x = Position.x + ((float)rand.NextDouble() * 2f - 1f) * width;
+            //    pos.z = Position.z + ((float)rand.NextDouble() * 2f - 1f) * width;
+            //    World.SpawnParticle(EnumParticle.Digging, pos, motion, 1);
+            //}
         }
 
         /// <summary>
@@ -1107,14 +1120,7 @@ namespace MvkServer.Entity
 
             if (DeathTime >= 20)
             {
-                for (int i = 0; i < 100; i++)
-                {
-                    World.SpawnParticle(EnumParticle.Test,
-                    Position + new vec3(((float)rand.NextDouble() - .5f) * Width,
-                    .1f,
-                    ((float)rand.NextDouble() - .5f) * Width),
-                    new vec3(0));
-                }
+                World.SpawnParticle(EnumParticle.Test, 100, Position, new vec3(Width, .25f, Width), 0);
                 DeathTime = -1;
                 SetDead();
 
@@ -1328,15 +1334,9 @@ namespace MvkServer.Entity
             BlockBase block = World.GetBlockState(new BlockPos(pos.x, pos.y - 0.20002f, pos.z)).GetBlock();
             if (block.IsParticle)
             {
-                for (int i = 0; i < count; i++)
-                {
-                    World.SpawnParticle(EnumParticle.Digging,
-                    pos + new vec3(((float)rand.NextDouble() - .5f) * Width,
-                    .1f,
-                    ((float)rand.NextDouble() - .5f) * Width), 
-                    new vec3(0),
-                    (int)block.EBlock);
-                }
+                World.SpawnParticle(EnumParticle.Digging, count,
+                    new vec3(pos.x + .5f, pos.y + .25f, pos.z + .5f), 
+                    new vec3(Width, 0, Width), 0, (int)block.EBlock);
             }
         }
 

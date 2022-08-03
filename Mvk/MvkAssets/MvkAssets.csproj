@@ -95,6 +95,10 @@
     <None Include="Resources\DigGrass2.ogg" />
     <None Include="Resources\DigGrass3.ogg" />
     <None Include="Resources\DigGrass4.ogg" />
+    <None Include="Resources\DigGravel1.ogg" />
+    <None Include="Resources\DigGravel2.ogg" />
+    <None Include="Resources\DigGravel3.ogg" />
+    <None Include="Resources\DigGravel4.ogg" />
     <None Include="Resources\DigSand1.ogg" />
     <None Include="Resources\DigSand2.ogg" />
     <None Include="Resources\DigSand3.ogg" />
@@ -121,6 +125,10 @@
     <None Include="Resources\StepGrass2.ogg" />
     <None Include="Resources\StepGrass3.ogg" />
     <None Include="Resources\StepGrass4.ogg" />
+    <None Include="Resources\StepGravel1.ogg" />
+    <None Include="Resources\StepGravel2.ogg" />
+    <None Include="Resources\StepGravel3.ogg" />
+    <None Include="Resources\StepGravel4.ogg" />
     <None Include="Resources\StepSand1.ogg" />
     <None Include="Resources\StepSand2.ogg" />
     <None Include="Resources\StepSand3.ogg" />

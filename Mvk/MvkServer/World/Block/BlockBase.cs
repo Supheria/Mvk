@@ -60,10 +60,6 @@ namespace MvkServer.World.Block
         /// </summary>
         public bool Shadow { get; protected set; } = true;
         /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public bool BlocksNotSame { get; protected set; } = false;
-        /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
         public int Hardness { get; protected set; } = 0;
@@ -124,12 +120,11 @@ namespace MvkServer.World.Block
         /// Имеется ли у блока частичка
         /// </summary>
         public bool IsParticle { get; protected set; } = true;
-
         /// <summary>
         /// Может на этот блок поставить другой, к примеру трава
         /// </summary>
         public bool IsReplaceable { get; protected set; } = false;
-        
+
         protected Box[][] boxes;
 
         /// <summary>
@@ -157,15 +152,21 @@ namespace MvkServer.World.Block
         public EnumMaterial Material { get; protected set; } = EnumMaterial.Air;
 
         /// <summary>
-        /// Коробки
+        /// Коробки для рендера 
         /// </summary>
-        public virtual Box[] GetBoxes(int met) => boxes[0];
+        public virtual Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[0];
+
+        /// <summary>
+        /// Коробки для рендера 2д GUI
+        /// </summary>
+        public virtual Box[] GetBoxesGui() => boxes[0];
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
         protected void InitBoxs(int numberTexture) 
             => boxes = new Box[][] { new Box[] { new Box(numberTexture) } };
+
 
         /// <summary>
         /// Инициализация коробок
@@ -366,6 +367,21 @@ namespace MvkServer.World.Block
         /// Случайный эффект частички и/или звука на блоке только для клиента
         /// </summary>
         public virtual void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Random random) { }
+
+        /// <summary>
+        /// Не однотипные блоки, пример: трава, цветы, кактус
+        /// </summary>
+        public virtual bool BlocksNotSame(int met) => false;
+
+        /// <summary>
+        /// Флаг отличия, для рендера прорисовки однотипных материалов, пример листва чёрная контачит с листвой прозрачной
+        /// </summary>
+        public virtual bool FlagDifference(int met) => true;
+
+        /// <summary>
+        /// Смена соседнего блока
+        /// </summary>
+        public virtual void NeighborBlockChange(WorldBase worldIn, BlockPos pos, BlockState state, BlockBase neighborBlock) { }
 
         /// <summary>
         /// Строка

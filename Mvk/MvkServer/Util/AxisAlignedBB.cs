@@ -22,6 +22,12 @@ namespace MvkServer.Util
             Max = new vec3(Mth.Max(from.x, to.x), Mth.Max(from.y, to.y), Mth.Max(from.z, to.z));
         }
 
+        public AxisAlignedBB(float fromX, float fromY, float fromZ, float toX, float toY, float toZ)
+        {
+            Min = new vec3(Mth.Min(fromX, toX), Mth.Min(fromY, toY), Mth.Min(fromZ, toZ));
+            Max = new vec3(Mth.Max(fromX, toX), Mth.Max(fromY, toY), Mth.Max(fromZ, toZ));
+        }
+
         public vec3i MinInt() => new vec3i(Min);
         public vec3i MaxInt() => new vec3i(Max);
 

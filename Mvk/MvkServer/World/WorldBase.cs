@@ -71,12 +71,12 @@ namespace MvkServer.World
         /// <summary>
         /// заполняется чанками, которые находятся в пределах 9 чанков от любого игрока
         /// </summary>
-        protected List<vec2i> activeChunkSet = new List<vec2i>();
+        protected ListMvk<vec2i> activeChunkSet = new ListMvk<vec2i>(1000);
 
         protected WorldBase()
         {
             Collision = new CollisionBase(this);
-            Log = new Logger();
+            //Log = new Logger();
             profiler = new Profiler(Log);
             Rand = new Random();
             Light = new WorldLight(this);
@@ -313,10 +313,24 @@ namespace MvkServer.World
         }
 
         /// <summary>
-        /// Заспавнить частицу
+        /// Заспавнить частицы
         /// </summary>
-        public virtual void SpawnParticle(EnumParticle particle, vec3 pos, vec3 motion, params int[] items) { }
-        
+        public virtual void SpawnParticle(EnumParticle particle, int count, vec3 pos, vec3 offset, float motion, params int[] items) { }
+
+        /// <summary>
+        /// Частички блока
+        /// </summary>
+        /// <param name="blockPos">позиция где рассыпаются частички</param>
+        /// <param name="count">количество частичек</param>
+        public void ParticleDiggingBlock(BlockBase block, BlockPos blockPos, int count)
+        {
+            if (block != null && block.IsParticle)
+            {
+                SpawnParticle(EnumParticle.Digging, count,
+                    new vec3(blockPos.X + .5f, blockPos.Y + .625f, blockPos.Z + .5f), 
+                    new vec3(1f, .75f, 1f), 0, (int)block.EBlock);
+            }
+        }
 
         #endregion
 
@@ -533,6 +547,21 @@ namespace MvkServer.World
         }
 
         /// <summary>
+        /// Изменить метданные блока
+        /// </summary>
+        public void SetBlockStateMet(BlockPos blockPos, int met)
+        {
+            if (!blockPos.IsValid()) return;
+            ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
+            if (chunk == null) return;
+            int yc = blockPos.Y >> 4;
+            int index = (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15);
+            int id = chunk.StorageArrays[yc].data[index] & 0xFFF;
+            chunk.StorageArrays[yc].data[index] = (ushort)(id | met << 12);
+            MarkBlockForUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+        }
+
+        /// <summary>
         /// Сменить блок
         /// </summary>
         /// <param name="blockPos">позици блока</param>
@@ -543,10 +572,16 @@ namespace MvkServer.World
             if (!blockPos.IsValid()) return false;
 
             ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
-            //return;
+            if (chunk == null) return false;
+
             BlockState blockStateTrue = chunk.SetBlockState(blockPos, blockState, true);
             if (blockStateTrue.IsEmpty()) return false;
 
+            if (!IsRemote)
+            {
+                ParticleDiggingBlock(blockStateTrue.GetBlock(), blockPos, 50);
+                NotifyNeighborsOfStateChange(blockPos, blockState.GetBlock());
+            }
             //BlockBase block = blockState.GetBlock();
             //BlockBase blockNew = blockStateTrue.GetBlock();
 
@@ -592,6 +627,35 @@ namespace MvkServer.World
             //    }
             //}
             //return false;
+        }
+
+        /// <summary>
+        /// Уведомить соседей об изменении состояния
+        /// </summary>
+        private void NotifyNeighborsOfStateChange(BlockPos pos, BlockBase block)
+        {
+            NotifyBlockOfStateChange(pos.OffsetWest(), block);
+            NotifyBlockOfStateChange(pos.OffsetEast(), block);
+            NotifyBlockOfStateChange(pos.OffsetDown(), block);
+            NotifyBlockOfStateChange(pos.OffsetUp(), block);
+            NotifyBlockOfStateChange(pos.OffsetNorth(), block);
+            NotifyBlockOfStateChange(pos.OffsetSouth(), block);
+        }
+
+        /// <summary>
+        /// Уведомить о блок об изменения состоянии соседнего блока
+        /// </summary>
+        private void NotifyBlockOfStateChange(BlockPos pos, BlockBase blockIn)
+        {
+            try
+            {
+                BlockState blockState = GetBlockState(pos);
+                blockState.GetBlock().NeighborBlockChange(this, pos, blockState, blockIn);
+            }
+            catch (Exception ex)
+            {
+                Logger.Crach(ex);
+            }
         }
 
         /// <summary>
@@ -871,16 +935,19 @@ namespace MvkServer.World
         {
             activeChunkSet.Clear();
             TheProfiler().StartSection("buildList");
+            int x, z, dist, overviewChunk;
+            EntityPlayer entityPlayer;
+            vec2i chPos;
             for (int i = 0; i < PlayerEntities.Count; i++)
             {
-                EntityPlayer entity = PlayerEntities.GetAt(i) as EntityPlayer;
-                int overviewChunk = entity.OverviewChunk;
-                vec2i chPos = entity.PositionChunk;
-                int dist = Mth.Min(overviewChunk, RADIUS_ACTION_CHUNK); // радиус активных чанков
+                entityPlayer = PlayerEntities.GetAt(i) as EntityPlayer;
+                overviewChunk = entityPlayer.OverviewChunk;
+                chPos = entityPlayer.PositionChunk;
+                dist = Mth.Min(overviewChunk, RADIUS_ACTION_CHUNK); // радиус активных чанков
 
-                for (int x = -dist; x <= dist; x++)
+                for (x = -dist; x <= dist; x++)
                 {
-                    for (int z = -dist; z <= dist; z++)
+                    for (z = -dist; z <= dist; z++)
                     {
                         activeChunkSet.Add(new vec2i(x + chPos.x, z + chPos.y));
                     }
@@ -888,16 +955,16 @@ namespace MvkServer.World
             }
             TheProfiler().EndSection();
 
-            TheProfiler().StartSection("playerCheckLight");
+            //TheProfiler().StartSection("playerCheckLight");
 
-            if (PlayerEntities.Count > 0)
-            {
-                int indexRand = Rand.Next(PlayerEntities.Count);
-                EntityBase entity = PlayerEntities.GetAt(indexRand);
-               // Light.CheckLight(new BlockPos(entity.GetBlockPos()));
-            }
+            //if (PlayerEntities.Count > 0)
+            //{
+            //    int indexRand = Rand.Next(PlayerEntities.Count);
+            //    EntityBase entity = PlayerEntities.GetAt(indexRand);
+            //   // Light.CheckLight(new BlockPos(entity.GetBlockPos()));
+            //}
 
-            TheProfiler().EndSection();
+            //TheProfiler().EndSection();
         }
 
         /// <summary>

@@ -15,21 +15,19 @@ namespace MvkClient.Util
         /// <summary>
         /// Ширина
         /// </summary>
-        public int Width { get; protected set; }
+        public int Width { get; private set; }
         /// <summary>
         /// Высотп
         /// </summary>
-        public int Height { get; protected set; }
+        public int Height { get; private set; }
         /// <summary>
         /// Массив байт
         /// </summary>
-        public byte[] Buffer { get; protected set; }
+        public byte[] Buffer { get; private set; }
         /// <summary>
         /// Ключ текстуры
         /// </summary>
-        public AssetsTexture Key { get; protected set; }
-
-       // public BufferedImage(string fileName) : this(new Bitmap(fileName)) { }
+        public AssetsTexture Key { get; private set; }
 
         public BufferedImage(AssetsTexture key, Bitmap bitmap)
         {
@@ -52,7 +50,7 @@ namespace MvkClient.Util
             return new vec4(Bf(r), Bf(g), Bf(b), Bf(a));
         }
 
-        protected float Bf(byte c) => (float)c / 255f;
+        private float Bf(byte c) => (float)c / 255f;
 
         /// <summary>
         /// Конвертация из Bitmap в объект BufferedImage

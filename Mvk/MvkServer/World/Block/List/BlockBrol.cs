@@ -8,38 +8,35 @@ namespace MvkServer.World.Block.List
     /// <summary>
     /// Блок брол, автор Вероника
     /// </summary>
-    public class BlockBrol : BlockBase
+    public class BlockBrol : BlockAbOre
     {
         /// <summary>
         /// Блок брол, автор Вероника
         /// </summary>
-        public BlockBrol()
+        public BlockBrol() : base(261, new vec3(1f))
         {
             LightValue = 15;
-            Particle = 8;
             АmbientOcclusion = false;
-            Hardness = 5;
-            Material = EnumMaterial.Brol;
+            Hardness = 25;
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
-            InitBoxs();
         }
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs()
+        protected override void InitBoxs()
         { 
             boxes = new Box[][] { new Box[] {
                 new Box()
                 {
                     Faces = new Face[]
                     {
-                        new Face(Pole.Up, 6),
-                        new Face(Pole.Down, 7),
-                        new Face(Pole.East, 8),
-                        new Face(Pole.North, 8),
-                        new Face(Pole.South, 8),
-                        new Face(Pole.West, 8)
+                        new Face(Pole.Up, 259),
+                        new Face(Pole.Down, 260),
+                        new Face(Pole.East, 261),
+                        new Face(Pole.North, 261),
+                        new Face(Pole.South, 261),
+                        new Face(Pole.West, 261)
                     }
                 }
             }};
@@ -50,17 +47,18 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public override void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Random random)
         {
-            //if (random.Next(10) == 0)
+            BlockState blockStateUp = world.GetBlockState(blockPos.OffsetUp());
+            if (blockStateUp.GetBlock().IsAir)
             {
-                for (int i = 0; i < 3; i++)
-                {
-                    world.SpawnParticle(Entity.EnumParticle.Digging,
-                        new vec3(blockPos.X + (float)random.NextDouble(), blockPos.Y + 1f, blockPos.Z + (float)random.NextDouble()),
-                        new vec3(0),
-                        (int)EBlock);
-                }
-              //  world.PlaySound(AssetsSample.DigGlass1, blockPos.ToVec3() + .5f, (float)random.NextDouble() * .25f + .75f, 1f);
+                world.SpawnParticle(Entity.EnumParticle.Digging, 3,
+                new vec3(blockPos.X + .5f, blockPos.Y + 1.0625f, blockPos.Z + .5f),
+                new vec3(1, .125f, 1), 0, (int)EBlock);
             }
         }
+
+        /// <summary>
+        /// Спавн предмета при разрушении этого блока
+        /// </summary>
+        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
     }
 }

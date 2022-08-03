@@ -39,15 +39,15 @@ namespace MvkClient.Renderer
         /// <summary>
         /// Буфер сплошных блоков
         /// </summary>
-        public ListMvk<byte> buffer = new ListMvk<byte>(2064384);
+        public ArrayMvk<byte> buffer = new ArrayMvk<byte>(2064384);
         /// <summary>
         /// Буфер альфа блоков
         /// </summary>
-        public ListMvk<byte> bufferAlpha = new ListMvk<byte>(2064384);
+        public ArrayMvk<byte> bufferAlpha = new ArrayMvk<byte>(2064384);
         /// <summary>
         /// Буефр одного альфа блока
         /// </summary>
-        public ListMvk<byte> bufferAlphaCache = new ListMvk<byte>(2016);
+        public ArrayMvk<byte> bufferAlphaCache = new ArrayMvk<byte>(4032);
 
         /// <summary>
         /// Дополнительный счётчик, для повторной проверки, если камера не двигается, а чанки догружаются
@@ -265,19 +265,24 @@ namespace MvkClient.Renderer
             List<ChunkRender> chunks = new List<ChunkRender>();
 
             int count = ClientMain.Player.ChunkFC.Length - 1;
-
+            int i, j, y;
+            bool isDense;
+            FrustumStruct fs;
+            ChunkRender chunk;
+            byte[] vs;
             // Пробегаем по всем чанкам которые видим FrustumCulling
-            for (int i = 0; i <= count; i++)
+            for (i = 0; i <= count; i++)
             {
-                FrustumStruct fs = ClientMain.Player.ChunkFC[i];
+                fs = ClientMain.Player.ChunkFC[i];
                 if (fs.IsChunk())
                 {
-                    ChunkRender chunk = fs.GetChunk();
-                    byte[] vs = fs.GetSortList();
+                    chunk = fs.GetChunk();
+                    vs = fs.GetSortList();
                     // Пробегаем по псевдо чанкам одно чанка
-                    foreach(int y in vs)
+                    for (j = 0; j < vs.Length; j++)
                     {
-                        bool isDense = chunk.IsModifiedRender(y);
+                        y = vs[j];
+                        isDense = chunk.IsModifiedRender(y);
                         if (chunk.StorageArrays[y].IsEmptyData())
                         {
                             // Удаление
@@ -363,20 +368,22 @@ namespace MvkClient.Renderer
             GLRender.BlendEnable();
 
             int count = ClientMain.Player.ChunkFC.Length - 1;
-
+            int i, j, y;
+            FrustumStruct fs;
+            ChunkRender chunk;
+            byte[] vs;
             // Пробегаем по всем чанкам которые видим FrustumCulling в обратном порядке, с далека и ближе
-            for (int i = count; i >= 0; i--)
+            for (i = count; i >= 0; i--)
             {
-                FrustumStruct fs = ClientMain.Player.ChunkFC[i];
+                fs = ClientMain.Player.ChunkFC[i];
                 if (fs.IsChunk())
                 {
-                    ChunkRender chunk = fs.GetChunk();
-                    byte[] vs = fs.GetSortList();
+                    chunk = fs.GetChunk();
+                    vs = fs.GetSortList();
                     // Пробегаем по псевдо чанкам одно чанка в обратном порядке
-                    for (int j = vs.Length - 1; j >= 0; j--)
+                    for (j = vs.Length - 1; j >= 0; j--)
                     {
-                        int y = vs[j];
-
+                        y = vs[j];
                         // Занести буфер альфа блоков псевдо чанка если это требуется
                         if (chunk.IsMeshAlphaBinding(y)) chunk.BindBufferAlpha(y);
 

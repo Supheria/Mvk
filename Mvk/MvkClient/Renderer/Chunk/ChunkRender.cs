@@ -38,12 +38,10 @@ namespace MvkClient.Renderer.Chunk
         /// Количество альфа блоков в псевдо чанке
         /// </summary>
         private readonly int[] countAlpha = new int[COUNT_HEIGHT];
-
         /// <summary>
         /// Соседние чанки, заполняются перед рендером
         /// </summary>
-        private ChunkBase[] chunks = new ChunkBase[8];
-        private bool isChunksAll = false;
+        private readonly ChunkRender[] chunks = new ChunkRender[8];
 
         public ChunkRender(WorldClient worldIn, vec2i pos) :base (worldIn, pos)
         {
@@ -104,24 +102,16 @@ namespace MvkClient.Renderer.Chunk
         {
             meshDense[y].StatusRendering();
             meshAlpha[y].StatusRendering();
-
-            if (!isChunksAll)
+            for (int i = 0; i < 8; i++)
             {
-                int c = 0;
-                for (int i = 0; i < 8; i++)
-                {
-                    vec2i pos = Position + MvkStatic.AreaOne8[i];
-                    if (chunks[i] == null) chunks[i] = World.ChunkPr.GetChunk(pos);
-                    else c++;
-                }
-                if (c == 8) isChunksAll = true;
+                chunks[i] = World.ChunkPr.GetChunk(Position + MvkStatic.AreaOne8[i]) as ChunkRender;
             }
         }
 
         /// <summary>
         /// Получить соседний чанк, где x и y -1..1
         /// </summary>
-        public ChunkBase Chunk(int x, int y) => chunks[MvkStatic.GetAreaOne8(x, y)];
+        public ChunkRender Chunk(int x, int y) => chunks[MvkStatic.GetAreaOne8(x, y)];
 
         /// <summary>
         /// Рендер псевдо чанка, сплошных и альфа блоков
@@ -169,6 +159,7 @@ namespace MvkClient.Renderer.Chunk
                             {
                                 // Альфа!
                                 blockAlphaRender.blockState.data = id;
+                                blockAlphaRender.met = blockAlphaRender.blockState.Met();
                                 blockAlphaRender.blockState.lightBlock = chunkStorage.lightBlock[i];
                                 blockAlphaRender.blockState.lightSky = chunkStorage.lightSky[i];
                                 blockAlphaRender.posChunkX = x;
@@ -192,6 +183,7 @@ namespace MvkClient.Renderer.Chunk
                             else
                             {
                                 blockRender.blockState.data = id;
+                                blockRender.met = blockRender.blockState.Met();
                                 blockRender.blockState.lightBlock = chunkStorage.lightBlock[i];
                                 blockRender.blockState.lightSky = chunkStorage.lightSky[i];
                                 blockRender.posChunkX = x;

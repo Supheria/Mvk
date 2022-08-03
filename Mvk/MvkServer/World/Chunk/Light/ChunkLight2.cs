@@ -1,5 +1,7 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Util;
 using MvkServer.World.Block;
+using System.Diagnostics;
 
 namespace MvkServer.World.Chunk.Light
 {
@@ -16,7 +18,11 @@ namespace MvkServer.World.Chunk.Light
         /// <summary>
         /// Карта высот по чанку, z << 4 | x
         /// </summary>
-        private readonly int[] heightMap = new int[256];
+        private readonly byte[] heightMap = new byte[256];
+        /// <summary>
+        /// Карта высот по чанку с учётом прозрачности, для стартового бокового освещения, z << 4 | x
+        /// </summary>
+        private readonly byte[] heightMapOpacity = new byte[256];
         /// <summary>
         /// Высотная карта самый высокий блок в чанке от неба
         /// </summary>
@@ -52,7 +58,11 @@ namespace MvkServer.World.Chunk.Light
         /// <summary>
         /// Возвращает значение карты высот в этой координате x, z в чанке. 
         /// </summary>
-        public int GetHeight(int x, int z) => heightMap[z << 4 | x];
+        public byte GetHeight(int x, int z) => heightMap[z << 4 | x];
+        /// <summary>
+        /// Карта высот по чанку с учётом прозрачности, для стартового бокового освещения, z << 4 | x
+        /// </summary>
+        public byte GetHeightOpacity(int x, int z) => heightMapOpacity[z << 4 | x];
 
         /// <summary>
         /// Создает карту высот для блока с нуля
@@ -61,7 +71,7 @@ namespace MvkServer.World.Chunk.Light
         {
             ChunkStorage chunkStorage;
             heightMapMax = 0;
-            int yb = Chunk.GetTopFilledSegment() + 16;
+            int yb = Chunk.GetTopFilledSegment() + 17;
             int x, y, z, y1;
             // Осветления псевдо чанков, которые имеются данные и вниз
             MaxSkyChunk = (yb >> 4) - 1;
@@ -82,7 +92,7 @@ namespace MvkServer.World.Chunk.Light
                         if (chunkStorage.countData != 0 && Blocks.blocksLightOpacity[chunkStorage.data[(y1 & 15) << 8 | z << 4 | x] & 0xFFF] >> 4 != 0)
                         {
                             // первый блок препятствия сверху
-                            heightMap[z << 4 | x] = y;
+                            heightMap[z << 4 | x] = (byte)y;
                             if (heightMapMax < y) heightMapMax = y;
                             break;
                         }
@@ -102,7 +112,7 @@ namespace MvkServer.World.Chunk.Light
         {
             ChunkStorage chunkStorage;
             heightMapMax = 0;
-            int yb = Chunk.GetTopFilledSegment() + 16;
+            int yb = Chunk.GetTopFilledSegment() + 17;
             int x, y, z, y1, opacity, light, y2, index;
             // Осветления псевдо чанков, которые имеются данные и вниз
             MaxSkyChunk = (yb >> 4) - 1;
@@ -116,6 +126,7 @@ namespace MvkServer.World.Chunk.Light
                 for (z = 0; z < 16; z++)
                 {
                     heightMap[z << 4 | x] = 0;
+                    heightMapOpacity[z << 4 | x] = 0;
                     for (y = yb; y > 0; y--)
                     {
                         y1 = y - 1;
@@ -130,7 +141,7 @@ namespace MvkServer.World.Chunk.Light
                         else
                         {
                             // первый блок препятствия сверху
-                            heightMap[z << 4 | x] = y;
+                            heightMap[z << 4 | x] = (byte)y;
                             if (heightMapMax < y) heightMapMax = y;
                             
                             light = 15;
@@ -150,6 +161,7 @@ namespace MvkServer.World.Chunk.Light
                                 Chunk.StorageArrays[y2 >> 4].lightSky[index] = (byte)light;
                                 y2--;
                             }
+                            heightMapOpacity[z << 4 | x] = (byte)(y2 + 2);
                             break;
                         }
                     }
@@ -166,7 +178,7 @@ namespace MvkServer.World.Chunk.Light
         /// </summary>
         public void StartRecheckGaps()
         {
-            if (!isChunkLight && World.IsAreaLoaded(Chunk.Position, 1))
+            if (!isChunkLight)// && World.IsAreaLoaded(Chunk.Position, 1))
             {
                 //Stopwatch stopwatch = new Stopwatch();
                 //stopwatch.Start();
@@ -182,7 +194,7 @@ namespace MvkServer.World.Chunk.Light
                     lightBlocks = new vec3i[0];
                     //c2 = World.Light.GetCountBlock();
                 }
-                
+
                 //long le2 = stopwatch.ElapsedTicks;
                 //if ((c1 > 0 || c2 > 0) && World is WorldServer worldServer)
                 //{
@@ -207,13 +219,18 @@ namespace MvkServer.World.Chunk.Light
                 // закрываем небо
                 if (y >= yh)
                 {
+                    // Проверка столба неба
                     CheckLightColumnSky(x, y + 1, z, yh);
-                    return;
+                }
+                else
+                {
+                    // Проверка блока небесного освещения
+                    World.Light.CheckLightSky(x, y, z, lo);
                 }
             }
             else if (y == yh - 1)
             {
-                // Открываем небо
+                // Открываем небо, проверка столба неба
                 CheckLightColumnSky(x, y, z, yh);
             }
             else
@@ -235,34 +252,34 @@ namespace MvkServer.World.Chunk.Light
             ChunkStorage chunkStorage;
             int xb = x & 15;
             int zb = z & 15;
-            int check = 0;
+            int opacity = 0;
             int yh1;
-            while (yh0 > 0 && check == 0)
+            while (yh0 > 0 && opacity == 0)
             {
                 yh1 = yh0 - 1;
                 if (yh1 < 0 || yh1 > ChunkBase.COUNT_HEIGHT_BLOCK)
                 {
-                    check = 0;
+                    opacity = 0;
                 }
                 else
                 {
                     chunkStorage = Chunk.StorageArrays[yh1 >> 4];
                     if (chunkStorage.countData != 0)
                     {
-                        check = Blocks.blocksLightOpacity[chunkStorage.data[(yh1 & 15) << 8 | zb << 4 | xb] & 0xFFF];
+                        opacity = Blocks.blocksLightOpacity[chunkStorage.data[(yh1 & 15) << 8 | zb << 4 | xb] & 0xFFF] >> 4;
                     }
                     else
                     {
-                        check = 0;
+                        opacity = 0;
                     }
                 }
-                if (check == 0) yh0--;
+                if (opacity == 0) yh0--;
             }
 
             // Если блок равен высотной игнорируем
             if (yh == y0) return;
 
-            heightMap[zb << 4 | xb] = yh0;
+            heightMap[zb << 4 | xb] = (byte)yh0;
             if (heightMapMax < yh0) heightMapMax = yh0;
 
             if (yh < yh0)

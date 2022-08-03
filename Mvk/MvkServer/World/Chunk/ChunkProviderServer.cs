@@ -18,6 +18,11 @@ namespace MvkServer.World.Chunk
         public MapListVec2i DroppedChunks { get; protected set; } = new MapListVec2i();
 
         /// <summary>
+        /// Дополнительный список чанков которых надо проверить свет
+        /// </summary>
+        public MapListVec2i GenAddChunks { get; private set; } = new MapListVec2i();
+
+        /// <summary>
         /// Сылка на объект серверного мира
         /// </summary>
         private WorldServer worldServer;
@@ -104,9 +109,11 @@ namespace MvkServer.World.Chunk
         {
             DroppedChunks.Remove(pos);
             ChunkBase chunk = GetChunk(pos);
-
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
             if (chunk == null)
             {
+
                 // Загружаем
                 // chunk = LoadChunkFromFile(pos);
                 if (chunk == null)
@@ -152,19 +159,17 @@ namespace MvkServer.World.Chunk
                                         if (y <= 16)
                                         {
                                             chunk.SetEBlock(new vec3i(x, y, z), Block.EnumBlock.Water);
-                                            //chunk.StorageArrays[y >> 4].lightBlock[(y & 15) << 8 | (z & 15) << 4 | (x & 15)] = 15;
                                         }
                                         else
                                         {
-                                            chunk.SetEBlock(new vec3i(x, y, z), Block.EnumBlock.Turf, chunk.World.Rand.Next(0, 4));
+                                            chunk.SetEBlock(new vec3i(x, y, z), Block.EnumBlock.Turf);//, chunk.World.Rand.Next(0, 4));
                                             if (grassNoise[count] > .61f)
                                             {
-                                                //chunk.SetEBlock(new vec3i(x, y + 1, z), Block.EnumBlock.Brol);
-                                                //chunk.StorageArrays[(y + 1) >> 4].lightBlock[((y + 1) & 15) << 8 | (z & 15) << 4 | (x & 15)] = 15;
+                                              //  chunk.SetEBlock(new vec3i(x, y + 1, z), Block.EnumBlock.Brol);
                                             }
                                             else if (grassNoise[count] > .1f)
                                             {
-                                                chunk.SetEBlock(new vec3i(x, y + 1, z), Block.EnumBlock.TallGrass, chunk.World.Rand.Next(0, 5));
+                                                chunk.SetEBlock(new vec3i(x, y + 1, z), Block.EnumBlock.TallGrass);//, chunk.World.Rand.Next(0, 5));
                                             }
                                         }
                                         if (y > yMax) yMax = y;
@@ -211,7 +216,12 @@ namespace MvkServer.World.Chunk
                         {
                             chunk.SetEBlock(new vec3i(x, stolb + y, z), Block.EnumBlock.Dirt);
                         }
-                        chunk.SetEBlock(new vec3i(2, 32 + stolb, 2), Block.EnumBlock.Dirt);
+                        chunk.SetEBlock(new vec3i(0, 30 + stolb, 0), Block.EnumBlock.Dirt);
+                        chunk.SetEBlock(new vec3i(8, 10 + stolb, 1), Block.EnumBlock.Dirt);
+                        for (int x = 7; x <= 9; x++) for (int z = 1; z <= 3; z++)
+                        {
+                            chunk.SetEBlock(new vec3i(x, stolb + 16, z), Block.EnumBlock.Water);
+                        }
                         //for (int x = 0; x < 16; x++)
                         //{
                         //    for (int z = 0; z < 16; z++)
@@ -279,14 +289,24 @@ namespace MvkServer.World.Chunk
                         }
                     }
                 }
-
+                long le1 = stopwatch.ElapsedTicks;
                 chunk.Light.SetLightBlocks(list.ToArray());
-
+                long le2 = stopwatch.ElapsedTicks;
                 chunkMapping.Set(chunk);
+                long le3 = stopwatch.ElapsedTicks;
                 chunk.Light.GenerateHeightMapSky();
+                long le4 = stopwatch.ElapsedTicks;
                 chunk.OnChunkLoad();
+                long le5 = stopwatch.ElapsedTicks;
+                //worldServer.Log.Log("Chunk {0:0.00} {1:0.00} {2:0.00} {3:0.00} {4:0.00}",
+                //    le1 / (float)MvkStatic.TimerFrequency,
+                //    (le2 - le1) / (float)MvkStatic.TimerFrequency,
+                //    (le3 - le2) / (float)MvkStatic.TimerFrequency,
+                //    (le4 - le3) / (float)MvkStatic.TimerFrequency,
+                //    (le5 - le4) / (float)MvkStatic.TimerFrequency
+                //    );
             }
-            
+
             return chunk;
         }
 
@@ -338,10 +358,12 @@ namespace MvkServer.World.Chunk
         public void UnloadQueuedChunks()
         {
             int i = 0;
+            vec2i pos;
+            ChunkBase chunk;
             while (DroppedChunks.Count > 0 && i < 100) // 100
             {
-                vec2i pos = DroppedChunks.FirstRemove();
-                ChunkBase chunk = chunkMapping.Get(pos);
+                pos = DroppedChunks.FirstRemove();
+                chunk = chunkMapping.Get(pos);
                 if (chunk != null)
                 {
                     chunk.OnChunkUnload();
@@ -353,9 +375,37 @@ namespace MvkServer.World.Chunk
         }
 
         /// <summary>
+        /// Обновить проверку дополнительной генерации, чанки где нужны соседние 8 чанков
+        /// </summary>
+        public void UpdateCheckAddGeneration()
+        {
+            if (GenAddChunks.Count > 0)
+            {
+                int count = 0;
+                vec2i pos;
+                ChunkBase chunk;
+                //worldServer.Log.Log("GenChunks.Count {0}", GenAddChunks.Count);
+                while (GenAddChunks.Count > 0 && count < 10)
+                {
+                    pos = GenAddChunks.FirstRemove();
+                    chunk = chunkMapping.Get(pos);
+                    if (chunk != null)
+                    {
+                        chunk.Light.StartRecheckGaps();
+                    }
+                    count++;
+                }
+            }
+        }
+
+        /// <summary>
         /// Добавить чанк на удаление
         /// </summary>
-        public void DropChunk(vec2i pos) => DroppedChunks.Add(pos);
+        public void DropChunk(vec2i pos)
+        {
+            GenAddChunks.Remove(pos);
+            DroppedChunks.Add(pos);
+        }
 
     }
 }

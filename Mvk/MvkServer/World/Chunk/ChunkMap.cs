@@ -66,7 +66,7 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Получить чанк с массива
         /// </summary>
-            public ChunkBase Get(vec2i pos)
+        public ChunkBase Get(vec2i pos)
         {
             Hashtable mapThreadSafe = Hashtable.Synchronized(map);
             if (mapThreadSafe.ContainsKey(pos))
@@ -95,6 +95,11 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public void Remove(vec2i pos)
         {
+            ChunkBase chunk = Get(pos);
+            if (chunk != null && chunk.IsChunkLoaded)
+            {
+                chunk.OnChunkUnload();
+            }
             map.Remove(pos);
             //Hashtable mapThreadSafe = Hashtable.Synchronized(map);
             //if (mapThreadSafe.ContainsKey(pos))

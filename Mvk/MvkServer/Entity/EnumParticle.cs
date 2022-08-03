@@ -20,6 +20,10 @@
         /// <summary>
         /// Висюльки почти без движения
         /// </summary>
-        Suspend
+        Suspend,
+        /// <summary>
+        /// Пузырь
+        /// </summary>
+        Bubble
     }
 }

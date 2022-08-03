@@ -8,7 +8,7 @@ namespace MvkClient.Renderer.Font
     /// </summary>
     public class Symbol
     {
-        protected static string Key = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзиклмнопрстуфхцчшщъыьэюяЁёЙй";
+        private static string Key = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзиклмнопрстуфхцчшщъыьэюяЁёЙй";
         /// <summary>
         /// Получить массив символов
         /// </summary>
@@ -17,20 +17,20 @@ namespace MvkClient.Renderer.Font
         /// <summary>
         /// Размер шрифта
         /// </summary>
-        public int Size { get; protected set; }
+        public int Size { get; private set; }
         /// <summary>
         /// Символ
         /// </summary>
-        public char Symb { get; protected set; }
+        public char Symb { get; private set; }
         /// <summary>
         /// Ширина символа
         /// </summary>
-        public int Width { get; protected set; } = 4;
+        public int Width { get; private set; } = 4;
 
         /// <summary>
         /// Индекс листа символа
         /// </summary>
-        protected uint dList;
+        private uint dList;
 
         public Symbol(char c, int size)
         {
@@ -62,7 +62,7 @@ namespace MvkClient.Renderer.Font
         /// <summary>
         /// Получить ширину символа
         /// </summary>
-        protected void GetWidth(BufferedImage bi, int index)
+        private void GetWidth(BufferedImage bi, int index)
         {
             int advance = FontAdvance.HoriAdvance[Size];
 

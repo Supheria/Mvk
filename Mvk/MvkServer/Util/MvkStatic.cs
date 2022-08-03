@@ -1,6 +1,4 @@
 ﻿using MvkServer.Glm;
-using MvkServer.World.Chunk;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -12,6 +10,17 @@ namespace MvkServer.Util
     /// </summary>
     public class MvkStatic
     {
+        /**
+         *      0;-1
+         *       N
+         *       |
+         * W ----+---- E
+         * -1;0  |    1;0
+         *       S
+         *      0;1
+         **/
+
+
         /// <summary>
         /// Область в один блок без центра, 4 блоков
         /// </summary>

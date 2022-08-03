@@ -1,6 +1,8 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Block;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace MvkServer.World.Chunk.Light
@@ -71,7 +73,7 @@ namespace MvkServer.World.Chunk.Light
             World = worldIn;
         }
 
-        #region Public
+        #region Debug
 
         /// <summary>
         /// Очистить отладочную строку
@@ -81,6 +83,14 @@ namespace MvkServer.World.Chunk.Light
         /// Вернуть отладочную строку
         /// </summary>
         public string ToDebugString() => debugStr;
+        /// <summary>
+        /// Количество обработанных блоков для отладки
+        /// </summary>
+        public int GetCountBlock() => countBlock;
+
+        #endregion
+
+        #region Public
 
         /// <summary>
         /// Активировать чанк в котором будет обработка освещения
@@ -100,7 +110,8 @@ namespace MvkServer.World.Chunk.Light
         /// <param name="x">глобальная позиция блока x</param>
         /// <param name="y">глобальная позиция блока y</param>
         /// <param name="z">глобальная позиция блока z</param>
-        public void CheckLightFor(int x, int y, int z)
+        /// <param name="differenceOpacity">Разница в непрозрачности</param>
+        public void CheckLightFor(int x, int y, int z, bool differenceOpacity)
         {
             if (y < 0 || y > ChunkBase.COUNT_HEIGHT_BLOCK) return;
 
@@ -145,7 +156,10 @@ namespace MvkServer.World.Chunk.Light
             }
             int c1 = countBlock;
             // Проверка яркости неба
-            chunk.Light.CheckLightSky(x, y, z, lo);
+            if (differenceOpacity)
+            {
+                chunk.Light.CheckLightSky(x, y, z, lo);
+            }
             ModifiedRender();
             long le = stopwatch.ElapsedTicks;
             stopwatch.Stop();
@@ -162,20 +176,35 @@ namespace MvkServer.World.Chunk.Light
         /// <param name="lo">прозрачности и излучаемости освещения</param>
         public void CheckLightSky(int x, int y, int z, byte lo)
         {
+            ChunkStorage chunkStorage = chunk.StorageArrays[y >> 4];
+            int index = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
             // Один блок проверки, не видящий неба
-            byte lightOld = chunk.StorageArrays[y >> 4].lightSky[(y & 15) << 8 | (z & 15) << 4 | (x & 15)];
+            byte lightOld = chunkStorage.lightSky[index];
             // яркость от соседних блоков
             byte lightBeside = GetLevelBrightSky(x, y, z, lo);
+
+            if (lightOld != lightBeside)
+            {
+                indexBegin = indexEnd = 0;
+                if (x < axisX0) axisX0 = x; else if (x > axisX1) axisX1 = x;
+                if (y < axisY0) axisY0 = y; else if (y > axisY1) axisY1 = y;
+                if (z < axisZ0) axisZ0 = z; else if (z > axisZ1) axisZ1 = z;
+            }
 
             if (lightOld < lightBeside)
             {
                 // Осветлить
-                BrighterLightSky(x, y, z, lo);
+                chunkStorage.lightSky[index] = lightBeside;
+                arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | lightBeside << 20);
+                BrighterLightSky();
             }
             else if (lightOld > lightBeside)
             {
                 // Затемнить
-                DarkenLightSky(x, y, z);
+                chunkStorage.lightSky[index] = 0;
+                arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | lightOld << 20);
+                DarkenLightSky();
+                BrighterLightSky();
             }
         }
 
@@ -189,6 +218,9 @@ namespace MvkServer.World.Chunk.Light
             {
                 chunk.StorageArrays[y >> 4].lightSky[(y & 15) << 8 | (z & 15) << 4 | (x & 15)] = 15;
                 arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | 15 << 20);
+                if (x < axisX0) axisX0 = x; else if (x > axisX1) axisX1 = x;
+                if (y < axisY0) axisY0 = y; else if (y > axisY1) axisY1 = y;
+                if (z < axisZ0) axisZ0 = z; else if (z > axisZ1) axisZ1 = z;
             }
             BrighterLightSky();
         }
@@ -199,13 +231,34 @@ namespace MvkServer.World.Chunk.Light
         public void DarkenLightColumnSky(int x, int y0, int z, int y1)
         {
             indexBegin = indexEnd = 0;
+            int yco = y1 >> 4;
+            int index, yco2, i, ycMaxSky;
+            // Нужна проверка, по созданию новых псевдо чанков освещения
+            // Причём нужна проверка по всей высоте, чтоб не было промежутков
+            if (yco > chunk.Light.MaxSkyChunk)
+            {
+                ycMaxSky = chunk.Light.MaxSkyChunk + 1;
+                for (i = ycMaxSky; i <= yco; i++)
+                {
+                    chunk.StorageArrays[i].CheckBrightenBlockSky();
+                }
+                chunk.Light.MaxSkyChunk = yco;
+            }
+            
             for (int y = y0; y < y1; y++)
             {
-                byte l = chunk.StorageArrays[y >> 4].lightSky[(y & 15) << 8 | (z & 15) << 4 | (x & 15)];
-                chunk.StorageArrays[y >> 4].lightSky[(y & 15) << 8 | (z & 15) << 4 | (x & 15)] = 0;
+                index = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
+                yco2 = y >> 4;
+                byte l = chunk.StorageArrays[yco2].lightSky[index];
+                chunk.StorageArrays[yco2].lightSky[index] = 0;
                 arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | l << 20);
+                if (x < axisX0) axisX0 = x; else if (x > axisX1) axisX1 = x;
+                if (y < axisY0) axisY0 = y; else if (y > axisY1) axisY1 = y;
+                if (z < axisZ0) axisZ0 = z; else if (z > axisZ1) axisZ1 = z;
             }
             DarkenLightSky();
+            chunk.StorageArrays[yco].lightSky[(y1 & 15) << 8 | (z & 15) << 4 | (x & 15)] = 15;
+            arCache[indexEnd++] = (x - bOffsetX + 32 | y1 << 6 | z - bOffsetZ + 32 << 14 | 15 << 20);
             BrighterLightSky();
         }
 
@@ -215,11 +268,8 @@ namespace MvkServer.World.Chunk.Light
         public void CheckBrighterLightBlocks(vec3i[] lightBlocks)
         {
             countBlock = 0;
-            ChunkBase chunkCache;
             ChunkStorage chunkStorage;
             int i, x, y, z, indexBlock;
-            // смещение координат чанка от стартового
-            int xco, zco;
             // псевдочанк
             int yco;
             // значения LightValue и LightOpacity
@@ -244,17 +294,15 @@ namespace MvkServer.World.Chunk.Light
                 if (x < axisX0) axisX0 = x; else if (x > axisX1) axisX1 = x;
                 if (y < axisY0) axisY0 = y; else if (y > axisY1) axisY1 = y;
                 if (z < axisZ0) axisZ0 = z; else if (z > axisZ1) axisZ1 = z;
-
                 yco = y >> 4;
-                xco = (x >> 4) - chBeginX;
-                zco = (z >> 4) - chBeginY;
-                chunkCache = (xco == 0 && zco == 0) ? chunk : chunks[MvkStatic.GetAreaOne8(xco, zco)];
-                chunkStorage = chunkCache.StorageArrays[yco];
-                indexBlock = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
-                if (chunkStorage.countData != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
-                else lo = 0;
-
-                arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | lo << 20);
+                chunkStorage = chunk.StorageArrays[yco];
+                if (chunkStorage.countData != 0)
+                {
+                    indexBlock = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
+                    lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
+                    chunkStorage.lightBlock[indexBlock] = (byte)(lo & 0xF);
+                    arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | lo << 20);
+                }
             }
             
             BrighterLightBlock();
@@ -269,7 +317,7 @@ namespace MvkServer.World.Chunk.Light
             countBlock = 0;
             ChunkBase chunkCache;
             ChunkStorage chunkStorage;
-            int i, x, y, z, yh, yh2, xReal, zReal;
+            int i, x, y, z, yh, yh2, xReal, zReal, yhOpacity, lightSky;
             vec2i vec;
             // координата блока
             int x0, z0, indexBlock;
@@ -288,6 +336,7 @@ namespace MvkServer.World.Chunk.Light
                 {
                     zReal = bOffsetZ + z;
                     // Определяем наивысшый непрозрачный блок текущего ряда
+                    yhOpacity = chunk.Light.GetHeightOpacity(x, z);
                     yh = chunk.Light.GetHeight(x, z);
                     yMin[0] = yMin[1] = yMin[2] = yMin[3] = 256;
                     yMax[0] = yMax[1] = yMax[2] = yMax[3] = 0;
@@ -359,12 +408,37 @@ namespace MvkServer.World.Chunk.Light
                             if (y < axisY0) axisY0 = y; else if (y > axisY1) axisY1 = y;
                             if (zReal < axisZ0) axisZ0 = zReal; else if (zReal > axisZ1) axisZ1 = zReal;
                             arCache[indexEnd++] = (xReal - bOffsetX + 32 | y << 6 | zReal - bOffsetZ + 32 << 14 | 15 << 20);
-                            // World.SetBlockDebug(new BlockPos(xReal, y, zReal), EnumBlock.Glass);
+                            //World.SetBlockDebug(new BlockPos(xReal, y, zReal), EnumBlock.Glass);
                         }
-
+                        
+                    }
+                    // Проверка после полупрозрачных блоков
+                    if (yhOpacity < yh)
+                    {
+                        if (begin)
+                        {
+                            begin = false;
+                            axisX0 = axisX1 = xReal;
+                            axisY0 = axisY1 = Mth.Min(yMin2, yh);
+                            axisZ0 = axisZ1 = zReal;
+                            indexBegin = indexEnd = 0;
+                        }
+                        
+                        for (y = yhOpacity; y < yh; y++)
+                        {
+                            
+                            if (xReal < axisX0) axisX0 = xReal; else if (xReal > axisX1) axisX1 = xReal;
+                            if (y < axisY0) axisY0 = y; else if (y > axisY1) axisY1 = y;
+                            if (zReal < axisZ0) axisZ0 = zReal; else if (zReal > axisZ1) axisZ1 = zReal;
+                            lightSky = chunk.StorageArrays[y >> 4].lightSky[(y & 15) << 8 | z << 4 | x];
+                            arCache[indexEnd++] = (xReal - bOffsetX + 32 | y << 6 | zReal - bOffsetZ + 32 << 14 | lightSky << 20);
+                            //World.SetBlockDebug(new BlockPos(xReal, y, zReal), EnumBlock.Glass);
+                        }
                     }
                 }
             }
+
+           // World.SetBlockDebug(new BlockPos(bOffsetX + 8, 90, bOffsetZ + 8), EnumBlock.Glass);
 
             BrighterLightSky();
             ModifiedRender();
@@ -787,32 +861,6 @@ namespace MvkServer.World.Chunk.Light
             indexEnd = indexBrighter;
             indexActive = 0;
             indexBegin = 776192;
-        }
-
-        /// <summary>
-        /// Осветление блока неба
-        /// </summary>
-        private void BrighterLightSky(int x, int y, int z, byte lo)
-        {
-            // яркость от соседних блоков
-            byte lightBeside = GetLevelBrightSky(x, y, z, lo);
-            indexBegin = indexEnd = 0;
-            chunk.StorageArrays[y >> 4].lightSky[(y & 15) << 8 | (z & 15) << 4 | (x & 15)] = lightBeside;
-            arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | lightBeside << 20);
-            BrighterLightSky();
-        }
-
-        /// <summary>
-        /// Затемнение блок неба
-        /// </summary>
-        private void DarkenLightSky(int x, int y, int z)
-        {
-            indexBegin = indexEnd = 0;
-            byte light = chunk.StorageArrays[y >> 4].lightSky[(y & 15) << 8 | (z & 15) << 4 | (x & 15)];
-            chunk.StorageArrays[y >> 4].lightSky[(y & 15) << 8 | (z & 15) << 4 | (x & 15)] = 0;
-            arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | light << 20);
-            DarkenLightSky();
-            BrighterLightSky();
         }
 
         #endregion

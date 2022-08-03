@@ -9,6 +9,7 @@ using MvkServer.Entity;
 using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Network.Packets.Client;
+using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
 using MvkServer.Util;
 using MvkServer.World;
@@ -16,6 +17,7 @@ using MvkServer.World.Block;
 using MvkServer.World.Chunk;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace MvkClient.World
 {
@@ -71,6 +73,15 @@ namespace MvkClient.World
         /// Количество прорисованных сущностей, для отладки
         /// </summary>
         protected int entitiesCountShow = 0;
+
+        /// <summary>
+        /// Флаг потока пакетов чанка
+        /// </summary>
+        private bool packetChunkLoopRunning = false;
+        /// <summary>
+        /// Массив очередей чанков для рендера
+        /// </summary>
+        private List<ChunkQueue> packetChunkQueues = new List<ChunkQueue>();
         /// <summary>
         /// Объект заглушка
         /// </summary>
@@ -86,6 +97,65 @@ namespace MvkClient.World
             ClientMain.PlayerCreate(this);
             ClientMain.Player.SetOverviewChunk(Setting.OverviewChunk);
             Key = new Keyboard(this);
+
+            Log = new Logger("Client");
+            Log.Log("client.start");
+
+            // Запускаем отдельный поток для рендера
+            packetChunkLoopRunning = true;
+            Thread myThread = new Thread(PacketChunkLoop);
+            myThread.Start();
+        }
+
+
+        /// <summary>
+        /// Остановить поток рендера чанков
+        /// </summary>
+        public void StopChunkLoop() => packetChunkLoopRunning = false;
+
+        public void AddPacketChunkQueue(PacketS21ChunkData packet)
+        {
+            //Log.Log("Прилёт {0} {1}", packet.GetPos(), packet.GetFlagsYAreas());
+            lock (locker)
+            {
+                packetChunkQueues.Add(new ChunkQueue()
+                {
+                    pos = packet.GetPos(),
+                    buffer = packet.GetBuffer(),
+                    flagsYAreas = packet.GetFlagsYAreas(),
+                    biom = packet.IsBiom()
+                });
+            }
+        }
+
+        /// <summary>
+        /// Поток пакетов чанка
+        /// </summary>
+        private void PacketChunkLoop()
+        {
+            try
+            {
+                while (packetChunkLoopRunning)
+                {
+                    while (packetChunkQueues.Count > 0)
+                    {
+                        ChunkQueue chunkQueue;
+                        lock (locker)
+                        {
+                            chunkQueue = packetChunkQueues[0];
+                            packetChunkQueues.RemoveAt(0);
+                        }
+                       // Log.Log("Loop {0} {1}", chunkQueue.GetPos(), chunkQueue.GetFlagsYAreas());
+                        ChunkPrClient.PacketChunckData(chunkQueue);
+                       // Thread.Sleep(10);
+                    }
+                    Thread.Sleep(1);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Crach(ex);
+            }
         }
 
         /// <summary>
@@ -155,6 +225,8 @@ namespace MvkClient.World
         /// </summary>
         public void StopWorldDelete()
         {
+            Log.Log("client.stoped");
+            Log.Close();
             ChunkPrClient.ClearAllChunks(false);
         }
 
@@ -400,14 +472,14 @@ namespace MvkClient.World
                 if (progress >= 0 && progress < 10)
                 {
                     chunk.DestroyBlockSet(breakerId, blockPos, progress);
-                    ParticleDiggingBlock(blockPos, 1);
+                    ParticleDiggingBlock(GetBlockState(blockPos).GetBlock(), blockPos, 1);
                 }
                 else
                 {
                     if (progress == -2)
                     {
                         // Блок сломан
-                        ParticleDiggingBlock(blockPos, 50);
+                       // ParticleDiggingBlock(blockPos, 50);
                         //SpawnEntityInWorld(new EntityItem(this, blockPos.ToVec3(), new MvkServer.Item.ItemStack()
                     }
                     chunk.DestroyBlockRemove(breakerId);
@@ -416,26 +488,26 @@ namespace MvkClient.World
             }
         }
 
-        /// <summary>
-        /// Частички блока
-        /// </summary>
-        /// <param name="blockPos">позиция где рассыпаются частички</param>
-        /// <param name="count">количество частичек</param>
-        public void ParticleDiggingBlock(BlockPos blockPos, int count)
-        {
-            BlockBase block = GetBlockState(blockPos).GetBlock();
-            if (block != null && block.IsParticle)
-            {
-                vec3 pos = blockPos.ToVec3() + new vec3(.5f);
-                for (int i = 0; i < count; i++)
-                {
-                    SpawnParticle(EnumParticle.Digging,
-                        pos + new vec3((Rand.Next(16) - 8) / 16f, (Rand.Next(12) - 6) / 16f, (Rand.Next(16) - 8) / 16f),
-                        new vec3(0),
-                        (int)block.EBlock);
-                }
-            }
-        }
+        ///// <summary>
+        ///// Частички блока
+        ///// </summary>
+        ///// <param name="blockPos">позиция где рассыпаются частички</param>
+        ///// <param name="count">количество частичек</param>
+        //public void ParticleDiggingBlock(BlockPos blockPos, int count)
+        //{
+        //    BlockBase block = GetBlockState(blockPos).GetBlock();
+        //    if (block != null && block.IsParticle)
+        //    {
+        //        vec3 pos = blockPos.ToVec3() + new vec3(.5f);
+        //        for (int i = 0; i < count; i++)
+        //        {
+        //            SpawnParticle(EnumParticle.Digging,
+        //                pos + new vec3((Rand.Next(16) - 8) / 16f, (Rand.Next(12) - 6) / 16f, (Rand.Next(16) - 8) / 16f),
+        //                new vec3(0),
+        //                (int)block.EBlock);
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Помечаем на перерендер всех псевдочанков обзора
@@ -550,8 +622,33 @@ namespace MvkClient.World
         /// <summary>
         /// Заспавнить частицу
         /// </summary>
-        public override void SpawnParticle(EnumParticle particle, vec3 pos, vec3 motion, params int[] items) 
-            => ClientMain.EffectRender.SpawnParticle(particle, pos, motion, items);
+        public override void SpawnParticle(EnumParticle particle, int count, vec3 pos, vec3 offset, float motion, params int[] items)
+        {
+            if (count == 1)
+            {
+                ClientMain.EffectRender.SpawnParticle(particle, pos, offset * motion, items);
+            }
+            else
+            {
+                vec3 of;
+                vec3 m = new vec3(0);
+                for (int i = 0; i < count; i++)
+                {
+                    of = new vec3(
+                        ((float)Rand.NextDouble() - .5f) * offset.x,
+                        ((float)Rand.NextDouble() - .5f) * offset.y,
+                        ((float)Rand.NextDouble() - .5f) * offset.z);
+                    if (motion > 0)
+                    {
+                        m = new vec3(
+                            ((float)Rand.NextDouble() - .5f) * motion,
+                            ((float)Rand.NextDouble() - .5f) * motion,
+                            ((float)Rand.NextDouble() - .5f) * motion);
+                    }
+                    ClientMain.EffectRender.SpawnParticle(particle, pos + of, m, items);
+                }
+            }
+        }
 
         protected override void UpdateEntity(EntityBase entity)
         {

@@ -41,14 +41,13 @@ namespace MvkClient.Util
         /// </summary>
         public int FrustumShow(Frustum frustum, int x1, int z1, int x2, int z2, int offsetY)
         {
+            int y, yb;
             int count = 0;
             bool[] show = new bool[ChunkBase.COUNT_HEIGHT];
-            for (int y = 0; y < ChunkBase.COUNT_HEIGHT; y++)
+            for (y = 0; y < ChunkBase.COUNT_HEIGHT; y++)
             {
-                int yb = (y << 4) - offsetY;
-                int y1 = yb - 15;
-                int y2 = yb + 24;
-                show[y] = frustum.IsBoxInFrustum(x1, y1, z1, x2, y2, z2);
+                yb = (y << 4) - offsetY;
+                show[y] = frustum.IsBoxInFrustum(x1, (yb - 15), z1, x2, (yb + 24), z2);
                 if (show[y]) count++;
             }
             if (count > 0)

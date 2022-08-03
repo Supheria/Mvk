@@ -87,6 +87,8 @@ namespace MvkServer.World
 
             profiler.EndStartSection("ChunkSource");
             ChunkPrServ.UnloadQueuedChunks();
+            profiler.EndStartSection("CheckAddGeneration");
+            ChunkPrServ.UpdateCheckAddGeneration();
             profiler.EndStartSection("TickBlocks");
             TickBlocks();
             profiler.EndStartSection("ChunkMap");
@@ -101,10 +103,12 @@ namespace MvkServer.World
         {
             SetActivePlayerChunksAndCheckLight();
             // цикл активных чанков
-            foreach(vec2i chPos in activeChunkSet)
+            int count = activeChunkSet.Count;
+            for (int i = 0; i < count; i++) 
+            //foreach(vec2i chPos in activeChunkSet)
             {
                 profiler.StartSection("GetChunk");
-                ChunkBase chunk = GetChunk(chPos);
+                ChunkBase chunk = GetChunk(activeChunkSet[i]);
                 //if (chunk == null) ChunkPrServ.LoadChunk(chPos);
                 
                 if (chunk != null)
@@ -114,7 +118,7 @@ namespace MvkServer.World
                     profiler.EndStartSection("TickBlocks");
                     // WorldServer # 423
                     profiler.EndStartSection("StartRecheckGaps");
-                    chunk.Light.StartRecheckGaps();
+                    //chunk.Light.StartRecheckGaps();
                 }
                 profiler.EndSection();
             }
@@ -260,6 +264,14 @@ namespace MvkServer.World
         public override void PlaySound(EntityLiving entity, AssetsSample key, vec3 pos, float volume, float pitch)
         {
             Tracker.SendToAllTrackingEntity(entity, new PacketS29SoundEffect(key, pos, volume, pitch));
+        }
+
+        /// <summary>
+        /// Заспавнить частицу
+        /// </summary>
+        public override void SpawnParticle(EnumParticle particle, int count, vec3 pos, vec3 offset, float motion,  params int[] items)
+        {
+            Tracker.SendToAllEntityDistance(pos, 32f, new PacketS2AParticles(particle, count, pos, offset, motion, items));
         }
 
         /// <summary>
