@@ -58,7 +58,7 @@ namespace MvkServer.Util
 
         //public bool Contains(T item)
         //{
-        //    for (int i = 0; i < count; i++) 
+        //    for (int i = 0; i < count; i++)
         //        if (buffer[i].Equals(item)) return true;
         //    return false;
         //}

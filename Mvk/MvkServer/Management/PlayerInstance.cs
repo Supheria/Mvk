@@ -89,7 +89,7 @@ namespace MvkServer.Management
                 //if (chunk.IsPopulated()) 
                 if (chunk != null)
                 {
-                    //playerManager.World.Log.Log("Remove: {0}", CurrentChunk);
+                    //playerManager.World.Log.Log("Remov: {0}", CurrentChunk);
                     player.SendPacket(new PacketS21ChunkData(chunk, false, 0));
                 }
 
@@ -177,6 +177,20 @@ namespace MvkServer.Management
         }
 
         /// <summary>
+        /// Отправить всем игрокам пакет, которые имеется этот чанк, с проверкой что он уже загружен
+        /// </summary>
+        public void SendToAllPlayersWatchingChunkCheck(IPacket packet, vec2i pos)
+        {
+            for (int i = 0; i < playersWatchingChunk.Count; i++)
+            {
+                if (!playersWatchingChunk[i].LoadedChunks.Contains(pos))
+                {
+                    playersWatchingChunk[i].SendPacket(packet);
+                }
+            }
+        }
+
+        /// <summary>
         /// Получить позицию блока по локальной позиции 0..15
         /// </summary>
         private BlockPos GetBlockPos(vec3i pos0) => new BlockPos(pos0.x + (CurrentChunk.x << 4), pos0.y, pos0.z + (CurrentChunk.y << 4));
@@ -218,11 +232,17 @@ namespace MvkServer.Management
                 else
                 {
                     // больше 64
-                    ChunkBase chunk = playerManager.World.GetChunk(CurrentChunk);
-                    PacketS21ChunkData packetS21ChunkData = new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate);
-                   // playerManager.World.Log.Log("2PI64: {0} {1} {2} {3}", CurrentChunk, flagsYAreasToUpdate, packetS21ChunkData.GetBuffer().Length,
-                   //    chunk.GetDebugAllSegment());
-                    SendToAllPlayersWatchingChunk(packetS21ChunkData);
+                    //if (CheckChunk8())
+                    {
+                       // ChunkBase chunk = playerManager.World.GetChunk(CurrentChunk);
+                        PacketS21ChunkData packetS21ChunkData = new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate);
+                            //if ((CurrentChunk.x == 2 && CurrentChunk.y == 2) 
+                            //|| (CurrentChunk.x == 1 && CurrentChunk.y == 1)
+                            //|| (CurrentChunk.x == -1 && CurrentChunk.y == -4))
+                            //playerManager.World.Log.Log("2PI64: {0} {1} {2} {3}", CurrentChunk, flagsYAreasToUpdate, packetS21ChunkData.GetBuffer().Length, chunk.GetDebugAllSegment());
+                            //SendToAllPlayersWatchingChunk(packetS21ChunkData);
+                        SendToAllPlayersWatchingChunkCheck(packetS21ChunkData, CurrentChunk);
+                    }
                     //SendToAllPlayersWatchingChunk(new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate));
 
                     // Тайлы

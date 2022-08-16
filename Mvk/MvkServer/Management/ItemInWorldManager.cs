@@ -101,7 +101,7 @@ namespace MvkServer.Management
                     // При старте нельзя помечать как стоп (-2) это должно быть в игровом такте
                     durabilityRemainingOnBlock = 0;
                 }
-                pause = 5;
+                pause = entityPlayer.GetArmSwingAnimationEnd() / 2;
             } 
         }
 
@@ -192,14 +192,14 @@ namespace MvkServer.Management
                             {
                                 block.DropBlockAsItemWithChance(world, BlockPosDestroy, blockState, 1.0f, 0);
                             }
-                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air));
+                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 1);
                             worldServer.Tracker.SendToAllTrackingEntityCurrent(entityPlayer,
-                                new PacketS29SoundEffect(block.SampleBreak(worldServer), BlockPosDestroy.ToVec3(), 1f, block.SampleBreakPitch(worldServer.Rand)));
+                                new PacketS29SoundEffect(block.SampleBreak(worldServer), BlockPosDestroy.ToVec3(), 1f, block.SampleBreakPitch(worldServer.Rnd)));
                         }
                         else
                         {
                             // для клиента, чтоб не ждать
-                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air));
+                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 0);
                         }
                     }
                     else if (durabilityRemainingOnBlock == (int)Status.Put)
@@ -254,7 +254,6 @@ namespace MvkServer.Management
             {
                 if (pause > 0) pause--;
             }
-
             return statusUpdate;
         }
 

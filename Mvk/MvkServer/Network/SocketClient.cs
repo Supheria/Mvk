@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MvkServer.Util;
+using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -110,7 +111,7 @@ namespace MvkServer.Network
         {
             if (MvkGlobal.IS_DEBUG_SLEEP_NET)
             {
-                Random random = new Random();
+                Rand random = new Rand();
                 System.Threading.Thread.Sleep(count > 100 ? 50 : random.Next(5, 20));
             }
         }

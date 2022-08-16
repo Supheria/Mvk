@@ -1,5 +1,4 @@
-﻿using MvkClient.Renderer.Font;
-using MvkServer.Glm;
+﻿using MvkServer.Glm;
 using MvkServer.Util;
 using SharpGL;
 

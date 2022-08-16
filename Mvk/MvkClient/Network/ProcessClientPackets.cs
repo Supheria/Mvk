@@ -1,17 +1,15 @@
-﻿using MvkAssets;
-using MvkClient.Entity;
+﻿using MvkClient.Entity;
 using MvkClient.Setitings;
 using MvkServer.Entity;
 using MvkServer.Entity.Item;
 using MvkServer.Entity.Mob;
-using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.Item.List;
 using MvkServer.Network;
-using MvkServer.Network.Packets;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
+using MvkServer.Util;
 using MvkServer.World.Block;
 using System.Collections;
 using System.Threading.Tasks;
@@ -26,7 +24,11 @@ namespace MvkClient.Network
         /// <summary>
         /// Основной клиент
         /// </summary>
-        public Client ClientMain { get; protected set; }
+        public Client ClientMain { get; private set; }
+        /// <summary>
+        /// Массив очередей пакетов
+        /// </summary>
+        private DoubleList<IPacket> packets = new DoubleList<IPacket>();
 
         public ProcessClientPackets(Client client) : base(true) => ClientMain = client;
 
@@ -42,43 +44,72 @@ namespace MvkClient.Network
                 byte id = GetId(packet);
                 if (id == 0xF0)
                 {
-                   HandleF0Connection((PacketSF0Connection)packet);
+                    // Мира ещё нет, он в стадии создании, первый старт первого игрока
+                    HandleF0Connection((PacketSF0Connection)packet);
                 }
-                else if (ClientMain.World != null)
+                else if(ClientMain.World != null)
                 {
-                    switch (id)
+                    if (id == 0x02)
                     {
-                        case 0x00: Handle00Pong((PacketS00Pong)packet); break;
-                        case 0x01: Handle01KeepAlive((PacketS01KeepAlive)packet); break;
-                        case 0x02: Handle02JoinGame((PacketS02JoinGame)packet); break;
-                        case 0x03: Handle03TimeUpdate((PacketS03TimeUpdate)packet); break;
-                        case 0x04: Handle04EntityEquipment((PacketS04EntityEquipment)packet); break;
-                        case 0x06: Handle06UpdateHealth((PacketS06UpdateHealth)packet); break;
-                        case 0x07: Handle07Respawn((PacketS07Respawn)packet); break;
-                        case 0x08: Handle08PlayerPosLook((PacketS08PlayerPosLook)packet); break;
-                        case 0x0B: Handle0BAnimation((PacketS0BAnimation)packet); break;
-                        case 0x0C: Handle0CSpawnPlayer((PacketS0CSpawnPlayer)packet); break;
-                        case 0x0D: Handle0DCollectItem((PacketS0DCollectItem)packet); break;
-                        case 0x0E: Handle0ESpawnItem((PacketS0ESpawnItem)packet); break;
-                        case 0x0F: Handle0FSpawnMob((PacketS0FSpawnMob)packet); break;
-                        case 0x12: Handle12EntityVelocity((PacketS12EntityVelocity)packet); break;
-                        case 0x13: Handle13DestroyEntities((PacketS13DestroyEntities)packet); break;
-                        case 0x14: Handle14EntityMotion((PacketS14EntityMotion)packet); break;
-                        case 0x19: Handle19EntityStatus((PacketS19EntityStatus)packet); break;
-                        case 0x1C: Handle1CEntityMetadata((PacketS1CEntityMetadata)packet); break;
-                        case 0x21: Handle21ChunkData((PacketS21ChunkData)packet); break;
-                        case 0x23: Handle23BlockChange((PacketS23BlockChange)packet); break;
-                        case 0x25: Handle25BlockBreakAnim((PacketS25BlockBreakAnim)packet); break;
-                        case 0x29: Handle29SoundEffect((PacketS29SoundEffect)packet); break;
-                        case 0x2A: Handle29Particles((PacketS2AParticles)packet); break;
-                        case 0x2F: Handle2FSetSlot((PacketS2FSetSlot)packet); break;
-                        case 0x30: Handle30WindowItems((PacketS30WindowItems)packet); break;
-
-                        case 0xF1: HandleF1Disconnect((PacketSF1Disconnect)packet); break;
-
+                        // Хоть мир уже и есть, но для первого игрока, но он ещё не запустил игровой такт
+                        Handle02JoinGame((PacketS02JoinGame)packet);
+                    }
+                    else
+                    {
+                        // Мир есть, заносим в пакет с двойным буфером, для обработки в такте
+                        packets.Add(packet);
                     }
                 }
             });
+        }
+
+        private void UpdateReceivePacketClient(IPacket packet)
+        {
+            switch (GetId(packet))
+            {
+                case 0x00: Handle00Pong((PacketS00Pong)packet); break;
+                case 0x01: Handle01KeepAlive((PacketS01KeepAlive)packet); break;
+                case 0x03: Handle03TimeUpdate((PacketS03TimeUpdate)packet); break;
+                case 0x04: Handle04EntityEquipment((PacketS04EntityEquipment)packet); break;
+                case 0x06: Handle06UpdateHealth((PacketS06UpdateHealth)packet); break;
+                case 0x07: Handle07Respawn((PacketS07Respawn)packet); break;
+                case 0x08: Handle08PlayerPosLook((PacketS08PlayerPosLook)packet); break;
+                case 0x0B: Handle0BAnimation((PacketS0BAnimation)packet); break;
+                case 0x0C: Handle0CSpawnPlayer((PacketS0CSpawnPlayer)packet); break;
+                case 0x0D: Handle0DCollectItem((PacketS0DCollectItem)packet); break;
+                case 0x0E: Handle0ESpawnItem((PacketS0ESpawnItem)packet); break;
+                case 0x0F: Handle0FSpawnMob((PacketS0FSpawnMob)packet); break;
+                case 0x12: Handle12EntityVelocity((PacketS12EntityVelocity)packet); break;
+                case 0x13: Handle13DestroyEntities((PacketS13DestroyEntities)packet); break;
+                case 0x14: Handle14EntityMotion((PacketS14EntityMotion)packet); break;
+                case 0x19: Handle19EntityStatus((PacketS19EntityStatus)packet); break;
+                case 0x1C: Handle1CEntityMetadata((PacketS1CEntityMetadata)packet); break;
+                case 0x21: Handle21ChunkData((PacketS21ChunkData)packet); break;
+                case 0x23: Handle23BlockChange((PacketS23BlockChange)packet); break;
+                case 0x25: Handle25BlockBreakAnim((PacketS25BlockBreakAnim)packet); break;
+                case 0x29: Handle29SoundEffect((PacketS29SoundEffect)packet); break;
+                case 0x2A: Handle29Particles((PacketS2AParticles)packet); break;
+                case 0x2F: Handle2FSetSlot((PacketS2FSetSlot)packet); break;
+                case 0x30: Handle30WindowItems((PacketS30WindowItems)packet); break;
+
+                case 0xF1: HandleF1Disconnect((PacketSF1Disconnect)packet); break;
+            }
+        }
+
+        public void Clear() => packets.Clear();
+
+        /// <summary>
+        /// Игровой такт клиента
+        /// </summary>
+        public void Update()
+        {
+            packets.Step();
+            int count = packets.CountBackward;
+            Debug.DInt = count;
+            for (int i = 0; i < count; i++)
+            {
+                UpdateReceivePacketClient(packets.GetNext());
+            }
         }
 
         /// <summary>
@@ -374,8 +405,9 @@ namespace MvkClient.Network
 
         private void Handle21ChunkData(PacketS21ChunkData packet)
         {
+            // Заносим в дополнительный поток пакетов вокселей, 
+            // чтоб минимизировать загрузку основного клиентского потока где есть Tick, ибо будет проседать fps
             ClientMain.World.AddPacketChunkQueue(packet);
-            //ClientMain.World.ChunkPrClient.PacketChunckData(packet);
         }
 
         private void Handle23BlockChange(PacketS23BlockChange packet)

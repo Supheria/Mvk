@@ -135,7 +135,7 @@ namespace MvkClient.Renderer.Entity
                 {
                     block = world.GetBlockState(blocks[i]).GetBlock();
                     blockUp = world.GetBlockState(blocks[i].OffsetUp()).GetBlock();
-                    if (!blockUp.IsCollidable && block.Shadow)
+                    if ((!blockUp.IsCollidable || !blockUp.Shadow) && block.Shadow)
                     {
                         float x1 = blocks[i].X - pos.x;
                         float x2 = blocks[i].X + 1f - pos.x;

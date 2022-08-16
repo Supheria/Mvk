@@ -22,6 +22,10 @@ namespace MvkClient.Util
         /// Получить коэффициент времени от прошлого TPS клиента в диапазоне 0 .. 1
         /// </summary>
         public float Interpolation { get; private set; } = 0;
+        /// <summary>
+        /// Клиент
+        /// </summary>
+        public Client ClientMain { get; private set; }
 
         /// <summary>
         /// Желаемое количество тактов в секунду
@@ -48,8 +52,9 @@ namespace MvkClient.Util
         /// </summary>
         private bool isMax = false;
 
-        public Ticker()
+        public Ticker(Client client)
         {
+            ClientMain = client;
             SetWishFrame(WishFrame);
             intervalTick = Stopwatch.Frequency / wishTick;
             sleepTick = intervalTick / MvkStatic.TimerFrequency;
@@ -78,7 +83,10 @@ namespace MvkClient.Util
         /// </summary>
         public void Start()
         {
-            Thread myThread = new Thread(RunThreadTick);
+            Thread myThread = new Thread(RunThreadTick)
+            {
+                Priority = ThreadPriority.Highest
+            };
             IsRuning = true;
             myThread.Start();
         }
@@ -91,41 +99,49 @@ namespace MvkClient.Util
         /// <summary>
         /// Метод запуска для отдельного потока, такты
         /// </summary>
-        protected void RunThreadTick()
+        private void RunThreadTick()
         {
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
             long lastTimeFrame = stopwatch.ElapsedTicks;
             long lastTimeTick = lastTimeFrame;
 
-            long currentTimeBegin, currentTime, cl;
+            long currentTimeBegin;
             int sleepFrame = 0;
             int sleepTick = 0;
+            int sleep;
+
+            long nextTick = lastTimeTick + intervalTick;
+            long nextFrame = lastTimeTick + intervalFrame;
 
             while (IsRuning)
             {
-                currentTimeBegin = stopwatch.ElapsedTicks;
-
                 // Проверяем такт
-                cl = currentTimeBegin - lastTimeTick;
-                if (cl < 0) cl = 0;
-
-                if (cl >= intervalTick)
+                currentTimeBegin = stopwatch.ElapsedTicks;
+                if (ClientMain.World != null && !ClientMain.IsGamePaused)
                 {
-                    lastTimeTick = currentTimeBegin;
-                    OnTick();
-                    currentTime = stopwatch.ElapsedTicks;
-                    cl = (currentTime - lastTimeTick) / MvkStatic.TimerFrequency;
-                    sleepTick = (int)(this.sleepTick - cl);
-                    Interpolation = 0;
+                    if (currentTimeBegin >= nextTick)
+                    {
+                        lastTimeTick = currentTimeBegin;
+                        nextTick += intervalTick;
+                        OnTick();
+                        Interpolation = 0;
+                    }
+                    else
+                    {
+                        Interpolation = (currentTimeBegin - lastTimeTick) / (float)MvkStatic.TimerFrequencyTps;
+                        if (Interpolation > 1f) Interpolation = 1f;
+                        if (Interpolation < 0) Interpolation = 0f;
+                    }
                 }
-                else
+                else if (ClientMain.World != null && ClientMain.IsGamePaused)
                 {
-                    //  Пересчитываем остаточный сон такта
-                    sleepTick = (int)(this.sleepTick - (cl / MvkStatic.TimerFrequency));
-                    Interpolation = cl / (float)MvkStatic.TimerFrequencyTps;
-                    if (Interpolation > 1f) Interpolation = 1f;
-                    if (Interpolation < 0) Interpolation = 0f;
+                    if (currentTimeBegin >= nextTick)
+                    {
+                        lastTimeTick = currentTimeBegin;
+                        nextTick += intervalTick;
+                        Interpolation = 0;
+                    }
                 }
 
                 // Проверяем кадр
@@ -135,24 +151,21 @@ namespace MvkClient.Util
                 }
                 else
                 {
-                    cl = currentTimeBegin - lastTimeFrame;
-                    if (cl < 0) cl = 0;
-
-                    if (cl >= intervalFrame)
+                    currentTimeBegin = stopwatch.ElapsedTicks;
+                    if (currentTimeBegin >= nextFrame)
                     {
                         lastTimeFrame = currentTimeBegin;
+                        nextFrame += intervalFrame;
                         OnFrame();
-                        currentTime = stopwatch.ElapsedTicks;
-                        cl = (currentTime - lastTimeFrame) / MvkStatic.TimerFrequency;
-                        sleepFrame = (int)(this.sleepFrame - cl);
-                    } else
-                    {
-                        //  Пересчитываем остаточный сон кадра
-                        sleepFrame = (int)(this.sleepFrame - (cl / MvkStatic.TimerFrequency));
                     }
 
+                    // Нужно ли засыпание
+                    currentTimeBegin = stopwatch.ElapsedTicks;
+                    sleepTick = nextTick < currentTimeBegin ? 0 : (int)this.sleepTick - Mth.Floor((nextTick - currentTimeBegin) / MvkStatic.TimerFrequency);
+                    sleepFrame = nextFrame < currentTimeBegin ? 0 : (int)this.sleepFrame - Mth.Floor((nextFrame - currentTimeBegin) / MvkStatic.TimerFrequency);
+
                     // Находим на именьшое засыпание и засыпаем
-                    int sleep = Mth.Min(sleepFrame, sleepTick);
+                    sleep = Mth.Min(sleepFrame, sleepTick);
                     if (sleep > 0) Thread.Sleep(sleep);
                 }
             }
@@ -163,17 +176,17 @@ namespace MvkClient.Util
         /// Событие такта
         /// </summary>
         public event EventHandler Tick;
-        protected virtual void OnTick() => Tick?.Invoke(this, new EventArgs());
+        private void OnTick() => Tick?.Invoke(this, new EventArgs());
         /// <summary>
         /// Событие кадра
         /// </summary>
         public event EventHandler Frame;
-        protected virtual void OnFrame() => Frame?.Invoke(this, new EventArgs());
+        private void OnFrame() => Frame?.Invoke(this, new EventArgs());
 
         /// <summary>
         /// Событие закрыть
         /// </summary>
         public event EventHandler Closeded;
-        protected virtual void OnCloseded() => Closeded?.Invoke(this, new EventArgs());
+        private void OnCloseded() => Closeded?.Invoke(this, new EventArgs());
     }
 }

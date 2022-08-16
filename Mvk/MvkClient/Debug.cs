@@ -1,10 +1,14 @@
 ﻿using MvkAssets;
 using MvkClient.Renderer;
 using MvkClient.Renderer.Font;
+using MvkClient.World;
 using MvkServer.Glm;
 using MvkServer.Util;
+using MvkServer.World.Biome;
+using MvkServer.World.Chunk;
 using SharpGL;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace MvkClient
 {
@@ -37,6 +41,10 @@ namespace MvkClient
         /// Прорисовка вокселей контуром линий
         /// </summary>
         public static bool IsDrawVoxelLine = false;
+        /// <summary>
+        /// Воксели подставить матрицу ortho
+        /// </summary>
+        public static bool IsDrawOrto = false;
         /// <summary>
         /// Количество мешей
         /// </summary>
@@ -147,21 +155,13 @@ namespace MvkClient
 
                 if (ListChunks.listChunkServer != null)
                 {
-                    foreach (vec3i p in ListChunks.listChunkServer)
+                    foreach (DebugChunkValue p in ListChunks.listChunkServer)
                     {
-                        vec2i pos = new vec2i(p.x * size, p.z * size);
-                        GLRender.Rectangle(pos.x + x, -pos.y + z, pos.x + x + size, -pos.y + z + size, colPr[p.y]);
+                        vec2i pos = new vec2i(p.pos.x * size, p.pos.y * size);
+                        if (p.entities) GLRender.Rectangle(pos.x + x, -pos.y + z, pos.x + x + size, -pos.y + z + size, colPr[7]);
+                        else GLRender.Rectangle(pos.x + x, -pos.y + z, pos.x + x + size, -pos.y + z + size, colPr[4]);
                     }
                 }
-                if (ListChunks.listChunkPlayerEntity != null)
-                {
-                    foreach (vec3i p in ListChunks.listChunkPlayerEntity)
-                    {
-                        vec2i pos = new vec2i(p.x * size, p.z * size);
-                        GLRender.Rectangle(pos.x + x, -pos.y + z, pos.x + x + size, -pos.y + z + size, colPr[p.y]);
-                    }
-                }
-
                 if (ListChunks.listChunkPlayers != null)
                 {
                     foreach (vec2i p in ListChunks.listChunkPlayers)
@@ -172,9 +172,9 @@ namespace MvkClient
                 }
                 if (ListChunks.listChunkPlayer != null)
                 {
-                    foreach (vec3i p in ListChunks.listChunkPlayer)
+                    foreach (DebugChunkValue p in ListChunks.listChunkPlayer)
                     {
-                        vec2i pos = new vec2i(p.x * size, p.z * size);
+                        vec2i pos = new vec2i(p.pos.x * size, p.pos.y * size);
                         GLRender.Rectangle(pos.x + x + 3, -pos.y + z + 3, pos.x + x + size - 3, -pos.y + z + size - 3, colPr[6]);
                     }
                 }
@@ -215,5 +215,60 @@ namespace MvkClient
         }
 
         #endregion
+
+        public static void ScreenFileBiome(WorldClient world)
+        {
+            int ov = Setitings.Setting.OverviewChunk;
+            vec2i posCh = new vec2i((int)(world.ClientMain.Player.Position.x) >> 4, (int)(world.ClientMain.Player.Position.z) >> 4);
+            int ofxc = ((ov << 4) + 16) - (posCh.x << 4);
+            int ofzc = ((ov << 4) + 16) - (posCh.y << 4);
+            int size = (ov + ov + 1) * 16 + 32;
+            Bitmap bitmap = new Bitmap(size, size);
+
+            EnumBiome[] biome;
+            ChunkBase chunk;
+            int x, z, bxc, bzc;
+            if (ListChunks.listChunkServer != null)
+            {
+                foreach (DebugChunkValue p in ListChunks.listChunkServer)
+                {
+                    bxc = p.pos.x << 4;
+                    bzc = p.pos.y << 4;
+                    chunk = world.GetChunk(p.pos);
+                    if (chunk != null)
+                    {
+                        biome = chunk.biome;
+                        for (x = 0; x < 16; x++)
+                        {
+                            for (z = 0; z < 16; z++)
+                            {
+                                bitmap.SetPixel(bxc + ofxc + x, bzc + ofzc + z, ConvertBiome(biome[x << 4 | z]));
+                            }
+                        }
+                    }
+                }
+            }
+            bitmap.Save("biome.png", System.Drawing.Imaging.ImageFormat.Png);
+        }
+
+        private static Color ConvertBiome(EnumBiome biome)
+        {
+            switch (biome)
+            {
+                case EnumBiome.Sea: return Color.Blue; // море
+                case EnumBiome.River: return Color.MediumBlue; // река
+                case EnumBiome.Plain: return Color.LightGreen; // Равнина
+                case EnumBiome.Desert: return Color.Yellow; // Пустяня
+                case EnumBiome.Beach: return Color.White; // Пляж
+                case EnumBiome.MixedForest: return Color.Green; // Сешанный лес
+                case EnumBiome.ConiferousForest: return Color.DarkGreen; // Хвойный лес
+                case EnumBiome.BirchForest: return Color.ForestGreen; // Берёзовый лес
+                case EnumBiome.Tropics: return Color.Orange; // Тропики
+                case EnumBiome.Swamp: return Color.CadetBlue; // Болото
+                case EnumBiome.Mountains: return Color.LightGray; // Горы
+                case EnumBiome.MountainsDesert: return Color.Brown; // Горы в пустыне
+            }
+            return Color.Black;
+        }
     }
 }

@@ -3,7 +3,7 @@ using MvkServer.Entity;
 using MvkServer.Entity.Item;
 using MvkServer.Glm;
 using MvkServer.Item;
-using System;
+using MvkServer.Util;
 
 namespace MvkClient.Renderer.Entity
 {
@@ -13,7 +13,7 @@ namespace MvkClient.Renderer.Entity
     public class RenderEntityItem : RenderEntityBase
     {
         private readonly RenderItem item;
-        private Random rand;
+        private Rand rand;
         //private int begin;
 
         public RenderEntityItem(RenderManager renderManager, RenderItem item) : base(renderManager)
@@ -34,9 +34,9 @@ namespace MvkClient.Renderer.Entity
                 ItemStack stack = entityItem.GetEntityItemStack();
                 vec3 pos = entity.GetPositionFrame(timeIndex);
                 vec3 offsetPos = pos - offset;
-                rand = new Random(entity.Id);
+                rand = new Rand(entity.Id);
                 int begin = rand.Next(360);
-                rand = new Random(187);
+                rand = new Rand(187);
                 int count = CountItem(stack);
 
                 GLRender.LightmapTextureCoords(entity.GetBrightnessForRender());
@@ -63,9 +63,9 @@ namespace MvkClient.Renderer.Entity
                     {
                         GLRender.PushMatrix();
                         {
-                            float x = ((float)rand.NextDouble() * 2f - 1f) * .15f;
-                            float y = ((float)rand.NextDouble() * 2f - 1f) * .15f;
-                            float z = ((float)rand.NextDouble() * 2f - 1f) * .15f;
+                            float x = (rand.NextFloat() * 2f - 1f) * .15f;
+                            float y = (rand.NextFloat() * 2f - 1f) * .15f;
+                            float z = (rand.NextFloat() * 2f - 1f) * .15f;
 
                             // GLRender.Translate(offsetPos.x + x, offsetPos.y + y + height, offsetPos.z + z);
                             GLRender.Translate(x, y + height, z);

@@ -4,7 +4,6 @@ using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
-using System;
 using System.Collections.Generic;
 
 namespace MvkServer.Entity
@@ -111,7 +110,7 @@ namespace MvkServer.Entity
         /// <summary>
         /// Генератор случайных чисел данной сущности
         /// </summary>
-        protected Random rand;
+        protected Rand rand;
         /// <summary>
         /// Для отладки движения
         /// </summary>
@@ -132,7 +131,7 @@ namespace MvkServer.Entity
         public EntityBase(WorldBase world)
         {
             World = world;
-            rand = World.Rand;
+            rand = World.Rnd;
             SetSize(.5f, 1f);
             if (world is WorldServer worldServer)
             {
@@ -290,7 +289,7 @@ namespace MvkServer.Entity
             }
 
             // Защита от падения с края блока если сидишь и являешься игроком
-            if (OnGround && isSneaking && this is EntityPlayer)
+            if (OnGround && this is EntityPlayer entityPlayer && entityPlayer.Input.HasFlag(EnumInput.Down))
             {
                 // Уменьшаем размер рамки для погрешности флоат, Fix 2022-02-01 замечена бага, иногда падаешь! По Х на 50000
                 AxisAlignedBB boundingBoxS = boundingBox.Expand(new vec3(-.01f, 0, -.01f));
@@ -521,7 +520,7 @@ namespace MvkServer.Entity
                 index = 5;
             }
 
-            value = (float)rand.NextDouble() * .1f + .1f;
+            value = rand.NextFloat() * .1f + .1f;
 
             vec3 motion = Motion;
             if (index == 0) motion.x = -value;

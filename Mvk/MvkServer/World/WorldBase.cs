@@ -19,7 +19,7 @@ namespace MvkServer.World
         /// <summary>
         /// Радиус активных чанков во круг игрока
         /// </summary>
-        private const int RADIUS_ACTION_CHUNK = 9;
+        private const int RADIUS_ACTION_CHUNK = 7;
 
         /// <summary>
         /// Объект лога
@@ -56,8 +56,10 @@ namespace MvkServer.World
         /// Список игроков в мире
         /// </summary>
         public MapListEntity PlayerEntities { get; protected set; } = new MapListEntity();
-
-        public Random Rand { get; protected set; }
+        /// <summary>
+        /// Объект генератора случайных чисел
+        /// </summary>
+        public Rand Rnd { get; protected set; }
 
         /// <summary>
         /// Это значение true для клиентских миров и false для серверных миров.
@@ -72,14 +74,20 @@ namespace MvkServer.World
         /// заполняется чанками, которые находятся в пределах 9 чанков от любого игрока
         /// </summary>
         protected ListMvk<vec2i> activeChunkSet = new ListMvk<vec2i>(1000);
+        /// <summary>
+        /// Содержит текущее начальное число линейного конгруэнтного генератора для обновлений блоков. 
+        /// Используется со значением A, равным 3, и значением C, равным 0x3c6ef35f, 
+        /// создавая очень плоский ряд значений, плохо подходящих для выбора случайных блоков в поле 16x128x16.
+        /// </summary>
+        protected int updateLCG;
 
         protected WorldBase()
         {
             Collision = new CollisionBase(this);
-            //Log = new Logger();
             profiler = new Profiler(Log);
-            Rand = new Random();
+            Rnd = new Rand();
             Light = new WorldLight(this);
+            updateLCG = new Rand().Next();
         }
 
         public Profiler TheProfiler() => profiler;
@@ -565,9 +573,10 @@ namespace MvkServer.World
         /// Сменить блок
         /// </summary>
         /// <param name="blockPos">позици блока</param>
-        /// <param name="eBlock">тип блока</param>
+        /// <param name="blockState">данные блока</param>
+        /// <param name="flag">флаг, 1 частички старого блока</param>
         /// <returns>true смена была</returns>
-        public virtual bool SetBlockState(BlockPos blockPos, BlockState blockState)
+        public virtual bool SetBlockState(BlockPos blockPos, BlockState blockState, int flag)
         {
             if (!blockPos.IsValid()) return false;
 
@@ -579,7 +588,7 @@ namespace MvkServer.World
 
             if (!IsRemote)
             {
-                ParticleDiggingBlock(blockStateTrue.GetBlock(), blockPos, 50);
+                if ((flag & 1) != 0) ParticleDiggingBlock(blockStateTrue.GetBlock(), blockPos, 50);
                 NotifyNeighborsOfStateChange(blockPos, blockState.GetBlock());
             }
             //BlockBase block = blockState.GetBlock();

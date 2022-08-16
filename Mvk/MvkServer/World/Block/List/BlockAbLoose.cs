@@ -1,6 +1,6 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Sound;
-using System;
+using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
@@ -21,6 +21,6 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Тон сэмпла сломанного блока,
         /// </summary>
-        public override float SampleBreakPitch(Random random) => .8f;
+        public override float SampleBreakPitch(Rand random) => .8f;
     }
 }

@@ -15,12 +15,12 @@ namespace MvkClient.Entity.Particle
             textureUV = new vec2i(0, 2);
             color = new vec3(1);
             SetSize(.04f, .04f);
-            particleScale *= (float)rand.NextDouble() + .4f;
-            motion.x = motion.x * .2f + ((float)rand.NextDouble() * 2f - 1f) * .01999f;
-            motion.y = motion.y * .2f + ((float)rand.NextDouble() * 2f - 1f) * .01999f;
-            motion.z = motion.z * .2f + ((float)rand.NextDouble() * 2f - 1f) * .01999f;
+            particleScale *= rand.NextFloat() + .4f;
+            motion.x = motion.x * .2f + (rand.NextFloat() * 2f - 1f) * .01999f;
+            motion.y = motion.y * .2f + (rand.NextFloat() * 2f - 1f) * .01999f;
+            motion.z = motion.z * .2f + (rand.NextFloat() * 2f - 1f) * .01999f;
             Motion = motion;
-            particleMaxAge = (int)(8d / rand.NextDouble() * .8d + .2d);
+            particleMaxAge = (int)(8f / rand.NextFloat() * .8f + .2f);
         }
 
         public override void Update()

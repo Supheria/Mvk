@@ -2,16 +2,10 @@
 using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Inventory;
-using MvkServer.Item;
-using MvkServer.Item.List;
-using MvkServer.Network.Packets;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
-using MvkServer.World.Block;
-using MvkServer.World.Chunk;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 
 namespace MvkServer.Network
 {
@@ -29,6 +23,18 @@ namespace MvkServer.Network
         private long lastPingTime;
         private long lastSentPingPacket;
         private uint pingKeySend;
+        /// <summary>
+        /// Массив очередей пакетов
+        /// </summary>
+        private DoubleList<SocketPacket> packets = new DoubleList<SocketPacket>();
+        /// <summary>
+        /// Класс для очередей пакетов
+        /// </summary>
+        private struct SocketPacket
+        {
+            public Socket socket;
+            public IPacket packet;
+        }
 
         public ProcessServerPackets(Server server) : base(false) => ServerMain = server;
 
@@ -39,27 +45,39 @@ namespace MvkServer.Network
 
         protected override void ReceivePacketServer(Socket socket, IPacket packet)
         {
-            //Task.Factory.StartNew(() =>
+            if (GetId(packet) == 0x02)
             {
-                switch (GetId(packet))
-                {
-                    case 0x00: Handle00Ping(socket, (PacketC00Ping)packet); break;
-                    case 0x01: Handle01KeepAlive(socket, (PacketC01KeepAlive)packet); break;
-                    case 0x02: Handle02LoginStart(socket, (PacketC02LoginStart)packet); break;
-                    case 0x03: Handle03UseEntity(socket, (PacketC03UseEntity)packet); break;
-                    case 0x04: Handle04PlayerPosition(socket, (PacketC04PlayerPosition)packet); break;
-                    case 0x05: Handle05PlayerLook(socket, (PacketC05PlayerLook)packet); break;
-                    case 0x06: Handle06PlayerPosLook(socket, (PacketC06PlayerPosLook)packet); break;
-                    case 0x07: Handle07PlayerDigging(socket, (PacketC07PlayerDigging)packet); break;
-                    case 0x08: Handle08PlayerBlockPlacement(socket, (PacketC08PlayerBlockPlacement)packet); break;
-                    case 0x09: Handle09HeldItemChange(socket, (PacketC09HeldItemChange)packet); break;
-                    case 0x0A: Handle0AAnimation(socket, (PacketC0AAnimation)packet); break;
-                    case 0x0C: Handle0CPlayerAction(socket, (PacketC0CPlayerAction)packet); break;
-                    case 0x15: Handle15ClientSetting(socket, (PacketC15ClientSetting)packet); break;
-                    case 0x16: Handle16ClientStatus(socket, (PacketC16ClientStatus)packet); break;
-                }
-            }//);
+                // Мира ещё нет, он в стадии создании, первый старт первого игрока
+                Handle02LoginStart(socket, (PacketC02LoginStart)packet);
+            }
+            else
+            {
+                // Мир есть, заносим в пакет с двойным буфером, для обработки в такте
+                packets.Add(new SocketPacket() { socket = socket, packet = packet });
+            }
         }
+
+        private void UpdateReceivePacketServer(Socket socket, IPacket packet)
+        {
+            switch (GetId(packet))
+            {
+                case 0x00: Handle00Ping(socket, (PacketC00Ping)packet); break;
+                case 0x01: Handle01KeepAlive(socket, (PacketC01KeepAlive)packet); break;
+                case 0x03: Handle03UseEntity(socket, (PacketC03UseEntity)packet); break;
+                case 0x04: Handle04PlayerPosition(socket, (PacketC04PlayerPosition)packet); break;
+                case 0x05: Handle05PlayerLook(socket, (PacketC05PlayerLook)packet); break;
+                case 0x06: Handle06PlayerPosLook(socket, (PacketC06PlayerPosLook)packet); break;
+                case 0x07: Handle07PlayerDigging(socket, (PacketC07PlayerDigging)packet); break;
+                case 0x08: Handle08PlayerBlockPlacement(socket, (PacketC08PlayerBlockPlacement)packet); break;
+                case 0x09: Handle09HeldItemChange(socket, (PacketC09HeldItemChange)packet); break;
+                case 0x0A: Handle0AAnimation(socket, (PacketC0AAnimation)packet); break;
+                case 0x0C: Handle0CPlayerAction(socket, (PacketC0CPlayerAction)packet); break;
+                case 0x15: Handle15ClientSetting(socket, (PacketC15ClientSetting)packet); break;
+                case 0x16: Handle16ClientStatus(socket, (PacketC16ClientStatus)packet); break;
+            }
+        }
+
+        public void Clear() => packets.Clear();
 
         /// <summary>
         /// Такт сервера
@@ -73,6 +91,14 @@ namespace MvkServer.Network
                 lastPingTime = ServerMain.Time();
                 pingKeySend = (uint)lastPingTime;
                 ServerMain.ResponsePacketAll(new PacketS01KeepAlive(pingKeySend));
+            }
+            packets.Step();
+            SocketPacket socketPacket;
+            int count = packets.CountBackward;
+            for (int i = 0; i < count; i++)
+            {
+                socketPacket = packets.GetNext();
+                UpdateReceivePacketServer(socketPacket.socket, socketPacket.packet);
             }
         }
 

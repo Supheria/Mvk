@@ -1,7 +1,6 @@
-﻿using MvkServer.Entity;
-using MvkServer.Glm;
+﻿using MvkServer.Glm;
+using MvkServer.Util;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace MvkServer.World.Chunk
@@ -53,43 +52,18 @@ namespace MvkServer.World.Chunk
         /// Список чанков для отладки
         /// </summary>
         [Obsolete("Список чанков только для отладки")]
-        public List<vec3i> GetListDebug()
+        public List<DebugChunkValue> GetListDebug()
         {
-            Hashtable ht = chunkMapping.CloneMap();
-            List<vec3i> list = new List<vec3i>();
-            foreach (ChunkBase chunk in ht.Values)
+            List<DebugChunkValue> list = new List<DebugChunkValue>();
+            Dictionary<vec2i, ChunkBase>.ValueCollection chunks = chunkMapping.Values();
+            foreach (ChunkBase chunk in chunks)
             {
-                list.Add(new vec3i(chunk.Position.x, 4, chunk.Position.y));
+                list.Add(new DebugChunkValue() {
+                    pos = chunk.Position,
+                    entities = chunk.CountEntity() > 0
+                });
             }
             return list;
-        }
-        /// <summary>
-        /// Список чанков где сущность для отладки
-        /// </summary>
-        [Obsolete("Список чанков где сущность только для отладки")]
-        public List<vec3i> GetListEntityDebug()
-        {
-            Hashtable ht = chunkMapping.CloneMap();
-            List<vec3i> list = new List<vec3i>();
-            foreach (ChunkBase chunk in ht.Values)
-            {
-                if (chunk.CountEntity() > 0) // Для дебага сущностей в чанке
-                    list.Add(new vec3i(chunk.Position.x, 7, chunk.Position.y));
-            }
-            return list;
-        }
-
-        [Obsolete("Список сущностей в мире в чанках только для отладки")]
-        public int GetCountEntityDebug()
-        {
-            Hashtable ht = chunkMapping.CloneMap();
-            List<EntityBase> list = new List<EntityBase>();
-
-            foreach (ChunkBase chunk in ht.Values)
-            {
-                list.AddRange(chunk.GetEntities());
-            }
-            return list.Count;
         }
     }
 }

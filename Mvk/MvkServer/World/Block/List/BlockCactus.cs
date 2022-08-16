@@ -20,6 +20,7 @@ namespace MvkServer.World.Block.List
             АmbientOcclusion = false;
             UseNeighborBrightness = true;
             Material = EnumMaterial.Sapling;
+            Shadow = false;
             LightOpacity = 0;
             Particle = 193;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
@@ -35,7 +36,7 @@ namespace MvkServer.World.Block.List
             if (!CheckDown(worldIn, blockPos))
             {
                 DropBlockAsItem(worldIn, blockPos, state, 0);
-                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air));
+                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 1);
             }
         }
 

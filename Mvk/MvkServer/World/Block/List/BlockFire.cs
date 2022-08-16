@@ -2,7 +2,6 @@
 using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
-using System;
 
 namespace MvkServer.World.Block.List
 {
@@ -16,9 +15,10 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockFire()
         {
+            //NeedsRandomTick = true;
             // Затычка, для сортировки, и прорисовки из нутри когда к примеру блок стекла
             //Translucent = true; 
-           // IsAction = false;
+            // IsAction = false;
             IsCollidable = false;
             АmbientOcclusion = false;
             NoSideDimming = true;
@@ -28,7 +28,7 @@ namespace MvkServer.World.Block.List
             IsReplaceable = true;
            // Hardness = 0;
             LightOpacity = 0;
-            LightValue = 7;
+            LightValue = 15;
             IsParticle = false;
             Material = EnumMaterial.Fire;
             samplesStep = new AssetsSample[0];
@@ -50,7 +50,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Тон сэмпла сломанного блока,
         /// </summary>
-        public override float SampleBreakPitch(Random random) => 2.6f + (float)(random.NextDouble() - random.NextDouble()) * .8f;
+        public override float SampleBreakPitch(Rand random) => 2.6f + (random.NextFloat() - random.NextFloat()) * .8f;
 
         /// <summary>
         /// Инициализация коробок
@@ -186,11 +186,11 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Случайный эффект частички и/или звука на блоке только для клиента
         /// </summary>
-        public override void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Random random)
+        public override void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         {
             if (random.Next(24) == 0)
             {
-                world.PlaySound(AssetsSample.Fire, blockPos.ToVec3() + .5f, 1f + (float)random.NextDouble(), (float)random.NextDouble() * .7f + .3f);
+                world.PlaySound(AssetsSample.Fire, blockPos.ToVec3() + .5f, 1f + random.NextFloat(), random.NextFloat() * .7f + .3f);
             }
             if (world.DoesBlockHaveSolidTopSurface(blockPos.OffsetDown()))
             {
@@ -209,6 +209,27 @@ namespace MvkServer.World.Block.List
             {
                 world.SpawnParticle(EnumParticle.Smoke, 3,
                     new vec3(blockPos.X + .5f, blockPos.Y + .5f, blockPos.Z + .5f), new vec3(1f), 0, 40);
+            }
+        }
+
+        public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+        {
+            int r = random.Next(4);
+            if (r == 0 && world.DoesBlockHaveSolidTopSurface(blockPos.OffsetEast()))
+            {
+                world.SetBlockState(blockPos.OffsetEast(), new BlockState(EnumBlock.Fire), 0);
+            }
+            else if (r == 1 && world.DoesBlockHaveSolidTopSurface(blockPos.OffsetNorth()))
+            {
+                world.SetBlockState(blockPos.OffsetNorth(), new BlockState(EnumBlock.Fire), 0);
+            }
+            else if (r == 2 && world.DoesBlockHaveSolidTopSurface(blockPos.OffsetSouth()))
+            {
+                world.SetBlockState(blockPos.OffsetSouth(), new BlockState(EnumBlock.Fire), 0);
+            }
+            else if (r == 3 && world.DoesBlockHaveSolidTopSurface(blockPos.OffsetWest()))
+            {
+                world.SetBlockState(blockPos.OffsetWest(), new BlockState(EnumBlock.Fire), 0);
             }
         }
     }

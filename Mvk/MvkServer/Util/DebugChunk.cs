@@ -8,10 +8,15 @@ namespace MvkServer.Util
     /// </summary>
     public class DebugChunk
     {
-        public List<vec3i> listChunkServer = new List<vec3i>();
+        public List<DebugChunkValue> listChunkServer = new List<DebugChunkValue>();
         public List<vec2i> listChunkPlayers = new List<vec2i>();
-        public List<vec3i> listChunkPlayer = new List<vec3i>();
-        public List<vec3i> listChunkPlayerEntity = new List<vec3i>();
+        public List<DebugChunkValue> listChunkPlayer = new List<DebugChunkValue>();
         public bool isRender;
+    }
+
+    public struct DebugChunkValue
+    {
+        public vec2i pos;
+        public bool entities;
     }
 }

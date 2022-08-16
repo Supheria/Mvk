@@ -14,6 +14,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockTurf()
         {
+            //NeedsRandomTick = true;
             Particle = 65;
             Color = new vec3(.56f, .73f, .35f);
             Hardness = 10;
@@ -70,6 +71,24 @@ namespace MvkServer.World.Block.List
             boxes[1][0].RotateYawUV = 1;
             boxes[2][0].RotateYawUV = 2;
             boxes[3][0].RotateYawUV = 3;
+        }
+
+        public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+        {
+            //EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
+            //if (enumBlock == EnumBlock.Air) 
+            //{
+            //    world.SetBlockState(blockPos.OffsetUp(), new BlockState(EnumBlock.Water));
+            //}
+            EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
+            if (enumBlock == EnumBlock.TallGrass)
+            {
+                world.SetBlockState(blockPos.OffsetUp(), new BlockState(EnumBlock.Air), 0);
+            }
+            else
+            {
+                world.SetBlockState(blockPos, new BlockState(EnumBlock.Dirt), 0);
+            }
         }
     }
 }

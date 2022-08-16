@@ -1,12 +1,11 @@
 ﻿using MvkAssets;
-using MvkClient.Entity;
 using MvkClient.Entity.Particle;
 using MvkClient.Renderer.Entity;
 using MvkClient.World;
 using MvkServer.Entity;
 using MvkServer.Glm;
+using MvkServer.Util;
 using MvkServer.World.Block;
-using System;
 
 namespace MvkClient.Renderer
 {
@@ -24,7 +23,7 @@ namespace MvkClient.Renderer
         /// <summary>
         /// Генератор случайных чисел
         /// </summary>
-        private readonly Random rand = new Random();
+        private readonly Rand rand = new Rand();
         /// <summary>
         /// Карта всех тикущий частиц
         /// </summary>

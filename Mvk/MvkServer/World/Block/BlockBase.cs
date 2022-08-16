@@ -72,12 +72,11 @@ namespace MvkServer.World.Block
         /// </summary>
         public bool EnableStats { get; protected set; } = true;
         /// <summary>
-        /// Отмечает, относится ли этот блок к типу, требующему случайной пометки. 
-        /// Функция ExtendedBlockStorage подсчитывает ссылки, чтобы в целях эффективности 
-        /// отобрать фрагмент из случайного списка обновлений фрагментов. (для будущего)
+        /// Отмечает, относится ли этот блок к типу, требующему случайной пометки в тиках. 
+        /// Объект ChunkStorage подсчитывает блоки, чтобы в целях эффективности отобрать фрагмент из 
+        /// случайного списка обновлений фрагментов.
         /// </summary>
         public bool NeedsRandomTick { get; protected set; } = false;
-
         /// <summary>
         /// Скользкость
         /// 0.6 стандартная
@@ -85,12 +84,6 @@ namespace MvkServer.World.Block
         /// 0.98 по льду, скользко
         /// </summary>
         public float Slipperiness { get; protected set; } = .6f;
-
-        /// <summary>
-        /// Вся ли прорисовка, аналог кактус, забор...
-        /// </summary>
-        //public EnumRenderType RenderType { get; protected set; } = EnumRenderType.АmbientOcclusion | EnumRenderType.Shadow;
-
         /// <summary>
         /// Получить тип блока
         /// </summary>
@@ -270,9 +263,9 @@ namespace MvkServer.World.Block
             if (!worldIn.IsRemote)
             {
                 vec3 pos = new vec3(
-                    blockPos.X + (float)worldIn.Rand.NextDouble() * .5f + .25f,
-                    blockPos.Y + (float)worldIn.Rand.NextDouble() * .5f + .25f,
-                    blockPos.Z + (float)worldIn.Rand.NextDouble() * .5f + .25f
+                    blockPos.X + worldIn.Rnd.NextFloat() * .5f + .25f,
+                    blockPos.Y + worldIn.Rnd.NextFloat() * .5f + .25f,
+                    blockPos.Z + worldIn.Rnd.NextFloat() * .5f + .25f
                 );
                 EntityItem entityItem = new EntityItem(worldIn, pos, itemStack);
                 entityItem.SetDefaultPickupDelay();
@@ -296,13 +289,13 @@ namespace MvkServer.World.Block
         {
             if (!worldIn.IsRemote)
             {
-                int count = QuantityDroppedWithBonus(fortune, worldIn.Rand);
+                int count = QuantityDroppedWithBonus(fortune, worldIn.Rnd);
 
                 for (int i = 0; i < count; i++)
                 {
-                    if (worldIn.Rand.NextDouble() <= chance)
+                    if (worldIn.Rnd.NextFloat() <= chance)
                     {
-                        ItemBase item = GetItemDropped(state, worldIn.Rand, fortune);
+                        ItemBase item = GetItemDropped(state, worldIn.Rnd, fortune);
 
                         if (item != null)
                         {
@@ -321,17 +314,17 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
         /// </summary>
-        public virtual ItemBase GetItemDropped(BlockState state, Random rand, int fortune) => new ItemBlock(this);
+        public virtual ItemBase GetItemDropped(BlockState state, Rand rand, int fortune) => new ItemBlock(this);
 
         /// <summary>
         /// Возвращает количество предметов, которые выпадают при разрушении блока.
         /// </summary>
-        public virtual int QuantityDropped(Random random) => 1;
+        public virtual int QuantityDropped(Rand random) => 1;
 
         /// <summary>
         /// Получите количество выпавших на основе данного уровня удачи
         /// </summary>
-        public virtual int QuantityDroppedWithBonus(int fortune, Random random) => QuantityDropped(random);
+        public virtual int QuantityDroppedWithBonus(int fortune, Rand random) => QuantityDropped(random);
 
         /// <summary>
         /// Установить блок
@@ -339,24 +332,24 @@ namespace MvkServer.World.Block
         /// <param name="side">Сторона на какой ставим блок</param>
         /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
         public virtual bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing) 
-            => worldIn.SetBlockState(blockPos, state);
+            => worldIn.SetBlockState(blockPos, state, 1);
 
         /// <summary>
         /// Семпл сломанного блока
         /// </summary>
-        public AssetsSample SampleBreak(WorldBase worldIn) => samplesBreak[worldIn.Rand.Next(samplesBreak.Length)];
+        public AssetsSample SampleBreak(WorldBase worldIn) => samplesBreak[worldIn.Rnd.Next(samplesBreak.Length)];
         /// <summary>
         /// Семпл установленного блока
         /// </summary>
-        public AssetsSample SamplePut(WorldBase worldIn) => samplesPut[worldIn.Rand.Next(samplesPut.Length)];
+        public AssetsSample SamplePut(WorldBase worldIn) => samplesPut[worldIn.Rnd.Next(samplesPut.Length)];
         /// <summary>
         /// Семпл хотьбы по блоку
         /// </summary>
-        public AssetsSample SampleStep(WorldBase worldIn) => samplesStep[worldIn.Rand.Next(samplesStep.Length)];
+        public AssetsSample SampleStep(WorldBase worldIn) => samplesStep[worldIn.Rnd.Next(samplesStep.Length)];
         /// <summary>
         /// Тон сэмпла сломанного блока,
         /// </summary>
-        public virtual float SampleBreakPitch(Random random) => 1f;
+        public virtual float SampleBreakPitch(Rand random) => 1f;
 
         /// <summary>
         /// Есть ли звуковой эффект шага
@@ -366,7 +359,18 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Случайный эффект частички и/или звука на блоке только для клиента
         /// </summary>
-        public virtual void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Random random) { }
+        public virtual void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random) { }
+
+        /// <summary>
+        /// Случайный эффект блока, для сервера
+        /// </summary>
+        public virtual void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+            => UpdateTick(world, blockPos, blockState, random);
+
+        /// <summary>
+        /// Обновить блок в такте
+        /// </summary>
+        public virtual void UpdateTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random) { }
 
         /// <summary>
         /// Не однотипные блоки, пример: трава, цветы, кактус

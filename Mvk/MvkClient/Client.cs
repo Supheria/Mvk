@@ -25,10 +25,6 @@ namespace MvkClient
     public class Client
     {
         /// <summary>
-        /// Объект лога
-        /// </summary>
-        public Logger Log { get; private set; }
-        /// <summary>
         /// Клиентский объект мира
         /// </summary>
         public WorldClient World { get; private set; }
@@ -61,6 +57,10 @@ namespace MvkClient
         /// </summary>
         public bool IsGamePlay { get; private set; } = false;
         /// <summary>
+        /// Пауза в игре
+        /// </summary>
+        public bool IsGamePaused { get; private set; } = false;
+        /// <summary>
         /// Объект отвечающий за прорисовку эффектов частиц
         /// </summary>
         public EffectRenderer EffectRender { get; private set; }
@@ -89,10 +89,6 @@ namespace MvkClient
         /// Закрывается ли окно
         /// </summary>
         private bool isClosing = false;
-        /// <summary>
-        /// Пауза в игре
-        /// </summary>
-        private bool isGamePaused = false;
         /// <summary>
         /// Объект времени с момента запуска проекта
         /// </summary>
@@ -126,7 +122,7 @@ namespace MvkClient
             Screen.Changed += Screen_Changed;
             packets = new ProcessClientPackets(this);
 
-            ticker = new Ticker();
+            ticker = new Ticker(this);
             ticker.SetWishFrame(20);
             ticker.Tick += Ticker_Tick;
             ticker.Frame += Ticker_Frmae;
@@ -144,7 +140,6 @@ namespace MvkClient
         public void WindowLoad()
         {
             ticker.Start();
-            
             // Загрузка
             Loading loading = new Loading(this);
             Screen.LoadingSetMax(loading.Count);
@@ -485,6 +480,7 @@ namespace MvkClient
             World.StopWorldDelete();
             EffectRender = null;
             World = null;
+            packets.Clear();
         }
 
         /// <summary>
@@ -590,15 +586,17 @@ namespace MvkClient
             if (!IsGamePlay) return;
             try
             {
-                if (!isGamePaused)
+                if (!IsGamePaused)
                 {
                     long timeBegin = stopwatch.ElapsedTicks;
                     //Log.Log(TickCounter.ToString());
                     tickCounterClient++;
                     TickCounter++;
-                    UpdateClouds();
-
-
+                    // Счётчик облаков
+                    CloudTickCounter++;
+                    if (CloudTickCounter > (WorldBase.CLOUD_SIZE_TEXTURE / WorldBase.SPEED_CLOUD)) CloudTickCounter = 0;
+                    // почерёдно получаем пакеты с сервера
+                    packets.Update();
                     // Обновить игрока
                     Player.Update();
                     if ((Player.IsDead /*|| Player.Health == 0*/) && !Screen.IsScreenGameOver())
@@ -606,7 +604,6 @@ namespace MvkClient
                         // GameOver надо указать причину смерти
                         SetScreen(ObjectKey.GameOver, "Boom");
                     }
-
                     try
                     {
                         World.Tick();
@@ -649,7 +646,7 @@ namespace MvkClient
                     {
 
                         // Запуск анимации и звуков, от блоков
-                        if (!isGamePaused && World != null)
+                        if (!IsGamePaused && World != null)
                         {
                             // В холостую в дебаге 1.0 мс добавил у клиента, в релизе 0.6 мс
                             World.DoVoidFogParticles(new vec3i(Player.Position));
@@ -691,8 +688,8 @@ namespace MvkClient
         private void Screen_Changed(object sender, EventArgs e)
         {
             // определить паузу
-            isGamePaused = IsGamePlay && Screen.IsScreenPause() && !locServer.IsOpenNet() && locServer.IsLoacl;
-            locServer.SetGamePauseSingle(isGamePaused);
+            IsGamePaused = IsGamePlay && Screen.IsScreenPause() && !locServer.IsOpenNet() && locServer.IsLoacl;
+            locServer.SetGamePauseSingle(IsGamePaused);
 
             if (IsGamePlay && Screen.IsEmptyScreen())
             {
@@ -727,15 +724,6 @@ namespace MvkClient
         /// Получить коэффициент времени от прошлого TPS клиента в диапазоне 0 .. 1
         /// </summary>
         public float Interpolation() => ticker.Interpolation;
-
-        /// <summary>
-        /// Счётчик облаков
-        /// </summary>
-        private void UpdateClouds()
-        {
-            CloudTickCounter++;
-            if (CloudTickCounter > (WorldBase.CLOUD_SIZE_TEXTURE / WorldBase.SPEED_CLOUD)) CloudTickCounter = 0;
-        }
 
         #region Player
 

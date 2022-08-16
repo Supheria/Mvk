@@ -3,9 +3,7 @@ using MvkClient.Renderer.Entity.Layers;
 using MvkClient.Renderer.Model;
 using MvkServer.Entity;
 using MvkServer.Glm;
-using MvkServer.Item.List;
 using MvkServer.Util;
-using MvkServer.World.Block;
 using System.Collections.Generic;
 
 namespace MvkClient.Renderer.Entity

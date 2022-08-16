@@ -96,12 +96,22 @@ namespace MvkClient.Renderer
         /// <summary>
         /// Массив очередей чанков для рендера
         /// </summary>
-        private List<ChunkRenderQueue> renderQueues = new List<ChunkRenderQueue>();
+        private DoubleList<ChunkRenderQueue> renderQueues = new DoubleList<ChunkRenderQueue>();
+
         /// <summary>
-        /// Объект заглушка
+        /// Структура очереди чанка для рендера
         /// </summary>
-        private object locker = new object();
-        
+        private struct ChunkRenderQueue
+        {
+            /// <summary>
+            /// Чанк рендера
+            /// </summary>
+            public ChunkRender chunk;
+            /// <summary>
+            /// Координата псевдочанка, который надо рендерить
+            /// </summary>
+            public int y;
+        }
 
         public WorldRenderer(WorldClient world)
         {
@@ -144,19 +154,21 @@ namespace MvkClient.Renderer
         {
             try
             {
+                ChunkRenderQueue renderQueue;
+                int count, i;
+                //bool empty = true;
+
                 while (renderLoopRunning)
                 {
-                    while(renderQueues.Count > 0)
+                    renderQueues.Step();
+                    count = renderQueues.CountBackward;
+                    for (i = 0; i < count; i++)
                     {
-                        ChunkRenderQueue renderQueue = renderQueues[0];
-                        lock (locker)
-                        {
-                            renderQueues.RemoveAt(0);
-                        }
-                        if (renderQueue.chunk != null && renderQueue.chunk.IsChunkLoaded)
-                        {
-                            renderQueue.chunk.Render(renderQueue.y);
-                        }
+                        renderQueue = renderQueues.GetNext();
+                        renderQueue.chunk.UpBufferChunks();
+                        renderQueue.chunk.Render(renderQueue.y);
+                        renderQueue.chunk.ClearBufferChunks();
+                        if (!renderLoopRunning) break; 
                     }
                     Thread.Sleep(1);
                 }
@@ -277,6 +289,7 @@ namespace MvkClient.Renderer
                 if (fs.IsChunk())
                 {
                     chunk = fs.GetChunk();
+                    if (chunk == null || !chunk.IsChunkLoaded) continue;
                     vs = fs.GetSortList();
                     // Пробегаем по псевдо чанкам одно чанка
                     for (j = 0; j < vs.Length; j++)
@@ -290,7 +303,7 @@ namespace MvkClient.Renderer
                             continue;
                         }
                         // Проверяем надо ли рендер для псевдо чанка, и возможно ли по времени
-                        if ((isDense || chunk.IsModifiedRenderAlpha(y)) && renderQueues.Count < MvkGlobal.COUNT_RENDER_CHUNK_FRAME)
+                        if ((isDense || chunk.IsModifiedRenderAlpha(y)) && renderQueues.CountForward < MvkGlobal.COUNT_RENDER_CHUNK_FRAME)
                         {
                             // Проверяем занят ли чанк уже рендером
                             if (chunk.IsMeshDenseWait(y) && chunk.IsMeshAlphaWait(y))
@@ -305,10 +318,7 @@ namespace MvkClient.Renderer
                                     // Обновление рендера псевдочанка
                                     Debug.CountUpdateChunck++;
                                     chunk.StartRendering(y);
-                                    lock (locker)
-                                    {
-                                        renderQueues.Add(new ChunkRenderQueue() { chunk = chunk, y = y });
-                                    }
+                                    renderQueues.Add(new ChunkRenderQueue() { chunk = chunk, y = y });
                                 }
                             }
                         }
@@ -408,22 +418,25 @@ namespace MvkClient.Renderer
         {
             ShaderVoxel shader = GLWindow.Shaders.ShVoxel;
             shader.Bind(GLWindow.gl);
-            shader.SetUniformMatrix4(GLWindow.gl, "projection", ClientMain.Player.Projection);
+            shader.SetUniformMatrix4(GLWindow.gl, "projection",
+                Debug.IsDrawOrto 
+                ? glm.ortho(-ScreenGame.Width / 4, ScreenGame.Width / 4, -ScreenGame.Height / 4, ScreenGame.Height / 4, -50, 500).to_array()
+                : ClientMain.Player.Projection
+            );
             shader.SetUniformMatrix4(GLWindow.gl, "lookat", ClientMain.Player.LookAt);
             shader.SetUniform1(GLWindow.gl, "takt", ClientMain.TickCounter); // & 31
-
             
             float overview;
             vec3 cfog;
 
             if (ClientMain.Player.WhereEyesEff == EntityPlayerSP.WhereEyes.Air)
             {
-                overview = ClientMain.Player.OverviewChunk * 16f;
+                overview = Debug.IsDrawOrto ? 10000 : ClientMain.Player.OverviewChunk * 16f;
                 cfog = colorFog;
             }
             else if (ClientMain.Player.WhereEyesEff == EntityPlayerSP.WhereEyes.Water)
             {
-                overview = 16f;
+                overview = 24f;
                 cfog = ScreenInGame.colorWaterEff;
             }
             else if (ClientMain.Player.WhereEyesEff == EntityPlayerSP.WhereEyes.Lava)
@@ -658,7 +671,7 @@ namespace MvkClient.Renderer
                 GLRender.End();
                 GLRender.PopMatrix();
             }
-
+            GLRender.FogDisable();
             GLRender.DepthMask(true);
         }
 
@@ -669,16 +682,16 @@ namespace MvkClient.Renderer
         {
             if (dlStar > 0) GLRender.ListDelete(dlStar);
             dlStar = GLRender.ListBegin();
-            Random random = new Random(10842);
+            Rand random = new Rand(10842);
             GLRender.Begin(OpenGL.GL_QUADS);
 
             // Предполагаемое количество звёзд 1500
             for (int i = 0; i < 1500; i++)
             {
-                float x = (float)random.NextDouble() * 2f - 1f;
-                float y = (float)random.NextDouble() * 2f - 1f;
-                float z = (float)random.NextDouble() * 2f - 1f;
-                float size = .15f + (float)random.NextDouble() * .1f;
+                float x = random.NextFloat() * 2f - 1f;
+                float y = random.NextFloat() * 2f - 1f;
+                float z = random.NextFloat() * 2f - 1f;
+                float size = .15f + random.NextFloat() * .1f;
                 float distance = x * x + y * y + z * z;
 
                 // будет 1234 согласно рандома seed 10842
@@ -697,7 +710,7 @@ namespace MvkClient.Renderer
                     angle = glm.atan2(Mth.Sqrt(x * x + z * z), y);
                     float sa2 = glm.sin(angle);
                     float ca2 = glm.cos(angle);
-                    angle = (float)random.NextDouble() * glm.pi360;
+                    angle = random.NextFloat() * glm.pi360;
                     float sa3 = glm.sin(angle);
                     float ca3 = glm.cos(angle);
 
@@ -867,5 +880,7 @@ namespace MvkClient.Renderer
 
         //    shader.Unbind(GLWindow.gl);
         //}
+
+        
     }
 }

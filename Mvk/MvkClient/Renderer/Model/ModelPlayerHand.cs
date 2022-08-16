@@ -38,8 +38,10 @@ namespace MvkClient.Renderer.Model
                 //boxArmRight.RotationPointY = -6 * inv;
 
                 // Удар правой руки
+
                 float inv = 1.0f - SwingProgress;
                 float sp = inv * inv;
+                sp *= sp;
                 float s1 = glm.sin(sp);
                 float s2 = glm.sin(SwingProgress);
                 BoxArmRight.RotateAngleX -= s1 * .8f;// + s2 * .5f;

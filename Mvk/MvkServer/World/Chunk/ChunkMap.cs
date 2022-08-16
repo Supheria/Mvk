@@ -1,8 +1,6 @@
-﻿using MvkServer.Entity.Player;
-using MvkServer.Glm;
+﻿using MvkServer.Glm;
 using MvkServer.Util;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace MvkServer.World.Chunk
@@ -12,7 +10,7 @@ namespace MvkServer.World.Chunk
     /// </summary>
     public class ChunkMap
     {
-        protected Hashtable map = new Hashtable();
+        protected Dictionary<vec2i, ChunkBase> map = new Dictionary<vec2i, ChunkBase>();
 
         /// <summary>
         /// Добавить или изменить чанк
@@ -20,31 +18,6 @@ namespace MvkServer.World.Chunk
         public void Set(ChunkBase chunk)
         {
             chunk.UpdateTime();
-            //try
-            //{
-            //    map.Add(chunk.Position, chunk);
-            //}
-            //catch
-            //{
-            //    map[chunk.Position] = chunk;
-            //}
-            //Hashtable mapThreadSafe = Hashtable.Synchronized(map);
-            //if (mapThreadSafe.ContainsKey(chunk.Position))
-            //{
-            //    mapThreadSafe[chunk.Position] = chunk;
-            //}
-            //else
-            //{
-            //    //try
-            //    {
-            //        mapThreadSafe.Add(chunk.Position, chunk);
-            //    }
-            //    //catch
-            //    //{
-            //    //    mapThreadSafe[chunk.Position] = chunk;
-            //    //}
-            //}
-
             try
             {
                 if (map.ContainsKey(chunk.Position))
@@ -68,10 +41,9 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public ChunkBase Get(vec2i pos)
         {
-            Hashtable mapThreadSafe = Hashtable.Synchronized(map);
-            if (mapThreadSafe.ContainsKey(pos))
+            if (map.ContainsKey(pos))
             {
-                return mapThreadSafe[pos] as ChunkBase;
+                return map[pos];
             }
             return null;
         }
@@ -101,11 +73,6 @@ namespace MvkServer.World.Chunk
                 chunk.OnChunkUnload();
             }
             map.Remove(pos);
-            //Hashtable mapThreadSafe = Hashtable.Synchronized(map);
-            //if (mapThreadSafe.ContainsKey(pos))
-            //{
-            //    mapThreadSafe.Remove(pos);
-            //}
         }
 
         /// <summary>
@@ -148,8 +115,8 @@ namespace MvkServer.World.Chunk
         public int Count => map.Count;
 
         /// <summary>
-        /// Получить клон карты
+        /// Получить коллекцию значений
         /// </summary>
-        public Hashtable CloneMap() => map.Clone() as Hashtable;
+        public Dictionary<vec2i, ChunkBase>.ValueCollection Values() => map.Values;
     }
 }

@@ -25,6 +25,7 @@ namespace MvkServer.World.Block.List
             FullBlock = false;
             Translucent = true;
             АmbientOcclusion = false;
+            Shadow = false;
             Color = color;
             AllSideForcibly = true;
             NoSideDimming = true;

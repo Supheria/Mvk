@@ -18,6 +18,10 @@ namespace MvkServer.World.Block
         /// Массив всех кэш блоков
         /// </summary>
         public static BlockBase[] blocksInt;
+        /// <summary>
+        /// Массив нужности случайного тика для блока
+        /// </summary>
+        public static bool[] blocksRandomTick;
 
         private static BlockBase ToBlock(EnumBlock eBlock)
         {
@@ -87,6 +91,7 @@ namespace MvkServer.World.Block
             int count = BlocksCount.COUNT + 1;
             blocksInt = new BlockBase[count];
             blocksLightOpacity = new byte[count];
+            blocksRandomTick = new bool[count];
 
             for (int i = 0; i < count; i++)
             {
@@ -95,6 +100,7 @@ namespace MvkServer.World.Block
                 block.SetEnumBlock(enumBlock);
                 blocksInt[i] = block;
                 blocksLightOpacity[i] = (byte)(block.LightOpacity << 4 | block.LightValue);
+                blocksRandomTick[i] = block.NeedsRandomTick;
             }
         }
 

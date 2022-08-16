@@ -1,4 +1,6 @@
-﻿using MvkServer.World.Block;
+﻿using MvkServer.Util;
+using MvkServer.World.Block;
+using System;
 
 namespace MvkServer.World.Chunk
 {
@@ -30,7 +32,11 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Количество блоков не воздуха
         /// </summary>
-        public int countData;
+        public int countBlock;
+        /// <summary>
+        /// Количество блоков которым нужен тик
+        /// </summary>
+        private int countTickBlock;
         /// <summary>
         /// было ли заполнения неба
         /// </summary>
@@ -40,7 +46,8 @@ namespace MvkServer.World.Chunk
         {
             yBase = y;
             data = null;
-            countData = 0;
+            countBlock = 0;
+            countTickBlock = 0;
             lightBlock = new byte[4096];
             lightSky = new byte[4096];
             sky = false;
@@ -49,7 +56,7 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Пустой, все блоки воздуха
         /// </summary>
-        public bool IsEmptyData() => countData == 0;
+        public bool IsEmptyData() => countBlock == 0;
 
         /// <summary>
         /// Очистить
@@ -59,7 +66,8 @@ namespace MvkServer.World.Chunk
             data = null;
             lightBlock = new byte[4096];
             lightSky = new byte[4096];
-            countData = 0;
+            countBlock = 0;
+            countTickBlock = 0;
         }
 
         #region Get
@@ -90,7 +98,20 @@ namespace MvkServer.World.Chunk
         public BlockState GetBlockState(int x, int y, int z)
         {
             int index = y << 8 | z << 4 | x;
-            return new BlockState(data[index], lightBlock[index], lightSky[index]);
+            try
+            {
+                return new BlockState(data[index], lightBlock[index], lightSky[index]);
+            }
+            catch(Exception ex)
+            {
+                Logger.Crach("ChunkStorage.GetBlockState countBlock {0} countTickBlock {1} index {2} data {3} null\r\n{4}",
+                    countBlock,
+                    countTickBlock,
+                    index,
+                    data == null ? "==" : "!=",
+                    ex.Message);
+                throw;
+            }
         }
 
         /// <summary>
@@ -120,18 +141,30 @@ namespace MvkServer.World.Chunk
             if ((value & 0xFFF) == 0)
             {
                 // воздух, проверка на чистку
-                if (countData > 0 && (data[index] & 0xFFF) != 0)
+                if (countBlock > 0 && (data[index] & 0xFFF) != 0)
                 {
-                    countData--;
-                    if (countData == 0) data = null;
+                    countBlock--;
+                    if (Blocks.blocksRandomTick[data[index] & 0xFFF]) countTickBlock--;
+                    if (countBlock == 0)
+                    {
+                        data = null;
+                        countTickBlock = 0;
+                    }
                     else data[index] = value;
                 }
             }
             else
             {
-                //CheckEmpty();
-                if (countData == 0) data = new ushort[4096];
-                if ((data[index] & 0xFFF) == 0) countData++;
+                if (countBlock == 0)
+                {
+                    data = new ushort[4096];
+                    countTickBlock = 0;
+                }
+                if ((data[index] & 0xFFF) == 0) countBlock++;
+                bool rold = Blocks.blocksRandomTick[data[index] & 0xFFF];
+                bool rnew = Blocks.blocksRandomTick[value & 0xFFF];
+                if (!rold && rnew) countTickBlock++;
+                else if (rold && !rnew) countTickBlock--;
                 data[index] = value;
             }
         }
@@ -158,14 +191,21 @@ namespace MvkServer.World.Chunk
         {
             if (!sky)
             {
-                sky = true;
                 for (int i = 0; i < 4096; i++)
                 {
                     lightSky[i] = 0xF;
                 }
+                sky = true;
             }
         }
 
-        public override string ToString() => "yB:" + yBase + " body:" + countData + " ";
+        /// <summary>
+        /// Имеются ли блоки которым нужен случайный тик
+        /// </summary>
+        public bool GetNeedsRandomTick() => countTickBlock > 0;
+
+        public override string ToString() => "yB:" + yBase + " body:" + countBlock + " ";
+
+        public string ToCountString() => countBlock.ToString() + "|" + countTickBlock.ToString();
     }
 }

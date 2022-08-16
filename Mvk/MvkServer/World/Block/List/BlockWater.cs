@@ -2,7 +2,6 @@
 using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
-using System;
 
 namespace MvkServer.World.Block.List
 {
@@ -16,6 +15,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockWater()
         {
+           // NeedsRandomTick = true;
             Translucent = true;
             IsAction = false;
             IsCollidable = false;
@@ -65,7 +65,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Случайный эффект частички и/или звука на блоке только для клиента
         /// </summary>
-        public override void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Random random)
+        public override void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         {
             //if (random.Next(64) == 0)
             //{
@@ -76,6 +76,20 @@ namespace MvkServer.World.Block.List
             {
                 world.SpawnParticle(EnumParticle.Suspend, 1,
                     new vec3(blockPos.X + .5f, blockPos.Y + .5f, blockPos.Z + .5f), new vec3(1f), 0);
+            }
+        }
+
+        public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+        {
+            //EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
+            //if (enumBlock == EnumBlock.Air) 
+            //{
+            //    world.SetBlockState(blockPos.OffsetUp(), new BlockState(EnumBlock.Water));
+            //}
+            EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
+            if (enumBlock == EnumBlock.Air)
+            {
+                world.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 0);
             }
         }
     }

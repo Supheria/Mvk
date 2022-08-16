@@ -24,7 +24,7 @@ namespace MvkServer
         /// <summary>
         /// Указывает, запущен сервер или нет. Установите значение false, чтобы инициировать завершение работы. 
         /// </summary>
-        public bool ServerRunning { get; protected set; } = true;
+        private bool serverRunning = true;
         /// <summary>
         /// Сервер уже в рабочем цикле
         /// </summary>
@@ -41,8 +41,22 @@ namespace MvkServer
         /// Серверный объект мира
         /// </summary>
         public WorldServer World { get; protected set; }
+        /// <summary>
+        /// Пауза при старте для случайных блоков, чтоб не загружало сразу.
+        /// </summary>
+        public bool IsTickBlocksPause { get; private set; } = true;
 
         public EntityPlayerServer test;
+
+        /// <summary>
+        /// Счётчик тактов для паузы случайных блоков
+        /// </summary>
+        private int countTickBlocksPause = 50;
+        /// <summary>
+        /// Поток генерации мира
+        /// </summary>
+        private bool threadGenLoop = false;
+
         /// <summary>
         /// Устанавливается при появлении предупреждения «Не могу угнаться», которое срабатывает снова через 15 секунд. 
         /// </summary>
@@ -68,7 +82,6 @@ namespace MvkServer
         /// Передано пакетов за предыдущую секунду
         /// </summary>
         private int txPrev = 0;
-
 
         /// <summary>
         /// статус запуска сервера
@@ -220,12 +233,12 @@ namespace MvkServer
         /// <summary>
         /// Запрос остановки сервера
         /// </summary>
-        public void ServerStop() => ServerRunning = false;
+        public void ServerStop() => threadGenLoop = false; // Сначала останавливаем поток генерации
 
         /// <summary>
         /// Метод должен работать в отдельном потоке
         /// </summary>
-        public void ServerLoop()
+        private void ServerLoop()
         {
             try
             {
@@ -237,7 +250,7 @@ namespace MvkServer
                 World.Players.LoginStart();
 
                 // Рабочий цикл сервера
-                while (ServerRunning)
+                while (serverRunning)
                 {
                     long realTime = stopwatchTps.ElapsedMilliseconds;
                     // Разница в милсекунда с прошлого такта
@@ -284,6 +297,8 @@ namespace MvkServer
             }
             finally
             {
+                threadGenLoop = false;
+                serverRunning = false;
                 StopServerLoop();
             }
         }
@@ -299,7 +314,11 @@ namespace MvkServer
 
         protected void StartServerLoop()
         {
-            ServerRunning = true;
+            threadGenLoop = true;
+            serverRunning = true;
+            // Запускаем постоянный поток генерации мира
+            Thread myThread = new Thread(ServerGenLoop);
+            myThread.Start();
 
             EntityPlayerServer entityPlayer = World.Players.GetEntityPlayerMain();
             vec2i pos = entityPlayer != null ? entityPlayer.GetChunkPos() : new vec2i(0, 0);
@@ -312,7 +331,7 @@ namespace MvkServer
             {
                 for (int z = -radius; z <= radius; z++)
                 {
-                    World.ChunkPrServ.LoadChunk(new vec2i(pos.x + x, pos.y + z));
+                    World.ChunkPrServ.LoadingChunk(new vec2i(pos.x + x, pos.y + z));
                     OnLoadingTick();
                 }
             }
@@ -322,13 +341,12 @@ namespace MvkServer
         /// <summary>
         /// Сохраняет все необходимые данные для подготовки к остановке сервера
         /// </summary>
-        protected void StopServerLoop()
+        private void StopServerLoop()
         {
             Log.Log("server.stoping");
-
             World.Players.PlayersRemoveStopingServer();
             World.Players.Update();
-            //World.Players.PlayerClear();
+            packets.Clear();
 
             // тут будет сохранение мира
             //Thread.Sleep(100);
@@ -347,6 +365,8 @@ namespace MvkServer
         {
             long realTime = stopwatchTps.ElapsedTicks;
             TickCounter++;
+
+            if (IsTickBlocksPause && --countTickBlocksPause <= 0) IsTickBlocksPause = false;
 
             packets.Update();
             // Выполнение такта
@@ -372,7 +392,11 @@ namespace MvkServer
             {
                 UpCountClients();
 
-                ResponsePacketAll(new PacketS03TimeUpdate(TickCounter));
+                if (TickCounter % 600 == 0)
+                {
+                    // раз в 30 секунд обновляем тик с клиентом
+                    ResponsePacketAll(new PacketS03TimeUpdate(TickCounter));
+                }
 
                 //this.serverConfigManager.sendPacketToAllPlayersInDimension(new S03PacketTimeUpdate(
                 //var4.getTotalWorldTime(), 
@@ -385,7 +409,7 @@ namespace MvkServer
                 rx = 0;
                 tx = 0;
             }
-            
+
             try
             {
                 World.Tick();
@@ -425,7 +449,6 @@ namespace MvkServer
                     {
                         listChunkServer = World.ChunkPr.GetListDebug(),
                         listChunkPlayers = World.Players.GetListDebug(),
-                        listChunkPlayerEntity = World.ChunkPr.GetListEntityDebug(),
                         isRender = true
                     };
                     OnLogDebugCh(chunks);
@@ -437,6 +460,38 @@ namespace MvkServer
 
             // фиксируем время выполнения такта
             tickTimeArray[TickCounter % 4] = differenceTime;
+        }
+
+        /// <summary>
+        /// Отдельный поток для генерации чанков
+        /// </summary>
+        private void ServerGenLoop()
+        {
+            try
+            {
+                threadGenLoop = true;
+                Log.Log("server.threadGenLoop.run");
+
+                while (threadGenLoop)
+                {
+                    // Тут генерация чанков
+                    World.ChunkPrServ.LoadGenRequest();
+                    Thread.Sleep(1);
+                }
+
+                Log.Log("server.threadGenLoop.stop");
+                // После остановки потока генерации останавливаем основной поток
+                serverRunning = false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Crach(ex);
+            }
+            finally
+            {
+                threadGenLoop = false;
+                serverRunning = false;
+            }
         }
 
         /// <summary>

@@ -16,8 +16,8 @@ namespace MvkClient.Entity.Particle
             textureUV = new vec2i(0, 0);
             color = new vec3(.4f, .4f, .7f);
             SetSize(.01f, .01f);
-            particleScale *= (float)rand.NextDouble() *.6f +.2f;
-            particleMaxAge = (int)(16f / ((float)rand.NextDouble() * .8f + .2f));
+            particleScale *= rand.NextFloat() *.6f +.2f;
+            particleMaxAge = (int)(16f / (rand.NextFloat() * .8f + .2f));
         }
 
         public override void Update()

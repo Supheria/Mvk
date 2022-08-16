@@ -966,7 +966,7 @@ namespace MvkServer.Entity
             // 0.03 - 0.2 когда плыву, 0.4 - 0.7 когда ныряю
             if (volume > 1f) volume = 1f;
 
-            World.PlaySound(this, assetsSample, Position, volume, 1f + (float)(rand.NextDouble() - rand.NextDouble()) * .4f);
+            World.PlaySound(this, assetsSample, Position, volume, 1f + (rand.NextFloat() - rand.NextFloat()) * .4f);
         }
 
         /// <summary>
@@ -1014,21 +1014,21 @@ namespace MvkServer.Entity
         /// <summary>
         /// Семпл хотьбы
         /// </summary>
-        public virtual AssetsSample SampleStep(WorldBase worldIn, BlockBase blockDown) => samplesStep[worldIn.Rand.Next(samplesStep.Length)];
+        public virtual AssetsSample SampleStep(WorldBase worldIn, BlockBase blockDown) => samplesStep[worldIn.Rnd.Next(samplesStep.Length)];
 
         /// <summary>
         /// Скакой скоростью анимируется удар рукой, в тактах, менять можно от инструмента, чар и навыков
         /// </summary>
-        private int GetArmSwingAnimationEnd() => 6; 
+        public int GetArmSwingAnimationEnd() => 8; 
 
         /// <summary>
         /// Размахивает предметом, который держит игрок
         /// </summary>
         public virtual void SwingItem()
         {
-            if (!isSwingInProgress || swingProgressInt >= GetArmSwingAnimationEnd() / 2 || swingProgressInt < 0)
+            if (!isSwingInProgress || swingProgressInt >= GetArmSwingAnimationEnd() / 2 || swingProgressInt == 0)
             {
-                swingProgressInt = -1;
+                swingProgressInt = 0; /// -1;
                 isSwingInProgress = true;
 
                 if (World is WorldServer)

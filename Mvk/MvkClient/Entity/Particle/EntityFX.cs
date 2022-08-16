@@ -67,7 +67,7 @@ namespace MvkClient.Entity.Particle
             motion.x += rand.Next(-100, 100) * .004f;
             motion.y += rand.Next(-100, 100) * .004f;
             motion.z += rand.Next(-100, 100) * .004f;
-            float r = (float)(rand.NextDouble() + rand.NextDouble() + 1f) * .06f;
+            float r = (rand.NextFloat() + rand.NextFloat() + 1f) * .06f;
             float sq = Mth.Sqrt(motion.x * motion.x + motion.y * motion.y + motion.z * motion.z);
             motion = motion / sq * r;
             motion.y += .1f;

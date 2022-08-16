@@ -1,10 +1,8 @@
 ﻿using MvkClient.Renderer.Chunk;
-using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Network.Packets.Client;
-using MvkServer.Network.Packets.Server;
+using MvkServer.Util;
 using MvkServer.World.Chunk;
-using System.Collections;
 using System.Collections.Generic;
 
 namespace MvkClient.World
@@ -22,23 +20,15 @@ namespace MvkClient.World
         /// <summary>
         /// Список чанков Для удаления сетки основного потока
         /// </summary>
-        private List<vec2i> remoteMeshChunks = new List<vec2i>();
+        private DoubleList<vec2i> remoteMeshChunks = new DoubleList<vec2i>();
         /// <summary>
         /// Список чанков на удаление
         /// </summary>
-        private List<vec2i> remoteChunks = new List<vec2i>();
+        private DoubleList<vec2i> remoteChunks = new DoubleList<vec2i>();
         /// <summary>
         /// Список чанков на дабавление
         /// </summary>
-        private List<ChunkRender> addChunks = new List<ChunkRender>();
-        /// <summary>
-        /// Список всех видимых чанков аналог chunkMapping
-        /// </summary>
-        //private ChunkMap chunkListing = new ChunkMap();
-        /// <summary>
-        /// Объект заглушка
-        /// </summary>
-        private object locker = new object();
+        private DoubleList<ChunkRender> addChunks = new DoubleList<ChunkRender>();
         /// <summary>
         /// Перезапуск чанки по итоку удаления (смена обзора к примеру)
         /// </summary>
@@ -62,8 +52,8 @@ namespace MvkClient.World
         public void ClearAllChunks(bool reset)
         {
             isResetLoadingChunk = reset;
-            Hashtable ht = chunkMapping.CloneMap();
-            foreach (ChunkRender chunk in ht.Values)
+            Dictionary<vec2i, ChunkBase>.ValueCollection chunks = chunkMapping.Values();
+            foreach (ChunkRender chunk in chunks)
             {
                 if ((reset && !chunk.Position.Equals(ClientWorld.ClientMain.Player.GetChunkPos())) || !reset)
                 {
@@ -71,11 +61,6 @@ namespace MvkClient.World
                 }
             }
         }
-
-        /// <summary>
-        /// удалить чанк без сохранения
-        /// </summary>
-        //public override void RemoveChunk(vec2i pos) => chunkMapping.Remove(pos);
 
         /// <summary>
         /// Загрузить, если нет такого создаём для клиента
@@ -88,35 +73,52 @@ namespace MvkClient.World
         public void PacketChunckData(ChunkQueue packet)
         {
             vec2i pos = packet.GetPos();
-            ChunkRender chunk = null;
-            lock (locker)
+            //if ((pos.x == 2 && pos.y ==2) 
+            //    || (pos.x == 1 && pos.y == 1) || (pos.x == -1 && pos.y == -4)) world.Log.Log("pc {0} {1} {2}", pos, packet.biom, packet.flagsYAreas);
+            ChunkRender chunkRender;
+            ChunkRender chunk = GetChunkRender(pos);
+            if (chunk == null)
             {
-                for (int i = 0; i < addChunks.Count; i++)
+                // Если чанка нет, проверяем в загрузке
+                int i;
+                ListMvk<ChunkRender> list;
+                // lock не нужен, так как если прозеваем значение, оно уже будет в GetChunkRender
+                // Достаточно пробежаться только по массиву Add
+                list = addChunks.GetForward();
+                for (i = 0; i < list.Count; i++)
                 {
-                    if (addChunks[i].Position.x == pos.x && addChunks[i].Position.y == pos.y)
+                    chunkRender = list[i];
+                    if (chunkRender.Position.x == pos.x && chunkRender.Position.y == pos.y)
                     {
-                        chunk = addChunks[i];
+                        chunk = chunkRender;
                         break;
                     }
                 }
             }
-            if (chunk == null) chunk = GetChunkRender(pos);
+
+            // Ещё раз проверяем, чтоб не испльзовать lock на всю проверку
+            if (chunk == null)
+            {
+                chunk = GetChunkRender(pos);
+                if (chunk != null)
+                {
+                    // 2022-08-10 Ни разу покуда не зафиксировано, возможно ненужная проверка, надо проверить
+                    world.Log.Log("ChunkProviderClient #104 !!! {0}", pos);
+                }
+            }
             bool isNew = chunk == null;
 
             if (packet.IsRemoved())
             {
                 if (!isNew)
                 {
-                    if (pos.x == 0 && pos.y == 0)
-                    {
-                        return;
-                    }
+                    // TODO::2022-08-09 не помню зя чем это, но с этим чанк не выгружается
+                    //if (pos.x == 0 && pos.y == 0) return;
                     UnloadChunk(chunk);
                 }
             }
             else
             {
-                //if (Debug.DStart && !packet.GetPos().Equals(new vec2i(-1, -1))) return;
                 if (isNew) 
                 {
                     chunk = new ChunkRender(ClientWorld, pos);
@@ -128,7 +130,11 @@ namespace MvkClient.World
                 {
                     // Для нового чанка у клиента, генерируем высотную карту
                     chunk.Light.GenerateHeightMap();
-                    lock (locker) addChunks.Add(chunk);
+                    addChunks.Add(chunk);
+                }
+                else
+                {
+                    if (packet.biom) chunk.Light.GenerateHeightMap();
                 }
             }
         }
@@ -140,19 +146,16 @@ namespace MvkClient.World
         {
             if (chunk != null)
             {
-                lock (locker)
+                vec2i pos = chunk.Position;
+                if (chunk.IsChunkLoaded)
                 {
-                    vec2i pos = chunk.Position;
-                    if (chunk.IsChunkLoaded)
-                    {
-                        chunk.OnChunkUnload();
-                        // заносим в массив чистки чанков по сетки для основного потока
-                        remoteMeshChunks.Add(pos);
-                    }
-                    else
-                    {
-                        remoteChunks.Add(pos);
-                    }
+                    chunk.OnChunkUnload();
+                    // заносим в массив чистки чанков по сетки для основного потока
+                    remoteMeshChunks.Add(pos);
+                }
+                else
+                {
+                    remoteChunks.Add(pos);
                 }
             }
         }
@@ -162,38 +165,35 @@ namespace MvkClient.World
         /// </summary>
         public void ChunksTickUnloadLoad()
         {
-            // Выгрузка чанков, не больше 100 шт за такт
-            int count = 100;
-            lock (locker)
+            // Выгрузка чанков
+            remoteChunks.Step();
+            int count = remoteChunks.CountBackward;
+            int i;
+            for (i = 0; i < count; i++)
             {
-                while (remoteChunks.Count > 0 && count > 0)
+                chunkMapping.Remove(remoteChunks.GetNext());
+            }
+           
+            if (isResetLoadingChunk)
+            {
+                isResetLoadingChunk = false;
+                //lock (locker) addChunks.Clear(); // 2022-08-09 зачем?! вроде без неё работает точно, скорее всего были лаги в потоках
+                //ClientWorld.Player.UpFrustumCulling();
+                ClientWorld.ClientMain.TrancivePacket(new PacketC15ClientSetting(ClientWorld.ClientMain.Player.OverviewChunk));
+            }
+            // Загрузка чанков
+            ChunkRender chunkRender;
+            addChunks.Step();
+            count = addChunks.CountBackward;
+            for (i = 0; i < count; i++)
+            {
+                chunkRender = addChunks.GetNext();
+                if (chunkRender.IsChunkLoaded)
                 {
-                    chunkMapping.Remove(remoteChunks[0]);
-                   // chunkListing.Remove(remoteChunks[0]);
-                    remoteChunks.RemoveAt(0);
-                    count--;
-                }
-                if (isResetLoadingChunk && remoteChunks.Count == 0)
-                {
-                    isResetLoadingChunk = false;
-                    lock (locker) addChunks.Clear();
-                    //ClientWorld.Player.UpFrustumCulling();
-                    ClientWorld.ClientMain.TrancivePacket(new PacketC15ClientSetting(ClientWorld.ClientMain.Player.OverviewChunk));
-                }
-                // Загрузка
-                count = 50;
-            
-                while (addChunks.Count > 0 && count > 0)
-                {
-                    chunkMapping.Set(addChunks[0]);
-                    //  chunkListing.Set(addChunks[0]);
-                    vec2i pos = addChunks[0].Position;
+                    chunkMapping.Set(chunkRender);
+                    vec2i pos = chunkRender.Position;
                     // надо соседние чанки попросить перерендерить
-
-                    ClientWorld.AreaModifiedToRender(pos.x - 1, 0, pos.y - 1, pos.x + 1, ChunkBase.COUNT_HEIGHT - 1, pos.y + 1);
-
-                    addChunks.RemoveAt(0);
-                    count--;
+                    ClientWorld.AreaModifiedToRender(pos.x - 1, 0, pos.y - 1, pos.x + 1, ChunkBase.COUNT_HEIGHT15, pos.y + 1);
                 }
             }
         }
@@ -203,27 +203,18 @@ namespace MvkClient.World
         /// </summary>
         public void RemoteMeshChunks()
         {
-            long time = Client.Time();
-            long timeNew = time;
-            // 4 мc на чистку чанков
-            lock (locker)
+            remoteMeshChunks.Step();
+            int count = remoteMeshChunks.CountBackward;
+            int i;
+            vec2i pos;
+            for (i = 0; i < count; i++)
             {
-                vec2i pos;
-                while (remoteMeshChunks.Count > 0 && timeNew - time <= 4)
+                pos = remoteMeshChunks.GetNext();
+                remoteChunks.Add(pos);
+                ChunkRender chunk = GetChunkRender(pos);
+                if (chunk != null)
                 {
-
-                    // list.Add(remoteMeshChunks[0]);
-                    pos = remoteMeshChunks[0];
-                    remoteMeshChunks.RemoveAt(0);
-                    remoteChunks.Add(pos);
-                    ChunkRender chunk = GetChunkRender(pos);
-                    if (chunk != null)
-                    {
-
-                        if (!chunk.IsChunkLoaded) chunk.MeshDelete();
-                        //remoteChunks.Add(pos);
-                    }
-                    timeNew = Client.Time();
+                    if (!chunk.IsChunkLoaded) chunk.MeshDelete();
                 }
             }
         }
@@ -312,7 +303,7 @@ namespace MvkClient.World
 
         public override string ToString()
         {
-            return "Ch:" + chunkMapping.Count + " RM:" + remoteMeshChunks.Count + " R:" + remoteChunks.Count + " A:" + addChunks.Count;
+            return "Ch:" + chunkMapping.Count + " RM:" + remoteMeshChunks.CountBackward + " R:" + remoteChunks.CountBackward + " A:" + addChunks.CountBackward;
         }
     }
 }

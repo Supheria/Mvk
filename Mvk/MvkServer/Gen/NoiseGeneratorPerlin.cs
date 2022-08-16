@@ -1,4 +1,4 @@
-﻿using System;
+﻿using MvkServer.Util;
 
 namespace MvkServer.Gen
 {
@@ -16,7 +16,7 @@ namespace MvkServer.Gen
         /// </summary>
         private readonly int octaves;
 
-        public NoiseGeneratorPerlin(Random random, int octave)
+        public NoiseGeneratorPerlin(Rand random, int octave)
         {
             octaves = octave;
             generatorCollection = new NoiseGeneratorSimplex[octave];
@@ -44,32 +44,26 @@ namespace MvkServer.Gen
         public float[] GenerateNoise3d(float[] noiseArray, int xOffset, int yOffset, int zOffset,
             int xSize, int ySize, int zSize, float xScale, float yScale, float zScale)
         {
+            int i;
             if (noiseArray == null)
             {
                 noiseArray = new float[xSize * ySize * zSize];
             }
             else
             {
-                for (int i = 0; i < noiseArray.Length; i++)
+                for (i = 0; i < noiseArray.Length; i++)
                 {
                     noiseArray[i] = 0f;
                 }
             }
             float d = 1f;
-
-            for (int i = 0; i < octaves; i++)
+            float x, y, z;
+            for (i = 0; i < octaves; i++)
             {
-                float x = (float)xOffset * d * xScale;
-                float y = (float)yOffset * d * yScale;
-                float z = (float)zOffset * d * zScale;
-                if (ySize == 1)
-                {
-                    generatorCollection[i].PopulateNoiseArray2d(noiseArray, x, z, xSize, zSize, xScale * d, zScale * d, d);
-                }
-                else
-                {
-                    generatorCollection[i].PopulateNoiseArray3d(noiseArray, x, y, z, xSize, ySize, zSize, xScale * d, yScale * d, zScale * d, d);
-                }
+                x = (float)xOffset * d * xScale;
+                y = (float)yOffset * d * yScale;
+                z = (float)zOffset * d * zScale;
+                generatorCollection[i].PopulateNoiseArray3d(noiseArray, x, y, z, xSize, ySize, zSize, xScale * d, yScale * d, zScale * d, d);
                 d /= 2.0f;
             }
             return noiseArray;
@@ -86,7 +80,31 @@ namespace MvkServer.Gen
         /// <param name="xScale">масштаб по X</param>
         /// <param name="zScale">масштаб по Z</param>
         /// <returns></returns>
-        public float[] GenerateNoise2d(float[] noiseArray, int xOffset, int zOffset, int xSize, int zSize, float xScale, float zScale) 
-            => GenerateNoise3d(noiseArray, xOffset, 100, zOffset, xSize, 1, zSize, xScale, 1.0f, zScale);
+        public float[] GenerateNoise2d(float[] noiseArray, int xOffset, int zOffset, 
+            int xSize, int zSize, float xScale, float zScale)
+        {
+            int i;
+            if (noiseArray == null)
+            {
+                noiseArray = new float[xSize * zSize];
+            }
+            else
+            {
+                for (i = 0; i < noiseArray.Length; i++)
+                {
+                    noiseArray[i] = 0f;
+                }
+            }
+            float d = 1f;
+            float x, z;
+            for (i = 0; i < octaves; i++)
+            {
+                x = (float)xOffset * d * xScale;
+                z = (float)zOffset * d * zScale;
+                generatorCollection[i].PopulateNoiseArray2d(noiseArray, x, z, xSize, zSize, xScale * d, zScale * d, d);
+                d /= 2.0f;
+            }
+            return noiseArray;
+        }
     }
 }

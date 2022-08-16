@@ -4,9 +4,7 @@ using MvkClient.Renderer;
 using MvkClient.Renderer.Chunk;
 using MvkClient.Renderer.Entity;
 using MvkClient.Setitings;
-using MvkClient.Util;
 using MvkServer.Entity;
-using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
@@ -81,11 +79,7 @@ namespace MvkClient.World
         /// <summary>
         /// Массив очередей чанков для рендера
         /// </summary>
-        private List<ChunkQueue> packetChunkQueues = new List<ChunkQueue>();
-        /// <summary>
-        /// Объект заглушка
-        /// </summary>
-        private readonly object locker = new object();
+        private DoubleList<ChunkQueue> packetChunkQueues = new DoubleList<ChunkQueue>();
 
         public WorldClient(Client client) : base()
         {
@@ -115,17 +109,13 @@ namespace MvkClient.World
 
         public void AddPacketChunkQueue(PacketS21ChunkData packet)
         {
-            //Log.Log("Прилёт {0} {1}", packet.GetPos(), packet.GetFlagsYAreas());
-            lock (locker)
+            packetChunkQueues.Add(new ChunkQueue()
             {
-                packetChunkQueues.Add(new ChunkQueue()
-                {
-                    pos = packet.GetPos(),
-                    buffer = packet.GetBuffer(),
-                    flagsYAreas = packet.GetFlagsYAreas(),
-                    biom = packet.IsBiom()
-                });
-            }
+                pos = packet.GetPos(),
+                buffer = packet.GetBuffer(),
+                flagsYAreas = packet.GetFlagsYAreas(),
+                biom = packet.IsBiom()
+            });
         }
 
         /// <summary>
@@ -135,19 +125,15 @@ namespace MvkClient.World
         {
             try
             {
+                int count, i;
                 while (packetChunkLoopRunning)
                 {
-                    while (packetChunkQueues.Count > 0)
+                    packetChunkQueues.Step();
+                    count = packetChunkQueues.CountBackward;
+                    for (i = 0; i < count; i++)
                     {
-                        ChunkQueue chunkQueue;
-                        lock (locker)
-                        {
-                            chunkQueue = packetChunkQueues[0];
-                            packetChunkQueues.RemoveAt(0);
-                        }
-                       // Log.Log("Loop {0} {1}", chunkQueue.GetPos(), chunkQueue.GetFlagsYAreas());
-                        ChunkPrClient.PacketChunckData(chunkQueue);
-                       // Thread.Sleep(10);
+                        ChunkPrClient.PacketChunckData(packetChunkQueues.GetNext());
+                        if (!packetChunkLoopRunning) break;
                     }
                     Thread.Sleep(1);
                 }
@@ -328,17 +314,15 @@ namespace MvkClient.World
             if (blockPos.IsValid())
             {
                 ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
-
-                chunk.SetBlockStateClient(blockPos, blockState);
-                //if (!blockStateTrue.IsEmpty())
-                //{
-                //    // Для рендера, проверка соседнего чанка, если блок крайний,
-                // то будет доп рендер чанков рядом
-                vec3i min = blockPos.ToVec3i() - 1;
-                vec3i max = blockPos.ToVec3i() + 1;
-
-                AreaModifiedToRender(min.x >> 4, min.y >> 4, min.z >> 4, max.x >> 4, max.y >> 4, max.z >> 4);
-                //}
+                if (chunk != null)
+                {
+                    chunk.SetBlockStateClient(blockPos, blockState);
+                    // Для рендера, проверка соседнего чанка, если блок крайний,
+                    // то будет доп рендер чанков рядом
+                    vec3i min = blockPos.ToVec3i() - 1;
+                    vec3i max = blockPos.ToVec3i() + 1;
+                    AreaModifiedToRender(min.x >> 4, min.y >> 4, min.z >> 4, max.x >> 4, max.y >> 4, max.z >> 4);
+                }
             }
         }
 
@@ -348,7 +332,7 @@ namespace MvkClient.World
         /// <param name="blockPos">позици блока</param>
         /// <param name="eBlock">тип блока</param>
         /// <returns>true смена была</returns>
-        public override bool SetBlockState(BlockPos blockPos, BlockState blockState)
+        public override bool SetBlockState(BlockPos blockPos, BlockState blockState, int flag)
         {
             Debug.DStart = true;
             //ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
@@ -364,7 +348,7 @@ namespace MvkClient.World
             //}
 
             long l = GLWindow.stopwatch.ElapsedTicks;
-            bool result = base.SetBlockState(blockPos, blockState);
+            bool result = base.SetBlockState(blockPos, blockState, flag);
             long l2 = GLWindow.stopwatch.ElapsedTicks;
             Debug.DFloat = (l2 - l) / (float)MvkStatic.TimerFrequency;
             // Это если обновлять сразу!
@@ -635,15 +619,15 @@ namespace MvkClient.World
                 for (int i = 0; i < count; i++)
                 {
                     of = new vec3(
-                        ((float)Rand.NextDouble() - .5f) * offset.x,
-                        ((float)Rand.NextDouble() - .5f) * offset.y,
-                        ((float)Rand.NextDouble() - .5f) * offset.z);
+                        (Rnd.NextFloat() - .5f) * offset.x,
+                        (Rnd.NextFloat() - .5f) * offset.y,
+                        (Rnd.NextFloat() - .5f) * offset.z);
                     if (motion > 0)
                     {
                         m = new vec3(
-                            ((float)Rand.NextDouble() - .5f) * motion,
-                            ((float)Rand.NextDouble() - .5f) * motion,
-                            ((float)Rand.NextDouble() - .5f) * motion);
+                            (Rnd.NextFloat() - .5f) * motion,
+                            (Rnd.NextFloat() - .5f) * motion,
+                            (Rnd.NextFloat() - .5f) * motion);
                     }
                     ClientMain.EffectRender.SpawnParticle(particle, pos + of, m, items);
                 }
@@ -691,7 +675,7 @@ namespace MvkClient.World
         public void DoVoidFogParticles(vec3i playerPos)
         {
             int distance = 24;
-            Random random = new Random();
+            Rand random = new Rand();
             BlockPos blockPos = new BlockPos();
             BlockState blockState;
             for (int i = 0; i < 1000; i++)

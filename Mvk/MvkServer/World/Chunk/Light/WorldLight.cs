@@ -1,8 +1,6 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Block;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace MvkServer.World.Chunk.Light
@@ -111,7 +109,8 @@ namespace MvkServer.World.Chunk.Light
         /// <param name="y">глобальная позиция блока y</param>
         /// <param name="z">глобальная позиция блока z</param>
         /// <param name="differenceOpacity">Разница в непрозрачности</param>
-        public void CheckLightFor(int x, int y, int z, bool differenceOpacity)
+        /// <param name="replaceAir">блок заменён на воздух или на оборот воздух заменён на блок</param>
+        public void CheckLightFor(int x, int y, int z, bool differenceOpacity, bool replaceAir)
         {
             if (y < 0 || y > ChunkBase.COUNT_HEIGHT_BLOCK) return;
 
@@ -123,7 +122,7 @@ namespace MvkServer.World.Chunk.Light
             ChunkStorage chunkStorage = chunk.StorageArrays[y >> 4];
             int index = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
             byte lo = 0;
-            if (chunkStorage.countData != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[index] & 0xFFF];
+            if (chunkStorage.countBlock != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[index] & 0xFFF];
             // текущаяя яркость
             byte lightOld = chunkStorage.lightBlock[index];
             // яркость от блока
@@ -156,7 +155,7 @@ namespace MvkServer.World.Chunk.Light
             }
             int c1 = countBlock;
             // Проверка яркости неба
-            if (differenceOpacity)
+            if (differenceOpacity || replaceAir)
             {
                 chunk.Light.CheckLightSky(x, y, z, lo);
             }
@@ -232,19 +231,11 @@ namespace MvkServer.World.Chunk.Light
         {
             indexBegin = indexEnd = 0;
             int yco = y1 >> 4;
-            int index, yco2, i, ycMaxSky;
+            if (yco > ChunkBase.COUNT_HEIGHT15) yco = ChunkBase.COUNT_HEIGHT15;
+            int index, yco2;
             // Нужна проверка, по созданию новых псевдо чанков освещения
             // Причём нужна проверка по всей высоте, чтоб не было промежутков
-            if (yco > chunk.Light.MaxSkyChunk)
-            {
-                ycMaxSky = chunk.Light.MaxSkyChunk + 1;
-                for (i = ycMaxSky; i <= yco; i++)
-                {
-                    chunk.StorageArrays[i].CheckBrightenBlockSky();
-                }
-                chunk.Light.MaxSkyChunk = yco;
-            }
-            
+            CheckBrightenBlockSky(yco, chunk);
             for (int y = y0; y < y1; y++)
             {
                 index = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
@@ -256,6 +247,7 @@ namespace MvkServer.World.Chunk.Light
                 if (y < axisY0) axisY0 = y; else if (y > axisY1) axisY1 = y;
                 if (z < axisZ0) axisZ0 = z; else if (z > axisZ1) axisZ1 = z;
             }
+            if (y1 > ChunkBase.COUNT_HEIGHT_BLOCK) y1 = ChunkBase.COUNT_HEIGHT_BLOCK;
             DarkenLightSky();
             chunk.StorageArrays[yco].lightSky[(y1 & 15) << 8 | (z & 15) << 4 | (x & 15)] = 15;
             arCache[indexEnd++] = (x - bOffsetX + 32 | y1 << 6 | z - bOffsetZ + 32 << 14 | 15 << 20);
@@ -296,7 +288,7 @@ namespace MvkServer.World.Chunk.Light
                 if (z < axisZ0) axisZ0 = z; else if (z > axisZ1) axisZ1 = z;
                 yco = y >> 4;
                 chunkStorage = chunk.StorageArrays[yco];
-                if (chunkStorage.countData != 0)
+                if (chunkStorage.countBlock != 0)
                 {
                     indexBlock = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
                     lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
@@ -304,9 +296,11 @@ namespace MvkServer.World.Chunk.Light
                     arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | lo << 20);
                 }
             }
-            
-            BrighterLightBlock();
-            ModifiedRender();
+
+            if (BrighterLightBlock())
+            {
+                ModifiedRender();
+            }
         }
 
         /// <summary>
@@ -370,7 +364,7 @@ namespace MvkServer.World.Chunk.Light
                                     yo = y;
                                     chunkStorage = chunkCache.StorageArrays[yo >> 4];
                                     indexBlock = (yo & 15) << 8 | zo << 4 | xo;
-                                    if (chunkStorage.countData != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
+                                    if (chunkStorage.countBlock != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
                                     else lo = 0;
                                     if ((lo >> 4) < 14)
                                     {
@@ -438,10 +432,11 @@ namespace MvkServer.World.Chunk.Light
                 }
             }
 
-           // World.SetBlockDebug(new BlockPos(bOffsetX + 8, 90, bOffsetZ + 8), EnumBlock.Glass);
-
-            BrighterLightSky();
-            ModifiedRender();
+            //World.SetBlockDebug(new BlockPos(bOffsetX + 8, 90, bOffsetZ + 8), EnumBlock.Glass);
+            if (BrighterLightSky())
+            {
+                ModifiedRender();
+            }
         }
 
         /// <summary>
@@ -468,13 +463,13 @@ namespace MvkServer.World.Chunk.Light
         /// <summary>
         /// Осветляем блочный массив
         /// </summary>
-        private void BrighterLightBlock()
+        private bool BrighterLightBlock()
         {
             ChunkBase chunkCache;
             ChunkStorage chunkStorage;
             byte lightB;
             int lightNew, lightCheck;
-            int iSide, iList, i;
+            int iSide, iList;
             // вектор стороны
             vec3i vec;
             // координаты с листа
@@ -485,8 +480,6 @@ namespace MvkServer.World.Chunk.Light
             int listIndex;
             // координата блока
             int x0, y0, z0, indexBlock;
-            // Максимальный псевдо чанк осветленный небом + 1
-            int ycMaxSky;
             // смещение координат чанка от стартового
             int xco, zco;
             // псевдочанк
@@ -494,6 +487,8 @@ namespace MvkServer.World.Chunk.Light
             // значения LightValue и LightOpacity
             byte lo;
             indexActive = indexBegin == 0 ? 388096 : 0;
+
+            if (indexEnd - indexBegin == 0) return false;
             // Цикл обхода по древу, уровневым метод (он же ширину (breadth-first search, BFS))
             while (indexEnd - indexBegin > 0)
             {
@@ -516,9 +511,12 @@ namespace MvkServer.World.Chunk.Light
                         xco = (x0 >> 4) - chBeginX;
                         zco = (z0 >> 4) - chBeginY;
                         chunkCache = (xco == 0 && zco == 0) ? chunk : chunks[MvkStatic.GetAreaOne8(xco, zco)];
+                        // Нужна проверка, по созданию новых псевдо чанков освещения
+                        // Причём нужна проверка по всей высоте, чтоб не было промежутков
+                        CheckBrightenBlockSky(yco, chunkCache);
                         chunkStorage = chunkCache.StorageArrays[yco];
                         indexBlock = (y0 & 15) << 8 | (z0 & 15) << 4 | (x0 & 15);
-                        if (chunkStorage.countData != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
+                        if (chunkStorage.countBlock != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
                         else lo = 0;
                         lightNew = chunkStorage.lightBlock[indexBlock];
                         // Определяем яркость, какая должна
@@ -527,17 +525,7 @@ namespace MvkServer.World.Chunk.Light
                         if (lightNew >= lightCheck) continue;
                         // Если тикущая темнее, осветляем её
                         lightB = (byte)lightCheck;
-                        // Нужна проверка, по созданию новых псевдо чанков освещения
-                        // Причём нужна проверка по всей высоте, чтоб не было промежутков
-                        if (yco > chunkCache.Light.MaxSkyChunk)
-                        {
-                            ycMaxSky = chunkCache.Light.MaxSkyChunk + 1;
-                            for (i = ycMaxSky; i <= yco; i++)
-                            {
-                                chunkCache.StorageArrays[i].CheckBrightenBlockSky();
-                            }
-                            chunkCache.Light.MaxSkyChunk = yco;
-                        }
+                        
                         chunkStorage.lightBlock[indexBlock] = lightB;
                         countBlock++;
 
@@ -561,6 +549,8 @@ namespace MvkServer.World.Chunk.Light
                     indexActive = 388096;
                 }
             }
+            return true;
+
         }
 
         /// <summary>
@@ -616,7 +606,7 @@ namespace MvkServer.World.Chunk.Light
                         chunkCache = (xco == 0 && zco == 0) ? chunk : chunks[MvkStatic.GetAreaOne8(xco, zco)];
                         chunkStorage = chunkCache.StorageArrays[yco];
                         indexBlock = (y0 & 15) << 8 | (z0 & 15) << 4 | (x0 & 15);
-                        if (chunkStorage.countData != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
+                        if (chunkStorage.countBlock != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
                         else lo = 0;
                         lightNew = chunkStorage.lightBlock[indexBlock];
                         lightCheck = lo & 15;
@@ -670,13 +660,13 @@ namespace MvkServer.World.Chunk.Light
         /// <summary>
         /// Осветляем небесный массив
         /// </summary>
-        private void BrighterLightSky()
+        private bool BrighterLightSky()
         {
             ChunkBase chunkCache;
             ChunkStorage chunkStorage;
             byte lightB;
             int lightNew, lightCheck;
-            int iSide, iList, i;
+            int iSide, iList;
             // вектор стороны
             vec3i vec;
             // координаты с листа
@@ -687,8 +677,6 @@ namespace MvkServer.World.Chunk.Light
             int listIndex;
             // координата блока
             int x0, y0, z0, indexBlock;
-            // Максимальный псевдо чанк осветленный небом + 1
-            int ycMaxSky;
             // смещение координат чанка от стартового
             int xco, zco;
             // псевдочанк
@@ -696,6 +684,8 @@ namespace MvkServer.World.Chunk.Light
             // значения LightValue и LightOpacity
             byte lo;
             indexActive = indexBegin == 0 ? 388096 : 0;
+
+            if (indexEnd - indexBegin == 0) return false;
             // Цикл обхода по древу, уровневым метод (он же ширину (breadth-first search, BFS))
             while (indexEnd - indexBegin > 0)
             {
@@ -720,8 +710,11 @@ namespace MvkServer.World.Chunk.Light
                         chunkCache = (xco == 0 && zco == 0) ? chunk : chunks[MvkStatic.GetAreaOne8(xco, zco)];
                         chunkStorage = chunkCache.StorageArrays[yco];
                         indexBlock = (y0 & 15) << 8 | (z0 & 15) << 4 | (x0 & 15);
-                        if (chunkStorage.countData != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
+                        if (chunkStorage.countBlock != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
                         else lo = 0;
+                        // Нужна проверка, по созданию новых псевдо чанков освещения
+                        // Причём нужна проверка по всей высоте, чтоб не было промежутков
+                        CheckBrightenBlockSky(yco, chunkCache);
                         lightNew = chunkStorage.lightSky[indexBlock];
                         // Определяем яркость, какая должна
                         lightCheck = light - (lo >> 4) - 1;
@@ -729,17 +722,7 @@ namespace MvkServer.World.Chunk.Light
                         if (lightNew >= lightCheck) continue;
                         // Если тикущая темнее, осветляем её
                         lightB = (byte)lightCheck;
-                        // Нужна проверка, по созданию новых псевдо чанков освещения
-                        // Причём нужна проверка по всей высоте, чтоб не было промежутков
-                        if (yco > chunkCache.Light.MaxSkyChunk)
-                        {
-                            ycMaxSky = chunkCache.Light.MaxSkyChunk + 1;
-                            for (i = ycMaxSky; i <= yco; i++)
-                            {
-                                chunkCache.StorageArrays[i].CheckBrightenBlockSky();
-                            }
-                            chunkCache.Light.MaxSkyChunk = yco;
-                        }
+                        
                         chunkStorage.lightSky[indexBlock] = lightB;
                         countBlock++;
 
@@ -762,6 +745,8 @@ namespace MvkServer.World.Chunk.Light
                     indexActive = 388096;
                 }
             }
+
+            return true;
         }
 
         /// <summary>
@@ -788,8 +773,6 @@ namespace MvkServer.World.Chunk.Light
             int xco, zco;
             // псевдочанк
             int yco;
-            // значения LightValue и LightOpacity
-            byte lo;
             indexActive = indexBegin == 0 ? 388096 : 0;
             // Индекс для массива осветления
             int indexBrighter = 776192;
@@ -870,8 +853,33 @@ namespace MvkServer.World.Chunk.Light
         /// </summary>
         private void ModifiedRender()
         {
-            if (countBlock <= 1) World.MarkBlockForUpdate(axisX0, axisY0, axisZ0);
-            else World.MarkBlockRangeForRenderUpdate(axisX0, axisY0, axisZ0, axisX1, axisY1, axisZ1);
+            if (countBlock <= 1 && axisX0 == axisX1 && axisY0 == axisY1 && axisZ0 == axisZ1)
+            {
+                World.MarkBlockForUpdate(axisX0, axisY0, axisZ0);
+            }
+            else
+            {
+                World.MarkBlockRangeForRenderUpdate(axisX0, axisY0, axisZ0, axisX1, axisY1, axisZ1);
+            }
+        }
+
+        private void CheckBrightenBlockSky(int yco, ChunkBase chunk)
+        {
+            // Нужна проверка, по созданию новых псевдо чанков освещения
+            // Причём нужна проверка по всей высоте, чтоб не было промежутков
+            if (yco > chunk.Light.MaxSkyChunk)
+            {
+                //if (chunk.Position.x == -1 && chunk.Position.y == -4)
+                //{
+                //    bool b = true;
+                //}
+                int ycMaxSky = chunk.Light.MaxSkyChunk + 1;
+                for (int i = ycMaxSky; i <= yco; i++)
+                {
+                    chunk.StorageArrays[i].CheckBrightenBlockSky();
+                }
+                chunk.Light.MaxSkyChunk = yco;
+            }
         }
 
         #region private Get

@@ -58,9 +58,9 @@ namespace MvkServer.Entity.Item
         public EntityItem(WorldBase world, vec3 pos) : this(world)
         {
             SetPosition(pos);
-            HoverStart = (float)World.Rand.NextDouble() * glm.pi * 2f;
+            HoverStart = World.Rnd.NextFloat() * glm.pi * 2f;
             //rotationYaw = (float)World.Rand.NextDouble() * glm.pi360;
-            Motion = new vec3((float)World.Rand.NextDouble() * .2f - .1f, .2f, (float)World.Rand.NextDouble() * .2f - .1f);
+            Motion = new vec3(World.Rnd.NextFloat() * .2f - .1f, .2f, World.Rnd.NextFloat() * .2f - .1f);
         }
 
         public EntityItem(WorldBase world, vec3 pos, ItemStack stack) : this(world, pos) => SetEntityItemStack(stack);

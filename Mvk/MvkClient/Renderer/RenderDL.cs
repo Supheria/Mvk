@@ -1,5 +1,4 @@
 ﻿using MvkServer.Glm;
-using SharpGL;
 
 namespace MvkClient.Renderer
 {

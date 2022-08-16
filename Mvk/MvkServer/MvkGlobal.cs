@@ -32,14 +32,19 @@
         public const bool IS_DEBUG_NICKNAME = true;
 
         /// <summary>
+        /// Количество чанков для загрузки или генерации за такт, было 5
+        /// </summary>
+        public const int COUNT_CHUNK_LOAD_OR_GEN_TPS = 10;// 5;
+
+        /// <summary>
         /// Cколько пакетов чанков передавать по сети за один ТПС
         /// </summary>
-        public const int COUNT_PACKET_CHUNK_TPS = 10;
+        public const int COUNT_PACKET_CHUNK_TPS = 10;// 10;
 
         /// <summary>
         /// Cколько псевдочанков рендерим в один кадр
         /// </summary>
-        public const int COUNT_RENDER_CHUNK_FRAME = 16; // было 5 целых чанков, теперь псевдо чанки; потом 50
+        public const int COUNT_RENDER_CHUNK_FRAME = 32;// 16; // было 5 целых чанков, теперь псевдо чанки; потом 50
 
         /// <summary>
         /// Эффект покачивания при движении
@@ -58,5 +63,10 @@
         /// Какой радиус для рендера псевдо чанков альфа блоков, при смещении больше 16 блоков
         /// </summary>
         public const int UPDATE_ALPHE_CHUNK = 4;
+
+        /// <summary>
+        /// Случайная скорость тика, для случайных обновлений блока в чанке, параметр из майна 1.8
+        /// </summary>
+        public const int RANDOM_TICK_SPEED = 3;
     }
 }

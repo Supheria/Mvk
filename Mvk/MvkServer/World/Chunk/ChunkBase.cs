@@ -2,11 +2,11 @@
 using MvkServer.Entity.Item;
 using MvkServer.Glm;
 using MvkServer.Util;
+using MvkServer.World.Biome;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk.Light;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace MvkServer.World.Chunk
 {
@@ -56,6 +56,12 @@ namespace MvkServer.World.Chunk
         /// Столбцы биомов
         /// </summary>
         //protected EnumBiome[,] eBiomes = new EnumBiome[16, 16];
+
+        /// <summary>
+        /// Биомы
+        /// x << 4 | z;
+        /// </summary>
+        public EnumBiome[] biome = new EnumBiome[256];
 
         /// <summary>
         /// Статус готовности чанка 0-4
@@ -285,7 +291,7 @@ namespace MvkServer.World.Chunk
         public void SetBinary(byte[] buffer, bool biom, int flagsYAreas)
         {
            // World.Log.Log("SetBinaryBegin {0} {1}", Position, GetDebugAllSegment());
-            int i = 0;
+            int count = 0;
             int index;
             byte light;
             try
@@ -297,6 +303,8 @@ namespace MvkServer.World.Chunk
                         //StorageArrays[sy].CheckDataEmpty();
                         //StorageArrays[sy].countVoxel = 0;
                         ChunkStorage storage = StorageArrays[sy];
+                        // Если пришли данные, как минимум надо проверить освещение, даже если нет блоков
+                        storage.CheckBrightenBlockSky();
                         for (int y = 0; y < 16; y++)
                         {
                             for (int x = 0; x < 16; x++)
@@ -304,8 +312,8 @@ namespace MvkServer.World.Chunk
                                 for (int z = 0; z < 16; z++)
                                 {
                                     index = y << 8 | z << 4 | x;
-                                    storage.SetData(index, (ushort)(buffer[i++] | buffer[i++] << 8));
-                                    light = buffer[i++];
+                                    storage.SetData(index, (ushort)(buffer[count++] | buffer[count++] << 8));
+                                    light = buffer[count++];
                                     storage.lightBlock[index] = (byte)(light >> 4);
                                     storage.lightSky[index] = (byte)(light & 0xF);
 
@@ -326,7 +334,10 @@ namespace MvkServer.World.Chunk
                 // биом
                 if (biom)
                 {
-
+                    for (int i = 0; i < 256; i++)
+                    {
+                        biome[i] = (EnumBiome)buffer[count++];
+                    }
                 }
                 IsChunkLoaded = true;
             }
@@ -418,10 +429,12 @@ namespace MvkServer.World.Chunk
         public string GetDebugAllSegment()
         {
             string s = "";
+            ChunkStorage cs;
             for (int y = 0; y < StorageArrays.Length; y++)
             {
-                s += StorageArrays[y].IsEmptyData() ? "." : "*" + StorageArrays[y].countData;
-                s += StorageArrays[y].sky ? "S" : "s";
+                cs = StorageArrays[y];
+                s += cs.IsEmptyData() ? "." : "*" + cs.ToCountString();
+                s += cs.sky ? "S" : "s";
             }
             return s;
         }
@@ -445,7 +458,7 @@ namespace MvkServer.World.Chunk
             if (x >> 4 == 0 && z >> 4 == 0)
             {
                 ChunkStorage chunkStorage = StorageArrays[y >> 4];
-                if (chunkStorage.countData != 0)
+                if (chunkStorage.countBlock != 0)
                 {
                     return chunkStorage.GetBlockState(x, y & 15, z);
                 } else
@@ -465,7 +478,7 @@ namespace MvkServer.World.Chunk
             if (x >> 4 == 0 && z >> 4 == 0)
             {
                 ChunkStorage chunkStorage = StorageArrays[y >> 4];
-                if (chunkStorage.countData != 0)
+                if (chunkStorage.countBlock != 0)
                 {
                     return chunkStorage.data[(y & 15) << 8 | z << 4 | x] & 0xFFF;
                 }
@@ -498,6 +511,18 @@ namespace MvkServer.World.Chunk
             if (pos.x >> 4 == 0 && pos.z >> 4 == 0 && pos.y >= 0 && y < COUNT_HEIGHT)
             {
                 StorageArrays[y].SetData((pos.y & 15) << 8 | pos.z << 4 | pos.x, (ushort)((ushort)eBlock & 0xFFF | met << 12));
+            }
+        }
+        /// <summary>
+        /// Задать тип блок по координатам чанка XZ 0..15, Y 0..255
+        /// </summary>
+        public void SetEBlock(int x, int y, int z, EnumBlock eBlock) => SetEBlock(x, y, z, eBlock, 0);
+        public void SetEBlock(int x, int y, int z, EnumBlock eBlock, int met)
+        {
+            int chy = y >> 4;
+            if (x >> 4 == 0 && z >> 4 == 0 && y >= 0 && chy < COUNT_HEIGHT)
+            {
+                StorageArrays[chy].SetData((y & 15) << 8 | z << 4 | x, (ushort)((ushort)eBlock & 0xFFF | met << 12));
             }
         }
 
@@ -548,7 +573,7 @@ namespace MvkServer.World.Chunk
             ChunkStorage storage = StorageArrays[chy];
 
             //data[y << 8 | z << 4 | x]
-            if (storage.countData == 0)
+            if (storage.countBlock == 0)
             {
                 if (block.EBlock == EnumBlock.Air) return new BlockState().Empty();
                 //heightMapUp = by >= height;
@@ -566,12 +591,12 @@ namespace MvkServer.World.Chunk
                 // проверка света
                 //if (World.IsRemote)
 
+                bool replaceAir = (block.IsAir && !blockOld.IsAir) || (!block.IsAir && blockOld.IsAir);
                 bool differenceOpacity = block.LightOpacity != blockOld.LightOpacity;
-                //Light.CheckLightSetBlock(blockPos, block.LightOpacity, blockOld.LightOpacity, block.LightValue != blockOld.LightValue);
-                if (differenceOpacity || block.LightValue != blockOld.LightValue)
+                if (replaceAir || differenceOpacity || block.LightValue != blockOld.LightValue)
                 {
                     World.Light.ActionChunk(this);
-                    World.Light.CheckLightFor(blockPos.X, blockPos.Y, blockPos.Z, differenceOpacity);
+                    World.Light.CheckLightFor(blockPos.X, blockPos.Y, blockPos.Z, differenceOpacity, replaceAir);
                 }
                 else
                 {
@@ -591,7 +616,7 @@ namespace MvkServer.World.Chunk
             }
             //MarkBlockForUpdate(blockPos);
 
-            if (storage.countData == 0 || (storage.data[index]) != (ushort)block.EBlock) return new BlockState();
+            if (storage.countBlock == 0 || (storage.data[index]) != (ushort)block.EBlock) return new BlockState();
 
             //if (heightMapUp)
             //{

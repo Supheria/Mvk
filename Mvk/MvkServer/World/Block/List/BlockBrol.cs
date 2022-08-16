@@ -1,7 +1,6 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
-using System;
 
 namespace MvkServer.World.Block.List
 {
@@ -45,7 +44,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Случайный эффект частички и/или звука на блоке только для клиента
         /// </summary>
-        public override void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Random random)
+        public override void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         {
             BlockState blockStateUp = world.GetBlockState(blockPos.OffsetUp());
             if (blockStateUp.GetBlock().IsAir)

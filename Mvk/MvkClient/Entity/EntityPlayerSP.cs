@@ -296,7 +296,8 @@ namespace MvkClient.Entity
                 if (handAction != ActionHand.None)
                 {
                     HandActionUpdate();
-                    if (leftClickPauseCounter > 5 || blankShot)
+                    if (leftClickPauseCounter > GetArmSwingAnimationEnd() / 2 // для анимации разбития блока, пока не разобъёшь пауза между ударами
+                        || blankShot) // мгновенный удар, первый удар, установить, атака
                     {
                         SwingItem();
                         blankShot = false;
@@ -451,20 +452,26 @@ namespace MvkClient.Entity
             {
                 ChunkBase chunk = World.GetChunk(MovingObject.BlockPosition.GetPositionChunk());
                 vec3i pos = MovingObject.BlockPosition.GetPosition0();
-                string s1 = ToBlockDebug(chunk, new vec3i(pos.x, pos.y, pos.z));
-                string s2 = ToBlockDebug(chunk, new vec3i(pos.x, pos.y + 1, pos.z));
+                string s1 = ToBlockDebug(chunk, pos);
+                string strUp = "";
+                if (MovingObject.BlockPosition.Y < ChunkBase.COUNT_HEIGHT_BLOCK)
+                {
+                    BlockPos blockPosUp = MovingObject.BlockPosition.OffsetUp();
+                    strUp = string.Format(
+                        "BlkUp:{0} {1} L:{2}",
+                        blockPosUp,
+                        World.GetBlockState(blockPosUp),
+                        ToBlockDebug(chunk, blockPosUp.GetPosition0())
+                    );
+                }
                 Debug.BlockFocus = string.Format(
-                    "Block: {0} L:{1} L+1:{2}\r\n{4}, {3}\r\n",// H:{3}|{4} #{6}\r\n",
+                    "Block:{0} {1} L:{2}\r\n{3}\r\n{4}, {5}\r\n",
+                    MovingObject.BlockPosition,
                     MovingObject.Block,
-                    s1, s2,
-                    //chunk.Light.GetHeight(pos.x, pos.z),
-                    ////"*",//chunk.Light.GetHeight(moving.Block.Position.X & 15, moving.Block.Position.Z & 15),
-                    //    //chunk.Light.HeightMapMax
-                    //chunk.GetTopFilledSegment(),
-
-                    //"",
-                    chunk.GetDebugAllSegment(),
-                    chunk.Light.GetHeight(pos.x, pos.z)
+                    s1,
+                    strUp,
+                    chunk.Light.GetHeight(pos.x, pos.z),
+                    chunk.GetDebugAllSegment()
                 );
                 //Debug.DStr = "";
             } else
@@ -482,7 +489,8 @@ namespace MvkClient.Entity
            // if (!chunkStorage.IsEmptyData())
             {
                 int index = (pos.y & 15) << 8 | pos.z << 4 | pos.x;
-                return string.Format("[{2}] b{0} s{1}", storage.lightBlock[index], storage.lightSky[index], pos); //, chunkStorage.ToString());
+                return string.Format("[{2}] b{0} s{1} {3}", storage.lightBlock[index], storage.lightSky[index], pos,
+                     chunk.biome[pos.x << 4 | pos.z]); //, chunkStorage.ToString());
             }
             //return "@-@";
         }
@@ -826,6 +834,7 @@ namespace MvkClient.Entity
                         ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(blockPos, moving.Side, moving.Facing));
                         itemInWorldManager.Put(blockPos, moving.Side, moving.Facing, Inventory.CurrentItem);
                         itemInWorldManager.PutPause(start);
+                        blankShot = true;
                     }
                     else
                     {
@@ -847,6 +856,7 @@ namespace MvkClient.Entity
                 // Начало разбитие блока
                 ClientWorld.ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Start));
                 itemInWorldManager.DestroyStart(moving.BlockPosition);
+                //blankShot = true;
             }
             else if (start)
             {

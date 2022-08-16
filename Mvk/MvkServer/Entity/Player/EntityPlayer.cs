@@ -73,6 +73,19 @@ namespace MvkServer.Entity.Player
                 Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.GlassWhite), 16));
                 Inventory.SetInventorySlotContents(6, new ItemStack(Blocks.GetBlockCache(EnumBlock.Brol), 16));
                 Inventory.SetInventorySlotContents(7, new ItemStack(Blocks.GetBlockCache(EnumBlock.Fire), 16));
+
+                Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.Sand), 16));
+                Inventory.SetInventorySlotContents(7, new ItemStack(Blocks.GetBlockCache(EnumBlock.Cactus), 16));
+
+                //Inventory.SetInventorySlotContents(0, new ItemStack(Blocks.GetBlockCache(48), 16));
+                //Inventory.SetInventorySlotContents(1, new ItemStack(Blocks.GetBlockCache(49), 16));
+                //Inventory.SetInventorySlotContents(2, new ItemStack(Blocks.GetBlockCache(50), 16));
+                //Inventory.SetInventorySlotContents(3, new ItemStack(Blocks.GetBlockCache(51), 16));
+                //Inventory.SetInventorySlotContents(4, new ItemStack(Blocks.GetBlockCache(52), 16));
+                //Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(53), 16));
+                //Inventory.SetInventorySlotContents(6, new ItemStack(Blocks.GetBlockCache(4), 16));
+                //Inventory.SetInventorySlotContents(7, new ItemStack(Blocks.GetBlockCache(9), 16));
+
             }
 
         }

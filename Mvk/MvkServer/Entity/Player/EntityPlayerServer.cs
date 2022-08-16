@@ -60,8 +60,6 @@ namespace MvkServer.Entity.Player
         /// </summary>
         private MapListId destroyedItemsNetCache = new MapListId();
 
-        protected int pingChunk = 0;
-
         /// <summary>
         /// Почледнее активное время игрока
         /// </summary>
@@ -183,34 +181,28 @@ namespace MvkServer.Entity.Player
             try
             {
                 int i = 0;
-                pingChunk--;
-
                 List<vec2i> loadedNull = new List<vec2i>();
-                // 2022-02-08 протестировать корректность загрузки чанков по пингу, именно по сети!
-                while (LoadedChunks.Count > 0 && i < MvkGlobal.COUNT_PACKET_CHUNK_TPS && pingChunk <= 0)
+                while (LoadedChunks.Count > 0 && i < MvkGlobal.COUNT_PACKET_CHUNK_TPS)
                 {
                     profiler.StartSection("LoadChunk");
                     // передача пакетов чанков по сети
                     vec2i pos = LoadedChunks.FirstRemove();
                     ChunkBase chunk = World.GetChunk(pos);
-                        //ServerMain.World.ChunkPrServ.LoadChunk(pos);
-
                     // NULL по сути не должен быть!!!
-                    if (chunk != null && chunk.IsChunkLoaded)// && chunk.Light.IsChunkLight())
+                    if (chunk != null && chunk.IsChunkLoaded && chunk.Light.IsChunkLight())
                     {
                         profiler.EndStartSection("PacketS21ChunckData");
                         int flag = 0;
-                        int heightMax = chunk.GetTopFilledSegment() >> 4;
-                        for (int y = 0; y <= heightMax; y++) { flag |= 1 << y; }
+                        
+                        for (int y = 0; y < ChunkBase.COUNT_HEIGHT; y++)
+                        {
+                            if (chunk.StorageArrays[y].sky) flag |= 1 << y;
+                        }
 
                         PacketS21ChunkData packet = new PacketS21ChunkData(chunk, true, flag);
-                        //World.Log.Log("1EPSe: {0} {1} {2} {3}", pos, flag, packet.GetBuffer().Length, chunk.GetDebugAllSegment());
                         profiler.EndStartSection("ResponsePacket");
                         SendPacket(packet);
-
                         i++;
-                        // Нужен алгорит загрузки чанков по пингу
-                        pingChunk = Ping > 50 ? 10 : 0;
                     } else
                     {
                         loadedNull.Add(pos);

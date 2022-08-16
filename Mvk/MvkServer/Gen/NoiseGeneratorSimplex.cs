@@ -1,4 +1,4 @@
-﻿using System;
+﻿using MvkServer.Util;
 
 namespace MvkServer.Gen
 {
@@ -17,15 +17,15 @@ namespace MvkServer.Gen
         private static readonly float[] arStat4 = new float[] { 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f };
         private static readonly float[] arStat5 = new float[] { 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 0.0f, 1.0f, 0.0f, -1.0f };
 
-        public NoiseGeneratorSimplex() => Generator(new Random());
-        public NoiseGeneratorSimplex(Random random) => Generator(random);
+        public NoiseGeneratorSimplex() => Generator(new Rand());
+        public NoiseGeneratorSimplex(Rand random) => Generator(random);
 
-        protected void Generator(Random random)
+        protected void Generator(Rand random)
         {
             permutations = new int[512];
-            xCoord = (float)random.NextDouble() * 256f;
-            yCoord = (float)random.NextDouble() * 256f;
-            zCoord = (float)random.NextDouble() * 256f;
+            xCoord = random.NextFloat() * 256f;
+            yCoord = random.NextFloat() * 256f;
+            zCoord = random.NextFloat() * 256f;
             int i;
 
             for (i = 0; i < 256; permutations[i] = i++) ;
@@ -77,55 +77,67 @@ namespace MvkServer.Gen
             float noise = 1.0f / noiseScale;
             int count = 0;
 
+            int x, y, z, xi, xa, zi, za, yi, ya, p1, p2, p3, p4, p5, p6;
+            float xd, yd, zd, xr, yr, zr, ler5, ler6, ler7, f1, f2, f3;
+
             float ler1 = 0.0f;
             float ler2 = 0.0f;
             float ler3 = 0.0f;
             float ler4 = 0.0f;
 
-            for (int x = 0; x < xSize; x++)
+            for (x = 0; x < xSize; x++)
             {
-                float xd = xOffset + (float)x * xScale + xCoord;
-                int xi = (int)xd;
+                xd = xOffset + (float)x * xScale + xCoord;
+                xi = (int)xd;
                 if (xd < (float)xi) xi--;
-                int xa = xi & 255;
+                xa = xi & 255;
                 xd -= (float)xi;
-                float xr = xd * xd * xd * (xd * (xd * 6.0f - 15.0f) + 10.0f);
+                xr = xd * xd * xd * (xd * (xd * 6.0f - 15.0f) + 10.0f);
 
-                for (int z = 0; z < zSize; z++)
+                for (z = 0; z < zSize; z++)
                 {
-                    float zd = zOffset + (float)z * zScale + zCoord;
-                    int zi = (int)zd;
+                    zd = zOffset + (float)z * zScale + zCoord;
+                    zi = (int)zd;
                     if (zd < (float)zi) zi--;
-                    int za = zi & 255;
+                    za = zi & 255;
                     zd -= (float)zi;
-                    float zr = zd * zd * zd * (zd * (zd * 6.0f - 15.0f) + 10.0f);
+                    zr = zd * zd * zd * (zd * (zd * 6.0f - 15.0f) + 10.0f);
 
-                    for (int y = 0; y < ySize; ++y)
+                    for (y = 0; y < ySize; ++y)
                     {
-                        float yd = yOffset + (float)y * yScale + yCoord;
-                        int yi = (int)yd;
+                        yd = yOffset + (float)y * yScale + yCoord;
+                        yi = (int)yd;
                         if (yd < (float)yi) yi--;
-                        int ya = yi & 255;
+                        ya = yi & 255;
                         yd -= (float)yi;
-                        float yr = yd * yd * yd * (yd * (yd * 6.0f - 15.0f) + 10.0f);
+                        yr = yd * yd * yd * (yd * (yd * 6.0f - 15.0f) + 10.0f);
 
                         if (y == 0 || ya >= 0)
                         {
-                            int p1 = permutations[xa] + ya;
-                            int p2 = permutations[p1] + za;
-                            int p3 = permutations[p1 + 1] + za;
-                            int p4 = permutations[xa + 1] + ya;
-                            int p5 = permutations[p4] + za;
-                            int p6 = permutations[p4 + 1] + za;
-                            ler1 = Lerp(xr, Grad(permutations[p2], xd, yd, zd), Grad(permutations[p5], xd - 1, yd, zd));
-                            ler2 = Lerp(xr, Grad(permutations[p3], xd, yd - 1, zd), Grad(permutations[p6], xd - 1, yd - 1, zd));
-                            ler3 = Lerp(xr, Grad(permutations[p2 + 1], xd, yd, zd - 1), Grad(permutations[p5 + 1], xd - 1, yd, zd - 1));
-                            ler4 = Lerp(xr, Grad(permutations[p3 + 1], xd, yd - 1, zd - 1), Grad(permutations[p6 + 1], xd - 1, yd - 1, zd - 1));
+                            p1 = permutations[xa] + ya;
+                            p2 = permutations[p1] + za;
+                            p3 = permutations[p1 + 1] + za;
+                            p4 = permutations[xa + 1] + ya;
+                            p5 = permutations[p4] + za;
+                            p6 = permutations[p4 + 1] + za;
+                            f1 = xr;
+                            f2 = Grad(permutations[p2], xd, yd, zd);
+                            f3 = Grad(permutations[p5], xd - 1, yd, zd);
+                            ler1 = f2 + f1 * (f3 - f2);
+                            f2 = Grad(permutations[p3], xd, yd - 1, zd);
+                            f3 = Grad(permutations[p6], xd - 1, yd - 1, zd);
+                            ler2 = f2 + f1 * (f3 - f2);
+                            f2 = Grad(permutations[p2 + 1], xd, yd, zd - 1);
+                            f3 = Grad(permutations[p5 + 1], xd - 1, yd, zd - 1);
+                            ler3 = f2 + f1 * (f3 - f2);
+                            f2 = Grad(permutations[p3 + 1], xd, yd - 1, zd - 1);
+                            f3 = Grad(permutations[p6 + 1], xd - 1, yd - 1, zd - 1);
+                            ler4 = f2 + f1 * (f3 - f2);
                         }
+                        ler5 = ler1 + yr * (ler2 - ler1);
+                        ler6 = ler3 + yr * (ler4 - ler3);
+                        ler7 = ler5 + zr * (ler6 - ler5);
 
-                        float ler5 = Lerp(yr, ler1, ler2);
-                        float ler6 = Lerp(yr, ler3, ler4);
-                        float ler7 = Lerp(zr, ler5, ler6);
                         noiseArray[count] += ler7 * noise;
                         count++;
                     }
@@ -150,30 +162,38 @@ namespace MvkServer.Gen
             float noise = 1.0f / noiseScale;
             int count = 0;
 
-            for (int x = 0; x < xSize; x++)
-            {
-                float xd = xOffset + (float)x * xScale + xCoord;
-                int xi = (int)xd;
-                if (xd < (float)xi) xi--;
-                int xa = xi & 255;
-                xd -= (float)xi;
-                float xr = xd * xd * xd * (xd * (xd * 6.0f - 15.0f) + 10.0f);
+            int x, z, xi, xa, zi, za, p1, p2, p3, p4;
+            float xd, zd, xr, zr, ler1, ler2, ler3, f1, f2, f3;
 
-                for (int z = 0; z < zSize; z++)
+            for (x = 0; x < xSize; x++)
+            {
+                xd = xOffset + (float)x * xScale + xCoord;
+                xi = (int)xd;
+                if (xd < xi) xi--;
+                xa = xi & 255;
+                xd -= xi;
+                xr = xd * xd * xd * (xd * (xd * 6.0f - 15.0f) + 10.0f);
+
+                for (z = 0; z < zSize; z++)
                 {
-                    float zd = zOffset + (float)z * zScale + zCoord;
-                    int zi = (int)zd;
+                    zd = zOffset + (float)z * zScale + zCoord;
+                    zi = (int)zd;
                     if (zd < (float)zi) zi--;
-                    int za = zi & 255;
+                    za = zi & 255;
                     zd -= (float)zi;
-                    float zr = zd * zd * zd * (zd * (zd * 6.0f - 15.0f) + 10.0f);
-                    int p1 = permutations[xa] + 0;
-                    int p2 = permutations[p1] + za;
-                    int p3 = permutations[xa + 1] + 0;
-                    int p4 = permutations[p3] + za;
-                    float ler1 = Lerp(xr, Multiply(permutations[p2], xd, zd), Grad(permutations[p4], xd - 1.0f, 0.0f, zd));
-                    float ler2 = Lerp(xr, Grad(permutations[p2 + 1], xd, 0.0f, zd - 1.0f), Grad(permutations[p4 + 1], xd - 1.0f, 0.0f, zd - 1.0f));
-                    float ler3 = Lerp(zr, ler1, ler2);
+                    zr = zd * zd * zd * (zd * (zd * 6.0f - 15.0f) + 10.0f);
+                    p1 = permutations[xa] + 0;
+                    p2 = permutations[p1] + za;
+                    p3 = permutations[xa + 1] + 0;
+                    p4 = permutations[p3] + za;
+                    f1 = xr;
+                    f2 = Multiply(permutations[p2], xd, zd);
+                    f3 = Grad(permutations[p4], xd - 1.0f, 0.0f, zd);
+                    ler1 = f2 + f1 * (f3 - f2);
+                    f2 = Grad(permutations[p2 + 1], xd, 0.0f, zd - 1.0f);
+                    f3 = Grad(permutations[p4 + 1], xd - 1.0f, 0.0f, zd - 1.0f);
+                    ler2 = f2 + f1 * (f3 - f2);
+                    ler3 = ler1 + zr * (ler2 - ler1);
                     noiseArray[count] += ler3 * noise;
                     count++;
                 }

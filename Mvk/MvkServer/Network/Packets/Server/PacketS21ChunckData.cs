@@ -41,14 +41,15 @@ namespace MvkServer.Network.Packets.Server
             this.biom = biom;
             buffer = new byte[0];
 
-            this.flagsYAreas = 0;
+           // this.flagsYAreas = 0;
+            this.flagsYAreas = flagsYAreas;
             if (flagsYAreas > 0)
             {
                 List<ChunkStorage> storages = new List<ChunkStorage>();
 
                 for (int y = 0; y < ChunkBase.COUNT_HEIGHT; y++)
                 {
-                    if ((!biom || !chunk.StorageArrays[y].IsEmptyData()) && (flagsYAreas & 1 << y) != 0)
+                    if (/*(!biom || !chunk.StorageArrays[y].IsEmptyData()) && */(flagsYAreas & 1 << y) != 0)
                     {
                         this.flagsYAreas |= 1 << y;
                         storages.Add(chunk.StorageArrays[y]);
@@ -93,6 +94,10 @@ namespace MvkServer.Network.Packets.Server
                 if (biom)
                 {
                     // добавляем данные биома
+                    for (int i = 0; i < 256; i++)
+                    {
+                        buffer[count++] = (byte)chunk.biome[i];
+                    }
                 }
             }
         }

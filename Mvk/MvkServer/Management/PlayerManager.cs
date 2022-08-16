@@ -1,9 +1,7 @@
 ﻿using MvkServer.Entity;
-using MvkServer.Entity.Item;
 using MvkServer.Entity.Mob;
 using MvkServer.Entity.Player;
 using MvkServer.Glm;
-using MvkServer.Item;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
@@ -13,7 +11,6 @@ using MvkServer.World.Chunk;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Net.Sockets;
 
 namespace MvkServer.Management
@@ -38,9 +35,8 @@ namespace MvkServer.Management
         /// </summary>
         private List<EntityPlayerServer> players = new List<EntityPlayerServer>();
         /// <summary>
-        /// Чанки игроков vec2i => PlayerInstance
+        /// Чанки игроков
         /// </summary>
-        //private Hashtable playerInstances = new Hashtable();
         private Dictionary<vec2i, PlayerInstance> playerInstances = new Dictionary<vec2i, PlayerInstance>();
         /// <summary>
         /// Список PlayerInstance которые надо обновить
@@ -139,7 +135,7 @@ namespace MvkServer.Management
             for (int i = 0; i < 3; i++)
             {
                 EntityChicken entityChicken = new EntityChicken(World);
-                entityChicken.SetPosition(entityPlayer.Position + new vec3(3, World.Rand.Next(40, 64), 0));
+                entityChicken.SetPosition(entityPlayer.Position + new vec3(3, World.Rnd.Next(40, 64), 0));
                 World.SpawnEntityInWorld(entityChicken);
             }
         }
@@ -177,7 +173,7 @@ namespace MvkServer.Management
 
         public void SpawnPositionTest(EntityPlayerServer entityPlayer)
         {
-            Random random = new Random();
+            Rand random = new Rand();
             entityPlayer.SetPosLook(new vec3(random.Next(-16, 16) - 0040, 0, random.Next(-16, 16)), -0.9f, -.8f);
             SpawnPositionCheck(entityPlayer);
             // entityPlayer.SetPosLook(new vec3(random.Next(-16, 16) - 50040, 30, random.Next(-16, 16)), -0.9f, -.8f);
@@ -629,23 +625,30 @@ namespace MvkServer.Management
         /// </summary>
         public void UpdatePlayerInstances()
         {
-            profiler.StartSection("LoadingChunks");
+            profiler.StartSection("LoadGenResponse");
+            World.ChunkPrServ.LoadGenResponse();
+            profiler.EndStartSection("LoadingChunks");
             try
             {
                 for (int i = 0; i < players.Count; i++)
                 {
                     EntityPlayerServer player = players[i];
-                    //TODO::Количество чанков для загрузки или генерации за такт, было 5
-                    int load = 5;
+                    // Количество чанков для загрузки или генерации за такт, было 5
+                    //int load = MvkGlobal.COUNT_CHUNK_LOAD_OR_GEN_TPS;
                     // Всего проверки чанков за такт
                     int all = 100;
-                    while (player.LoadingChunks.Count > 0 && load > 0 && all > 0)
+                    //World.ChunkPrServ.LoadGenRequestCount
+
+                    while (player.LoadingChunks.Count > 0 
+                        && World.ChunkPrServ.LoadGenRequestCount < MvkGlobal.COUNT_CHUNK_LOAD_OR_GEN_TPS && all > 0)
                     {
                         vec2i posCh = player.LoadingChunks.FirstRemove();
                         if (!World.ChunkPrServ.IsChunk(posCh))
                         {
-                            World.ChunkPrServ.LoadChunk(posCh);
-                            load--;
+
+                            World.ChunkPrServ.LoadGenRequestAdd(posCh);
+                            //World.ChunkPrServ.LoadChunk(posCh);
+                            //load--;
                         }
                         all--;
                     }
@@ -826,11 +829,6 @@ namespace MvkServer.Management
             {
                 if (playerInstance.CountPlayers() > 0) list.Add(playerInstance.CurrentChunk);
             }
-            //Hashtable ht = playerInstances.Clone() as Hashtable;
-            //foreach (PlayerInstance playerInstance in ht.Values)
-            //{
-            //    if (playerInstance.CountPlayers() > 0) list.Add(playerInstance.CurrentChunk);
-            //}
             return list;
         }
 

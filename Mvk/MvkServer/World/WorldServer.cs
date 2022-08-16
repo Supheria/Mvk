@@ -6,6 +6,7 @@ using MvkServer.Management;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
 using MvkServer.Util;
+using MvkServer.World.Block;
 using MvkServer.World.Chunk;
 using System;
 
@@ -42,10 +43,6 @@ namespace MvkServer.World
         /// Зерно генерации случайных чисел
         /// </summary>
         public int Seed { get; private set; } = 2;
-        /// <summary>
-        /// Объект шумов
-        /// </summary>
-        public NoiseStorge Noise { get; private set; }
 
         /// <summary>
         /// Тестовый параметр, мир весь для креатива
@@ -55,16 +52,15 @@ namespace MvkServer.World
         public WorldServer(Server server, int seed) : base()
         {
             IsRemote = false;
+            Seed = seed;
+            IsCreativeMode = seed > 3;
+            Rnd = new Rand(seed);
             ServerMain = server;
             ChunkPr = new ChunkProviderServer(this);
             Players = new PlayerManager(this);
             Tracker = new EntityTracker(this);
             Log = ServerMain.Log;
             profiler = new Profiler(Log);
-            Seed = seed;
-            IsCreativeMode = seed > 3;
-            Rand = new Random(seed);
-            Noise = new NoiseStorge(this);
         }
 
         /// <summary>
@@ -97,28 +93,69 @@ namespace MvkServer.World
             //this.villageCollectionObj.tick();
             //this.villageSiege.tick();
             profiler.EndSection();
+
+            //TODO::2022-08-04 мгновенный тик блока, смотрим на ява WorldServer #492
         }
 
         private void TickBlocks()
         {
+            if (ServerMain.IsTickBlocksPause) return;
+
             SetActivePlayerChunksAndCheckLight();
             // цикл активных чанков
             int count = activeChunkSet.Count;
-            for (int i = 0; i < count; i++) 
-            //foreach(vec2i chPos in activeChunkSet)
+            int randomTickSpeed = MvkGlobal.RANDOM_TICK_SPEED;
+            ChunkBase chunk;
+            ChunkStorage chunkStorage;
+            int yc, i, j, x, y, z, k, xc0, yc0;
+            BlockPos blockPos = new BlockPos();
+            BlockState blockState;
+            BlockBase block;
+
+            for (i = 0; i < count; i++) 
             {
                 profiler.StartSection("GetChunk");
-                ChunkBase chunk = GetChunk(activeChunkSet[i]);
-                //if (chunk == null) ChunkPrServ.LoadChunk(chPos);
+                chunk = GetChunk(activeChunkSet[i]);
                 
-                if (chunk != null)
+                if (chunk != null && chunk.IsChunkLoaded)
                 {
+                    xc0 = chunk.Position.x << 4;
+                    yc0 = chunk.Position.y << 4;
                     profiler.EndStartSection("TickChunk");
                     chunk.Update();
                     profiler.EndStartSection("TickBlocks");
-                    // WorldServer # 423
-                    profiler.EndStartSection("StartRecheckGaps");
-                    //chunk.Light.StartRecheckGaps();
+
+                    if (randomTickSpeed > 0)
+                    {
+                        for (yc = 0; yc < ChunkBase.COUNT_HEIGHT; yc++)
+                        {
+                            chunkStorage = chunk.StorageArrays[yc];
+                            if (!chunkStorage.IsEmptyData() && chunkStorage.GetNeedsRandomTick())
+                            {
+                                for (j = 0; j < randomTickSpeed; j++)
+                                {
+                                    updateLCG = updateLCG * 3 + 1013904223;
+                                    k = updateLCG >> 2;
+                                    x = k & 15;
+                                    z = k >> 8 & 15;
+                                    y = k >> 16 & 15;
+                                    blockPos.X = x + xc0;
+                                    blockPos.Y = y + chunkStorage.GetYLocation();
+                                    blockPos.Z = z + yc0;
+                                    blockState = chunkStorage.GetBlockState(x, y, z);
+                                    block = blockState.GetBlock();
+                                    if (block.NeedsRandomTick)
+                                    {
+                                        block.RandomTick(this, blockPos, blockState, Rnd);
+                                        if (chunkStorage.IsEmptyData() || !chunkStorage.GetNeedsRandomTick())
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 profiler.EndSection();
             }
@@ -151,27 +188,31 @@ namespace MvkServer.World
         /// </summary>
         public override void MarkBlockRangeForRenderUpdate(int x0, int y0, int z0, int x1, int y1, int z1)
         {
-            int c0x = (x0 - 1) >> 4;
-            int c0y = (y0 - 1) >> 4;
+            int c0x = (x0) >> 4;
+            int c0y = (y0) >> 4;
             if (c0y < 0) c0y = 0;
-            int c0z = (z0 - 1) >> 4;
-            int c1x = (x1 + 1) >> 4;
-            int c1y = (y1 + 1) >> 4;
+            int c0z = (z0) >> 4;
+            int c1x = (x1) >> 4;
+            int c1y = (y1) >> 4;
             if (c1y > ChunkBase.COUNT_HEIGHT15) c1y = ChunkBase.COUNT_HEIGHT15;
-            int c1z = (z1 + 1) >> 4;
+            int c1z = (z1) >> 4;
             vec2i ch;
             int x, y, z;
+            ChunkBase chunk; // латка *
             for (x = c0x; x <= c1x; x++)
             {
                 for (z = c0z; z <= c1z; z++)
                 {
                     ch = new vec2i(x, z);
+                    chunk = GetChunk(ch); // латка *
                     for (y = c0y; y <= c1y; y++)
                     {
+                        if (chunk.StorageArrays[y].sky) // латка *
                         Players.FlagChunkForUpdate(ch, y);
                     }
                 }
             }
+            // * 2022-08-15 почему-то сервер видит sky, но sky не был обработан, из-за этого псведо чанки тёмные сущности
         }
 
         #region Entity

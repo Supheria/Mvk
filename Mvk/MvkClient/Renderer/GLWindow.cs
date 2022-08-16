@@ -1,5 +1,4 @@
-﻿using MvkClient.Entity;
-using MvkClient.Renderer.Shaders;
+﻿using MvkClient.Renderer.Shaders;
 using MvkServer.Util;
 using SharpGL;
 using System;

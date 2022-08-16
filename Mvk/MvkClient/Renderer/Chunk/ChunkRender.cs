@@ -102,10 +102,25 @@ namespace MvkClient.Renderer.Chunk
         {
             meshDense[y].StatusRendering();
             meshAlpha[y].StatusRendering();
+        }
+
+        /// <summary>
+        /// Заполнить буфе боковых чанков
+        /// </summary>
+        public void UpBufferChunks()
+        {
             for (int i = 0; i < 8; i++)
             {
                 chunks[i] = World.ChunkPr.GetChunk(Position + MvkStatic.AreaOne8[i]) as ChunkRender;
             }
+        }
+
+        /// <summary>
+        /// Очистить буфер соседних чанков
+        /// </summary>
+        public void ClearBufferChunks()
+        {
+            for (int i = 0; i < 8; i++) chunks[i] = null;
         }
 
         /// <summary>
@@ -120,6 +135,7 @@ namespace MvkClient.Renderer.Chunk
         {
             try
             {
+                //World.Log.Log("RB: {0} {1}", Position, chY);
                 long timeBegin, timeEnd;
                 timeBegin = GLWindow.stopwatch.ElapsedTicks;
 
@@ -201,8 +217,10 @@ namespace MvkClient.Renderer.Chunk
                 ToBufferAlphaY(alphas);
                 meshAlpha[chY].SetBuffer(ClientWorld.WorldRender.bufferAlpha.ToArray());
                 //timeEnd = GLWindow.stopwatch.ElapsedTicks;
+                //World.Log.Log("RN: {0} {1}", Position, chY);
                 float time = (timeEnd - timeBegin) / (float)MvkStatic.TimerFrequency;
                 Debug.RenderChunckTime8 = (Debug.RenderChunckTime8 * 15f + time) / 16f;
+                //for (i = 0; i < 8; i++) chunks[i] = null;
             }
             catch (Exception ex)
             {
