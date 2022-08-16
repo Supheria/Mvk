@@ -134,7 +134,7 @@ namespace MvkClient.Util
                         if (Interpolation < 0) Interpolation = 0f;
                     }
                 }
-                else if (ClientMain.World != null && ClientMain.IsGamePaused)
+                else if ((ClientMain.World != null && ClientMain.IsGamePaused) || ClientMain.World == null)
                 {
                     if (currentTimeBegin >= nextTick)
                     {
@@ -143,7 +143,6 @@ namespace MvkClient.Util
                         Interpolation = 0;
                     }
                 }
-
                 // Проверяем кадр
                 if (isMax)
                 {
