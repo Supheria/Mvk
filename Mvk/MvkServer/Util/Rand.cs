@@ -1,168 +1,149 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 
 namespace MvkServer.Util
 {
-    //public class Rand : Random
-    //{
-    //    public Rand() : base() { }
-    //    public Rand(int seed) : base(seed) { }
-
-    //    public float NextFloat()
-    //    {
-    //        return (float)NextDouble();
-    //    }
-    //}
-
-    //[System.Runtime.InteropServices.ComVisible(true)]
-    //[Serializable]
+    /// <summary>
+    /// Генератор случайных чисел взят с Java сборка jdk 1.8
+    /// В разы быстрее чем System.Random
+    /// </summary>
     public class Rand
     {
-        private const int MBIG = Int32.MaxValue;
-        private const int MSEED = 161803398;
-        private const int MZ = 0;
-
-        private int inext;
-        private int inextp;
-        private readonly int[] seedArray = new int[56];
-
-        public Rand() : this(Environment.TickCount) { }
-
-        public Rand(int seed)
+        private class AtomicLong
         {
+            private long value;
+
+            public AtomicLong() { }
+
+            public AtomicLong(long initialValue) => value = initialValue;
+
+            public long Get() => value;
+
+            public void Set(long newValue) => value = newValue;
+
+            public bool CompareAndSet(long expect, long update)
+            {
+                if (value == expect)
+                {
+                    value = update;
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        private readonly AtomicLong seed;
+        private static readonly long multiplier = 0x5DEECE66DL;
+        private static readonly long addend = 0xBL;
+        private static readonly long mask = (1L << 48) - 1;
+        private static readonly double DOUBLE_UNIT = 1.110223024625156540e-16; // 0x1.0p-53 || 1.0 / (1L << 53)
+        private static AtomicLong seedUniquifierLong => new AtomicLong(8682522807148012L);
+
+        private float nextNextGaussian;
+        private bool haveNextNextGaussian = false;
+
+        public Rand() : this(SeedUniquifier() ^ Environment.TickCount) { }
+        public Rand(long seed)
+        {
+            this.seed = new AtomicLong();
             SetSeed(seed);
         }
 
-        public void SetSeed(int seed)
+        private static long SeedUniquifier()
         {
-            int ii, i;
-            int mj, mk;
-
-            //Initialize our Seed array.
-            //This algorithm comes from Numerical Recipes in C (2nd Ed.)
-            int subtraction = (seed == Int32.MinValue) ? Int32.MaxValue : Math.Abs(seed);
-            mj = MSEED - subtraction;
-            seedArray[55] = mj;
-            mk = 1;
-            for (i = 1; i < 55; i++)
-            {  //Apparently the range [1..55] is special (Knuth) and so we're wasting the 0'th position.
-                ii = (21 * i) % 55;
-                seedArray[ii] = mk;
-                mk = mj - mk;
-                if (mk < 0) mk += MBIG;
-                mj = seedArray[ii];
-            }
-            for (int k = 1; k < 5; k++)
+            long current = seedUniquifierLong.Get();
+            long next;
+            // L'Ecuyer, "Tables of Linear Congruential Generators of
+            // Different Sizes and Good Lattice Structure", 1999
+            for (;;)
             {
-                for (i = 1; i < 56; i++)
-                {
-                    seedArray[i] -= seedArray[1 + (i + 30) % 55];
-                    if (seedArray[i] < 0) seedArray[i] += MBIG;
-                }
+                next = current * 181783497276652981L;
+                if (seedUniquifierLong.CompareAndSet(current, next)) return next;
             }
-            inext = 0;
-            inextp = 21;
-            //seed = 1;
         }
 
-        /// <summary>
-        /// Return a new random number [0..1) and reSeed the Seed array.
-        /// </summary>
-        private float Sample() =>
-            //Including this division at the end gives us significantly improved
-            //random number distribution.
-            (InternalSample() * (1.0f / MBIG));
+        private static long InitialScramble(long seed) => (seed ^ multiplier) & mask;
 
-        private int InternalSample()
+        public void SetSeed(long seed)
         {
-            int retVal;
-            int locINext = inext;
-            int locINextp = inextp;
+            this.seed.Set(InitialScramble(seed));
+            haveNextNextGaussian = false;
+        }
 
-            if (++locINext >= 56) locINext = 1;
-            if (++locINextp >= 56) locINextp = 1;
-
-            retVal = seedArray[locINext] - seedArray[locINextp];
-
-            if (retVal == MBIG) retVal--;
-            if (retVal < 0) retVal += MBIG;
-
-            seedArray[locINext] = retVal;
-
-            inext = locINext;
-            inextp = locINextp;
-
-            return retVal;
+        private int InternalSample(int bits)
+        {
+            long oldseed, nextseed;
+            AtomicLong seed = this.seed;
+            do
+            {
+                oldseed = seed.Get();
+                nextseed = (oldseed * multiplier + addend) & mask;
+            } while (!seed.CompareAndSet(oldseed, nextseed));
+            return (int)((ulong)(nextseed) >> (48 - bits));
         }
 
         /// <summary>
         /// An int [0..Int32.MaxValue)
         /// </summary>
-        public int Next() => InternalSample();
-
-        private double GetSampleForLargeRange()
-        {
-            // The distribution of double value returned by Sample 
-            // is not distributed well enough for a large range.
-            // If we use Sample for a range [Int32.MinValue..Int32.MaxValue)
-            // We will end up getting even numbers only.
-
-            int result = InternalSample();
-            // Note we can't use addition here. The distribution will be bad if we do that.
-            bool negative = (InternalSample() % 2 == 0) ? true : false;  // decide the sign based on second sample
-            if (negative)
-            {
-                result = -result;
-            }
-            double d = result;
-            d += (Int32.MaxValue - 1); // get a number in range [0 .. 2 * Int32MaxValue - 1)
-            d /= 2 * (uint)Int32.MaxValue - 1;
-            return d;
-        }
-
-        /// <summary>
-        /// An int [minvalue..maxvalue)
-        /// </summary>
-        public int Next(int minValue, int maxValue)
-        {
-            if (minValue > maxValue) throw new ArgumentNullException("minValue > maxValue");
-            Contract.EndContractBlock();
-
-            long range = (long)maxValue - minValue;
-            if (range <= Int32.MaxValue)
-            {
-                return ((int)(Sample() * range) + minValue);
-            }
-
-            return (int)((long)(GetSampleForLargeRange() * range) + minValue);
-        }
+        public int Next() => InternalSample(32);
+        
         /// <summary>
         /// An int [0..maxValue)
         /// </summary>
-        public int Next(int maxValue)
+        public int Next(int bound)
         {
-            if (maxValue < 0) throw new ArgumentNullException("maxValue < 0");
-            Contract.EndContractBlock();
+            if (bound <= 0) throw new Exception("Значение должно быть больше ноля");
 
-            return (int)(Sample() * maxValue);
+            int r = InternalSample(31);
+            int m = bound - 1;
+            if ((bound & m) == 0)  // i.e., bound is a power of 2
+                r = (int)((bound * (long)r) >> 31);
+            else
+            {
+                for (int u = r; u - (r = u % bound) + m < 0; u = InternalSample(31));
+            }
+            return r;
         }
 
-        /// <summary>
-        /// A double [0..1)
-        /// </summary>
-        public float NextFloat() => Sample();
+        public long NextLong() => ((long)(InternalSample(32)) << 32) + InternalSample(32);
+
+        public bool NextBool() => InternalSample(1) != 0;
 
         /// <summary>
-        /// Fills the byte array with random bytes [0..0x7f].  The entire array is filled.
+        /// A float [0..1)
         /// </summary>
-        public void NextBytes(byte[] buffer)
+        public float NextFloat() => InternalSample(24) / ((float)(1 << 24));
+
+        public double NextDouble() => (((long)(InternalSample(26)) << 27) + InternalSample(27)) * DOUBLE_UNIT;
+
+        public float NextGaussian()
         {
-            if (buffer == null) throw new ArgumentNullException("buffer");
-            Contract.EndContractBlock();
-
-            for (int i = 0; i < buffer.Length; i++)
+            // See Knuth, ACP, Section 3.4.1 Algorithm C.
+            if (haveNextNextGaussian)
             {
-                buffer[i] = (byte)(InternalSample() % (Byte.MaxValue + 1));
+                haveNextNextGaussian = false;
+                return nextNextGaussian;
+            }
+            else
+            {
+                float v1, v2, s;
+                do
+                {
+                    v1 = 2 * NextFloat() - 1; // between -1 and 1
+                    v2 = 2 * NextFloat() - 1; // between -1 and 1
+                    s = v1 * v1 + v2 * v2;
+                } while (s >= 1 || s == 0);
+                float multiplier = Mth.Sqrt(-2 * Mth.Log(s) / s);
+                nextNextGaussian = v2 * multiplier;
+                haveNextNextGaussian = true;
+                return v1 * multiplier;
+            }
+        }
+
+        public void NextBytes(byte[] bytes)
+        {
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                bytes[i] = (byte)Next();
             }
         }
     }

@@ -1,20 +1,18 @@
-﻿using MvkServer.Gen;
-using MvkServer.Glm;
+﻿using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Biome;
-using MvkServer.World.Block;
+using MvkServer.World.Chunk;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace MvkServer.World.Chunk
+namespace MvkServer.World.Gen
 {
     public class ChunkProviderGenerate
     {
         /// <summary>
         /// Сылка на объект мира
         /// </summary>
-        private readonly WorldServer world;
+        public WorldServer World { get; private set; }
         /// <summary>
         /// Шум высот биомов
         /// </summary>
@@ -56,14 +54,23 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Шум для травы и другой растительности
         /// </summary>
-        public float[] GrassNoise { get; private set; } = new float[256];
+        //public float[] GrassNoise { get; private set; } = new float[256];
         /// <summary>
         /// Шум для дополнительных областей, для корректировки рельефа
         /// </summary>
         public float[] AreaNoise { get; private set; } = new float[256];
+        /// <summary>
+        /// Вспомогательный рандом
+        /// </summary>
+        public Rand Random { get; private set; }
+        public int Seed { get; private set; }
 
-        private readonly BiomeBase[] biomes;
+        public readonly BiomeBase[] biomes;
         private BiomeBase biomeBase;
+        /// <summary>
+        /// Счётчик биомов в чанке
+        /// </summary>
+        private int[] biomesCount;
 
         /// <summary>
         /// Чанк для заполнения данных
@@ -72,16 +79,17 @@ namespace MvkServer.World.Chunk
 
         public ChunkProviderGenerate(WorldServer worldIn)
         {
-            world = worldIn;
-            int seed = world.Seed;
-            heightBiome = new NoiseGeneratorPerlin(new Rand(seed), 8);
-            riversBiome = new NoiseGeneratorPerlin(new Rand(seed + 6), 8);
-            wetnessBiome = new NoiseGeneratorPerlin(new Rand(seed + 8), 4); // 8
-            temperatureBiome = new NoiseGeneratorPerlin(new Rand(seed + 4), 4); // 8
+            World = worldIn;
+            Seed = World.Seed;
+            heightBiome = new NoiseGeneratorPerlin(new Rand(Seed), 8);
+            riversBiome = new NoiseGeneratorPerlin(new Rand(Seed + 6), 8);
+            wetnessBiome = new NoiseGeneratorPerlin(new Rand(Seed + 8), 4); // 8
+            temperatureBiome = new NoiseGeneratorPerlin(new Rand(Seed + 4), 4); // 8
             //cave = new NoiseGeneratorPerlin(new Rand(seed + 2), 2);
-            NoiseDown = new NoiseGeneratorPerlin(new Rand(seed), 1);
-            noiseArea = new NoiseGeneratorPerlin(new Rand(seed + 2), 4);
+            NoiseDown = new NoiseGeneratorPerlin(new Rand(Seed), 1);
+            noiseArea = new NoiseGeneratorPerlin(new Rand(Seed + 2), 4);
 
+            Random = new Rand(Seed);
             chunkPrimer = new ChunkPrimer();
 
             biomeBase = new BiomeBase(this);
@@ -100,12 +108,16 @@ namespace MvkServer.World.Chunk
             biomes[10] = new BiomeMountains(this);
             biomes[11] = new BiomeMountainsDesert(this);
 
+            biomesCount = new int[biomes.Length];
+
+
+          //  for (int i = 0; i < 12; i++) biomes[i] = new BiomePlain(this);
         }
 
         /// <summary>
         /// Получить конкретный биом
         /// </summary>
-        private BiomeBase GetBiome(EnumBiome enumBiome) => biomes[(int)enumBiome];
+        //private BiomeBase GetBiome(EnumBiome enumBiome) => biomes[(int)enumBiome];
 
         public ChunkBase GenerateChunk(ChunkBase chunk)
         {
@@ -114,9 +126,11 @@ namespace MvkServer.World.Chunk
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
                 chunkPrimer.Clear();
+                //for (int i = 0; i < biomesCount.Length; i++) biomesCount[i] = 0;
                 int xbc = chunk.Position.x << 4;
                 int zbc = chunk.Position.y << 4;
 
+                
                 biomeBase.Init(chunkPrimer, xbc, zbc);
                 biomeBase.Down();
 
@@ -127,12 +141,12 @@ namespace MvkServer.World.Chunk
                 temperatureBiome.GenerateNoise2d(temperatureNoise, xbc, zbc, 16, 16, .0125f , .0125f ); //*4
 
                 // доп шумы
-                NoiseDown.GenerateNoise2d(GrassNoise, xbc, zbc, 16, 16, .5f, .5f);
+                //NoiseDown.GenerateNoise2d(GrassNoise, xbc, zbc, 16, 16, .5f, .5f);
                 noiseArea.GenerateNoise2d(AreaNoise, xbc, zbc, 16, 16, .8f, .8f);
 
                 BiomeData biomeData;
-                BiomeBase biome;
-                int x, y, z;
+                BiomeBase biome = biomes[2];
+                int x, y, z, idBiome;
                 int count = 0;
                 float h, r, t, w;
                 
@@ -147,7 +161,9 @@ namespace MvkServer.World.Chunk
                         w = wetnessNoise[count] / 8.3f;
                         biomeData = DefineBiome(h, r, t, w);
                         chunkPrimer.biome[x << 4 | z] = biomeData.biome;
-                        biome = GetBiome(biomeData.biome);
+                        idBiome = (int)biomeData.biome;
+                        biomesCount[idBiome]++;
+                        biome = biomes[idBiome];
                         biome.Init(chunkPrimer, xbc, zbc);
                         biome.Column(x, z, biomeData.height, biomeData.river);
                         //biome.Area(areaNoise, x, z, EnumBlock.Dirt, true);
@@ -156,6 +172,20 @@ namespace MvkServer.World.Chunk
                         count++;
                     }
                 }
+
+                // Находим биом которого больше всего
+                //int countMax = 0;
+                //for (int i = 0; i < biomesCount.Length; i++)
+                //{
+                //    if (biomesCount[i] > countMax) 
+                //    {
+                //        biome = biomes[i];
+                //        countMax = biomesCount[i];
+                //    }
+                //    biomesCount[i] = 0;
+                //}
+                //// Декорации от биома которого больше всего
+                //biome.Decorator.GenDecorations(chunkPrimer, biome, xbc, zbc);
 
                 ChunkStorage chunkStorage;
                 int yc, ycb, y0;
@@ -179,10 +209,12 @@ namespace MvkServer.World.Chunk
                 {
                     chunk.biome[i] = chunkPrimer.biome[i];
                 }
-                chunk.Light.SetLightBlocks(chunkPrimer.arrayLightBlocks.ToArray());
-                chunk.Light.GenerateHeightMapSky();
+                //chunk.Light.SetLightBlocks(chunkPrimer.arrayLightBlocks.ToArray());
                 long le1 = stopwatch.ElapsedTicks;
-                //   world.Log.Log("ChunkGen: {0:0.00} ms", le1 / (float)MvkStatic.TimerFrequency);
+                chunk.Light.GenerateHeightMapSky();
+                long le2 = stopwatch.ElapsedTicks;
+                //world.Log.Log("ChunkGen[{1}]: {0:0.00} ms hs: {2:0.00} ms",
+                //    le1 / (float)MvkStatic.TimerFrequency, chunk.Position, (le2 - le1) / (float)MvkStatic.TimerFrequency);
                 return chunk;
             }
             catch (Exception ex)
@@ -190,6 +222,38 @@ namespace MvkServer.World.Chunk
                 Logger.Crach(ex);
                 throw;
             }
+        }
+
+        public void Populate(ChunkBase chunk)
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            BiomeBase biome;
+            ChunkBase chunkSpawn;
+
+            // Декорация областей которые могу выйти за 1 чанк
+            int i, j;
+            for (j = 0; j < 9; j++)
+            {
+                chunkSpawn = World.GetChunk(MvkStatic.AreaOne9[j] + chunk.Position);
+                i = j + 1;
+                if ((chunkSpawn.CountPopulated & (1 << j)) == 0)
+                {
+                    chunkSpawn.CountPopulated += (1 << j);
+                }
+                biome = World.ChunkPrServ.ChunkGenerate.biomes[(int)chunkSpawn.biome[136]];
+                biome.Decorator.GenDecorationsArea(World, this, chunk, chunkSpawn);
+            }
+
+            // Декорация в одном столбце или 1 блок
+            // Выбираем биом который в середине чанка
+            biome = biomes[(int)chunk.biome[136]];
+            biome.Decorator.GenDecorations(World, this, chunk);
+
+            long le1 = stopwatch.ElapsedTicks;
+            //World.Log.Log("Populate[{1}]: {0:0.00} ms",
+            //    le1 / (float)MvkStatic.TimerFrequency, chunk.Position);
+
         }
 
         /// <summary>

@@ -33,11 +33,22 @@ namespace MvkServer.World.Chunk
         public EnumBiome[] biome = new EnumBiome[256];
 
         /// <summary>
+        /// Карта высот
+        /// x << 4 | z;
+        /// </summary>
+        public int[] heightMap = new int[256];
+
+        /// <summary>
         /// Очистить
         /// </summary>
         public void Clear()
         {
             for (int i = 0; i < 65536; i++) data[i] = 0;
+            for (int i = 0; i < 256; i++)
+            {
+                biome[i] = EnumBiome.Plain;
+                heightMap[i] = 0;
+            }
             arrayLightBlocks.Clear();
         }
     }

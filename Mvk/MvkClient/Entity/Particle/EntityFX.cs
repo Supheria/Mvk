@@ -51,8 +51,8 @@ namespace MvkClient.Entity.Particle
         {
             SetPosition(pos);
             LastTickPos = Position;
-            particleScale = rand.Next(100, 200) / 100f;
-            particleMaxAge = rand.Next(4, 40);
+            particleScale = (100 + rand.Next(100)) / 100f;
+            particleMaxAge = 4 + rand.Next(36);
             SetSize(.1f, .2f);
         }
 
@@ -64,9 +64,9 @@ namespace MvkClient.Entity.Particle
         /// <param name="motion">стартовое перемещение</param>
         public EntityFX(WorldBase world, vec3 pos, vec3 motion) : this(world, pos)
         {
-            motion.x += rand.Next(-100, 100) * .004f;
-            motion.y += rand.Next(-100, 100) * .004f;
-            motion.z += rand.Next(-100, 100) * .004f;
+            motion.x += (rand.Next(200) - 100) * .004f;
+            motion.y += (rand.Next(200) - 100) * .004f;
+            motion.z += (rand.Next(200) - 100) * .004f;
             float r = (rand.NextFloat() + rand.NextFloat() + 1f) * .06f;
             float sq = Mth.Sqrt(motion.x * motion.x + motion.y * motion.y + motion.z * motion.z);
             motion = motion / sq * r;

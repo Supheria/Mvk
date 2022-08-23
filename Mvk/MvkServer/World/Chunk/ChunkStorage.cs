@@ -37,10 +37,6 @@ namespace MvkServer.World.Chunk
         /// Количество блоков которым нужен тик
         /// </summary>
         private int countTickBlock;
-        /// <summary>
-        /// было ли заполнения неба
-        /// </summary>
-        public bool sky;
 
         public ChunkStorage(int y)
         {
@@ -50,7 +46,6 @@ namespace MvkServer.World.Chunk
             countTickBlock = 0;
             lightBlock = new byte[4096];
             lightSky = new byte[4096];
-            sky = false;
         }
 
         /// <summary>
@@ -183,21 +178,6 @@ namespace MvkServer.World.Chunk
       //  public void SetLightBlock(int x, int y, int z, byte value) => light[y << 8 | z << 4 | x] = (byte)(value << 4 | light[y << 8 | z << 4 | x] & 0xF);
 
         #endregion
-
-        /// <summary>
-        /// Проверка на осветление блоков неба
-        /// </summary>
-        public void CheckBrightenBlockSky()
-        {
-            if (!sky)
-            {
-                for (int i = 0; i < 4096; i++)
-                {
-                    lightSky[i] = 0xF;
-                }
-                sky = true;
-            }
-        }
 
         /// <summary>
         /// Имеются ли блоки которым нужен случайный тик

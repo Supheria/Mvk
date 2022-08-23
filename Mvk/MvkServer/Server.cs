@@ -1,8 +1,6 @@
 ﻿using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Network;
-using MvkServer.Network.Packets;
-using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 using MvkServer.World;
@@ -16,7 +14,6 @@ namespace MvkServer
 {
     public class Server
     {
-        
         /// <summary>
         /// Объект лога
         /// </summary>
@@ -36,7 +33,7 @@ namespace MvkServer
         /// <summary>
         /// Увеличивается каждый тик 
         /// </summary>
-        public uint TickCounter { get; protected set; } = 23500;
+        public uint TickCounter { get; protected set; } = 20500;
         /// <summary>
         /// Серверный объект мира
         /// </summary>
@@ -246,6 +243,19 @@ namespace MvkServer
                 long currentTime = stopwatchTps.ElapsedMilliseconds;
                 long cacheTime = 0;
                 Log.Log("server.runed");
+
+                //Rand rand = new Rand(4);
+                //string s = "";
+                //for (int i = 0; i < 100; i++) s += rand.Next(5) + ".";
+                //Log.Log(s);
+                //s = "";
+                //rand.SetSeed(4);
+                //for (int i = 0; i < 100; i++) s += rand.Next(5) + ".";
+                //Log.Log(s);
+                //s = "";
+                //rand.SetSeed(4);
+                //for (int i = 0; i < 100; i++) s += rand.Next(5) + ".";
+                //Log.Log(s);
 
                 World.Players.LoginStart();
 

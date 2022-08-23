@@ -1,4 +1,4 @@
-﻿using MvkServer.World.Chunk;
+﻿using MvkServer.World.Gen;
 
 namespace MvkServer.World.Biome
 {
@@ -7,7 +7,7 @@ namespace MvkServer.World.Biome
     /// </summary>
     public class BiomeMountainsDesert : BiomeBase
     {
-        public BiomeMountainsDesert(ChunkProviderGenerate chunkProvider) => Provider = chunkProvider;
+        public BiomeMountainsDesert(ChunkProviderGenerate chunkProvider) : base(chunkProvider) { }
 
         /// <summary>
         /// Возращаем сгенерированный столбец

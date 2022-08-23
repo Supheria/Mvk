@@ -33,7 +33,7 @@ namespace MvkServer.World
         /// <summary>
         /// Объект отладки по задержке в лог
         /// </summary>
-        protected Profiler profiler;
+        public Profiler profiler;
 
         /// <summary>
         /// Посредник чанков
@@ -402,6 +402,19 @@ namespace MvkServer.World
             return new BlockState().Empty();
         }
 
+        public bool IsAirBlock(BlockPos blockPos)
+        {
+            if (blockPos.IsValid())
+            {
+                ChunkBase chunk = GetChunk(blockPos.GetPositionChunk());
+                if (chunk != null)
+                {
+                    return chunk.GetBlockState(blockPos.X & 15, blockPos.Y, blockPos.Z & 15).data == 0;
+                }
+            }
+            return false;
+        }
+
         /// <summary>
         /// Получить кэшовый блок
         /// </summary>
@@ -574,7 +587,7 @@ namespace MvkServer.World
         /// </summary>
         /// <param name="blockPos">позици блока</param>
         /// <param name="blockState">данные блока</param>
-        /// <param name="flag">флаг, 1 частички старого блока</param>
+        /// <param name="flag">флаг, 1 частички старого блока, 2 уведомление соседей, 4 modify</param>
         /// <returns>true смена была</returns>
         public virtual bool SetBlockState(BlockPos blockPos, BlockState blockState, int flag)
         {
@@ -583,13 +596,13 @@ namespace MvkServer.World
             ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
             if (chunk == null) return false;
 
-            BlockState blockStateTrue = chunk.SetBlockState(blockPos, blockState, true);
+            BlockState blockStateTrue = chunk.SetBlockState(blockPos, blockState, (flag & 4) != 0);
             if (blockStateTrue.IsEmpty()) return false;
 
             if (!IsRemote)
             {
                 if ((flag & 1) != 0) ParticleDiggingBlock(blockStateTrue.GetBlock(), blockPos, 50);
-                NotifyNeighborsOfStateChange(blockPos, blockState.GetBlock());
+                if ((flag & 2) != 0) NotifyNeighborsOfStateChange(blockPos, blockState.GetBlock());
             }
             //BlockBase block = blockState.GetBlock();
             //BlockBase blockNew = blockStateTrue.GetBlock();

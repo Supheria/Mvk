@@ -124,7 +124,7 @@ namespace MvkServer.Management
             players.Add(entityPlayer);
             entityPlayer.UpPositionChunk();
             // Добавляем игрок в конкретный чанк
-            GetPlayerInstance(entityPlayer.PositionChunk, true).AddPlayer(entityPlayer, true);
+            GetPlayerInstance(entityPlayer.PositionChunk, true).AddPlayer(entityPlayer, true, true);
 
             entityPlayer.FlagSpawn = true;
             // Тут проверяем место положение персонажа, и заносим при запуске
@@ -132,10 +132,11 @@ namespace MvkServer.Management
             // entityPlayer.FlagSpawn = false;
 
             // TODO::отладка 5 кур
+            
             for (int i = 0; i < 3; i++)
             {
                 EntityChicken entityChicken = new EntityChicken(World);
-                entityChicken.SetPosition(entityPlayer.Position + new vec3(3, World.Rnd.Next(40, 64), 0));
+                entityChicken.SetPosition(entityPlayer.Position + new vec3(3, 100 + World.Rnd.Next(24), 0));
                 World.SpawnEntityInWorld(entityChicken);
             }
         }
@@ -174,7 +175,7 @@ namespace MvkServer.Management
         public void SpawnPositionTest(EntityPlayerServer entityPlayer)
         {
             Rand random = new Rand();
-            entityPlayer.SetPosLook(new vec3(random.Next(-16, 16) - 0040, 0, random.Next(-16, 16)), -0.9f, -.8f);
+            entityPlayer.SetPosLook(new vec3(random.Next(32) - 56, 0, random.Next(32) - 16), -0.9f, -.8f);
             SpawnPositionCheck(entityPlayer);
             // entityPlayer.SetPosLook(new vec3(random.Next(-16, 16) - 50040, 30, random.Next(-16, 16)), -0.9f, -.8f);
 
@@ -402,7 +403,7 @@ namespace MvkServer.Management
         /// </summary>
         private void RemoveMountedMovingPlayer(EntityPlayerServer entityPlayer)
         {
-            int radius = entityPlayer.OverviewChunk + 1;
+            int radius = entityPlayer.OverviewChunk + 2;
             int chx = entityPlayer.ChunkPosManaged.x;
             int chz = entityPlayer.ChunkPosManaged.y;
             for (int x = chx - radius; x <= chx + radius; x++)
@@ -412,21 +413,11 @@ namespace MvkServer.Management
                     PlayerInstance playerInstance = GetPlayerInstance(new vec2i(x, z), false);
                     if (playerInstance != null)
                     {
-                        playerInstance.RemovePlayer(entityPlayer);
+                        playerInstance.RemovePlayer(entityPlayer, true);
                     }
                 }
             }
             entityPlayer.LoadingChunks.Clear();
-        }
-        /// <summary>
-        /// Определите, перекрываются ли два прямоугольника с центрами в заданных точках 
-        /// для заданного радиуса.
-        /// </summary>
-        private bool Overlaps(int x1, int z1, int x2, int z2, int radius)
-        {
-            int xb = x1 - x2;
-            int zb = z1 - z2;
-            return xb >= -radius && xb <= radius ? zb >= -radius && zb <= radius : false;
         }
 
         /// <summary>
@@ -439,38 +430,15 @@ namespace MvkServer.Management
             // Проверяем изменение обзора чанка
             if (!entityPlayer.SameOverviewChunkPrev())
             {
-                int radius = entityPlayer.OverviewChunk + 1;
+                int radius = entityPlayer.OverviewChunk;
                 int radiusPrev = entityPlayer.OverviewChunkPrev;
-                int radiusMax = Mth.Max(radius, radiusPrev + 1);
+                int radiusMax = Mth.Max(radius, radiusPrev);
                 int chx = entityPlayer.ChunkPosManaged.x;
                 int chz = entityPlayer.ChunkPosManaged.y;
-                    
-                for (int x = chx - radiusMax; x <= chx + radiusMax; x++)
-                {
-                    for (int z = chz - radiusMax; z <= chz + radiusMax; z++)
-                    {
-                        if (entityPlayer.OverviewChunk > entityPlayer.OverviewChunkPrev)
-                        {
-                            if (x < chx - radiusPrev || x > chx + radiusPrev || z < chz - radiusPrev || z > chz + radiusPrev)
-                            {
-                                // Увеличиваем обзор
-                                GetPlayerInstance(new vec2i(x, z), true).AddPlayer(entityPlayer, false);
-                            }
-                        }
-                        else
-                        {
-                            if (x < chx - radius || x > chx + radius || z < chz - radius || z > chz + radius)
-                            {
-                                // Уменьшить обзор
-                                PlayerInstance playerInstance = GetPlayerInstance(new vec2i(x, z), false);
-                                if (playerInstance != null)
-                                {
-                                    playerInstance.RemovePlayer(entityPlayer);
-                                }
-                            }
-                        }
-                    }
-                }
+
+                UpdateMountedMovingPlayerOverviewChunk(entityPlayer, chx, chz, radiusMax, radiusPrev, radius, false);
+                if (radiusPrev != 0) radiusPrev += 2;
+                UpdateMountedMovingPlayerOverviewChunk(entityPlayer, chx, chz, radiusMax + 2, radiusPrev, radius + 2, true);
 
                 entityPlayer.UpOverviewChunkPrev();
                 isFilter = true;
@@ -478,11 +446,13 @@ namespace MvkServer.Management
 
             // Проверяем смещение чанка на выбранный параметр, если есть начинаем обработку
             vec2i chunkCoor = entityPlayer.GetChunkPos();
-            int bias = 2;
+            // Активация смещения при смещении количество чанков
+            int bias = MvkGlobal.MOVING_CHUNK_BIAS;
             if (Mth.Abs(chunkCoor.x - entityPlayer.ChunkPosManaged.x) >= bias || Mth.Abs(chunkCoor.y - entityPlayer.ChunkPosManaged.y) >= bias)
             {
                 // Смещение чанка
-                int radius = entityPlayer.OverviewChunk + 1;
+                int radiusPlay = entityPlayer.OverviewChunk;
+                int radius = entityPlayer.OverviewChunk + 2;
                 int chx = chunkCoor.x;
                 int chz = chunkCoor.y;
                 int chmx = entityPlayer.ChunkPosManaged.x;
@@ -490,26 +460,11 @@ namespace MvkServer.Management
                 int dx = chx - chmx;
                 int dz = chz - chmz;
 
-                for (int x = chx - radius; x <= chx + radius; x++)
-                {
-                    for (int z = chz - radius; z <= chz + radius; z++)
-                    {
-                        if (!Overlaps(x, z, chmx, chmz, radius))
-                        {
-                            GetPlayerInstance(new vec2i(x, z), true).AddPlayer(entityPlayer, false);
-                        }
+                // Проверка перемещения обзора чанков у клиента
+                UpdateMountedMovingPlayerRadius(entityPlayer, chx, chz, chmx, chmz, radiusPlay, false);
+                // Проверка перемещения обзора чанков в кэше сервера клиента (+2)
+                UpdateMountedMovingPlayerRadius(entityPlayer, chx, chz, chmx, chmz, radius, true);
 
-                        if (!Overlaps(x - dx, z - dz, chx, chz, radius))
-                        {
-                            PlayerInstance playerInstance = GetPlayerInstance(new vec2i(x - dx, z - dz), false);
-                            if (playerInstance != null)
-                            {
-                                playerInstance.RemovePlayer(entityPlayer);
-                            }
-                        }
-                    }
-                }
-                
                 entityPlayer.SetChunkPosManaged(new vec2i(chmx + dx, chmz + dz));
                 isFilter = true;
             }
@@ -521,26 +476,113 @@ namespace MvkServer.Management
         }
 
         /// <summary>
+        /// Обнолвение фрагмента при изменении обзора, для клиента или для кэш сервера
+        /// </summary>
+        private void UpdateMountedMovingPlayerOverviewChunk(EntityPlayerServer entityPlayer, int chx, int chz, int radius, int radiusPrev, int radiusMin, bool isCache)
+        {
+            int x, z;
+            for (x = chx - radius; x <= chx + radius; x++)
+            {
+                for (z = chz - radius; z <= chz + radius; z++)
+                {
+                    if (entityPlayer.OverviewChunk > entityPlayer.OverviewChunkPrev)
+                    {
+                        if (x < chx - radiusPrev || x > chx + radiusPrev || z < chz - radiusPrev || z > chz + radiusPrev)
+                        {
+                            // Увеличиваем обзор
+                            if (isCache)
+                            {
+                                GetPlayerInstance(new vec2i(x, z), true).AddPlayer(entityPlayer, true, false);
+                            }
+                            else
+                            {
+                                entityPlayer.LoadedChunks.Add(GetPlayerInstance(new vec2i(x, z), true).CurrentChunk);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (x < chx - radiusMin || x > chx + radiusMin || z < chz - radiusMin || z > chz + radiusMin)
+                        {
+                            // Уменьшить обзор
+                            PlayerInstance playerInstance = GetPlayerInstance(new vec2i(x, z), false);
+                            if (playerInstance != null)
+                            {
+                                playerInstance.RemovePlayer(entityPlayer, isCache);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Обнолвение фрагмента при перемещении, для клиента или для кэш сервера
+        /// </summary>
+        private void UpdateMountedMovingPlayerRadius(EntityPlayerServer entityPlayer, int chx, int chz, int chmx, int chmz, int radius, bool isCache)
+        {
+            int dx = chx - chmx;
+            int dz = chz - chmz;
+            int x, z, x1, z1;
+            for (x = chx - radius; x <= chx + radius; x++)
+            {
+                x1 = x - dx;
+                for (z = chz - radius; z <= chz + radius; z++)
+                {
+                    z1 = z - dz;
+                    if (x < chmx - radius || x > chmx + radius || z < chmz - radius || z > chmz + radius)
+                    {
+                        if (isCache)
+                        {
+                            GetPlayerInstance(new vec2i(x, z), true).AddPlayer(entityPlayer, true, false);
+                        }
+                        else
+                        {
+                            entityPlayer.LoadedChunks.Add(GetPlayerInstance(new vec2i(x, z), true).CurrentChunk);
+                        }
+                    }
+                    if (x1 < chx - radius || x1 > chx + radius || z1 < chz - radius || z1 > chz + radius)
+                    {
+                        PlayerInstance playerInstance = GetPlayerInstance(new vec2i(x1, z1), false);
+                        if (playerInstance != null)
+                        {
+                            playerInstance.RemovePlayer(entityPlayer, isCache);
+                        }
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
         /// Удаляет все фрагменты из очереди загрузки фрагментов данного проигрывателя, которые не находятся в зоне видимости проигрывателя. 
         /// Обновляет список координат чанков и сортирует их с центра в даль для игрока entityPlayer
         /// </summary>
         private void FilterChunkLoadQueue(EntityPlayerServer entityPlayer)
         {
-            vec2i currentChunk = GetPlayerInstance(entityPlayer.GetChunkPos(), true).CurrentChunk;
-            Hashtable map = entityPlayer.LoadedChunks.CloneMap();
+            GetPlayerInstance(entityPlayer.GetChunkPos(), true);
+            Hashtable mapLoaded = entityPlayer.LoadedChunks.CloneMap();
+            Hashtable mapLoading = entityPlayer.LoadingChunks.CloneMap();
             entityPlayer.LoadedChunks.Clear();
             entityPlayer.LoadingChunks.Clear();
 
             if (entityPlayer.DistSqrt != null)
             {
+                int radius = entityPlayer.OverviewChunk;
                 vec2i chunkPosManaged = entityPlayer.ChunkPosManaged;
+                vec2i vec;
+                vec2i pos;
                 for (int d = 0; d < entityPlayer.DistSqrt.Length; d++)
                 {
-                    vec2i pos = entityPlayer.DistSqrt[d] + chunkPosManaged;
+                    vec = entityPlayer.DistSqrt[d];
+                    pos = vec + chunkPosManaged;
                     World.ChunkPrServ.DroppedChunks.Remove(pos);
-                    if (map.ContainsKey(pos))
+                    if (mapLoaded.ContainsKey(pos) && vec.x >= -radius && vec.x <= radius && vec.y >= -radius && vec.y <= radius)
                     {
                         entityPlayer.LoadedChunks.Add(pos);
+                    }
+                    if (mapLoaded.ContainsKey(pos) || mapLoading.ContainsKey(pos))
+                    {
                         entityPlayer.LoadingChunks.Add(pos);
                     }
                 }

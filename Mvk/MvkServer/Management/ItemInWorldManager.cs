@@ -192,7 +192,7 @@ namespace MvkServer.Management
                             {
                                 block.DropBlockAsItemWithChance(world, BlockPosDestroy, blockState, 1.0f, 0);
                             }
-                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 1);
+                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 7);
                             worldServer.Tracker.SendToAllTrackingEntityCurrent(entityPlayer,
                                 new PacketS29SoundEffect(block.SampleBreak(worldServer), BlockPosDestroy.ToVec3(), 1f, block.SampleBreakPitch(worldServer.Rnd)));
                         }

@@ -57,29 +57,23 @@ namespace MvkServer.Management
         /// <summary>
         /// Добавить игрока в конкретный чанк
         /// </summary>
-        /// <param name="isLoading">Нужно ли добавить в список загрузки чанков</param>
-        public void AddPlayer(EntityPlayerServer player, bool isLoading)
+        /// <param name="isLoading">Нужно ли добавить в список загрузки чанков, для пометки сервера какие чанки проверить</param>
+        /// <param name="isLoading">Нужно ли добавить в список загруженых чанков, для обзора чанка для клиента</param>
+        public void AddPlayer(EntityPlayerServer player, bool isLoading, bool isLoaded)
         {
             if (!playersWatchingChunk.Contains(player))
             {
-                if (playersWatchingChunk.Count == 0)
-                {
-                    previousWorldTime = playerManager.World.ServerMain.TickCounter;
-                }
-
+                if (playersWatchingChunk.Count == 0) previousWorldTime = playerManager.World.ServerMain.TickCounter;
                 playersWatchingChunk.Add(player);
-                player.LoadedChunks.Add(CurrentChunk);
-                if (isLoading)
-                {
-                    player.LoadingChunks.Add(CurrentChunk);
-                }
+                if (isLoaded) player.LoadedChunks.Add(CurrentChunk);
+                if (isLoading) player.LoadingChunks.Add(CurrentChunk);
             }
         }
 
         /// <summary>
         /// Убрать игрока с конкретного чанка
         /// </summary>
-        public void RemovePlayer(EntityPlayerServer player)
+        public void RemovePlayer(EntityPlayerServer player, bool isServer)
         {
             if (playersWatchingChunk.Contains(player))
             {
@@ -93,18 +87,22 @@ namespace MvkServer.Management
                     player.SendPacket(new PacketS21ChunkData(chunk, false, 0));
                 }
 
-                playersWatchingChunk.Remove(player);
                 player.LoadedChunks.Remove(CurrentChunk);
 
-                if (playersWatchingChunk.Count == 0)
+                if (isServer)
                 {
-                    if (chunk != null) IncreaseInhabitedTime(chunk);
-                    playerManager.PlayerInstancesRemove(CurrentChunk, this);
-                    if (numBlocksToUpdate > 0)
+                    playersWatchingChunk.Remove(player);
+
+                    if (playersWatchingChunk.Count == 0)
                     {
-                        playerManager.PlayerInstancesToUpdateRemove(this);
+                        if (chunk != null) IncreaseInhabitedTime(chunk);
+                        playerManager.PlayerInstancesRemove(CurrentChunk, this);
+                        if (numBlocksToUpdate > 0)
+                        {
+                            playerManager.PlayerInstancesToUpdateRemove(this);
+                        }
+                        playerManager.World.ChunkPrServ.DropChunk(CurrentChunk);
                     }
-                    playerManager.World.ChunkPrServ.DropChunk(CurrentChunk);
                 }
             }
         }
@@ -233,16 +231,17 @@ namespace MvkServer.Management
                 {
                     // больше 64
                     //if (CheckChunk8())
-                    {
-                       // ChunkBase chunk = playerManager.World.GetChunk(CurrentChunk);
-                        PacketS21ChunkData packetS21ChunkData = new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate);
-                            //if ((CurrentChunk.x == 2 && CurrentChunk.y == 2) 
-                            //|| (CurrentChunk.x == 1 && CurrentChunk.y == 1)
-                            //|| (CurrentChunk.x == -1 && CurrentChunk.y == -4))
-                            //playerManager.World.Log.Log("2PI64: {0} {1} {2} {3}", CurrentChunk, flagsYAreasToUpdate, packetS21ChunkData.GetBuffer().Length, chunk.GetDebugAllSegment());
-                            //SendToAllPlayersWatchingChunk(packetS21ChunkData);
-                        SendToAllPlayersWatchingChunkCheck(packetS21ChunkData, CurrentChunk);
-                    }
+                   // {
+                    PacketS21ChunkData packetS21ChunkData = new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate);
+                    //ChunkBase chunk = playerManager.World.GetChunk(CurrentChunk);
+                    //playerManager.World.Log.Log("2PI64:[{0}] {1} {3} b:{2}", CurrentChunk, flagsYAreasToUpdate, packetS21ChunkData.GetBuffer().Length, chunk.GetDebugAllSegment());
+                    //if ((CurrentChunk.x == 2 && CurrentChunk.y == 2) 
+                    //|| (CurrentChunk.x == 1 && CurrentChunk.y == 1)
+                    //|| (CurrentChunk.x == -1 && CurrentChunk.y == -4))
+                    //playerManager.World.Log.Log("2PI64: {0} {1} {2} {3}", CurrentChunk, flagsYAreasToUpdate, packetS21ChunkData.GetBuffer().Length, chunk.GetDebugAllSegment());
+                    //SendToAllPlayersWatchingChunk(packetS21ChunkData);
+                    SendToAllPlayersWatchingChunkCheck(packetS21ChunkData, CurrentChunk);
+                   // }
                     //SendToAllPlayersWatchingChunk(new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate));
 
                     // Тайлы

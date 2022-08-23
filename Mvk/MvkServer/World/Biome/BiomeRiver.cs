@@ -1,5 +1,5 @@
 ﻿using MvkServer.Glm;
-using MvkServer.World.Chunk;
+using MvkServer.World.Gen;
 
 namespace MvkServer.World.Biome
 {
@@ -8,7 +8,7 @@ namespace MvkServer.World.Biome
     /// </summary>
     public class BiomeRiver : BiomeBase
     {
-        public BiomeRiver(ChunkProviderGenerate chunkProvider) => Provider = chunkProvider;
+        public BiomeRiver(ChunkProviderGenerate chunkProvider) : base(chunkProvider) { }
 
         /// <summary>
         /// Возращаем сгенерированный столбец
@@ -19,11 +19,15 @@ namespace MvkServer.World.Biome
         /// <param name="river">Определение центра реки 1..0..1</param>
         public override void Column(int x, int z, float height, float river)
         {
-            float r = 1f - river;
+            float riv = 1f - river;
             int yh = 96 + (int)(height * 96f);
             // Уменьшаем рельеф где вода
-            if (r > .5f) r = glm.cos(river * glm.pi) * .5f + .5f;
-            yh = yh - (int)(((yh - 94) + height * 96f) * r);
+            if (riv > .5f) riv = glm.cos(river * glm.pi) * .5f + .5f;
+            yh = yh - (int)(((yh - 94) + height * 96f) * riv);
+
+            //ColumnUpSeed(x, z);
+            //float r = rand.NextFloat();
+            //if (r > .8f) yh--;
 
             float area = Provider.AreaNoise[x << 4 | z];
             if (area > 3f || area < -3f) yh--;// else if (area < -3f && height <= 0) yh++;

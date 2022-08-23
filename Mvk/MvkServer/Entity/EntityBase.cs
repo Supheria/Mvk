@@ -625,12 +625,9 @@ namespace MvkServer.Entity
                 if (chunk != null)
                 {
                     ChunkStorage chunkStorage = chunk.StorageArrays[blockPos.Y >> 4];
-                    if (chunkStorage.sky)
-                    {
-                        int index = (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15);
-                        lightBlock = chunkStorage.lightBlock[index];
-                        lightSky = chunkStorage.lightSky[index];
-                    }
+                    int index = (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15);
+                    lightBlock = chunkStorage.lightBlock[index];
+                    lightSky = chunkStorage.lightSky[index];
                 }
             }
             return new vec2(

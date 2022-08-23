@@ -32,28 +32,28 @@ namespace MvkServer.World.Block.List
         /// </summary>
         /// <param name="side">Сторона на какой ставим блок</param>
         /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
-        public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
-        {
-            if (Check(worldIn, blockPos))
-            {
-                return base.Put(worldIn, blockPos, state, side, facing);
-            }
-            return false;
-        }
+        //public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
+        //{
+        //    if (Check(worldIn, blockPos))
+        //    {
+        //        return base.Put(worldIn, blockPos, state, side, facing);
+        //    }
+        //    return false;
+        //}
 
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
         public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
         {
-            if (!Check(worldIn, blockPos))
+            if (!CanBlockStay(worldIn, blockPos))
             {
                 DropBlockAsItem(worldIn, blockPos, state, 0);
-                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 1);
+                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 6);
             }
         }
 
-        private bool Check(WorldBase worldIn, BlockPos blockPos)
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos)
         {
             EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
             return enumBlock == EnumBlock.Dirt || enumBlock == EnumBlock.Turf;

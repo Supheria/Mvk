@@ -331,8 +331,16 @@ namespace MvkServer.World.Block
         /// </summary>
         /// <param name="side">Сторона на какой ставим блок</param>
         /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
-        public virtual bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing) 
-            => worldIn.SetBlockState(blockPos, state, 1);
+        public virtual bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
+        {
+            if (CanBlockStay(worldIn, blockPos)) return worldIn.SetBlockState(blockPos, state, 7);
+            return false;
+        }
+
+        /// <summary>
+        /// Проверка установи блока, можно ли его установить тут
+        /// </summary>
+        public virtual bool CanBlockStay(WorldBase worldIn, BlockPos blockPos) => true;
 
         /// <summary>
         /// Семпл сломанного блока

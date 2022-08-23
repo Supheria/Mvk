@@ -47,9 +47,6 @@
     <Compile Include="Entity\EntityLivingHead.cs" />
     <Compile Include="Entity\EnumEntities.cs" />
     <Compile Include="Entity\Mob\EntityChicken.cs" />
-    <Compile Include="Gen\NoiseGeneratorPerlin.cs" />
-    <Compile Include="Gen\NoiseGeneratorSimplex.cs" />
-    <Compile Include="Gen\NoiseStorge.cs" />
     <Compile Include="Inventory\IInventory.cs" />
     <Compile Include="Inventory\InventoryPlayer.cs" />
     <Compile Include="Item\ItemBase.cs" />
@@ -131,6 +128,7 @@
     <Compile Include="Util\ObjectEvent.cs" />
     <Compile Include="Util\Pole.cs" />
     <Compile Include="Util\Profiler.cs" />
+    <Compile Include="Util\RandSystem.cs" />
     <Compile Include="Util\Rand.cs" />
     <Compile Include="Util\RayCross.cs" />
     <Compile Include="Util\Smooth.cs" />
@@ -246,8 +244,9 @@
     <Compile Include="World\Chunk\ChunkHeir.cs" />
     <Compile Include="World\Chunk\ChunkMap.cs" />
     <Compile Include="World\Chunk\ChunkPrimer.cs" />
-    <Compile Include="World\Chunk\ChunkProviderGenerateDebug.cs" />
-    <Compile Include="World\Chunk\ChunkProviderGenerate.cs" />
+    <Compile Include="World\Gen\BiomeDecorator.cs" />
+    <Compile Include="World\Gen\ChunkProviderGenerateDebug.cs" />
+    <Compile Include="World\Gen\ChunkProviderGenerate.cs" />
     <Compile Include="World\Chunk\ChunkProviderServer.cs" />
     <Compile Include="World\Chunk\ChunkProvider.cs" />
     <Compile Include="World\Chunk\ChunkStorage.cs" />
@@ -258,12 +257,16 @@
     <Compile Include="World\Chunk\Light\WorkingLight.cs" />
     <Compile Include="World\Chunk\Light\WorldLight.cs" />
     <Compile Include="World\CollisionBase.cs" />
+    <Compile Include="World\Gen\Feature\WorldGenMinable.cs" />
+    <Compile Include="World\Gen\Feature\WorldGenPalm.cs" />
+    <Compile Include="World\Gen\Feature\WorldGenCactus.cs" />
+    <Compile Include="World\Gen\Feature\WorldGenerator.cs" />
+    <Compile Include="World\Gen\Feature\WorldGenPlants.cs" />
+    <Compile Include="World\Gen\NoiseGeneratorPerlin.cs" />
+    <Compile Include="World\Gen\NoiseGeneratorSimplex.cs" />
     <Compile Include="World\WorldBase.cs" />
     <Compile Include="World\WorldBaseSky.cs" />
     <Compile Include="World\WorldServer.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagramLight.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

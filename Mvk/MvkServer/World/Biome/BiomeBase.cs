@@ -1,5 +1,8 @@
-﻿using MvkServer.World.Block;
+﻿using MvkServer.Util;
+using MvkServer.World.Block;
 using MvkServer.World.Chunk;
+using MvkServer.World.Gen;
+using MvkServer.World.Gen.Feature;
 
 namespace MvkServer.World.Biome
 {
@@ -9,6 +12,10 @@ namespace MvkServer.World.Biome
     public class BiomeBase
     {
         public ChunkProviderGenerate Provider { get; protected set; }
+        /// <summary>
+        /// Декорация
+        /// </summary>
+        public BiomeDecorator Decorator { get; private set; }
 
         private readonly float[] downNoise = new float[256];
 
@@ -16,14 +23,46 @@ namespace MvkServer.World.Biome
         protected int xbc;
         protected int zbc;
 
+        protected Rand rand;
+
+        /// <summary>
+        /// Вверхний блок
+        /// </summary>
+        protected ushort blockIdUp;
+        /// <summary>
+        /// Блок тела
+        /// </summary>
+        protected ushort blockIdBody;
+
+        protected bool isBlockBody;
+
         protected BiomeBase() { }
-        public BiomeBase(ChunkProviderGenerate chunkProvider) => Provider = chunkProvider;
+        public BiomeBase(ChunkProviderGenerate chunkProvider)
+        {
+            Provider = chunkProvider;
+            rand = Provider.Random;
+            blockIdUp = (int)EnumBlock.Turf;
+            blockIdBody = (int)EnumBlock.Dirt;
+            isBlockBody = true;
+            Decorator = new BiomeDecorator(Provider.World);
+        }
 
         public void Init(ChunkPrimer chunk, int xbc, int zbc)
         {
             this.chunk = chunk;
             this.xbc = xbc;
             this.zbc = zbc;
+        }
+
+        /// <summary>
+        /// Обновить сид по колонке
+        /// </summary>
+        public void ColumnUpSeed(int x, int z)
+        {
+            rand.SetSeed(Provider.Seed);
+            int realX = (xbc + x) * rand.Next();
+            int realZ = (zbc + z) * rand.Next();
+            rand.SetSeed(realX ^ realZ ^ Provider.Seed);
         }
 
         /// <summary>
@@ -35,22 +74,47 @@ namespace MvkServer.World.Biome
         /// <param name="river">Определение центра реки 1..0..1</param>
         public virtual void Column(int x, int z, float height, float river)
         {
-            int yh = 97 + (int)(height * 96f);
+            int yh = GetLevelHeight(x, z, height, river);
+            chunk.heightMap[x << 4 | z] = yh;
+            int index = x << 12 | z << 8;
             int y;
 
-            for (y = 3; y <= yh; y++)
+            if (isBlockBody)
             {
-                chunk.data[x << 12 | z << 8 | y] = 3;
+                // Определяем высоту тела по шуму (3 - 6)
+                int bodyHeight = (int)(Provider.AreaNoise[x << 4 | z] / 4f + 5f);
+
+                int yb = yh - bodyHeight;
+                // заполняем камнем
+                for (y = 3; y < yb; y++) chunk.data[index | y] = 3;
+                // заполняем тело
+                for (y = yb; y < yh; y++) chunk.data[index | y] = blockIdBody;
+                chunk.data[x << 12 | z << 8 | yh] = yh < 96 ? blockIdBody : blockIdUp;
             }
+            else
+            {
+                // заполняем камнем
+                for (y = 3; y <= yh; y++) chunk.data[index | y] = 3;
+            }
+
             if (yh < 96)
             {
+                // меньше уровня воды
                 yh++;
                 for (y = yh; y < 97; y++)
                 {
-                    chunk.data[x << 12 | z << 8 | y] = 13;
+                    // заполняем водой
+                    chunk.data[index | y] = 13;
                 }
             }
         }
+
+        /// <summary>
+        /// Получить уровень высоты
+        /// </summary>
+        /// <param name="height">Высота -1..0..1</param>
+        /// <param name="river">Определение центра реки 1..0..1</param>
+        protected virtual int GetLevelHeight(int x, int z, float height, float river) => 97 + (int)(height * 96f);
 
         /// <summary>
         /// Генерация наза 0-3 блока
@@ -67,10 +131,9 @@ namespace MvkServer.World.Biome
                 {
                     float n = downNoise[count];
                     count++;
-
                     chunk.data[x << 12 | z << 8] = 2;
-                    chunk.data[x << 12 | z << 8 | 1] = (ushort)(n < .3 ? 2 : 3);
-                    chunk.data[x << 12 | z << 8 | 2] = (ushort)(n < -.3 ? 2 : 3);
+                    chunk.data[x << 12 | z << 8 | 1] = (ushort)(n < .1 ? 2 : 3);
+                    chunk.data[x << 12 | z << 8 | 2] = (ushort)(n < -.1 ? 2 : 3);
                 }
             }
         }
@@ -109,5 +172,11 @@ namespace MvkServer.World.Biome
             }
         }
 
+        public virtual WorldGenerator GetRandomWorldGenForGrass()
+        {
+            Decorator.genPlants.SetId(45); // 45
+            return Decorator.genPlants;
+        }
     }
 }
+

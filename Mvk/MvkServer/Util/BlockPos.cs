@@ -54,6 +54,10 @@ namespace MvkServer.Util
         /// </summary>
         public BlockPos Offset(vec3i vec) => Plus(vec);
         /// <summary>
+        /// Позиция соседнего блока
+        /// </summary>
+        public BlockPos Offset(int x, int y, int z) => Plus(x, y, z);
+        /// <summary>
         /// Позиция блока снизу
         /// </summary>
         public BlockPos OffsetDown() => Plus(EnumFacing.DirectionVec(Pole.Down));

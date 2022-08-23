@@ -1,6 +1,5 @@
 ﻿using MvkServer.Entity;
 using MvkServer.Entity.Player;
-using MvkServer.Gen;
 using MvkServer.Glm;
 using MvkServer.Management;
 using MvkServer.Network.Packets.Server;
@@ -83,8 +82,8 @@ namespace MvkServer.World
 
             profiler.EndStartSection("ChunkSource");
             ChunkPrServ.UnloadQueuedChunks();
-            profiler.EndStartSection("CheckAddGeneration");
-            ChunkPrServ.UpdateCheckAddGeneration();
+            //profiler.EndStartSection("CheckAddGeneration");
+            //ChunkPrServ.UpdateCheckAddGeneration();
             profiler.EndStartSection("TickBlocks");
             TickBlocks();
             profiler.EndStartSection("ChunkMap");
@@ -198,21 +197,17 @@ namespace MvkServer.World
             int c1z = (z1) >> 4;
             vec2i ch;
             int x, y, z;
-            ChunkBase chunk; // латка *
             for (x = c0x; x <= c1x; x++)
             {
                 for (z = c0z; z <= c1z; z++)
                 {
                     ch = new vec2i(x, z);
-                    chunk = GetChunk(ch); // латка *
                     for (y = c0y; y <= c1y; y++)
                     {
-                        if (chunk.StorageArrays[y].sky) // латка *
                         Players.FlagChunkForUpdate(ch, y);
                     }
                 }
             }
-            // * 2022-08-15 почему-то сервер видит sky, но sky не был обработан, из-за этого псведо чанки тёмные сущности
         }
 
         #region Entity

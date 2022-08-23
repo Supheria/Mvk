@@ -173,11 +173,6 @@ namespace MvkClient.Renderer.Block
                 storage = chunk.StorageArrays[y >> 4];
             }
 
-            // ERROR был без storage.countBlock == 0? -16; 13 чанк, вылетает ошибка, 
-            // так-как сразу идёт отрендереный чанк из-за света, но без небесного освещения, 
-            // по этому его нет
-            if (storage.countBlock == 0 && !storage.sky) return 0x0F; // Только яркость неба макс
-            
             xb = x & 15;
             yb = y & 15;
             zb = z & 15;
@@ -544,35 +539,39 @@ namespace MvkClient.Renderer.Block
                 return aoLight;
             }
             storage = chunkCheck.StorageArrays[yc];
-            if (storage.sky && storage.countBlock == 0)
+            //if (storage.countBlock == 0)
+            //{
+            //    // В псевдо чанке нет блоков, значит надо прорисовать сторону
+            //    isDraw = false;
+            //    //isDraw = true;
+            //    // TODO::2022-08-16 проверить на переходе чанков, корректность AmbientOcclusion
+            //}
+            //else
+            //{
+            yb = pY & 15;
+            index = yb << 8 | zb << 4 | xb;
+
+            if (storage.countBlock == 0)
             {
-                // В псевдо чанке нет блоков, но есть проверка освещения, значит надо прорисовать сторону
-                isDraw = true;
+                // Только яркость неба
+                aoLight.lightSky = storage.lightSky[index];
+                aoLight.lightBlock = storage.lightBlock[index];
+                aoLight.aol = 1;
+                return aoLight;
             }
-            else
-            {
-                if (!storage.sky || storage.countBlock == 0)
-                {
-                    // Только яркость неба макс
-                    aoLight.lightSky = 15;
-                    aoLight.aol = 1;
-                    return aoLight;
-                }
-                yb = pY & 15;
-                index = yb << 8 | zb << 4 | xb;
-                id = storage.data[index];
-                metCheck = id >> 12;
-                id = id & 0xFFF;
-                blockCheck = Blocks.blocksInt[id];
-                aoLight.aoc = blockCheck.АmbientOcclusion ? 1 : 0;
-                aoLight.aol = blockCheck.IsNotTransparent() ? 0 : 1;
+                
+            id = storage.data[index];
+            metCheck = id >> 12;
+            id = id & 0xFFF;
+            blockCheck = Blocks.blocksInt[id];
+            aoLight.aoc = blockCheck.АmbientOcclusion ? 1 : 0;
+            aoLight.aol = blockCheck.IsNotTransparent() ? 0 : 1;
 
-                //isDraw = id == 0 || (blockCheck.AllSideForcibly && blockCheck.Material != EnumMaterial.Lava);
-                isDraw = id == 0 || (blockCheck.AllSideForcibly && blockCheck.UseNeighborBrightness);
+            isDraw = id == 0 || (blockCheck.AllSideForcibly && blockCheck.UseNeighborBrightness);
 
-                UpIsDraw();
+            UpIsDraw();
 
-            }
+           // }
             if (isDraw)
             {
                 // Яркость берётся из данных блока

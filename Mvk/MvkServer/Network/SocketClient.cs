@@ -112,7 +112,7 @@ namespace MvkServer.Network
             if (MvkGlobal.IS_DEBUG_SLEEP_NET)
             {
                 Rand random = new Rand();
-                System.Threading.Thread.Sleep(count > 100 ? 50 : random.Next(5, 20));
+                System.Threading.Thread.Sleep(count > 100 ? 50 : (5 + random.Next(15)));
             }
         }
 

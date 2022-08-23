@@ -25,18 +25,14 @@ namespace MvkServer.Util
         /// <summary>
         /// Округляем до ближайшего целого
         /// </summary>
-        public static int Round(float d)
-        {
-            return (int)Math.Round(d);
-        }
+        public static int Round(float d) => (int)Math.Round(d);
 
         /// <summary>
         /// Квадратный корень
         /// </summary>
-        public static float Sqrt(float d)
-        {
-            return (float)Math.Sqrt(d);
-        }
+        public static float Sqrt(float d) => (float)Math.Sqrt(d);
+
+        public static float Log(float value) => (float)Math.Log(value);
 
         /// <summary>
         /// Вернуть обсалютное значение

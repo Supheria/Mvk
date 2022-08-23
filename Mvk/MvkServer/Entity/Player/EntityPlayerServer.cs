@@ -182,6 +182,10 @@ namespace MvkServer.Entity.Player
             {
                 int i = 0;
                 List<vec2i> loadedNull = new List<vec2i>();
+                int radius = OverviewChunk;
+                vec2i chunkCoor = GetChunkPos();
+                int chx = chunkCoor.x;
+                int chz = chunkCoor.y;
                 while (LoadedChunks.Count > 0 && i < MvkGlobal.COUNT_PACKET_CHUNK_TPS)
                 {
                     profiler.StartSection("LoadChunk");
@@ -189,21 +193,17 @@ namespace MvkServer.Entity.Player
                     vec2i pos = LoadedChunks.FirstRemove();
                     ChunkBase chunk = World.GetChunk(pos);
                     // NULL по сути не должен быть!!!
-                    if (chunk != null && chunk.IsChunkLoaded && chunk.Light.IsChunkLight())
+                    if (chunk != null && chunk.IsChunkLoaded && chunk.IsPopulated())
                     {
                         profiler.EndStartSection("PacketS21ChunckData");
-                        int flag = 0;
-                        
-                        for (int y = 0; y < ChunkBase.COUNT_HEIGHT; y++)
-                        {
-                            if (chunk.StorageArrays[y].sky) flag |= 1 << y;
-                        }
-
-                        PacketS21ChunkData packet = new PacketS21ChunkData(chunk, true, flag);
+                        PacketS21ChunkData packet = new PacketS21ChunkData(chunk, true, 65535);
+                        //World.Log.Log("1UP:[{0}] {1} {2}", chunk.Position, 65535, chunk.GetDebugAllSegment());
+                        //World.Log.Log("1UP:[{0}]", chunk.Position);
                         profiler.EndStartSection("ResponsePacket");
                         SendPacket(packet);
                         i++;
-                    } else
+                    }
+                    else
                     {
                         loadedNull.Add(pos);
                     }
@@ -261,7 +261,7 @@ namespace MvkServer.Entity.Player
         public void UpOverviewChunkPrev()
         {
             OverviewChunkPrev = OverviewChunk;
-            DistSqrt = MvkStatic.GetSqrt(OverviewChunk + 1);
+            DistSqrt = MvkStatic.GetSqrt(OverviewChunk + 2);
         }
 
         /// <summary>

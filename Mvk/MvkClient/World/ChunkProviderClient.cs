@@ -73,18 +73,28 @@ namespace MvkClient.World
         public void PacketChunckData(ChunkQueue packet)
         {
             vec2i pos = packet.GetPos();
-            //if ((pos.x == 2 && pos.y ==2) 
-            //    || (pos.x == 1 && pos.y == 1) || (pos.x == -1 && pos.y == -4)) world.Log.Log("pc {0} {1} {2}", pos, packet.biom, packet.flagsYAreas);
             ChunkRender chunkRender;
             ChunkRender chunk = GetChunkRender(pos);
+
             if (chunk == null)
             {
                 // Если чанка нет, проверяем в загрузке
                 int i;
                 ListMvk<ChunkRender> list;
                 // lock не нужен, так как если прозеваем значение, оно уже будет в GetChunkRender
-                // Достаточно пробежаться только по массиву Add
+                // Пробегаемся по массиву Add
                 list = addChunks.GetForward();
+                for (i = 0; i < list.Count; i++)
+                {
+                    chunkRender = list[i];
+                    if (chunkRender.Position.x == pos.x && chunkRender.Position.y == pos.y)
+                    {
+                        chunk = chunkRender;
+                        break;
+                    }
+                }
+                // Пробегаемся по массиву Get
+                list = addChunks.GetBackward();
                 for (i = 0; i < list.Count; i++)
                 {
                     chunkRender = list[i];
@@ -123,7 +133,6 @@ namespace MvkClient.World
                 {
                     chunk = new ChunkRender(ClientWorld, pos);
                 }
-
                 chunk.SetBinary(packet.GetBuffer(), packet.IsBiom(), packet.GetFlagsYAreas());
 
                 if (isNew)
@@ -137,6 +146,9 @@ namespace MvkClient.World
                     if (packet.biom) chunk.Light.GenerateHeightMap();
                 }
             }
+
+            //world.Log.Log("pc:[{0}] {1} {3} b:{2}",
+            //    pos, packet.flagsYAreas, packet.IsRemoved() ? 0 : packet.GetBuffer().Length, packet.biom);
         }
 
         /// <summary>

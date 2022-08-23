@@ -7,6 +7,7 @@ using MvkServer.World.Block;
 using MvkServer.World.Chunk.Light;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MvkServer.World.Chunk
 {
@@ -44,6 +45,11 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public bool IsChunkLoaded { get; protected set; } = false;
         /// <summary>
+        /// Была ли заполнена насилённостью
+        /// </summary>
+        private bool isPopulated  = false;
+        public int CountPopulated { get; set; } = 0;
+        /// <summary>
         /// Список сущностей в каждом псевдочанке
         /// </summary>
         public MapListEntity[] ListEntities { get; protected set; } = new MapListEntity[COUNT_HEIGHT];
@@ -51,6 +57,13 @@ namespace MvkServer.World.Chunk
         ///// Объект работы с освещением
         ///// </summary>
         //public ChunkLight2 Light { get; private set; }
+
+        public bool IsPopulated()
+        {
+            //return isPopulated;
+            // 9 bit [1 1111 1111]
+            return CountPopulated == 511;
+        }
 
         /// <summary>
         /// Столбцы биомов
@@ -118,20 +131,6 @@ namespace MvkServer.World.Chunk
             }
             Light = new ChunkLight2(this);
         }
-
-        /// <summary>
-        /// Проверить загружены ли соседние чанки
-        /// </summary>
-        public bool IsLoadChunks8()
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                if (!World.ChunkPr.IsChunk(MvkStatic.AreaOne8[i] + Position))
-                    return false;
-            }
-            return true;
-        }
-    
 
         /// <summary>
         /// Загружен чанк или сгенерирован
@@ -244,7 +243,6 @@ namespace MvkServer.World.Chunk
 
         public void OnChunkLoad()
         {
-            //ChunkLoadGen();
             IsChunkLoaded = true;
             for (int y = 0; y < COUNT_HEIGHT; y++)
             {
@@ -255,22 +253,55 @@ namespace MvkServer.World.Chunk
             }
             if (!World.IsRemote && World is WorldServer worldServer)
             {
-                ChunkBase chunk;
-                vec2i pos;
-                for (int i = 0; i < 8; i++)
-                {
-                    pos = MvkStatic.AreaOne8[i] + Position;
-                    chunk = World.ChunkPr.GetChunk(pos);
-                    if (chunk != null && chunk.IsChunkLoaded && !chunk.Light.IsChunkLight())
-                    {
-                        worldServer.ChunkPrServ.GenAddChunks.Add(pos);
-                    }
-                }
-                //if (IsLoadChunks8())
-                //{
-                //    worldServer.ChunkPrServ.GenChunks.Add(Position);
-                //}
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+                worldServer.profiler.StartSection("PopulateChunk");
+                PopulateChunk(worldServer.ChunkPrServ);
+                worldServer.profiler.EndSection();
+                long le1 = stopwatch.ElapsedTicks;
+               // worldServer.Log.Log("PopulateChunk[{1}]: {0:0.00} ms", le1 / (float)MvkStatic.TimerFrequency, Position);
             }
+        }
+
+        /// <summary>
+        /// Запуск чанков для населённости которые прикосаются к этому, и не были населены
+        /// </summary>
+        private void PopulateChunk(ChunkProviderServer provider)
+        {
+            vec2i pos;
+            ChunkBase chunk;
+            for (int i = 0; i < 9; i++)
+            {
+                pos = MvkStatic.AreaOne9[i] + Position;
+                chunk = provider.GetChunk(pos);
+                if (chunk != null && chunk.IsChunkLoaded && !IsPopulated() && IsLoadChunks8(provider, pos))
+                {
+                    chunk.Populate(provider);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Проверить загружены ли соседние чанки
+        /// </summary>
+        private bool IsLoadChunks8(ChunkProvider provider, vec2i pos)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                if (!provider.IsChunk(MvkStatic.AreaOne8[i] + pos))
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Заполнение чанка населённостью
+        /// </summary>
+        public void Populate(ChunkProviderServer provider)
+        {
+            //Light.StartRecheckGaps();
+            provider.ChunkGenerate.Populate(this);
+            isPopulated = true;
         }
 
         /// <summary>
@@ -303,8 +334,6 @@ namespace MvkServer.World.Chunk
                         //StorageArrays[sy].CheckDataEmpty();
                         //StorageArrays[sy].countVoxel = 0;
                         ChunkStorage storage = StorageArrays[sy];
-                        // Если пришли данные, как минимум надо проверить освещение, даже если нет блоков
-                        storage.CheckBrightenBlockSky();
                         for (int y = 0; y < 16; y++)
                         {
                             for (int x = 0; x < 16; x++)
@@ -434,7 +463,7 @@ namespace MvkServer.World.Chunk
             {
                 cs = StorageArrays[y];
                 s += cs.IsEmptyData() ? "." : "*" + cs.ToCountString();
-                s += cs.sky ? "S" : "s";
+                //s += cs.sky ? "S" : "s";
             }
             return s;
         }
@@ -551,7 +580,7 @@ namespace MvkServer.World.Chunk
         /// </summary>
         /// <param name="blockPos">позиция блока</param>
         /// <param name="blockState">данные нового блока</param>
-        public BlockState SetBlockState(BlockPos blockPos, BlockState blockState, bool isCheckLight)
+        public BlockState SetBlockState(BlockPos blockPos, BlockState blockState, bool isModify)
         {
             int bx = blockPos.X & 15;
             int by = blockPos.Y;
@@ -586,25 +615,27 @@ namespace MvkServer.World.Chunk
             
             //StorageArrays[chy].Set(bx, by & 15, bz, blockState);
 
-            if (isCheckLight && blockOld != block)
+            if (blockOld != block)
             {
                 // проверка света
                 //if (World.IsRemote)
 
-                bool replaceAir = (block.IsAir && !blockOld.IsAir) || (!block.IsAir && blockOld.IsAir);
+               // bool replaceAir = (block.IsAir && !blockOld.IsAir) || (!block.IsAir && blockOld.IsAir);
                 bool differenceOpacity = block.LightOpacity != blockOld.LightOpacity;
-                if (replaceAir || differenceOpacity || block.LightValue != blockOld.LightValue)
+                if (/*replaceAir || */differenceOpacity || block.LightValue != blockOld.LightValue)
                 {
                     World.Light.ActionChunk(this);
-                    World.Light.CheckLightFor(blockPos.X, blockPos.Y, blockPos.Z, differenceOpacity, replaceAir);
+                    World.Light.CheckLightFor(blockPos.X, blockPos.Y, blockPos.Z, differenceOpacity, isModify);//, replaceAir);
                 }
                 else
                 {
+                    // проверка высоты
+                    Light.CheckHeightMap(blockPos, block.LightOpacity);
                     if (World.IsRemote)
                     {
                         World.Light.ClearDebugString();
                     }
-                    World.MarkBlockForUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+                    if (isModify) World.MarkBlockForUpdate(blockPos.X, blockPos.Y, blockPos.Z);
                 }
                 
 
@@ -847,7 +878,7 @@ namespace MvkServer.World.Chunk
         public void SetInhabitedTime(uint time) => InhabitedTime = time;
 
 
-        public override string ToString() => Position + " " + IsChunkLoaded;
+        public override string ToString() => Position + " " + IsChunkLoaded + " " + CountPopulated;
 
     }
 }

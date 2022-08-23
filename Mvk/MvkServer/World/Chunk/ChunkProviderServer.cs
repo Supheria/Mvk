@@ -1,7 +1,6 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Util;
-using System;
-using System.Collections;
+using MvkServer.World.Gen;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -20,7 +19,7 @@ namespace MvkServer.World.Chunk
         /// Дополнительный список чанков которых надо проверить свет
         /// Массив большой, выборка быстрее MapListVec2i чем List или ListMessy
         /// </summary>
-        public MapListVec2i GenAddChunks { get; private set; } = new MapListVec2i();
+       // public MapListVec2i GenAddChunks { get; private set; } = new MapListVec2i();
         /// <summary>
         /// Объект для генерации чанков
         /// </summary>
@@ -465,33 +464,33 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Обновить проверку дополнительной генерации, чанки где нужны соседние 8 чанков
         /// </summary>
-        public void UpdateCheckAddGeneration()
-        {
-            if (GenAddChunks.Count > 0)
-            {
-                int i = 0;
-                vec2i pos;
-                ChunkBase chunk;
-                //worldServer.Log.Log("GenChunks.Count {0}", GenAddChunks.Count);
-                while (GenAddChunks.Count > 0 && i < 10)
-                {
-                    pos = GenAddChunks.FirstRemove();
-                    chunk = chunkMapping.Get(pos);
-                    if (chunk != null)
-                    {
-                        chunk.Light.StartRecheckGaps();
-                    }
-                    i++;
-                }
-            }
-        }
+        //public void UpdateCheckAddGeneration()
+        //{
+        //    if (GenAddChunks.Count > 0)
+        //    {
+        //        int i = 0;
+        //        vec2i pos;
+        //        ChunkBase chunk;
+        //        //worldServer.Log.Log("GenChunks.Count {0}", GenAddChunks.Count);
+        //        while (GenAddChunks.Count > 0 && i < 10)
+        //        {
+        //            pos = GenAddChunks.FirstRemove();
+        //            chunk = chunkMapping.Get(pos);
+        //            if (chunk != null)
+        //            {
+        //                chunk.Light.StartRecheckGaps();
+        //            }
+        //            i++;
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Добавить чанк на удаление
         /// </summary>
         public void DropChunk(vec2i pos)
         {
-            GenAddChunks.Remove(pos);
+            //GenAddChunks.Remove(pos);
             DroppedChunks.Add(pos);
         }
     }

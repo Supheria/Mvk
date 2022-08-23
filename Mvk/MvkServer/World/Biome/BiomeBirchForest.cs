@@ -1,4 +1,4 @@
-﻿using MvkServer.World.Chunk;
+﻿using MvkServer.World.Gen;
 
 namespace MvkServer.World.Biome
 {
@@ -7,7 +7,7 @@ namespace MvkServer.World.Biome
     /// </summary>
     public class BiomeBirchForest : BiomeBase
     {
-        public BiomeBirchForest(ChunkProviderGenerate chunkProvider) => Provider = chunkProvider;
+        public BiomeBirchForest(ChunkProviderGenerate chunkProvider) : base(chunkProvider) { }
 
         /// <summary>
         /// Возращаем сгенерированный столбец
@@ -37,8 +37,10 @@ namespace MvkServer.World.Biome
             {
                 chunk.data[x << 12 | z << 8 | yh] = 9;
             }
-
-            if (Provider.GrassNoise[x << 4 | z] > .55f)
+            ColumnUpSeed(x, z);
+            float r = rand.NextFloat();
+            if (r > .99f)
+            //if (Provider.GrassNoise[x << 4 | z] > .55f)
             {
                 for (y = yh + 1; y <= yh + 5; y++)
                 {

@@ -658,7 +658,7 @@ namespace MvkClient.Renderer
             GLRender.FogEnable();
 
             // Если игрок ниже уровня моря, то низ делаем тёмный, для защиты от бликов, при удалении блоков
-            if (ClientMain.Player.Position.y < 16)
+            if (ClientMain.Player.Position.y < 96)
             {
                 GLRender.PushMatrix();
                 GLRender.Texture2DDisable();

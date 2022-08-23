@@ -21,7 +21,7 @@ namespace MvkServer.World.Block.List
             UseNeighborBrightness = true;
             Material = EnumMaterial.Sapling;
             Shadow = false;
-            LightOpacity = 0;
+            LightOpacity = 15;
             Particle = 193;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };
@@ -33,25 +33,25 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
         {
-            if (!CheckDown(worldIn, blockPos))
+            if (!CanBlockStay(worldIn, blockPos))
             {
                 DropBlockAsItem(worldIn, blockPos, state, 0);
-                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 1);
+                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 6);
             }
         }
 
-        /// <summary>
-        /// Установить блок
-        /// </summary>
-        /// <param name="side">Сторона на какой ставим блок</param>
-        /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
-        public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
-        {
-            if (CheckDown(worldIn, blockPos)) return base.Put(worldIn, blockPos, state, side, facing);
-            return false;
-        }
+        ///// <summary>
+        ///// Установить блок
+        ///// </summary>
+        ///// <param name="side">Сторона на какой ставим блок</param>
+        ///// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
+        //public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
+        //{
+        //    if (CheckPut(worldIn, blockPos)) return base.Put(worldIn, blockPos, state, side, facing);
+        //    return false;
+        //}
 
-        private bool CheckDown(WorldBase worldIn, BlockPos blockPos)
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos)
         {
             EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
             return (enumBlock == EnumBlock.Sand || enumBlock == EnumBlock.Cactus)

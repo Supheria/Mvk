@@ -110,7 +110,7 @@ namespace MvkServer.World.Chunk.Light
         /// <param name="z">глобальная позиция блока z</param>
         /// <param name="differenceOpacity">Разница в непрозрачности</param>
         /// <param name="replaceAir">блок заменён на воздух или на оборот воздух заменён на блок</param>
-        public void CheckLightFor(int x, int y, int z, bool differenceOpacity, bool replaceAir)
+        public void CheckLightFor(int x, int y, int z, bool differenceOpacity, bool isModify)//, bool replaceAir)
         {
             if (y < 0 || y > ChunkBase.COUNT_HEIGHT_BLOCK) return;
 
@@ -155,11 +155,11 @@ namespace MvkServer.World.Chunk.Light
             }
             int c1 = countBlock;
             // Проверка яркости неба
-            if (differenceOpacity || replaceAir)
+            if (differenceOpacity)// || replaceAir)
             {
                 chunk.Light.CheckLightSky(x, y, z, lo);
             }
-            ModifiedRender();
+            if (isModify) ModifiedRender();
             long le = stopwatch.ElapsedTicks;
             stopwatch.Stop();
             debugStr = string.Format("Count B/S: {1}/{2} Light: {0:0.00}ms",
@@ -233,9 +233,6 @@ namespace MvkServer.World.Chunk.Light
             int yco = y1 >> 4;
             if (yco > ChunkBase.COUNT_HEIGHT15) yco = ChunkBase.COUNT_HEIGHT15;
             int index, yco2;
-            // Нужна проверка, по созданию новых псевдо чанков освещения
-            // Причём нужна проверка по всей высоте, чтоб не было промежутков
-            CheckBrightenBlockSky(yco, chunk);
             for (int y = y0; y < y1; y++)
             {
                 index = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
@@ -511,9 +508,6 @@ namespace MvkServer.World.Chunk.Light
                         xco = (x0 >> 4) - chBeginX;
                         zco = (z0 >> 4) - chBeginY;
                         chunkCache = (xco == 0 && zco == 0) ? chunk : chunks[MvkStatic.GetAreaOne8(xco, zco)];
-                        // Нужна проверка, по созданию новых псевдо чанков освещения
-                        // Причём нужна проверка по всей высоте, чтоб не было промежутков
-                        CheckBrightenBlockSky(yco, chunkCache);
                         chunkStorage = chunkCache.StorageArrays[yco];
                         indexBlock = (y0 & 15) << 8 | (z0 & 15) << 4 | (x0 & 15);
                         if (chunkStorage.countBlock != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
@@ -712,9 +706,6 @@ namespace MvkServer.World.Chunk.Light
                         indexBlock = (y0 & 15) << 8 | (z0 & 15) << 4 | (x0 & 15);
                         if (chunkStorage.countBlock != 0) lo = Blocks.blocksLightOpacity[chunkStorage.data[indexBlock] & 0xFFF];
                         else lo = 0;
-                        // Нужна проверка, по созданию новых псевдо чанков освещения
-                        // Причём нужна проверка по всей высоте, чтоб не было промежутков
-                        CheckBrightenBlockSky(yco, chunkCache);
                         lightNew = chunkStorage.lightSky[indexBlock];
                         // Определяем яркость, какая должна
                         lightCheck = light - (lo >> 4) - 1;
@@ -860,25 +851,6 @@ namespace MvkServer.World.Chunk.Light
             else
             {
                 World.MarkBlockRangeForRenderUpdate(axisX0, axisY0, axisZ0, axisX1, axisY1, axisZ1);
-            }
-        }
-
-        private void CheckBrightenBlockSky(int yco, ChunkBase chunk)
-        {
-            // Нужна проверка, по созданию новых псевдо чанков освещения
-            // Причём нужна проверка по всей высоте, чтоб не было промежутков
-            if (yco > chunk.Light.MaxSkyChunk)
-            {
-                //if (chunk.Position.x == -1 && chunk.Position.y == -4)
-                //{
-                //    bool b = true;
-                //}
-                int ycMaxSky = chunk.Light.MaxSkyChunk + 1;
-                for (int i = ycMaxSky; i <= yco; i++)
-                {
-                    chunk.StorageArrays[i].CheckBrightenBlockSky();
-                }
-                chunk.Light.MaxSkyChunk = yco;
             }
         }
 

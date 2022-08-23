@@ -1,6 +1,6 @@
 ﻿using MvkServer.Util;
 
-namespace MvkServer.Gen
+namespace MvkServer.World.Gen
 {
     /// <summary>
     /// Объект обработки шума Перлина одной актавы

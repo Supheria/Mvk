@@ -78,5 +78,10 @@
         /// Вернуть список которое использует Add
         /// </summary>
         public ListMvk<T> GetForward() => vsForward;
+
+        /// <summary>
+        /// Вернуть список которое использует Get
+        /// </summary>
+        public ListMvk<T> GetBackward() => vsBackward;
     }
 }
