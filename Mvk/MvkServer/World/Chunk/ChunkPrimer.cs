@@ -51,5 +51,18 @@ namespace MvkServer.World.Chunk
             }
             arrayLightBlocks.Clear();
         }
+
+        /// <summary>
+        /// Высотная карта самый высокий блок в чанке от неба
+        /// </summary>
+        public int GetHeightMapMax()
+        {
+            int heightMapMax = 0;
+            for (int i = 0; i < 256; i++)
+            {
+                if (heightMap[i] > heightMapMax) heightMapMax = heightMap[i];
+            }
+            return heightMapMax;
+        }
     }
 }

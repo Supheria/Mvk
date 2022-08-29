@@ -7,46 +7,11 @@ namespace MvkServer.World.Biome
     /// </summary>
     public class BiomeBirchForest : BiomeBase
     {
-        public BiomeBirchForest(ChunkProviderGenerate chunkProvider) : base(chunkProvider) { }
-
-        /// <summary>
-        /// Возращаем сгенерированный столбец
-        /// </summary>
-        /// <param name="x">X 0..15</param>
-        /// <param name="z">Z 0..15</param>
-        /// <param name="height">Высота -1..0..1</param>
-        /// <param name="river">Определение центра реки 1..0..1</param>
-        public override void Column(int x, int z, float height, float river)
+        public BiomeBirchForest(ChunkProviderGenerate chunkProvider) : base(chunkProvider)
         {
-            int yh = 96 + (int)(height * 96f);
-            int y;
-
-            for (y = 3; y <= yh; y++)
-            {
-                chunk.data[x << 12 | z << 8 | y] = 3;
-            }
-            if (yh < 96)
-            {
-                yh++;
-                for (y = yh; y < 97; y++)
-                {
-                    chunk.data[x << 12 | z << 8 | y] = 13;
-                }
-            }
-            else
-            {
-                chunk.data[x << 12 | z << 8 | yh] = 9;
-            }
-            ColumnUpSeed(x, z);
-            float r = rand.NextFloat();
-            if (r > .99f)
-            //if (Provider.GrassNoise[x << 4 | z] > .55f)
-            {
-                for (y = yh + 1; y <= yh + 5; y++)
-                {
-                    chunk.data[x << 12 | z << 8 | y] = 21;
-                }
-            }
+            Decorator.birchPerChunk = 4;
+            Decorator.grassPerChunk = 8;
+            Decorator.flowersPerChunk = 5;
         }
     }
 }

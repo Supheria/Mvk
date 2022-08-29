@@ -20,6 +20,7 @@ namespace MvkServer.World.Block.List
             IsAction = false;
             IsCollidable = false;
             АmbientOcclusion = false;
+            BiomeColor = true;
             Shadow = false;
             BackSide = true;
             AllSideForcibly = true;

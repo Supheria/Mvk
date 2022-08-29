@@ -52,6 +52,10 @@ namespace MvkServer.World.Block
         /// </summary>
         public bool АmbientOcclusion { get; protected set; } = true;
         /// <summary>
+        /// Обрабатывается блок эффектом Плавного перехода цвета между биомами
+        /// </summary>
+        public bool BiomeColor { get; protected set; } = false;
+        /// <summary>
         /// Нет бокового затемнения, пример: трава, цветы
         /// </summary>
         public bool NoSideDimming { get; protected set; } = false;

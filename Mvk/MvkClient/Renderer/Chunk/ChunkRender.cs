@@ -148,10 +148,10 @@ namespace MvkClient.Renderer.Chunk
                 int cbY = chY << 4;
                 int cbZ = Position.y << 4;
 
-                BlockAlphaRender blockAlphaRender = new BlockAlphaRender(this, cbX, cbY, cbZ);
+                BlockAlphaRender blockAlphaRender = new BlockAlphaRender(this);
                 blockAlphaRender.blockUV.buffer = ClientWorld.WorldRender.bufferAlphaCache;
 
-                BlockRender blockRender = new BlockRender(this, cbX, cbY, cbZ);
+                BlockRender blockRender = new BlockRender(this);
                 blockRender.blockUV.buffer = ClientWorld.WorldRender.buffer;
 
                 int realY, realZ, i;

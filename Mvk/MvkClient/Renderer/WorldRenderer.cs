@@ -39,11 +39,11 @@ namespace MvkClient.Renderer
         /// <summary>
         /// Буфер сплошных блоков
         /// </summary>
-        public ArrayMvk<byte> buffer = new ArrayMvk<byte>(2064384);
+        public ArrayMvk<byte> buffer = new ArrayMvk<byte>(4128768);
         /// <summary>
         /// Буфер альфа блоков
         /// </summary>
-        public ArrayMvk<byte> bufferAlpha = new ArrayMvk<byte>(2064384);
+        public ArrayMvk<byte> bufferAlpha = new ArrayMvk<byte>(4128768);
         /// <summary>
         /// Буефр одного альфа блока
         /// </summary>

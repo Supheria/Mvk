@@ -29,10 +29,19 @@ namespace MvkServer.World.Gen
         /// Шум рек биомов
         /// </summary>
         private readonly NoiseGeneratorPerlin riversBiome;
-        /// <summary>
-        /// Шум пещер
-        /// </summary>
-       // private readonly NoiseGeneratorPerlin cave;
+        ///// <summary>
+        ///// Шум пещер
+        ///// </summary>
+        //private readonly NoiseGeneratorPerlin noiseCave;
+        
+        // Шум речных пещер, из двух частей
+        private readonly NoiseGeneratorPerlin noiseCave1;
+        private readonly NoiseGeneratorPerlin noiseCaveHeight1;
+        private readonly NoiseGeneratorPerlin noiseCave2;
+        private readonly NoiseGeneratorPerlin noiseCaveHeight2;
+        private readonly NoiseGeneratorPerlin noiseCave3;
+        private readonly NoiseGeneratorPerlin noiseCaveHeight3;
+
         /// <summary>
         /// Шум облостей
         /// </summary>
@@ -46,15 +55,14 @@ namespace MvkServer.World.Gen
         private readonly float[] wetnessNoise = new float[256];
         private readonly float[] temperatureNoise = new float[256];
         private readonly float[] riversNoise = new float[256];
-        //private readonly float[] downNoise = new float[256];
-        //private readonly float[] areaNoise = new float[256];
+        private readonly float[] caveRiversNoise = new float[256];
+        private readonly float[] caveHeightNoise = new float[256];
+        private readonly float[] caveNoise2 = new float[256];
+        private readonly float[] caveHeightNoise2 = new float[256];
+        private readonly float[] caveNoise3 = new float[256];
+        private readonly float[] caveHeightNoise3 = new float[256];
         //private readonly float[] caveNoise = new float[4096];
-        //private readonly float[] areaNoise = new float[32768];
 
-        /// <summary>
-        /// Шум для травы и другой растительности
-        /// </summary>
-        //public float[] GrassNoise { get; private set; } = new float[256];
         /// <summary>
         /// Шум для дополнительных областей, для корректировки рельефа
         /// </summary>
@@ -85,7 +93,13 @@ namespace MvkServer.World.Gen
             riversBiome = new NoiseGeneratorPerlin(new Rand(Seed + 6), 8);
             wetnessBiome = new NoiseGeneratorPerlin(new Rand(Seed + 8), 4); // 8
             temperatureBiome = new NoiseGeneratorPerlin(new Rand(Seed + 4), 4); // 8
-            //cave = new NoiseGeneratorPerlin(new Rand(seed + 2), 2);
+            noiseCave1 = new NoiseGeneratorPerlin(new Rand(Seed + 7), 4);
+            noiseCaveHeight1 = new NoiseGeneratorPerlin(new Rand(Seed + 5), 4);
+            noiseCave2 = new NoiseGeneratorPerlin(new Rand(Seed + 9), 4);
+            noiseCaveHeight2 = new NoiseGeneratorPerlin(new Rand(Seed + 11), 4);
+            noiseCave3 = new NoiseGeneratorPerlin(new Rand(Seed + 12), 4);
+            noiseCaveHeight3 = new NoiseGeneratorPerlin(new Rand(Seed + 13), 4);
+            //noiseCave = new NoiseGeneratorPerlin(new Rand(Seed + 2), 2);
             NoiseDown = new NoiseGeneratorPerlin(new Rand(Seed), 1);
             noiseArea = new NoiseGeneratorPerlin(new Rand(Seed + 2), 4);
 
@@ -109,9 +123,6 @@ namespace MvkServer.World.Gen
             biomes[11] = new BiomeMountainsDesert(this);
 
             biomesCount = new int[biomes.Length];
-
-
-          //  for (int i = 0; i < 12; i++) biomes[i] = new BiomePlain(this);
         }
 
         /// <summary>
@@ -141,15 +152,22 @@ namespace MvkServer.World.Gen
                 temperatureBiome.GenerateNoise2d(temperatureNoise, xbc, zbc, 16, 16, .0125f , .0125f ); //*4
 
                 // доп шумы
-                //NoiseDown.GenerateNoise2d(GrassNoise, xbc, zbc, 16, 16, .5f, .5f);
-                noiseArea.GenerateNoise2d(AreaNoise, xbc, zbc, 16, 16, .8f, .8f);
+                noiseArea.GenerateNoise2d(AreaNoise, xbc, zbc, 16, 16, .4f, .4f);
+                //  шумы речных пещер
+                noiseCave1.GenerateNoise2d(caveRiversNoise, xbc, zbc, 16, 16, .05f, .05f);
+                noiseCaveHeight1.GenerateNoise2d(caveHeightNoise, xbc, zbc, 16, 16, .025f, .025f);
+                noiseCave2.GenerateNoise2d(caveNoise2, xbc, zbc, 16, 16, .05f, .05f);
+                noiseCaveHeight2.GenerateNoise2d(caveHeightNoise2, xbc, zbc, 16, 16, .025f, .025f);
+                noiseCave3.GenerateNoise2d(caveNoise3, xbc, zbc, 16, 16, .05f, .05f);
+                noiseCaveHeight3.GenerateNoise2d(caveHeightNoise3, xbc, zbc, 16, 16, .025f, .025f);
 
                 BiomeData biomeData;
                 BiomeBase biome = biomes[2];
                 int x, y, z, idBiome;
+                EnumBiome enumBiome;
                 int count = 0;
                 float h, r, t, w;
-                
+
                 // Пробегаемся по столбам
                 for (x = 0; x < 16; x++)
                 {
@@ -161,31 +179,27 @@ namespace MvkServer.World.Gen
                         w = wetnessNoise[count] / 8.3f;
                         biomeData = DefineBiome(h, r, t, w);
                         chunkPrimer.biome[x << 4 | z] = biomeData.biome;
-                        idBiome = (int)biomeData.biome;
+                        enumBiome = biomeData.biome;
+                        idBiome = (int)enumBiome;
                         biomesCount[idBiome]++;
                         biome = biomes[idBiome];
                         biome.Init(chunkPrimer, xbc, zbc);
                         biome.Column(x, z, biomeData.height, biomeData.river);
-                        //biome.Area(areaNoise, x, z, EnumBlock.Dirt, true);
-                        //biome.Area(areaNoise, x, z, EnumBlock.Sand, false);
+
+                        // Пещенры 2д ввиде рек
+                        ColumnCave2d(caveRiversNoise[count] / 8f, caveHeightNoise[count] / 8f, x, z, enumBiome,
+                            .12f, .28f, 12.5f, 5f, 104f, 64);
+                        ColumnCave2d(caveNoise2[count] / 8f, caveHeightNoise2[count] / 8f, x, z, enumBiome,
+                            .13f, .27f, 14.3f, 9f, 128f, 64);
+                        ColumnCave2d(caveNoise3[count] / 8f, caveHeightNoise3[count] / 8f, x, z, enumBiome,
+                           .10f, .30f, 10f, 12f, 16f, 16);
 
                         count++;
                     }
                 }
 
-                // Находим биом которого больше всего
-                //int countMax = 0;
-                //for (int i = 0; i < biomesCount.Length; i++)
-                //{
-                //    if (biomesCount[i] > countMax) 
-                //    {
-                //        biome = biomes[i];
-                //        countMax = biomesCount[i];
-                //    }
-                //    biomesCount[i] = 0;
-                //}
-                //// Декорации от биома которого больше всего
-                //biome.Decorator.GenDecorations(chunkPrimer, biome, xbc, zbc);
+                // Пещеры 3д
+              //  Cave(chunk);
 
                 ChunkStorage chunkStorage;
                 int yc, ycb, y0;
@@ -209,12 +223,10 @@ namespace MvkServer.World.Gen
                 {
                     chunk.biome[i] = chunkPrimer.biome[i];
                 }
-                //chunk.Light.SetLightBlocks(chunkPrimer.arrayLightBlocks.ToArray());
-                long le1 = stopwatch.ElapsedTicks;
-                chunk.Light.GenerateHeightMapSky();
-                long le2 = stopwatch.ElapsedTicks;
-                //world.Log.Log("ChunkGen[{1}]: {0:0.00} ms hs: {2:0.00} ms",
-                //    le1 / (float)MvkStatic.TimerFrequency, chunk.Position, (le2 - le1) / (float)MvkStatic.TimerFrequency);
+                chunk.Light.SetLightBlocks(chunkPrimer.arrayLightBlocks.ToArray());
+                chunk.Light.GenerateHeightMap();
+                chunk.InitHeightMapGen();
+               // World.Log.Log("ChunkGen[{1}]: {0:0.00} ms", stopwatch.ElapsedTicks / (float)MvkStatic.TimerFrequency, chunk.Position);
                 return chunk;
             }
             catch (Exception ex)
@@ -226,21 +238,13 @@ namespace MvkServer.World.Gen
 
         public void Populate(ChunkBase chunk)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
             BiomeBase biome;
             ChunkBase chunkSpawn;
 
             // Декорация областей которые могу выйти за 1 чанк
-            int i, j;
-            for (j = 0; j < 9; j++)
+            for (int i = 0; i < 9; i++)
             {
-                chunkSpawn = World.GetChunk(MvkStatic.AreaOne9[j] + chunk.Position);
-                i = j + 1;
-                if ((chunkSpawn.CountPopulated & (1 << j)) == 0)
-                {
-                    chunkSpawn.CountPopulated += (1 << j);
-                }
+                chunkSpawn = World.GetChunk(MvkStatic.AreaOne9[i] + chunk.Position);
                 biome = World.ChunkPrServ.ChunkGenerate.biomes[(int)chunkSpawn.biome[136]];
                 biome.Decorator.GenDecorationsArea(World, this, chunk, chunkSpawn);
             }
@@ -249,42 +253,125 @@ namespace MvkServer.World.Gen
             // Выбираем биом который в середине чанка
             biome = biomes[(int)chunk.biome[136]];
             biome.Decorator.GenDecorations(World, this, chunk);
+        }
 
-            long le1 = stopwatch.ElapsedTicks;
-            //World.Log.Log("Populate[{1}]: {0:0.00} ms",
-            //    le1 / (float)MvkStatic.TimerFrequency, chunk.Position);
+        /// <summary>
+        /// Столбец речных шумов
+        /// </summary>
+        /// <param name="cr">шум реки</param>
+        /// <param name="ch">шум высоты</param>
+        /// <param name="x">координата столбца X</param>
+        /// <param name="z">координата столбца Z</param>
+        /// <param name="enumBiome">биом столбца</param>
+        /// <param name="min">минимальный коэф для ширины реки</param>
+        /// <param name="max">максимальны коэф для ширины реки</param>
+        /// <param name="size">размер для разницы коэф, чтоб значение было 2, пример: min=0.1 и max=0.3 size = 2 / (max-min)</param>
+        /// <param name="heightCave">Высота пещеры</param>
+        /// <param name="heightLevel">Уровень амплитуды пещер по миру</param>
+        /// <param name="level">Центр амплитуды Y</param>
+        private void ColumnCave2d(float cr, float ch, int x, int z, EnumBiome enumBiome, 
+            float min, float max, float size, float heightCave, float heightLevel, int level)
+        {
+            // Пещенры 2д ввиде рек
+            if ((cr >= min && cr <= max) || (cr <= -min && cr >= -max))
+            {
+                float h = (enumBiome == EnumBiome.River || enumBiome == EnumBiome.Sea || enumBiome == EnumBiome.Swamp)
+                    ? chunkPrimer.heightMap[x << 4 | z] : 255;
+                h -= 4;
+                if (h > 96) h = 255;
 
+                if (cr < 0) cr = -cr;
+                cr = (cr - min) * size;
+                if (cr > 1f) cr = 2f - cr;
+                cr = 1f - cr;
+                cr = cr * cr;
+                cr = 1f - cr;
+                int ych = (int)(cr * heightCave) + 3;
+                ych = (ych / 2);
+
+                int ych2 = level + (int)(ch * heightLevel);
+                int cy1 = ych2 - ych;
+                if (cy1 < 1) cy1 = 1;
+                int cy2 = ych2 + ych;
+                if (cy2 > ChunkBase.COUNT_HEIGHT_BLOCK) cy2 = ChunkBase.COUNT_HEIGHT_BLOCK;
+                int index, id;
+                // Высота пещерных рек 4 .. ~120
+                for (int y = cy1; y <= cy2; y++)
+                {
+                    if (y < h)
+                    {
+                        index = x << 12 | z << 8 | y;
+                        id = chunkPrimer.data[index];
+                        if (id == 3 || id == 9 || id == 10 || id == 7
+                            || (id == 8 && chunkPrimer.data[index + 1] != 13))
+                        {
+                            if (y < 12)
+                            {
+                                chunkPrimer.data[index] = 15; // лава
+                                chunkPrimer.arrayLightBlocks.Add(new vec3i(x, y, z));
+                            }
+                            else chunkPrimer.data[index] = 0; // воздух
+                            //chunkPrimer.data[index] = 3;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
         /// Генерация пещер
         /// </summary>
-        //private void Cave(ChunkBase chunk, int yMax)
+        //private void Cave(ChunkBase chunk)
         //{
-        //    //Stopwatch stopwatch = new Stopwatch();
-        //    //stopwatch.Start();
-
+        //    int yMax = chunkPrimer.GetHeightMapMax() >> 4;
         //    int count = 0;
-        //    float[] noise = new float[4096];
-        //    for (int y0 = 0; y0 <= yMax; y0++)
+        //    int x, y, z, x1, y1, x2, y0, index, y2, y3, h;
+        //    ushort id;
+        //    EnumBiome enumBiome;
+        //    //enumBiome = chunkPrimer.biome[x << 4 | z];
+        //    for (y0 = 0; y0 <= yMax; y0++)
         //    {
-        //        cave.GenerateNoise3d(noise, chunk.Position.x * 16, y0 * 16, chunk.Position.y * 16, 16, 16, 16, .05f, .05f, .05f);
+        //        noiseCave.GenerateNoise3d(caveNoise, chunk.Position.x * 8, y0 * 8, chunk.Position.y * 16, 8, 8, 16, .1f, .2f, .05f);
         //        count = 0;
-        //        for (int x = 0; x < 16; x++)
+        //        for (x = 0; x < 8; x++)
         //        {
-        //            for (int z = 0; z < 16; z++)
+        //            for (z = 0; z < 16; z++)
         //            {
-        //                for (int y = 0; y < 16; y++)
+        //                for (y = 0; y < 8; y++)
         //                {
-        //                    if (noise[count] < -1f)
+        //                    if (caveNoise[count] < -1f)
         //                    {
-        //                        vec3i pos = new vec3i(x, y0 << 4 | y, z);
-        //                        int y2 = y0 << 4 | y;
-        //                        Block.EnumBlock enumBlock = chunk.GetBlockState(x, y2, z).GetBlock().EBlock;
-        //                        if (enumBlock != Block.EnumBlock.Air && enumBlock != Block.EnumBlock.Stone
-        //                            && enumBlock != Block.EnumBlock.Water)
+        //                        for (x1 = 0; x1 < 2; x1++)
         //                        {
-        //                            chunk.SetEBlock(pos, Block.EnumBlock.Air);
+        //                            x2 = x * 2 + x1;
+        //                            enumBiome = chunkPrimer.biome[x2 << 4 | z];
+        //                            h = (enumBiome == EnumBiome.River || enumBiome == EnumBiome.Sea || enumBiome == EnumBiome.Swamp) 
+        //                                ? chunkPrimer.heightMap[x2 << 4 | z] : 255;
+        //                            h -= 4;
+        //                            if (h > 96) h = 255;
+        //                            for (y1 = 0; y1 < 2; y1++)
+        //                            {
+        //                                y2 = y * 2 + y1;
+        //                                if ((y0 == 0 && y2 > 3) || y0 > 0)
+        //                                {
+        //                                    y3 = y0 << 4 | y2;
+        //                                    if (y3 < h)
+        //                                    {
+        //                                        index = x2 << 12 | z << 8 | y3;
+        //                                        id = chunkPrimer.data[index];
+        //                                        if (id == 3 || id == 9 || id == 10 || id == 7
+        //                                            || (id == 8 && chunkPrimer.data[index + 1] != 13))
+        //                                        {
+        //                                            //if (y3 < 12)
+        //                                            //{
+        //                                            //    chunkPrimer.data[index] = 15; // лава
+        //                                            //    chunkPrimer.arrayLightBlocks.Add(new vec3i(x2, y3, z));
+        //                                            //}
+        //                                            //else chunkPrimer.data[index] = 0; // воздух
+        //                                        }
+        //                                    }
+        //                                }
+        //                            }
         //                        }
         //                    }
         //                    count++;
@@ -292,122 +379,6 @@ namespace MvkServer.World.Gen
         //            }
         //        }
         //    }
-        //    //long le1 = stopwatch.ElapsedTicks;
-        //    //worldServer.Log.Log("Cave t:{0:0.00}ms",
-        //    //        le1 / (float)MvkStatic.TimerFrequency);
-
-        //}
-
-        ///// <summary>
-        ///// Определить биом по двум шумам
-        ///// </summary>
-        ///// <param name="h">высота -1..+1</param>
-        ///// <param name="r">река -1..+1</param>
-        ///// <param name="t">температура -1..+1</param>
-        ///// <param name="w">влажность -1..+1</param>
-        //private BiomeData DefineBiome(float h, float r, float t, float w)
-        //{
-        //    EnumBiome biome;
-
-        //    // -1 глубина, 0 уровень моря, 1 максимальная высота
-        //    float height = h <= -2f ? (h + .2f) * 1.25f : (h + .2f) * .833f;
-        //    // для реки определения центра 1 .. 0 .. 1
-        //    float river = 0;
-        //    bool br = false;
-
-        //    if (t < -.3f)
-        //    {
-        //        // высоко
-        //        if (w < -.2f) biome = EnumBiome.Plain;
-        //        else biome = EnumBiome.ConiferousForest;
-        //    }
-        //    else if (t < .225f)
-        //    {
-        //        if (w < .1f) biome = EnumBiome.Plain;
-        //        else if (w < .4f) biome = EnumBiome.MixedForest;
-        //        else biome = EnumBiome.Swamp;
-        //    }
-        //    else if (t < .325f)
-        //    {
-        //        river = Mth.Abs(t - .275f) * 20f;
-        //        br = true;
-        //        biome = EnumBiome.River;
-        //    }
-        //    else
-        //    {
-        //        if (w < .3f) biome = EnumBiome.Desert;
-        //        else if (w < .5f) biome = EnumBiome.Tropics;
-        //        else biome = EnumBiome.MixedForest;
-        //    }
-
-        //    bool checkSwamp = false;
-        //    // Перепроверка болота
-        //    if (biome == EnumBiome.Swamp)
-        //    {
-        //        if (h < -.3f || h > -.07f)
-        //        {
-        //            biome = EnumBiome.MixedForest; // лес смеш
-        //            checkSwamp = true;
-        //        }
-        //    }
-
-        //    if (!checkSwamp && h <= -.2f)
-        //    {
-        //        biome = h > -.25f && biome == EnumBiome.Plain ? EnumBiome.Beach : EnumBiome.Sea;
-        //        if (biome == EnumBiome.Sea) br = false;
-        //    }
-        //    else if (h < -.17f && biome == EnumBiome.Plain)
-        //    {
-        //        biome = EnumBiome.Beach;
-        //    }
-        //    else if (h > .2f)
-        //    {
-        //        if (biome == EnumBiome.ConiferousForest || biome == EnumBiome.Swamp) biome = EnumBiome.BirchForest;
-        //        if (h > .3f && biome == EnumBiome.MixedForest) biome = EnumBiome.BirchForest;
-        //        if (h > .4f)
-        //        {
-        //            if (biome == EnumBiome.Desert || biome == EnumBiome.Tropics) biome = EnumBiome.MountainsDesert;
-        //            else biome = EnumBiome.Mountains;
-        //            br = false;
-        //        }
-        //    }
-
-        //    if (biome != EnumBiome.Sea && biome != EnumBiome.Desert && biome != EnumBiome.Swamp && h < .43f)
-        //    {
-        //        float s = 0;
-        //        bool b = false;
-        //        if (r < -0.0825f && r > -.1325f)
-        //        {
-        //            s = Mth.Abs(r + .1075f) * 40f;
-        //            b = true;
-        //        }
-        //        else if (r > 0.1725f && r < .2225f)
-        //        {
-        //            s = Mth.Abs(r - .1975f) * 40f;
-        //            b = true;
-        //        }
-        //        if (b)
-        //        {
-        //            if (br)
-        //            {
-        //                river = river > s ? s : river;
-        //            }
-        //            else
-        //            {
-        //                river = s;
-        //                br = true;
-        //            }
-        //        }
-        //    }
-
-        //    if (br)
-        //    {
-        //        // Если есть река делаем плавность
-        //        // height -= ((1f + (glm.cos((sr) * glm.pi))) * .125f);
-        //        biome = EnumBiome.River;
-        //    }
-
-        //    return new BiomeData() { biome = biome, height = height, river = river };
         //}
 
         /// <summary>
@@ -422,6 +393,8 @@ namespace MvkServer.World.Gen
             // для реки определения центра 1 .. 0 .. 1
             float river = 1;
 
+            float levelSea = .18f;
+
             // Алгоритм для опускания рельефа где протекает река, чуть шире
             if (r < -0.0675f && r > -.1475f)
             {
@@ -431,7 +404,7 @@ namespace MvkServer.World.Gen
             {
                 river = Mth.Abs(r - .1975f) * 25f;
             }
-            if (t >= .2f && t < .35f && w < .55f)
+            if (t >= .2f && t < .35f)// && w < .55f)
             {
                 float s = Mth.Abs(t - .275f) * 10f;
                 river = river > s ? s : river;
@@ -453,12 +426,14 @@ namespace MvkServer.World.Gen
             // Биом по умолчанию равнина
             EnumBiome biome = EnumBiome.Plain;
 
-            bool beach = h > -.2f && h <= -.17f;
+            bool beach = h > -levelSea && h <= -.17f;
+            bool seaS​shore = false;
 
             // Делим горы и море
-            if (h <= -.2f)
+            if (h <= -levelSea)
             {
                 biome = EnumBiome.Sea;
+                if (h > -.22f) seaSshore = true;
             }
             else if (h > .4f)
             {
@@ -466,7 +441,7 @@ namespace MvkServer.World.Gen
             }
 
             // пробуем сделать реку
-            if (biome == EnumBiome.Plain)
+            if (biome == EnumBiome.Plain || seaS​shore)
             {
                 if (r < -0.0825f && r > -.1325f)
                 {
@@ -476,7 +451,7 @@ namespace MvkServer.World.Gen
                 {
                     river = Mth.Abs(r - .1975f) * 40f;
                 }
-                if (t >= .225f && t < .325f && w < .5f)
+                if (t >= .225f && t < .325f)// && w < .5f)
                 {
                     float s = Mth.Abs(t - .275f) * 20f;
                     river = river > s ? s : river;
@@ -490,9 +465,9 @@ namespace MvkServer.World.Gen
                 }
             }
 
-            if (biome == EnumBiome.Plain)
+            if (biome == EnumBiome.Plain || seaS​shore)
             {
-                if (t < -.3f)
+                if (t < -.3f && !seaS​shore)
                 {
                     // Холодно и влажно
                     if (w > -.2f) biome = EnumBiome.ConiferousForest;
@@ -500,15 +475,19 @@ namespace MvkServer.World.Gen
                 else if (t < .225f)
                 {
                     // Тепло
-                    if (w > .4f) biome = h < -.1f ? EnumBiome.Swamp : EnumBiome.BirchForest; // влажно
-                    else if (w > .1f) biome = EnumBiome.MixedForest;
+                    if (w > .4f)
+                    {   // влажно
+                        if (h < -.1f) biome = EnumBiome.Swamp;
+                        else if (!seaSshore) biome = EnumBiome.BirchForest; 
+                    }
+                    else if (w > .1f && !seaS​shore) biome = EnumBiome.MixedForest;
                 }
-                else
+                else if(!seaSshore)
                 {
                     // Жарко
                     if (w < .3f) biome = EnumBiome.Desert; // сухо
                     else if (w < .5f) biome = EnumBiome.Tropics;
-                    else biome = EnumBiome.MixedForest; // влажно
+                    else if (!seaS​shore) biome = EnumBiome.MixedForest; // влажно
                 }
             }
 

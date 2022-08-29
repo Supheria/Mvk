@@ -403,7 +403,7 @@ namespace MvkServer.Management
         /// </summary>
         private void RemoveMountedMovingPlayer(EntityPlayerServer entityPlayer)
         {
-            int radius = entityPlayer.OverviewChunk + 2;
+            int radius = entityPlayer.OverviewChunk + 5;
             int chx = entityPlayer.ChunkPosManaged.x;
             int chz = entityPlayer.ChunkPosManaged.y;
             for (int x = chx - radius; x <= chx + radius; x++)
@@ -437,8 +437,8 @@ namespace MvkServer.Management
                 int chz = entityPlayer.ChunkPosManaged.y;
 
                 UpdateMountedMovingPlayerOverviewChunk(entityPlayer, chx, chz, radiusMax, radiusPrev, radius, false);
-                if (radiusPrev != 0) radiusPrev += 2;
-                UpdateMountedMovingPlayerOverviewChunk(entityPlayer, chx, chz, radiusMax + 2, radiusPrev, radius + 2, true);
+                if (radiusPrev != 0) radiusPrev += 5;
+                UpdateMountedMovingPlayerOverviewChunk(entityPlayer, chx, chz, radiusMax + 5, radiusPrev, radius + 5, true);
 
                 entityPlayer.UpOverviewChunkPrev();
                 isFilter = true;
@@ -452,7 +452,7 @@ namespace MvkServer.Management
             {
                 // Смещение чанка
                 int radiusPlay = entityPlayer.OverviewChunk;
-                int radius = entityPlayer.OverviewChunk + 2;
+                int radius = entityPlayer.OverviewChunk + 5;
                 int chx = chunkCoor.x;
                 int chz = chunkCoor.y;
                 int chmx = entityPlayer.ChunkPosManaged.x;

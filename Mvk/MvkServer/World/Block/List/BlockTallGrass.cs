@@ -14,7 +14,6 @@ namespace MvkServer.World.Block.List
         public BlockTallGrass() : base(195, new vec3(.56f, .73f, .35f))
         {
             IsReplaceable = true;
-            
         }
 
         /// <summary>

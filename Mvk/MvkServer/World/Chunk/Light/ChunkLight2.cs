@@ -1,6 +1,7 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Block;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace MvkServer.World.Chunk.Light
@@ -29,14 +30,15 @@ namespace MvkServer.World.Chunk.Light
         /// <summary>
         /// Список блоков которые светятся
         /// </summary>
-        private vec3i[] lightBlocks = new vec3i[0];
+        private List<vec3i> lightBlocks = new List<vec3i>();
 
         public ChunkLight2(ChunkBase chunk) : base(chunk) { }
-        
+
         /// <summary>
-        /// Задать список блоков которые светятся
+        /// Добавить блок с блочным освещением
         /// </summary>
-        public void SetLightBlocks(vec3i[] lightBlocks) => this.lightBlocks = lightBlocks;
+        public void SetLightBlock(vec3i lightBlock) => lightBlocks.Add(lightBlock);
+        public void SetLightBlocks(vec3i[] lightBlocks) => this.lightBlocks.AddRange(lightBlocks);
         /// <summary>
         /// Может ли видеть небо
         /// </summary>
@@ -50,6 +52,16 @@ namespace MvkServer.World.Chunk.Light
         /// Возвращает значение карты высот в этой координате x, z в чанке. 
         /// </summary>
         public byte GetHeight(int x, int z) => heightMap[z << 4 | x];
+        /// <summary>
+        /// Копия высот
+        /// </summary>
+        public byte[] CloneHeightMap()
+        {
+            byte[] map = new byte[256];
+            for (int i = 0; i < 256; i++) map[i] = heightMap[i];
+            return map;
+        }
+
         /// <summary>
         /// Карта высот по чанку с учётом прозрачности, для стартового бокового освещения, z << 4 | x
         /// </summary>
@@ -205,11 +217,10 @@ namespace MvkServer.World.Chunk.Light
                 //    World.SetBlockDebug(new BlockPos(40, 160, 40), EnumBlock.Glass);
                 //}
 
-                if (lightBlocks.Length > 0)
+                if (lightBlocks.Count > 0)
                 {
                     World.Light.CheckBrighterLightBlocks(lightBlocks);
-                    lightBlocks = new vec3i[0];
-                    //c2 = World.Light.GetCountBlock();
+                    lightBlocks.Clear();
                 }
 
                 //long le2 = stopwatch.ElapsedTicks;

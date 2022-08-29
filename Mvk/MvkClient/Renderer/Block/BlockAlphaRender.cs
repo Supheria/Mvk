@@ -1,5 +1,4 @@
 ﻿using MvkClient.Renderer.Chunk;
-using MvkServer.Util;
 
 namespace MvkClient.Renderer.Block
 {
@@ -11,9 +10,6 @@ namespace MvkClient.Renderer.Block
         /// <summary>
         /// Создание блока генерации для мира
         /// </summary>
-        public BlockAlphaRender(ChunkRender chunkRender, int cbX, int cbY, int cbZ) 
-            : base(chunkRender, cbX, cbY, cbZ) { }
+        public BlockAlphaRender(ChunkRender chunkRender) : base(chunkRender) { }
     }
-
-
 }

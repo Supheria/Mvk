@@ -1,12 +1,15 @@
 ﻿using MvkServer.Util;
 using MvkServer.World.Block;
-
+using MvkServer.World.Chunk;
 namespace MvkServer.World.Gen.Feature
 {
+    /// <summary>
+    /// Генерация растений
+    /// </summary>
     public class WorldGenPlants : WorldGenerator
     {
         /// <summary>
-        /// id Блока
+        /// id растения
         /// </summary>
         private ushort id;
 
@@ -14,10 +17,18 @@ namespace MvkServer.World.Gen.Feature
 
         public override bool Generate(WorldBase world, Rand rand, BlockPos blockPos)
         {
-            if (Blocks.GetBlockCache(id).CanBlockStay(world, blockPos))
+            EnumBlock enumBlock = world.GetBlockState(blockPos).GetEBlock();
+            EnumBlock enumBlockDown = world.GetBlockState(blockPos.OffsetDown()).GetEBlock();
+
+            if (enumBlock == EnumBlock.Air && (enumBlockDown == EnumBlock.Turf || enumBlockDown == EnumBlock.Dirt))
             {
-                return world.SetBlockState(blockPos, new BlockState(id), 0);
+                ChunkBase chunk = world.GetChunk(blockPos);
+                chunk.StorageArrays[blockPos.Y >> 4].SetData(
+                    (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15), id
+                );
+                return true;
             }
+
             return false;
         }
     }

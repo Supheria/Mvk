@@ -14,12 +14,13 @@ namespace MvkServer.World.Gen.Feature
         /// Какой блок ставим
         /// </summary>
         private BlockState blockState;
+        private readonly ushort blockId;
         /// <summary>
         /// В каком блоке ставим, для замены
         /// </summary>
         private readonly ushort exchangeId;
         /// <summary>
-        /// Количество
+        /// Количество, меньше 3 нельзя, не будет совсем
         /// </summary>
         private readonly int count;
 
@@ -27,6 +28,7 @@ namespace MvkServer.World.Gen.Feature
 
         public WorldGenMinable(BlockState blockState, int count, ushort exchangeId)
         {
+            blockId = blockState.data;
             this.blockState = blockState;
             this.count = count;
             this.exchangeId = exchangeId;
@@ -46,8 +48,10 @@ namespace MvkServer.World.Gen.Feature
             float y1 = blockPos.Y + rand.Next(3) - 2;
             float y2 = blockPos.Y + rand.Next(3) - 2;
 
-            BlockPos bpos = new BlockPos();
+            int index, bx, by, bz, chy;
+            ChunkStorage chunkStorage;
 
+            // TODO::2022-08-29 Оптимизировать минералы, занимает примерно ~2 мс с чанка
             for (i = 0; i < count; ++i)
             {
                 k = (float)i / (float)count;
@@ -69,22 +73,31 @@ namespace MvkServer.World.Gen.Feature
                     xk = (x + .5f - x3) / (h / 2f);
                     if (xk * xk < 1f)
                     {
+                        bx = x & 15;
                         for (y = y4; y <= y5; ++y)
                         {
                             yk = (y + .5f - y3) / (v / 2f);
                             if (xk * xk + yk * yk < 1f)
                             {
+                                chy = y >> 4;
+                                by = y & 15;
                                 for (z = z4; z <= z5; ++z)
                                 {
                                     zk = (z + .5f - z3) / (h / 2f);
                                     if (xk * xk + yk * yk + zk * zk < 1f)
                                     {
-                                        bpos.X = x;
-                                        bpos.Y = y;
-                                        bpos.Z = z;
-                                        if (world.GetBlockState(bpos).data == exchangeId)
+                                        if (posCh.x == x >> 4 && posCh.y == z >> 4)
                                         {
-                                            SetBlock(world, bpos, posCh, blockState);
+                                            bz = z & 15;
+                                            if (bx >> 4 == 0 && bz >> 4 == 0 && chy >= 0 && chy < ChunkBase.COUNT_HEIGHT)
+                                            {
+                                                chunkStorage = chunk.StorageArrays[chy];
+                                                index = by << 8 | bz << 4 | bx;
+                                                if (chunkStorage.countBlock > 0 && chunkStorage.data[index] == exchangeId)
+                                                {
+                                                    chunkStorage.data[index] = blockId;
+                                                }
+                                            }
                                         }
                                     }
                                 }

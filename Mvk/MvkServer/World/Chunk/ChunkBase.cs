@@ -31,45 +31,43 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Данные чанка
         /// </summary>
-        public ChunkStorage[] StorageArrays { get; protected set; } = new ChunkStorage[COUNT_HEIGHT];
+        public ChunkStorage[] StorageArrays { get; private set; } = new ChunkStorage[COUNT_HEIGHT];
         /// <summary>
         /// Сылка на объект мира
         /// </summary>
-        public WorldBase World { get; protected set; }
+        public WorldBase World { get; private set; }
         /// <summary>
         /// Позиция чанка
         /// </summary>
-        public vec2i Position { get; protected set; }
-        /// <summary>
-        /// Загружен ли чанк
-        /// </summary>
-        public bool IsChunkLoaded { get; protected set; } = false;
-        /// <summary>
-        /// Была ли заполнена насилённостью
-        /// </summary>
-        private bool isPopulated  = false;
-        public int CountPopulated { get; set; } = 0;
+        public vec2i Position { get; private set; }
         /// <summary>
         /// Список сущностей в каждом псевдочанке
         /// </summary>
-        public MapListEntity[] ListEntities { get; protected set; } = new MapListEntity[COUNT_HEIGHT];
-        ///// <summary>
-        ///// Объект работы с освещением
-        ///// </summary>
-        //public ChunkLight2 Light { get; private set; }
-
-        public bool IsPopulated()
-        {
-            //return isPopulated;
-            // 9 bit [1 1111 1111]
-            return CountPopulated == 511;
-        }
-
+        public MapListEntity[] ListEntities { get; private set; } = new MapListEntity[COUNT_HEIGHT];
         /// <summary>
-        /// Столбцы биомов
+        /// Объект работы с освещением
         /// </summary>
-        //protected EnumBiome[,] eBiomes = new EnumBiome[16, 16];
-
+        public ChunkLight2 Light { get; private set; }
+        /// <summary>
+        /// Загружен ли чанк
+        /// </summary>
+        public bool IsChunkLoaded { get; private set; } = false;
+        /// <summary>
+        /// Было ли декорация чанка
+        /// </summary>
+        public bool IsPopulated { get; private set; } = false;
+        /// <summary>
+        /// Было ли карта высот с небесным освещением
+        /// </summary>
+        public bool IsHeightMapSky { get; private set; } = false;
+        /// <summary>
+        /// Было ли боковое небесное освещение и блочное освещение
+        /// </summary>
+        public bool IsSideLightSky { get; private set; } = false;
+        /// <summary>
+        /// Готов ли чанк для отправки клиентам
+        /// </summary>
+        public bool IsSendChunk { get; private set; } = false;
         /// <summary>
         /// Биомы
         /// x << 4 | z;
@@ -91,16 +89,13 @@ namespace MvkServer.World.Chunk
         public uint InhabitedTime { get; private set; }
 
         /// <summary>
+        /// Карта высот по чанку, рельефа при генерации z << 4 | x
+        /// </summary>
+        private byte[] heightMapGen = new byte[256];
+        /// <summary>
         /// Последнее обновление чанка в тактах
         /// </summary>
         protected long updateTime;
-
-
-        /// <summary>
-        /// В тиках проверям, рендер света
-        /// </summary>
-        //private bool isGapLightingUpdated = false;
-
         /// <summary>
         /// Установите значение true, если чанк был изменен и нуждается в внутреннем обновлении. Для сохранения
         /// </summary>
@@ -114,11 +109,6 @@ namespace MvkServer.World.Chunk
         /// </summary>
         private long lastSaveTime;
 
-        /// <summary>
-        /// Объект работы с освещением
-        /// </summary>
-        public ChunkLight2 Light { get; private set; }
-
         protected ChunkBase() { }
         public ChunkBase(WorldBase worldIn, vec2i pos)
         {
@@ -131,6 +121,14 @@ namespace MvkServer.World.Chunk
             }
             Light = new ChunkLight2(this);
         }
+        /// <summary>
+        /// Возвращает значение карты высот рельефа при генерации в этой координате x, z в чанке. 
+        /// </summary>
+        public byte GetHeightGen(int x, int z) => heightMapGen[z << 4 | x];
+        /// <summary>
+        /// Сгенерировать копию высот для популяции
+        /// </summary>
+        public void InitHeightMapGen() => heightMapGen = Light.CloneHeightMap();
 
         /// <summary>
         /// Загружен чанк или сгенерирован
@@ -253,45 +251,23 @@ namespace MvkServer.World.Chunk
             }
             if (!World.IsRemote && World is WorldServer worldServer)
             {
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
+                //Stopwatch stopwatch = new Stopwatch();
+                //stopwatch.Start();
                 worldServer.profiler.StartSection("PopulateChunk");
-                PopulateChunk(worldServer.ChunkPrServ);
-                worldServer.profiler.EndSection();
-                long le1 = stopwatch.ElapsedTicks;
-               // worldServer.Log.Log("PopulateChunk[{1}]: {0:0.00} ms", le1 / (float)MvkStatic.TimerFrequency, Position);
-            }
-        }
-
-        /// <summary>
-        /// Запуск чанков для населённости которые прикосаются к этому, и не были населены
-        /// </summary>
-        private void PopulateChunk(ChunkProviderServer provider)
-        {
-            vec2i pos;
-            ChunkBase chunk;
-            for (int i = 0; i < 9; i++)
-            {
-                pos = MvkStatic.AreaOne9[i] + Position;
-                chunk = provider.GetChunk(pos);
-                if (chunk != null && chunk.IsChunkLoaded && !IsPopulated() && IsLoadChunks8(provider, pos))
+                // После генерации проверяем все близлежащие чанки для декорации
+                ChunkBase chunk;
+                for (int i = 0; i < 9; i++)
                 {
-                    chunk.Populate(provider);
+                    chunk = worldServer.ChunkPrServ.GetChunk(MvkStatic.AreaOne9[i] + Position);
+                    if (chunk != null && chunk.IsChunkLoaded)
+                    {
+                        chunk.Populate(worldServer.ChunkPrServ);
+                    }
                 }
+                worldServer.profiler.EndSection();
+                //long le1 = stopwatch.ElapsedTicks;
+                //worldServer.Log.Log("PopulateChunk[{1}]: {0:0.00} ms", le1 / (float)MvkStatic.TimerFrequency, Position);
             }
-        }
-
-        /// <summary>
-        /// Проверить загружены ли соседние чанки
-        /// </summary>
-        private bool IsLoadChunks8(ChunkProvider provider, vec2i pos)
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                if (!provider.IsChunk(MvkStatic.AreaOne8[i] + pos))
-                    return false;
-            }
-            return true;
         }
 
         /// <summary>
@@ -299,9 +275,123 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public void Populate(ChunkProviderServer provider)
         {
-            //Light.StartRecheckGaps();
-            provider.ChunkGenerate.Populate(this);
-            isPopulated = true;
+            if (!IsPopulated)
+            {
+                // Если его в чанке нет проверяем чтоб у всех чанков близлежащих была генерация
+                ChunkBase chunk;
+                for (int i = 0; i < 9; i++)
+                {
+                    chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
+                    if (chunk == null || !chunk.IsChunkLoaded)
+                    {
+                        return;
+                    }
+                }
+                //Stopwatch stopwatch = new Stopwatch();
+                //stopwatch.Start();
+                provider.ChunkGenerate.Populate(this);
+                IsPopulated = true;
+                //World.Log.Log("Populate[{1}]: {0:0.00} ms", stopwatch.ElapsedTicks / (float)MvkStatic.TimerFrequency, Position);
+                // После населённостью проверяем все близлежащие чанки с населёностью для обработки небесного освещения
+                for (int i = 0; i < 9; i++)
+                {
+                    chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
+                    if (chunk != null && chunk.IsChunkLoaded && chunk.IsPopulated)
+                    {
+                        chunk.HeightMapSky(provider);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Карта высот с вертикальным небесным освещением
+        /// </summary>
+        private void HeightMapSky(ChunkProviderServer provider)
+        {
+            if (!IsHeightMapSky)
+            {
+                // Если его в чанке нет проверяем чтоб у всех чанков близлежащих была популяция
+                ChunkBase chunk;
+                for (int i = 0; i < 9; i++)
+                {
+                    chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
+                    if (chunk == null || !chunk.IsChunkLoaded || !chunk.IsPopulated)
+                    {
+                        return;
+                    }
+                }
+                // Карта высот с вертикальным небесным освещением
+               // Stopwatch stopwatch = new Stopwatch();
+                //stopwatch.Start();
+                Light.GenerateHeightMapSky();
+                IsHeightMapSky = true;
+                //World.Log.Log("HeightMapSky[{1}]: {0:0.00} ms", stopwatch.ElapsedTicks / (float)MvkStatic.TimerFrequency, Position);
+                // После Карта высот проверяем все близлежащие чанки с картой высот для обработки бокового небесного освещения
+                for (int i = 0; i < 9; i++)
+                {
+                    chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
+                    if (chunk != null && chunk.IsChunkLoaded && chunk.IsPopulated && chunk.IsHeightMapSky)
+                    {
+                        chunk.SideLightSky(provider);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Боковое небесное освещение и блочное освещение
+        /// </summary>
+        private void SideLightSky(ChunkProviderServer provider)
+        {
+            if (!IsSideLightSky)
+            {
+                // Если его в чанке нет проверяем чтоб у всех чанков близлежащих было небесное освещение
+                ChunkBase chunk;
+                for (int i = 0; i < 9; i++)
+                {
+                    chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
+                    if (chunk == null || !chunk.IsChunkLoaded || !chunk.IsPopulated || !chunk.IsHeightMapSky)
+                    {
+                        return;
+                    }
+                }
+                //Stopwatch stopwatch = new Stopwatch();
+                //stopwatch.Start();
+                // Боковое небесное освещение и блочное освещение
+                Light.StartRecheckGaps();
+                IsSideLightSky = true;
+                //World.Log.Log("SideLightSky[{1}]: {0:0.00} ms", stopwatch.ElapsedTicks / (float)MvkStatic.TimerFrequency, Position);
+                // После бокового освещения проверяем все близлежащие чанки с боковым освещение для возможности отправки
+                for (int i = 0; i < 9; i++)
+                {
+                    chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
+                    if (chunk != null && chunk.IsChunkLoaded && chunk.IsPopulated && chunk.IsHeightMapSky && chunk.IsSideLightSky)
+                    {
+                        chunk.SendChunk(provider);
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// Возможность отправлять чанк клиентам
+        /// </summary>
+        private void SendChunk(ChunkProviderServer provider)
+        {
+            if (!IsSendChunk)
+            {
+                // Если его в чанке нет проверяем чтоб у всех чанков близлежащих было небесное освещение
+                ChunkBase chunk;
+                for (int i = 0; i < 9; i++)
+                {
+                    chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
+                    if (chunk == null || !chunk.IsChunkLoaded || !chunk.IsPopulated || !chunk.IsHeightMapSky || !chunk.IsSideLightSky)
+                    {
+                        return;
+                    }
+                }
+                IsSendChunk = true;
+            }
         }
 
         /// <summary>
@@ -877,9 +967,11 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public void SetInhabitedTime(uint time) => InhabitedTime = time;
 
-
-        public override string ToString() => Position + " " + IsChunkLoaded + " " + CountPopulated;
-
+        public override string ToString() => Position + " " 
+            + (IsChunkLoaded ? "Loaded " : "")
+            + (IsPopulated ? "Populated " : "")
+            + (IsHeightMapSky ? "HeightMap " : "")
+            + (IsSideLightSky ? "Light " : "");
     }
 }
 ;

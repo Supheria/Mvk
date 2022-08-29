@@ -15,6 +15,7 @@ namespace MvkServer.World.Block.List
             UseNeighborBrightness = true;
             AllSideForcibly = true;
             АmbientOcclusion = false;
+            BiomeColor = true;
             Color = new vec3(.56f, .73f, .35f);
             Particle = numberTexture;
             InitBoxs();

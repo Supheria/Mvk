@@ -39,6 +39,12 @@ namespace MvkServer.World.Block
             lightBlock = 0;
             lightSky = 0;
         }
+        public BlockState(int id, int met)
+        {
+            data = (ushort)(id & 0xFFF | met << 12);
+            lightBlock = 0;
+            lightSky = 0;
+        }
         public BlockState(ushort data)
         {
             this.data = data;

@@ -33,7 +33,7 @@ namespace MvkServer
         /// <summary>
         /// Увеличивается каждый тик 
         /// </summary>
-        public uint TickCounter { get; protected set; } = 20500;
+        public uint TickCounter { get; protected set; } = 25500;
         /// <summary>
         /// Серверный объект мира
         /// </summary>

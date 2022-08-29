@@ -1,6 +1,7 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Block;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace MvkServer.World.Chunk.Light
@@ -254,7 +255,7 @@ namespace MvkServer.World.Chunk.Light
         /// <summary>
         /// Проверяем освещение блоков при старте
         /// </summary>
-        public void CheckBrighterLightBlocks(vec3i[] lightBlocks)
+        public void CheckBrighterLightBlocks(List<vec3i> lightBlocks)
         {
             countBlock = 0;
             ChunkStorage chunkStorage;
@@ -274,7 +275,7 @@ namespace MvkServer.World.Chunk.Light
             indexBegin = indexEnd = 0;
             countBlock = 0;
 
-            for (i = 0; i < lightBlocks.Length; i++)
+            for (i = 0; i < lightBlocks.Count; i++)
             {
                 pos = lightBlocks[i];
                 x = pos.x + bOffsetX;
@@ -296,7 +297,7 @@ namespace MvkServer.World.Chunk.Light
 
             if (BrighterLightBlock())
             {
-                ModifiedRender();
+             //   ModifiedRender();
             }
         }
 
@@ -432,7 +433,7 @@ namespace MvkServer.World.Chunk.Light
             //World.SetBlockDebug(new BlockPos(bOffsetX + 8, 90, bOffsetZ + 8), EnumBlock.Glass);
             if (BrighterLightSky())
             {
-                ModifiedRender();
+             //   ModifiedRender();
             }
         }
 

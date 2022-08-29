@@ -2,7 +2,6 @@
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
 using MvkServer.World.Gen;
-using MvkServer.World.Gen.Feature;
 
 namespace MvkServer.World.Biome
 {
@@ -114,7 +113,7 @@ namespace MvkServer.World.Biome
         /// </summary>
         /// <param name="height">Высота -1..0..1</param>
         /// <param name="river">Определение центра реки 1..0..1</param>
-        protected virtual int GetLevelHeight(int x, int z, float height, float river) => 97 + (int)(height * 96f);
+        protected virtual int GetLevelHeight(int x, int z, float height, float river) => 96 + (int)(height * 96f);
 
         /// <summary>
         /// Генерация наза 0-3 блока
@@ -136,46 +135,6 @@ namespace MvkServer.World.Biome
                     chunk.data[x << 12 | z << 8 | 2] = (ushort)(n < -.1 ? 2 : 3);
                 }
             }
-        }
-
-        /// <summary>
-        /// Генерация облостей
-        /// </summary>
-        public void Area(float[] noise, int x, int z, EnumBlock eBlock, bool big)
-        {
-            int realX = xbc + x;
-            int realZ = zbc + z;
-            float res;
-            if (big)
-            {
-               // Provider.NoiseArea.GenerateNoise2d(downNoise, realX, realZ, 1, 1, .1f, .1f);
-                res = -.5f;
-            }
-            else
-            {
-               // Provider.NoiseDown.GenerateNoise2d(downNoise, realX, realZ, 1, 1, .1f, .1f);
-                res = -.8f;
-            }
-
-            //if (downNoise[0] < res)
-            {
-                
-                ushort id = (ushort)eBlock;
-                int y8 = (int)((downNoise[0] + 1f) * 64f) + 64;
-                for (int y = 3; y < 128; y++)
-                {
-                    if (noise[x << 11 | z << 7 | y] < res)
-                    {
-                        chunk.data[x << 12 | z << 8 | y] = id;
-                    }
-                }
-            }
-        }
-
-        public virtual WorldGenerator GetRandomWorldGenForGrass()
-        {
-            Decorator.genPlants.SetId(45); // 45
-            return Decorator.genPlants;
         }
     }
 }

@@ -193,7 +193,7 @@ namespace MvkServer.Entity.Player
                     vec2i pos = LoadedChunks.FirstRemove();
                     ChunkBase chunk = World.GetChunk(pos);
                     // NULL по сути не должен быть!!!
-                    if (chunk != null && chunk.IsChunkLoaded && chunk.IsPopulated())
+                    if (chunk != null && chunk.IsSendChunk)
                     {
                         profiler.EndStartSection("PacketS21ChunckData");
                         PacketS21ChunkData packet = new PacketS21ChunkData(chunk, true, 65535);
@@ -261,7 +261,7 @@ namespace MvkServer.Entity.Player
         public void UpOverviewChunkPrev()
         {
             OverviewChunkPrev = OverviewChunk;
-            DistSqrt = MvkStatic.GetSqrt(OverviewChunk + 2);
+            DistSqrt = MvkStatic.GetSqrt(OverviewChunk + 5);
         }
 
         /// <summary>

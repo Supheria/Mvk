@@ -82,8 +82,6 @@ namespace MvkClient.Renderer.Block
 
         private readonly int[] resultSide = new int[] { -1, -1, -1, -1, -1, -1 };
 
-        public int cbX, cbY, cbZ;
-
         private int xcn, zcn;
         private int xc, yc, zc;
         private int xb, yb, zb;
@@ -98,11 +96,8 @@ namespace MvkClient.Renderer.Block
         /// <summary>
         /// Создание блока генерации для мира
         /// </summary>
-        public BlockRender(ChunkRender chunkRender, int cbX, int cbY, int cbZ)
+        public BlockRender(ChunkRender chunkRender)
         {
-            this.cbX = cbX;
-            this.cbY = cbY;
-            this.cbZ = cbZ;
             ambientOcclusion = Setting.SmoothLighting;
             chunk = chunkRender;
         }
@@ -340,10 +335,10 @@ namespace MvkClient.Renderer.Block
         /// </summary>
         private ColorsLights GenColors(byte light)
         {
-            vec3 color = cFace.isColor ? GetBiomeColor(cbX, cbZ) : new vec3(1f);
+            vec3 color = cFace.isColor ? GetBiomeColor(chunk, posChunkX, posChunkZ) : new vec3(1f);
             float lightPole = block.NoSideDimming ? 0f : 1f - LightPole();
 
-            if (ambientOcclusion && block.АmbientOcclusion)
+            if (ambientOcclusion && (block.АmbientOcclusion || block.BiomeColor))
             {
                 AmbientOcclusionLights ambient = GetAmbientOcclusionLights();
                 lightPole *= .5f;
@@ -363,24 +358,25 @@ namespace MvkClient.Renderer.Block
         /// <summary>
         /// Получить цвет в зависимости от биома, цвет определяем потипу
         /// </summary>
-        /// <param name="posX"></param>
-        /// <param name="posZ"></param>
+        /// <param name="bx">0-15</param>
+        /// <param name="bz">0-15</param>
         /// <returns></returns>
-        private vec3 GetBiomeColor(int posX, int posZ /* тип блока, трава, вода, листва */)
+        private vec3 GetBiomeColor(ChunkBase chunk, int bx, int bz /* тип блока, трава, вода, листва */)
         {
             // подготовка для теста плавности цвета
             if (cFace.isColor)
             {
                 if (block.EBlock == EnumBlock.Turf || block.EBlock == EnumBlock.TallGrass)
                 {
-                    if (posX >> 4 == -1 && posZ >> 4 == -1)
-                    {
-                        return new vec3(.76f, .53f, .25f);
-                    }
-                    else
-                    {
-                        return new vec3(.56f, .73f, .35f);
-                    }
+                    return BlockColorBiome.Grass(chunk.biome[bx << 4 | bz]);
+                }
+                if (block.Material == EnumMaterial.Leaves)
+                {
+                    return BlockColorBiome.Leaves(chunk.biome[bx << 4 | bz]);
+                }
+                if (block.Material == EnumMaterial.Water)
+                {
+                    return BlockColorBiome.Water(chunk.biome[bx << 4 | bz]);
                 }
                 return cFace.color;
             }
@@ -515,17 +511,19 @@ namespace MvkClient.Renderer.Block
             zc = chunk.Position.y + zcn;
             xb = pX & 15;
             zb = pZ & 15;
-            aoLight.color = GetBiomeColor(xc << 4 | xb, zc << 4 | zb);
+            //aoLight.color = GetBiomeColor(xb, zb);
 
             // проверка высоты
             if (pY < 0)
             {
                 aoLight.lightSky = 0;
+                aoLight.color = new vec3(1);
                 return aoLight;
             }
             if (pY >= ChunkBase.COUNT_HEIGHT_BLOCK)
             {
                 aoLight.lightSky = 15;
+                aoLight.color = new vec3(1);
                 aoLight.aol = 1;
                 return aoLight;
             }
@@ -535,9 +533,11 @@ namespace MvkClient.Renderer.Block
             if (chunkCheck == null || !chunkCheck.IsChunkLoaded)
             {
                 aoLight.lightSky = 15;
+                aoLight.color = new vec3(1);
                 aoLight.aol = 1;
                 return aoLight;
             }
+            aoLight.color = GetBiomeColor(chunkCheck, xb, zb);
             storage = chunkCheck.StorageArrays[yc];
             //if (storage.countBlock == 0)
             //{
