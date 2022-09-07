@@ -2,6 +2,7 @@
 using MvkServer.Entity.Mob;
 using MvkServer.Entity.Player;
 using MvkServer.Glm;
+using MvkServer.NBT;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
@@ -114,8 +115,11 @@ namespace MvkServer.Management
             // Лог запуска игрока
             World.ServerMain.Log.Log("server.player.entry {0} [{1}]", entityPlayer.GetName(), entityPlayer.UUID);
 
-            
-            SpawnPositionTest(entityPlayer);
+            //entityPlayer.SetPosLook(new vec3(random.Next(32) - 56, 0, random.Next(32) - 16), -0.9f, -.8f);
+            //SpawnPositionCheck(entityPlayer);
+
+            ReadEntityPlayerFromFile(entityPlayer);
+
             entityPlayer.SetChunkPosManaged(entityPlayer.GetChunkPos());
             //entityPlayer.SetOverviewChunk(entityPlayer.OverviewChunk, 1);
             vec2i posCh = entityPlayer.GetChunkPos();
@@ -219,6 +223,7 @@ namespace MvkServer.Management
                 RemoveMountedMovingPlayer(entityPlayer);
                 World.RemoveEntity(entityPlayer);
                 players.Remove(entityPlayer);
+                WriteEntityPlayerToFile(entityPlayer);
                 //ResponsePacketAll(new PacketSF1Disconnect(entityPlayer.Id), entityPlayer.Id);
             }
         }
@@ -358,6 +363,7 @@ namespace MvkServer.Management
         {
             player.SendPacket(new PacketS02JoinGame(player.Id, player.UUID, player.IsCreativeMode));
             player.SendPacket(new PacketS08PlayerPosLook(player.Position, player.RotationYawHead, player.RotationPitch));
+            player.SendPacket(new PacketS06UpdateHealth(player.Health));
             player.SendPacket(new PacketS03TimeUpdate(World.ServerMain.TickCounter));
             player.SendUpdateInventory();
         }
@@ -886,6 +892,32 @@ namespace MvkServer.Management
                 }
             }
             return strPlayers;
+        }
+
+        /// <summary>
+        /// Записать данные игрок в файл
+        /// </summary>
+        private void WriteEntityPlayerToFile(EntityPlayerServer entityPlayer)
+        {
+            TagCompound nbt = new TagCompound();
+            entityPlayer.WriteEntityToNBT(nbt);
+            World.File.PlayerDataWrite(nbt, entityPlayer.UUID);
+        }
+
+        /// <summary>
+        /// Прочесть данные игрока с файла
+        /// </summary>
+        private void ReadEntityPlayerFromFile(EntityPlayerServer entityPlayer)
+        {
+            TagCompound nbt = World.File.PlayerDataRead(entityPlayer.UUID);
+            if (nbt == null)
+            {
+                SpawnPositionTest(entityPlayer);
+            }
+            else
+            {
+                entityPlayer.ReadEntityFromNBT(nbt);
+            }
         }
     }
 }

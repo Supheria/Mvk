@@ -56,6 +56,14 @@ namespace MvkServer.Util
         /// Получает частоту таймера в виде количества тактов в один TPS
         /// </summary>
         public static long TimerFrequencyTps { get; protected set; }
+        /// <summary>
+        /// Массив круговой до 37 (32+5) обзора
+        /// </summary>
+        public static vec2i[] DistSqrt37 { get; private set; } = new vec2i[38];
+        /// <summary>
+        /// Длинна массива при нужном обзоре DistSqrt37
+        /// </summary>
+        public static int[] DistSqrt37Light { get; private set; } = new int[38];
 
         /// <summary>
         /// Инициализация, запускаем при старте
@@ -85,6 +93,13 @@ namespace MvkServer.Util
             };
             TimerFrequency = Stopwatch.Frequency / 1000;
             TimerFrequencyTps = Stopwatch.Frequency / 20;
+
+            for (int i = 0; i < 38; i++)
+            {
+                DistSqrt37 = GetSqrt(i);
+                DistSqrt37Light[i] = DistSqrt37.Length;
+            }
+            
         }
 
         /// <summary>
@@ -177,5 +192,7 @@ namespace MvkServer.Util
             if (y == 0) return 7;
             return 8;
         }
+
+        
     }
 }

@@ -37,8 +37,9 @@ namespace MvkClient.Network
         /// </summary>
         public void ReceiveBuffer(byte[] buffer) => ReceivePacket(null, buffer);
 
-        protected override void ReceivePacketClient(IPacket packet)
+        protected override void ReceivePacketClient(IPacket packet, int light)
         {
+            Debug.Traffic += light;
             Task.Factory.StartNew(() =>
             {
                 byte id = GetId(packet);
@@ -49,7 +50,11 @@ namespace MvkClient.Network
                 }
                 else if(ClientMain.World != null)
                 {
-                    if (id == 0x02)
+                    if (id == 0x00)
+                    {
+                        Handle00Pong((PacketS00Pong)packet);
+                    }
+                    else if (id == 0x02)
                     {
                         // Хоть мир уже и есть, но для первого игрока, но он ещё не запустил игровой такт
                         Handle02JoinGame((PacketS02JoinGame)packet);
@@ -67,7 +72,6 @@ namespace MvkClient.Network
         {
             switch (GetId(packet))
             {
-                case 0x00: Handle00Pong((PacketS00Pong)packet); break;
                 case 0x01: Handle01KeepAlive((PacketS01KeepAlive)packet); break;
                 case 0x03: Handle03TimeUpdate((PacketS03TimeUpdate)packet); break;
                 case 0x04: Handle04EntityEquipment((PacketS04EntityEquipment)packet); break;

@@ -6,24 +6,30 @@ namespace MvkClient.Gui
 {
     public class ScreenSingle : Screen
     {
-        protected Label label;
-        protected Button buttonCancel;
-        protected Button[] buttonSlots = new Button[5];
-        protected Button[] buttonSlotsDel = new Button[5];
+        private Label label;
+        private Button buttonCancel;
+        private Button[] buttonSlots = new Button[5];
+        private Button[] buttonSlotsDel = new Button[5];
+        private Client client;
 
         public ScreenSingle(Client client, int slotDel) : base(client)
         {
-
+            this.client = client;
             if (slotDel > 0) DelSlot(slotDel);
+            client.ListSingle.Initialize(slotDel);
 
             label = new Label(Language.T("gui.singleplayer"), FontSize.Font16);
 
             for (int i = 0; i < buttonSlots.Length; i++)
             {
-                buttonSlots[i] = new Button(Language.T("gui.world.empty")) { Width = 356 };
+                buttonSlots[i] = new Button(Language.T(client.ListSingle.NameWorlds[i])) { Width = 356 };
                 buttonSlots[i].Tag = i + 1; // Номер слота
                 buttonSlots[i].Click += ButtonSlots_Click;
-                buttonSlotsDel[i] = new Button("X") { Width = 40 };
+                buttonSlotsDel[i] = new Button("X")
+                {
+                    Width = 40,
+                    Enabled = !client.ListSingle.EmptyWorlds[i]
+                };
                 buttonSlotsDel[i].Tag = i + 1; // Номер слота
                 buttonSlotsDel[i].Click += ButtonSlotsDel_Click;
             }
@@ -79,9 +85,12 @@ namespace MvkClient.Gui
         /// Удалить слот мира
         /// </summary>
         /// <param name="slot">Слот 1-5</param>
-        protected void DelSlot(int slot)
+        private void DelSlot(int slot)
         {
-            if (slot > 0) return;
+            if (slot > 0 && slot < 6)
+            {
+                client.ListSingle.WorldRemove(slot);
+            }
         }
     }
 }

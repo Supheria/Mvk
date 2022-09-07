@@ -123,8 +123,6 @@ namespace MvkServer.World.Chunk
         public ChunkBase LoadingChunk(vec2i pos)
         {
             ChunkBase chunk = GetChunk(pos);
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
             if (chunk == null)
             {
                 chunk = new ChunkBase(world, pos);

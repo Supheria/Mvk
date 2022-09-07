@@ -154,6 +154,7 @@
     <Compile Include="Renderer\WorldRenderer.cs" />
     <Compile Include="Setitings\Setting.cs" />
     <Compile Include="LocalServer.cs" />
+    <Compile Include="Util\BufImage.cs" />
     <Compile Include="Util\BufferedImage.cs" />
     <Compile Include="Gui\ScreenEvent.cs" />
     <Compile Include="Util\BufferData.cs" />
@@ -167,6 +168,7 @@
     <Compile Include="Util\Ticker.cs" />
     <Compile Include="World\ChunkProviderClient.cs" />
     <Compile Include="World\ChunkQueue.cs" />
+    <Compile Include="World\ListSingleWorld.cs" />
     <Compile Include="World\WorldClient.cs" />
   </ItemGroup>
   <ItemGroup>

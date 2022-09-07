@@ -19,6 +19,7 @@ namespace MvkServer.World.Block.List
             // Затычка, для сортировки, и прорисовки из нутри когда к примеру блок стекла
             //Translucent = true; 
             // IsAction = false;
+            FullBlock = false;
             IsCollidable = false;
             АmbientOcclusion = false;
             NoSideDimming = true;
@@ -51,6 +52,12 @@ namespace MvkServer.World.Block.List
         /// Тон сэмпла сломанного блока,
         /// </summary>
         public override float SampleBreakPitch(Rand random) => 2.6f + (random.NextFloat() - random.NextFloat()) * .8f;
+
+        /// <summary>
+        /// Передать список  ограничительных рамок блока
+        /// </summary>
+        public override AxisAlignedBB[] GetCollisionBoxesToList(BlockPos pos, int met) 
+            => new AxisAlignedBB[] { new AxisAlignedBB(pos.X, pos.Y, pos.Z, pos.X + 1f, pos.Y + .125f, pos.Z + 1f) };
 
         /// <summary>
         /// Инициализация коробок

@@ -19,6 +19,7 @@ gui.no:Нет
 gui.yes:Да
 gui.connect:Соединиться
 gui.world.empty:- Пусто -
+gui.world.broken:Мир сломан!
 gui.world.delete:Вы действительно хотите удалить мир?
 gui.saving:Сохранение...
 gui.process:Процесс...

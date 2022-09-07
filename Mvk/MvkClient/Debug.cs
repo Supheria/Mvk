@@ -70,6 +70,12 @@ namespace MvkClient
         /// </summary>
         public static float RenderChunckTime8 = 0;
         public static float RenderChunckTime = 0;
+
+        /// <summary>
+        /// Трафик в байтах
+        /// </summary>
+        public static long Traffic = 0;
+
         public static int DInt = 0;
         public static long DLong = 0;
         public static float DFloat = 0;
@@ -94,6 +100,7 @@ namespace MvkClient
         {
             string s = strServer == "" ? "" : "Server " + strServer + "\r\n";
             string c = strClient == "" ? "" : "Client " + strClient + "\r\n"
+                    + "Traffic mb:" + (Traffic / 1048576f).ToString("0.00") + "\r\n"
                     + "RenderChunk8 ms:" + RenderChunckTime8.ToString("0.000") + "\r\n";
             
             return version + "\r\n"
@@ -155,6 +162,7 @@ namespace MvkClient
 
                 if (ListChunks.listChunkServer != null)
                 {
+                    // green || red
                     foreach (DebugChunkValue p in ListChunks.listChunkServer)
                     {
                         vec2i pos = new vec2i(p.pos.x * size, p.pos.y * size);
@@ -164,6 +172,7 @@ namespace MvkClient
                 }
                 if (ListChunks.listChunkPlayers != null)
                 {
+                    // White
                     foreach (vec2i p in ListChunks.listChunkPlayers)
                     {
                         vec2i pos = p * size;
@@ -172,6 +181,7 @@ namespace MvkClient
                 }
                 if (ListChunks.listChunkPlayer != null)
                 {
+                    // Blue
                     foreach (DebugChunkValue p in ListChunks.listChunkPlayer)
                     {
                         vec2i pos = new vec2i(p.pos.x * size, p.pos.y * size);

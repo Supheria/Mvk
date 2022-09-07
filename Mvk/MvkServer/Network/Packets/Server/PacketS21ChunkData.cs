@@ -1,6 +1,8 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Util;
 using MvkServer.World.Chunk;
 using System.Collections.Generic;
+using System.IO;
 
 namespace MvkServer.Network.Packets.Server
 {
@@ -58,47 +60,35 @@ namespace MvkServer.Network.Packets.Server
                 buffer = new byte[storages.Count * CountBufChunck() + CountBufBiom()];
                 int count = 0;
                 ushort data;
-                int index;
-                while (storages.Count > 0)
+                ChunkStorage chunkStorage;
+                for (int j = 0; j < storages.Count; j++)
                 {
-                    bool emptyData = storages[0].IsEmptyData();
-                   // bool emptyLight = storages[0].IsEmptyLight();
-                    for (int y = 0; y < 16; y++)
+                    chunkStorage = storages[j];
+                    bool emptyData = chunkStorage.IsEmptyData();
+                    for (int i = 0; i < 4096; i++)
                     {
-                        for (int x = 0; x < 16; x++)
+                        //if (chunk.Position.x < 0 && chunk.Position.x > -8)
+                        //{
+                        //    buffer[count++] = 0;
+                        //    buffer[count++] = 0;
+                        //    buffer[count++] = 0xFF;
+                        //}
+                        //else
                         {
-                            for (int z = 0; z < 16; z++)
+                            if (emptyData)
                             {
-                                index = y << 8 | z << 4 | x;
-                                //if (chunk.Position.x < 0 && chunk.Position.x > -8)
-                                //{
-                                //    buffer[count++] = 0;
-                                //    buffer[count++] = 0;
-                                //    buffer[count++] = 0xFF;
-                                //}
-                                //else
-                                {
-                                    if (emptyData)
-                                    {
-                                        buffer[count++] = 0;
-                                        buffer[count++] = 0;
-                                        // buffer[count++] = 0;
-                                    }
-                                    else
-                                    {
-                                        data = storages[0].data[index];
-                                        buffer[count++] = (byte)(data & 0xFF);
-                                        buffer[count++] = (byte)(data >> 8);
-                                        // buffer[count++] = storages[0].GetLightsFor(x, y, z);
-                                    }
-                                    //buffer[count++] = storages[0].light[y << 8 | z << 4 | x];
-                                    buffer[count++] = (byte)(storages[0].lightBlock[index] << 4 | storages[0].lightSky[index] & 0xF);
-                                }
-
+                                buffer[count++] = 0;
+                                buffer[count++] = 0;
                             }
+                            else
+                            {
+                                data = chunkStorage.data[i];
+                                buffer[count++] = (byte)(data & 0xFF);
+                                buffer[count++] = (byte)(data >> 8);
+                            }
+                            buffer[count++] = (byte)(chunkStorage.lightBlock[i] << 4 | chunkStorage.lightSky[i] & 0xF);
                         }
                     }
-                    storages.RemoveAt(0);
                 }
                 if (biom)
                 {
@@ -151,7 +141,9 @@ namespace MvkServer.Network.Packets.Server
             flagsYAreas = stream.ReadUShort();
             if (flagsYAreas > 0)
             {
-                buffer = stream.ReadBytes(CountChunk() * CountBufChunck() + CountBufBiom());
+                int count = stream.ReadInt();
+                buffer = stream.Decompress(stream.ReadBytes(count));
+                //buffer = stream.ReadBytes(CountChunk() * CountBufChunck() + CountBufBiom());
             }
         }
 
@@ -163,7 +155,10 @@ namespace MvkServer.Network.Packets.Server
             stream.WriteUShort((ushort)flagsYAreas);
             if (flagsYAreas > 0)
             {
-                stream.WriteBytes(buffer);
+                byte[] buf = stream.Compress(buffer);
+                stream.WriteInt(buf.Length);
+                stream.WriteBytes(buf);
+                //stream.WriteBytes(buffer);
             }
         }
     }

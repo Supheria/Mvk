@@ -1,5 +1,6 @@
 ﻿using MvkServer.Entity.Player;
 using MvkServer.Item;
+using MvkServer.NBT;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 using System;
@@ -101,19 +102,12 @@ namespace MvkServer.Inventory
         /// </summary>
         public ItemStack GetStackInSlot(int slotIn)
         {
-            ItemStack[] itemStacks;
-
             if (slotIn >= COUNT)
             {
                 slotIn -= COUNT;
-                itemStacks = armorInventory;
+                return armorInventory[slotIn];
             }
-            else
-            {
-                itemStacks = mainInventory;
-            }
-
-            return itemStacks[slotIn];
+            return mainInventory[slotIn];
         }
 
         /// <summary>
@@ -134,18 +128,15 @@ namespace MvkServer.Inventory
         /// </summary>
         public void SetInventorySlotContents(int slotIn, ItemStack stack)
         {
-            ItemStack[] itemStacks;
-
             if (slotIn >= COUNT)
             {
                 slotIn -= COUNT;
-                itemStacks = armorInventory;
+                armorInventory[slotIn] = stack;
             }
             else
             {
-                itemStacks = mainInventory;
+                mainInventory[slotIn] = stack;
             }
-            itemStacks[slotIn] = stack;
         }
 
         /// <summary>
@@ -407,6 +398,60 @@ namespace MvkServer.Inventory
                 else str += " " + mainInventory[i].Item.GetName() + " =" + mainInventory[i].Amount + " ";
             }
             return str;
+        }
+
+        public void Clear()
+        {
+            for (int i = 0; i < mainInventory.Length; i++)
+            {
+                mainInventory[i] = null;
+            }
+            for (int i = 0; i < armorInventory.Length; i++)
+            {
+                armorInventory[i] = null;
+            }
+        }
+
+        public void WriteToNBT(TagList nbt)
+        {
+            ItemStack[] items = GetMainAndArmor();
+
+            TagCompound compound;
+            ItemStack itemStack;
+            for (int i = 0; i < items.Length; i++)
+            {
+                itemStack = items[i];
+                if (itemStack != null && itemStack.Amount > 0)
+                {
+                    compound = new TagCompound();
+                    compound.SetByte("Slot", (byte)i);
+                    compound.SetByte("Amount", (byte)itemStack.Amount);
+                    compound.SetShort("Damage", (short)itemStack.ItemDamage);
+                    compound.SetShort("Id", (short)itemStack.Item.Id);
+                    nbt.AppendTag(compound);
+                }
+            }
+        }
+
+        public void ReadFromNBT(TagList nbt)
+        {
+            Clear();
+            int count = nbt.TagCount();
+            ItemStack stak;
+            NBTBase nbtBase;
+            for (int i = 0; i < count; i++)
+            {
+                nbtBase = nbt.Get(i);
+                if (nbtBase.GetId() == 10 && nbtBase is TagCompound compound)
+                {
+                    stak = new ItemStack(
+                        compound.GetShort("Id"),
+                        compound.GetByte("Amount"),
+                        compound.GetShort("Damage")
+                    );
+                    SetInventorySlotContents(compound.GetByte("Slot"), stak);
+                }
+            }
         }
     }
 }

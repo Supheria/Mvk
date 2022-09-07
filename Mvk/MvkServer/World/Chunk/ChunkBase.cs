@@ -413,7 +413,6 @@ namespace MvkServer.World.Chunk
         {
            // World.Log.Log("SetBinaryBegin {0} {1}", Position, GetDebugAllSegment());
             int count = 0;
-            int index;
             byte light;
             try
             {
@@ -421,32 +420,15 @@ namespace MvkServer.World.Chunk
                 {
                     if ((flagsYAreas & 1 << sy) != 0)
                     {
-                        //StorageArrays[sy].CheckDataEmpty();
-                        //StorageArrays[sy].countVoxel = 0;
                         ChunkStorage storage = StorageArrays[sy];
-                        for (int y = 0; y < 16; y++)
+                        for (int i = 0; i < 4096; i++)
                         {
-                            for (int x = 0; x < 16; x++)
-                            {
-                                for (int z = 0; z < 16; z++)
-                                {
-                                    index = y << 8 | z << 4 | x;
-                                    storage.SetData(index, (ushort)(buffer[count++] | buffer[count++] << 8));
-                                    light = buffer[count++];
-                                    storage.lightBlock[index] = (byte)(light >> 4);
-                                    storage.lightSky[index] = (byte)(light & 0xF);
+                            storage.SetData(i, (ushort)(buffer[count++] | buffer[count++] << 8));
+                            light = buffer[count++];
+                            storage.lightBlock[i] = (byte)(light >> 4);
+                            storage.lightSky[i] = (byte)(light & 0xF);
 
-                                    //storage.light[y << 8 | z << 4 | x] = buffer[i++];
-
-                                    //StorageArrays[sy].data[y, x, z] = (ushort)(buffer[i++] | buffer[i++] << 8);
-                                    //if (StorageArrays[sy].data[y, x, z] != 0) StorageArrays[sy].Plus();
-                                    //StorageArrays[sy].light[y, x, z] = buffer[i++];
-
-
-                                }
-                            }
                         }
-                        //StorageArrays[sy].LightCheckBlock();
                         ModifiedToRender(sy);
                     }
                 }

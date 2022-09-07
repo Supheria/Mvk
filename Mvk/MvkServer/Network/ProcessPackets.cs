@@ -142,7 +142,7 @@ namespace MvkServer.Network
                         packet.ReadPacket(stream);
                         if (isClient)
                         {
-                            ReceivePacketClient(packet);
+                            ReceivePacketClient(packet, buffer.Length);
                         }
                         else
                         {
@@ -166,6 +166,7 @@ namespace MvkServer.Network
         /// Пакет получения для клиента
         /// </summary>
         /// <param name="packet">данные пакета</param>
-        protected virtual void ReceivePacketClient(IPacket packet) { }
+        /// <param name="light">длинна пакета</param>
+        protected virtual void ReceivePacketClient(IPacket packet, int light) { }
     }
 }

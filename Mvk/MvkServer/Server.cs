@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace MvkServer
 {
@@ -186,26 +187,29 @@ namespace MvkServer
         /// </summary>
         public void ResponsePacket2(Socket socket, IPacket packet)
         {
-            using (MemoryStream writeStream = new MemoryStream())
+            Task.Factory.StartNew(() =>
             {
-                using (StreamBase stream = new StreamBase(writeStream))
+                using (MemoryStream writeStream = new MemoryStream())
                 {
-                    writeStream.WriteByte(ProcessPackets.GetId(packet));
-                    packet.WritePacket(stream);
-                    byte[] buffer = writeStream.ToArray();
-                    tx++;
-                    ServerPacket spacket = new ServerPacket(socket, buffer);
-                    if (socket != null)
+                    using (StreamBase stream = new StreamBase(writeStream))
                     {
-                        server.SetActiveSocket(socket);
-                        server.SendPacket(buffer);
-                    }
-                    else
-                    {
-                        OnRecievePacket(new ServerPacketEventArgs(spacket));
+                        writeStream.WriteByte(ProcessPackets.GetId(packet));
+                        packet.WritePacket(stream);
+                        byte[] buffer = writeStream.ToArray();
+                        tx++;
+                        ServerPacket spacket = new ServerPacket(socket, buffer);
+                        if (socket != null)
+                        {
+                            server.SetActiveSocket(socket);
+                            server.SendPacket(buffer);
+                        }
+                        else
+                        {
+                            OnRecievePacket(new ServerPacketEventArgs(spacket));
+                        }
                     }
                 }
-            }
+            });
         }
 
         /// <summary>
@@ -354,12 +358,8 @@ namespace MvkServer
         private void StopServerLoop()
         {
             Log.Log("server.stoping");
-            World.Players.PlayersRemoveStopingServer();
-            World.Players.Update();
+            World.WorldStoping();
             packets.Clear();
-
-            // тут будет сохранение мира
-            //Thread.Sleep(100);
             if (server != null) server.Stop();
             OnLogDebug("");
             ServerStopped = true;
@@ -517,6 +517,10 @@ namespace MvkServer
         /// Получить время в милисекундах с момента запуска проекта
         /// </summary>
         public long Time() => stopwatchTps.ElapsedMilliseconds;
+        /// <summary>
+        /// Задать игровое время в тактах
+        /// </summary>
+        public void SetDayTime(uint dayTime) => TickCounter = dayTime; 
 
         /// <summary>
         /// Строка для дебага, формируется по запросу

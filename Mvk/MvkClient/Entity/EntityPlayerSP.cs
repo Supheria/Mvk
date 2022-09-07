@@ -710,7 +710,7 @@ namespace MvkClient.Entity
         private vec3 GetPositionCamera(vec3 pos, vec3 vec, float dis)
         {
             vec3 offset = ClientWorld.RenderEntityManager.CameraOffset;
-            MovingObjectPosition moving = World.RayCastBlock(pos + offset, vec, dis);
+            MovingObjectPosition moving = World.RayCastBlock(pos + offset, vec, dis, true);
             return pos + vec * (moving.IsBlock() ? glm.distance(pos, moving.RayHit + new vec3(moving.Norm) * .5f - offset) : dis);
         }
 
@@ -725,7 +725,7 @@ namespace MvkClient.Entity
             pos.y += GetEyeHeightFrame();
             vec3 dir = RayLook;
             vec3 offset = ClientWorld.RenderEntityManager.CameraOffset;
-            MovingObjectPosition movingObjectBlock = World.RayCastBlock(pos, dir, maxDis);
+            MovingObjectPosition movingObjectBlock = World.RayCastBlock(pos, dir, maxDis, false);
 
             MapListEntity listEntity = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityLiving, BoundingBox.AddCoordBias(dir * maxDis), Id);
             float entityDis = movingObjectBlock.IsBlock() ? glm.distance(pos, movingObjectBlock.RayHit) : maxDis;

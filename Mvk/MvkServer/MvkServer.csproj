@@ -54,6 +54,20 @@
     <Compile Include="Item\List\ItemBlock.cs" />
     <Compile Include="Management\ItemInWorldManager.cs" />
     <Compile Include="Management\PlayerInstance.cs" />
+    <Compile Include="NBT\NBTTools.cs" />
+    <Compile Include="NBT\NBTStream.cs" />
+    <Compile Include="NBT\NBTBase.cs" />
+    <Compile Include="NBT\TagList.cs" />
+    <Compile Include="NBT\TagIntArray.cs" />
+    <Compile Include="NBT\TagByteArray.cs" />
+    <Compile Include="NBT\TagString.cs" />
+    <Compile Include="NBT\TagFloat.cs" />
+    <Compile Include="NBT\TagLong.cs" />
+    <Compile Include="NBT\TagInt.cs" />
+    <Compile Include="NBT\TagShort.cs" />
+    <Compile Include="NBT\TagByte.cs" />
+    <Compile Include="NBT\TagCompound.cs" />
+    <Compile Include="NBT\TagEnd.cs" />
     <Compile Include="Network\Packets\Client\PacketC01KeepAlive.cs" />
     <Compile Include="Network\Packets\Client\PacketC02LoginStart.cs" />
     <Compile Include="Network\Packets\Client\PacketC08PlayerBlockPlacement.cs" />
@@ -219,7 +233,7 @@
     <Compile Include="Network\IPacket.cs" />
     <Compile Include="Network\ITransfer.cs" />
     <Compile Include="Network\Packets\Server\PacketSF0Connection.cs" />
-    <Compile Include="Network\Packets\Server\PacketS21ChunckData.cs" />
+    <Compile Include="Network\Packets\Server\PacketS21ChunkData.cs" />
     <Compile Include="Network\ProcessPackets.cs" />
     <Compile Include="Network\ProcessServerPackets.cs" />
     <Compile Include="Network\ReceivingBytes.cs" />
@@ -273,7 +287,10 @@
     <Compile Include="World\Gen\NoiseGeneratorSimplex.cs" />
     <Compile Include="World\WorldBase.cs" />
     <Compile Include="World\WorldBaseSky.cs" />
+    <Compile Include="World\WorldFile.cs" />
+    <Compile Include="World\WorldInfo.cs" />
     <Compile Include="World\WorldServer.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

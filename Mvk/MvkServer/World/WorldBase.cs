@@ -452,7 +452,7 @@ namespace MvkServer.World
         /// <param name="a">точка от куда идёт лучь</param>
         /// <param name="dir">вектор луча</param>
         /// <param name="maxDist">максимальная дистания</param>
-        public MovingObjectPosition RayCastBlock(vec3 a, vec3 dir, float maxDist)
+        public MovingObjectPosition RayCastBlock(vec3 a, vec3 dir, float maxDist, bool collidable)
         {
             float px = a.x;
             float py = a.y;
@@ -504,7 +504,7 @@ namespace MvkServer.World
                 blockState = GetBlockState(blockPos);
                 block = blockState.GetBlock();
 
-                if (block.CollisionRayTrace(blockPos, blockState.Met(), a, dir, maxDist))
+                if ((!collidable || (collidable && block.IsCollidable)) && block.CollisionRayTrace(blockPos, blockState.Met(), a, dir, maxDist))
                 {
                     end.x = px + t * dx;
                     end.y = py + t * dy;

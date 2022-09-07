@@ -25,6 +25,10 @@ namespace MvkClient
     public class Client
     {
         /// <summary>
+        /// Список одиночных миров
+        /// </summary>
+        public ListSingleWorld ListSingle { get; private set; }
+        /// <summary>
         /// Клиентский объект мира
         /// </summary>
         public WorldClient World { get; private set; }
@@ -131,6 +135,8 @@ namespace MvkClient
             locServer = new LocalServer();
             locServer.ObjectKeyTick += Server_ObjectKeyTick;
             locServer.RecievePacket += (sender, e) => packets.ReceiveBuffer(e.Packet.Bytes);
+
+            ListSingle = new ListSingleWorld(this);
         }
 
         /// <summary>
@@ -423,6 +429,7 @@ namespace MvkClient
         {
             try
             {
+                Debug.Traffic = 0;
                 World = new WorldClient(this);
                 EffectRender = new EffectRenderer(World);
             }

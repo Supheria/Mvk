@@ -3,6 +3,7 @@ using MvkServer.Entity.Mob;
 using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.NBT;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
 using MvkServer.Util;
@@ -1100,6 +1101,11 @@ namespace MvkServer.Entity
         public virtual void SetPosLook(vec3 pos, float yaw, float pitch)
         {
             SetPosition(pos);
+            SetLook(yaw, pitch);
+        }
+
+        private void SetLook(float yaw, float pitch)
+        {
             SetRotation(yaw, pitch);
             RotationYawServer = RotationYawPrev = RotationYaw;
             RotationPitchServer = RotationPitchPrev = RotationPitch;
@@ -1425,5 +1431,24 @@ namespace MvkServer.Entity
 
         // Визуализирует частицы сломанных предметов, используя заданный ItemStack
         // renderBrokenItemStack
+
+        public override void WriteEntityToNBT(TagCompound nbt)
+        {
+            base.WriteEntityToNBT(nbt);
+            nbt.SetTag("Rotation", new TagList(new float[] { RotationYaw, RotationPitch }));
+            nbt.SetShort("Health", (short)(Health * 10));
+            nbt.SetShort("DeathTime", (short)DeathTime);
+            //nbt.SetString("Name", GetName());
+        }
+
+        public override void ReadEntityFromNBT(TagCompound nbt)
+        {
+            base.ReadEntityFromNBT(nbt);
+            TagList rotation = nbt.GetTagList("Rotation", 5);
+            SetLook(rotation.GetFloat(0), rotation.GetFloat(1));
+            Health = nbt.GetShort("Health") / 10f;
+            DeathTime = nbt.GetShort("DeathTime");
+            //name = nbt.GetString("Name");
+        }
     }
 }

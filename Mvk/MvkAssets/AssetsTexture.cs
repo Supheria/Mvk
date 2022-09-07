@@ -24,6 +24,10 @@
         Font16,
         //--- Все остальные в массиве загрузчика
         /// <summary>
+        /// Атлас блоков
+        /// </summary>
+        Atlas,
+        /// <summary>
         /// Фон в меню
         /// </summary>
         OptionsBackground,
@@ -31,10 +35,6 @@
         /// Кнопки в меню
         /// </summary>
         Widgets,
-        /// <summary>
-        /// Атлас блоков
-        /// </summary>
-        Atlas,
         /// <summary>
         /// Текстура игрока стива, для теста
         /// </summary>

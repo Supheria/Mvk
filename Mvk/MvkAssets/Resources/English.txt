@@ -18,6 +18,7 @@ gui.no:No
 gui.yes:Yes
 gui.connect:Connect
 gui.world.empty:- Empty -
+gui.world.broken:World broken!
 gui.world.delete:Are you sure you want to delete the world?
 gui.saving:Saving...
 gui.process:Process...

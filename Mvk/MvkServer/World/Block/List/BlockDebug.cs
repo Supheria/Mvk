@@ -48,13 +48,13 @@ namespace MvkServer.World.Block.List
             //aabbs[0] = new AxisAlignedBB(pos + min, pos + max);
 
 
-            AxisAlignedBB[] aabbs = new AxisAlignedBB[2];
+            AxisAlignedBB[] aabbs = new AxisAlignedBB[1];
             min = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]);
-            max = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]);
+            max = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], 1 + MvkStatic.Xy[15]);
             aabbs[0] = new AxisAlignedBB(pos + min, pos + max);
-            min = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]);
-            max = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]);
-            aabbs[1] = new AxisAlignedBB(pos + min, pos + max);
+            //min = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]);
+            //max = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]);
+            //aabbs[1] = new AxisAlignedBB(pos + min, pos + max);
 
             //AxisAlignedBB[] aabbs = new AxisAlignedBB[2];
             //min = new vec3(0);
@@ -224,11 +224,11 @@ namespace MvkServer.World.Block.List
                     UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
                     Faces = new Face[]
                     {
-                        new Face(Pole.Up, 1),
-                        new Face(Pole.North, 1),
-                        new Face(Pole.South, 1),
-                        new Face(Pole.East, 1),
-                        new Face(Pole.West, 1)
+                        new Face(Pole.Up, 2),
+                        new Face(Pole.North, 2),
+                        new Face(Pole.South, 2),
+                        new Face(Pole.East, 2),
+                        new Face(Pole.West, 2)
                     }
                 }
             };

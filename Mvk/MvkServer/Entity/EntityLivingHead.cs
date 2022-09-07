@@ -1,4 +1,5 @@
 ﻿using MvkServer.Glm;
+using MvkServer.NBT;
 using MvkServer.Util;
 using MvkServer.World;
 
@@ -190,6 +191,18 @@ namespace MvkServer.Entity
                 IsInLava() ? "[L]" : "", // 20
                 IsInOil() ? "[O]" : "" // 21
                 );
+        }
+
+        public override void WriteEntityToNBT(TagCompound nbt)
+        {
+            base.WriteEntityToNBT(nbt);
+            nbt.SetTag("Rotation", new TagList(new float[] { RotationYawHead, RotationPitch }));
+        }
+
+        public override void ReadEntityFromNBT(TagCompound nbt)
+        {
+            base.ReadEntityFromNBT(nbt);
+            RotationYawHeadPrev = RotationYawHead = RotationYaw;
         }
     }
 }

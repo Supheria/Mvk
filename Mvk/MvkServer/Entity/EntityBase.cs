@@ -1,5 +1,6 @@
 ﻿using MvkServer.Entity.Player;
 using MvkServer.Glm;
+using MvkServer.NBT;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
@@ -636,5 +637,15 @@ namespace MvkServer.Entity
             );
         }
 
+        public virtual void WriteEntityToNBT(TagCompound nbt)
+        {
+            nbt.SetTag("Pos", new TagList(new float[] { Position.x, Position.y, Position.z }));
+        }
+
+        public virtual void ReadEntityFromNBT(TagCompound nbt)
+        {
+            TagList pos = nbt.GetTagList("Pos", 5);
+            LastTickPos = PositionPrev = Position = new vec3(pos.GetFloat(0), pos.GetFloat(1), pos.GetFloat(2));
+        }
     }
 }

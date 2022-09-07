@@ -135,7 +135,7 @@ namespace MvkServer.World.Gen
             genPancakeDirt = new WorldGenPancake(EnumBlock.Dirt, 9, 7);
         }
 
-        private void UpSeed(Rand rand, int xbc, int zbc, int seed)
+        private void UpSeed(Rand rand, int xbc, int zbc, long seed)
         {
             rand.SetSeed(seed);
             int realX = xbc * rand.Next();

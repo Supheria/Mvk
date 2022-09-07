@@ -62,5 +62,11 @@ namespace MvkAssets
                 default: return 1;
             }
         }
+
+        public static Bitmap Atlas => ResourceTexture.Atlas;
+        //public static Bitmap Atlas8 => ResourceTexture.Atlas8;
+        //public static Bitmap Atlas4 => ResourceTexture.Atlas4;
+        //public static Bitmap Atlas2 => ResourceTexture.Atlas2;
+        //public static Bitmap Atlas1 => ResourceTexture.Atlas1;
     }
 }

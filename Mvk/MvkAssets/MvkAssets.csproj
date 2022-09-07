@@ -197,5 +197,17 @@
   <ItemGroup>
     <None Include="Resources\Icons.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Atlas8.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Atlas4.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Atlas1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Atlas2.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

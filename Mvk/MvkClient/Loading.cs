@@ -51,11 +51,23 @@ namespace MvkClient
                     OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStep));
                 }
 
+                // Atlas
+                BufferedImage buffered = new BufferedImage(AssetsTexture.Atlas, Assets.Atlas);
+                //buffered.SetImages(new BufImage[]
+                //{
+                //    new BufImage(Assets.Atlas8),
+                //    new BufImage(Assets.Atlas4),
+                //    new BufImage(Assets.Atlas2),
+                //    new BufImage(Assets.Atlas1),
+                //});
+
+                OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture, buffered));
+
                 int i = 0;
                 foreach (AssetsTexture key in Enum.GetValues(typeof(AssetsTexture)))
                 {
                     i++;
-                    if (i < 4) continue;
+                    if (i < 6) continue;
                     OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture, new BufferedImage(key, Assets.GetBitmap(key))));
                 }
                 //System.Threading.Thread.Sleep(2000); // Тест пауза чтоб увидеть загрузчик

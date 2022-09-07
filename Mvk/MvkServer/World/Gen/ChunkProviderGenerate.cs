@@ -71,7 +71,7 @@ namespace MvkServer.World.Gen
         /// Вспомогательный рандом
         /// </summary>
         public Rand Random { get; private set; }
-        public int Seed { get; private set; }
+        public long Seed { get; private set; }
 
         public readonly BiomeBase[] biomes;
         private BiomeBase biomeBase;
@@ -88,7 +88,7 @@ namespace MvkServer.World.Gen
         public ChunkProviderGenerate(WorldServer worldIn)
         {
             World = worldIn;
-            Seed = World.Seed;
+            Seed = World.Info.Seed;
             heightBiome = new NoiseGeneratorPerlin(new Rand(Seed), 8);
             riversBiome = new NoiseGeneratorPerlin(new Rand(Seed + 6), 8);
             wetnessBiome = new NoiseGeneratorPerlin(new Rand(Seed + 8), 4); // 8

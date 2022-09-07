@@ -1,6 +1,7 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Inventory;
 using MvkServer.Item;
+using MvkServer.NBT;
 using MvkServer.Sound;
 using MvkServer.Util;
 using MvkServer.World;
@@ -71,10 +72,11 @@ namespace MvkServer.Entity.Player
                 //Inventory.SetInventorySlotContents(3, new ItemStack(Blocks.GetBlockCache(EnumBlock.GlassPane), 16));
                 //Inventory.SetInventorySlotContents(4, new ItemStack(Blocks.GetBlockCache(EnumBlock.Glass), 16));
                 //Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.GlassWhite), 16));
+                Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.Debug), 16));
                 Inventory.SetInventorySlotContents(6, new ItemStack(Blocks.GetBlockCache(EnumBlock.Brol), 16));
                 Inventory.SetInventorySlotContents(7, new ItemStack(Blocks.GetBlockCache(EnumBlock.Fire), 16));
 
-                Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.Sand), 16));
+               // Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.Sand), 16));
               //  Inventory.SetInventorySlotContents(7, new ItemStack(Blocks.GetBlockCache(EnumBlock.Cactus), 16));
 
                 //Inventory.SetInventorySlotContents(0, new ItemStack(Blocks.GetBlockCache(48), 16));
@@ -227,5 +229,19 @@ namespace MvkServer.Entity.Player
         /// Семпл хотьбы
         /// </summary>
         public override AssetsSample SampleStep(WorldBase worldIn, BlockBase blockDown) => blockDown.SampleStep(worldIn);
+
+        public override void WriteEntityToNBT(TagCompound nbt)
+        {
+            base.WriteEntityToNBT(nbt);
+            TagList list = new TagList();
+            Inventory.WriteToNBT(list);
+            nbt.SetTag("Inventory", list);
+        }
+
+        public override void ReadEntityFromNBT(TagCompound nbt)
+        {
+            base.ReadEntityFromNBT(nbt);
+            Inventory.ReadFromNBT(nbt.GetTagList("Inventory", 10));
+        }
     }
 }

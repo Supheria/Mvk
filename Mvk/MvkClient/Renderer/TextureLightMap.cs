@@ -49,7 +49,7 @@ namespace MvkClient.Renderer
             GLWindow.gl.ActiveTexture(OpenGL.GL_TEXTURE1);
             GLWindow.gl.BindTexture(OpenGL.GL_TEXTURE_2D, locationLightMap);
             GLWindow.gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, OpenGL.GL_RGBA, 16, 16,
-                0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE, BufferedImage.BitmapToByteArray(bitmap));
+                0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE, BufImage.BitmapToByteArray(bitmap));
             if (isCreate)
             {
                 GLWindow.gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);

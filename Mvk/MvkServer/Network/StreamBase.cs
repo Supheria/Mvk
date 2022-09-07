@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 
 namespace MvkServer.Network
@@ -192,6 +193,34 @@ namespace MvkServer.Network
                 System.Threading.Thread.Sleep(1);
             }
             return result;
+        }
+
+        /// <summary>
+        /// Компрессия
+        /// </summary>
+        public byte[] Compress(byte[] src)
+        {
+            using (MemoryStream outStream = new MemoryStream())
+            {
+                using (GZipStream tinyStream = new GZipStream(outStream, CompressionMode.Compress))
+                using (MemoryStream mStream = new MemoryStream(src))
+                    mStream.CopyTo(tinyStream);
+                return outStream.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Декомпрессия
+        /// </summary>
+        public byte[] Decompress(byte[] src)
+        {
+            using (MemoryStream inStream = new MemoryStream(src))
+            using (GZipStream bigStream = new GZipStream(inStream, CompressionMode.Decompress))
+            using (MemoryStream bigStreamOut = new MemoryStream())
+            {
+                bigStream.CopyTo(bigStreamOut);
+                return bigStreamOut.ToArray();
+            }
         }
     }
 }

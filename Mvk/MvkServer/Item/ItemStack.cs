@@ -41,6 +41,21 @@ namespace MvkServer.Item
             if (ItemDamage < 0) ItemDamage = 0;
         }
 
+        public ItemStack(int id, int amount, int itemDamage)
+        {
+            // HACK:: доделать id item
+            if (id > 0 && id < 4096) // Block
+            {
+                Item = new ItemBlock(Blocks.GetBlockCache(id));
+            }
+            //else
+            //{
+            //    Item = new ItemBase();
+            //}
+            Amount = amount;
+            ItemDamage = itemDamage;
+            if (ItemDamage < 0) ItemDamage = 0;
+        }
         /// <summary>
         /// Разделяет стек на заданное количество этого стека и уменьшает этот стек на указанную сумму
         /// </summary>

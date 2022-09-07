@@ -45,15 +45,20 @@ namespace MvkServer.Network
 
         protected override void ReceivePacketServer(Socket socket, IPacket packet)
         {
-            if (GetId(packet) == 0x02)
+            switch (GetId(packet))
             {
-                // Мира ещё нет, он в стадии создании, первый старт первого игрока
-                Handle02LoginStart(socket, (PacketC02LoginStart)packet);
-            }
-            else
-            {
-                // Мир есть, заносим в пакет с двойным буфером, для обработки в такте
-                packets.Add(new SocketPacket() { socket = socket, packet = packet });
+                case 0x00:
+                    Handle00Ping(socket, (PacketC00Ping)packet);
+                    break;
+                case 0x02:
+                    // Мира ещё нет, он в стадии создании, первый старт первого игрока
+                    Handle02LoginStart(socket, (PacketC02LoginStart)packet);
+                    break;
+                default:
+                    // Мир есть, заносим в пакет с двойным буфером, для обработки в такте
+                    packets.Add(new SocketPacket() { socket = socket, packet = packet });
+                    break;
+
             }
         }
 
@@ -61,7 +66,6 @@ namespace MvkServer.Network
         {
             switch (GetId(packet))
             {
-                case 0x00: Handle00Ping(socket, (PacketC00Ping)packet); break;
                 case 0x01: Handle01KeepAlive(socket, (PacketC01KeepAlive)packet); break;
                 case 0x03: Handle03UseEntity(socket, (PacketC03UseEntity)packet); break;
                 case 0x04: Handle04PlayerPosition(socket, (PacketC04PlayerPosition)packet); break;

@@ -21,6 +21,14 @@ namespace MvkServer.World
         /// </summary>
         public Server ServerMain { get; protected set; }
         /// <summary>
+        /// Информация мира
+        /// </summary>
+        public WorldInfo Info { get; private set; }
+        /// <summary>
+        /// Объект работы с файлами мира для сохранения
+        /// </summary>
+        public WorldFile File { get; private set; }
+        /// <summary>
         /// Объект клиентов
         /// </summary>
         public PlayerManager Players { get; protected set; }
@@ -38,28 +46,29 @@ namespace MvkServer.World
         /// Посредник серверного чанка
         /// </summary>
         public ChunkProviderServer ChunkPrServ => ChunkPr as ChunkProviderServer;
-        /// <summary>
-        /// Зерно генерации случайных чисел
-        /// </summary>
-        public int Seed { get; private set; } = 2;
-
-        /// <summary>
-        /// Тестовый параметр, мир весь для креатива
-        /// </summary>
-        public bool IsCreativeMode { get; private set; }
-
-        public WorldServer(Server server, int seed) : base()
+        
+        public WorldServer(Server server, int slot) : base()
         {
             IsRemote = false;
-            Seed = seed;
-            IsCreativeMode = seed > 3;
-            Rnd = new Rand(seed);
             ServerMain = server;
+            File = new WorldFile(this, slot);
+            Info = new WorldInfo(this);
+            Rnd = new Rand(Info.Seed);
             ChunkPr = new ChunkProviderServer(this);
             Players = new PlayerManager(this);
             Tracker = new EntityTracker(this);
             Log = ServerMain.Log;
             profiler = new Profiler(Log);
+        }
+
+        /// <summary>
+        /// Остановка мира, начинаем сохранять
+        /// </summary>
+        public void WorldStoping()
+        {
+            Info.WriteInfo();
+            Players.PlayersRemoveStopingServer();
+            Players.Update();
         }
 
         /// <summary>

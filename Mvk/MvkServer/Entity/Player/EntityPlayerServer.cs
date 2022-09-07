@@ -63,7 +63,7 @@ namespace MvkServer.Entity.Player
         /// <summary>
         /// Почледнее активное время игрока
         /// </summary>
-        protected uint playerLastActiveTime = 0;
+        protected long playerLastActiveTime = 0;
 
         //private List<vec2i> LoadingChunks = new List<vec2i>();
 
@@ -77,7 +77,7 @@ namespace MvkServer.Entity.Player
             base.name = name;
             UUID = GetHash(name);
             profiler = new Profiler(server.Log);
-            IsCreativeMode = world.IsCreativeMode;
+            IsCreativeMode = world.Info.IsCreativeMode;
             TheItemInWorldManager = new ItemInWorldManager(world, this);
         }
 
