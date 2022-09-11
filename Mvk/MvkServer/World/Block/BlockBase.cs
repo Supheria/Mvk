@@ -337,7 +337,7 @@ namespace MvkServer.World.Block
         /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
         public virtual bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
         {
-            if (CanBlockStay(worldIn, blockPos)) return worldIn.SetBlockState(blockPos, state, 7);
+            if (CanBlockStay(worldIn, blockPos)) return worldIn.SetBlockState(blockPos, state, 15);
             return false;
         }
 

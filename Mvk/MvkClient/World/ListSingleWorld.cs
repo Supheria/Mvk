@@ -35,13 +35,12 @@ namespace MvkClient.World
         /// </summary>
         public void Initialize(int remove)
         {
-            worldFile.CheckPath(worldFile.GetCorePath());
             string path;
             int number;
             for (int i = 0; i < 5; i++)
             {
                 number = i + 1;
-                path = worldFile.GetCorePath() + number.ToString();
+                path = worldFile.PathCore + number.ToString();
                 if (remove != number && Directory.Exists(path))
                 {
                     NameWorlds[i] = worldFile.NameWorldData(path);
@@ -59,6 +58,6 @@ namespace MvkClient.World
         /// Удалить мировой слот
         /// </summary>
         public void WorldRemove(int slot) 
-            => WorldFile.DeleteDirectory(worldFile.GetCorePath() + slot.ToString());
+            => WorldFile.DeleteDirectory(worldFile.PathCore + slot.ToString());
     }
 }

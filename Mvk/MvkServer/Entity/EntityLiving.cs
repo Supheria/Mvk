@@ -63,11 +63,6 @@ namespace MvkServer.Entity
         /// </summary>
         public int TicksExisted { get; private set; } = 0;
         /// <summary>
-        /// Флаг спавна, пометка начального спавна игрока 
-        /// ПОКА НЕ ЗНАЮ ЗАЧЕМ я это сделал!!!
-        /// </summary>
-        public bool FlagSpawn { get; set; } = false;
-        /// <summary>
         /// Пометка что было движение и подобное для сервера, чтоб отправлять пакеты
         /// </summary>
         public EnumActionChanged ActionChanged { get; set; } = EnumActionChanged.None;

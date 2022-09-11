@@ -111,7 +111,7 @@ namespace MvkServer.World.Chunk.Light
         /// <param name="z">глобальная позиция блока z</param>
         /// <param name="differenceOpacity">Разница в непрозрачности</param>
         /// <param name="replaceAir">блок заменён на воздух или на оборот воздух заменён на блок</param>
-        public void CheckLightFor(int x, int y, int z, bool differenceOpacity, bool isModify)//, bool replaceAir)
+        public void CheckLightFor(int x, int y, int z, bool differenceOpacity, bool isModify, bool isModifyRender)
         {
             if (y < 0 || y > ChunkBase.COUNT_HEIGHT_BLOCK) return;
 
@@ -160,7 +160,12 @@ namespace MvkServer.World.Chunk.Light
             {
                 chunk.Light.CheckLightSky(x, y, z, lo);
             }
-            if (isModify) ModifiedRender();
+
+            // Обновление для рендера чанков
+            if (isModifyRender) ModifiedRender();
+            // Сохранение чанков
+            if (isModify) World.MarkBlockRangeForModified(axisX0, axisZ0, axisX1, axisZ1);
+
             long le = stopwatch.ElapsedTicks;
             stopwatch.Stop();
             debugStr = string.Format("Count B/S: {1}/{2} Light: {0:0.00}ms",
@@ -847,7 +852,7 @@ namespace MvkServer.World.Chunk.Light
         {
             if (countBlock <= 1 && axisX0 == axisX1 && axisY0 == axisY1 && axisZ0 == axisZ1)
             {
-                World.MarkBlockForUpdate(axisX0, axisY0, axisZ0);
+                World.MarkBlockForRenderUpdate(axisX0, axisY0, axisZ0);
             }
             else
             {

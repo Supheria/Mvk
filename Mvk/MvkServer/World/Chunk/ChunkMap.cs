@@ -115,8 +115,13 @@ namespace MvkServer.World.Chunk
         public int Count => map.Count;
 
         /// <summary>
-        /// Получить коллекцию значений
+        /// Получить коллекцию чанков
         /// </summary>
         public Dictionary<vec2i, ChunkBase>.ValueCollection Values() => map.Values;
+
+        /// <summary>
+        /// Получить коллекцию позиций чанков
+        /// </summary>
+        public Dictionary<vec2i, ChunkBase>.KeyCollection Keys() => map.Keys;
     }
 }

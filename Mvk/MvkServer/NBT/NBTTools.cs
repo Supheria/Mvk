@@ -12,7 +12,7 @@ namespace MvkServer.NBT
         /// <summary>
         /// Записать NBT в файл по адресу path
         /// </summary>
-        public static void Write(TagCompound compound, string path, bool compress)
+        public static void WriteToFile(TagCompound compound, string path, bool compress)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace MvkServer.NBT
         /// <summary>
         /// Прочесть NBT в файл по адресу path
         /// </summary>
-        public static TagCompound Read(string path, bool compress)
+        public static TagCompound ReadFromFile(string path, bool compress)
         {
             try
             { 
@@ -84,6 +84,76 @@ namespace MvkServer.NBT
             {
                 nbtStream.ReadUTF();
                 compound.Read(nbtStream);
+            }
+        }
+
+        /// <summary>
+        /// Записать NBT в массив байт
+        /// </summary>
+        public static byte[] WriteToBytes(TagCompound compound, bool compress)
+        {
+            try
+            {
+                using (NBTStream nbtStream = new NBTStream())
+                {
+                    nbtStream.WriteByte(compound.GetId());
+                    if (compound.GetId() != 0)
+                    {
+                        nbtStream.WriteUTF("");
+                        compound.Write(nbtStream);
+                    }
+                    nbtStream.Seek(0, SeekOrigin.Begin);
+                    if (compress)
+                    {
+                        using (MemoryStream outStream = new MemoryStream())
+                        {
+                            using (GZipStream zipStream = new GZipStream(outStream, CompressionMode.Compress))
+                                nbtStream.CopyTo(zipStream);
+                            return outStream.ToArray();
+                        }
+                    }
+                    else
+                    {
+                        return nbtStream.ToArray();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        /// <summary>
+        /// Записать NBT в массив байт
+        /// </summary>
+        public static TagCompound ReadToBytes(byte[] buffer, bool compress)
+        {
+            try
+            {
+                if (buffer != null && buffer.Length > 0)
+                {
+                    TagCompound compound = new TagCompound();
+                    using (NBTStream nbtStream = new NBTStream())
+                    {
+                        if (compress)
+                        {
+                            using (GZipStream zipStream = new GZipStream(new MemoryStream(buffer), CompressionMode.Decompress))
+                                Read(zipStream, nbtStream, compound);
+                        }
+                        else
+                        {
+                            using (MemoryStream outStream = new MemoryStream(buffer))
+                                Read(outStream, nbtStream, compound);
+                        }
+                    }
+                    return compound;
+                }
+                return null;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
             }
         }
     }

@@ -134,8 +134,8 @@ namespace MvkServer.World.Gen
         {
             try
             {
-                Stopwatch stopwatch = new Stopwatch();
-                stopwatch.Start();
+                //Stopwatch stopwatch = new Stopwatch();
+                //stopwatch.Start();
                 chunkPrimer.Clear();
                 //for (int i = 0; i < biomesCount.Length; i++) biomesCount[i] = 0;
                 int xbc = chunk.Position.x << 4;

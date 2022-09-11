@@ -370,7 +370,7 @@ namespace MvkClient.World
         /// <summary>
         /// Отметить блок для обновления
         /// </summary>
-        public override void MarkBlockForUpdate(int x, int y, int z) 
+        public override void MarkBlockForRenderUpdate(int x, int y, int z) 
             => AreaModifiedToRender((x - 1) >> 4, (y - 1) >> 4, (z - 1) >> 4,
                 (x + 1) >> 4, (y + 1) >> 4, (z + 1) >> 4);
 

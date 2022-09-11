@@ -1,4 +1,5 @@
-﻿using MvkServer.NBT;
+﻿using MvkServer.Glm;
+using MvkServer.NBT;
 using System.IO;
 
 namespace MvkServer.World
@@ -13,8 +14,6 @@ namespace MvkServer.World
         /// </summary>
         public const string NAME_FILE_WORLD = "level.dat";
 
-        private const string TREE_PLAERS = "Players";
-
         /// <summary>
         /// Мир сервера
         /// </summary>
@@ -23,17 +22,28 @@ namespace MvkServer.World
         /// Игровой слот
         /// </summary>
         public int Slot { get; private set; }
-
-        private readonly string slot;
-
         /// <summary>
         /// Путь к сохранению миров
         /// </summary>
-        private readonly string corePath;
+        public string PathCore { get; private set; }
+        /// <summary>
+        /// Путь к корню мира
+        /// </summary>
+        public string PathWorld { get; private set; }
+        /// <summary>
+        /// Путь к игрокам
+        /// </summary>
+        public string PathPlayers { get; private set; }
+        /// <summary>
+        /// Путь к регионам
+        /// </summary>
+        public string PathRegions { get; private set; }
+
+        private readonly string slot;
 
         public WorldFile()
         {
-            corePath = "Saves" + Path.DirectorySeparatorChar;
+            PathCore = "Saves" + Path.DirectorySeparatorChar;
         }
 
         public WorldFile(WorldServer world, int slot) : this()
@@ -41,12 +51,15 @@ namespace MvkServer.World
             World = world;
             Slot = slot;
             this.slot = slot.ToString();
-        }
+            PathWorld = PathCore + slot + Path.DirectorySeparatorChar;
+            PathPlayers = PathWorld + "Players" + Path.DirectorySeparatorChar;
+            PathRegions = PathWorld + "Regions" + Path.DirectorySeparatorChar;
 
-        /// <summary>
-        /// Путь к сохранению миров
-        /// </summary>
-        public string GetCorePath() => corePath;
+            CheckPath(PathCore);
+            CheckPath(PathWorld);
+            CheckPath(PathPlayers);
+            CheckPath(PathRegions);
+        }
 
         public string GetNameFileWorld() => "";
 
@@ -69,7 +82,7 @@ namespace MvkServer.World
             string pf = path + Path.DirectorySeparatorChar + NAME_FILE_WORLD;
             if (File.Exists(pf))
             {
-                TagCompound nbt = NBTTools.Read(pf, true);
+                TagCompound nbt = NBTTools.ReadFromFile(pf, true);
                 long tick = nbt.GetLong("DayTime");
                 
                 long h = tick / 72000;
@@ -86,10 +99,7 @@ namespace MvkServer.World
         /// </summary>
         public void WorldInfoWrite(TagCompound nbt)
         {
-            string path = GetCorePath() + slot;
-            string pf = path + Path.DirectorySeparatorChar + NAME_FILE_WORLD;
-            CheckPath(path);
-            NBTTools.Write(nbt, pf, true);
+            NBTTools.WriteToFile(nbt, PathWorld + NAME_FILE_WORLD, true);
         }
 
         /// <summary>
@@ -97,11 +107,10 @@ namespace MvkServer.World
         /// </summary>
         public TagCompound WorldInfoRead(WorldServer world)
         {
-            string path = GetCorePath() + slot;
-            string pf = path + Path.DirectorySeparatorChar + NAME_FILE_WORLD;
-            if (File.Exists(pf))
+            string pathFile = PathWorld + NAME_FILE_WORLD;
+            if (File.Exists(pathFile))
             {
-                return NBTTools.Read(pf, true);
+                return NBTTools.ReadFromFile(pathFile, true);
             }
             return null;
         }
@@ -111,11 +120,7 @@ namespace MvkServer.World
         /// </summary>
         public void PlayerDataWrite(TagCompound nbt, string name)
         {
-            string path = GetCorePath() + slot 
-                + Path.DirectorySeparatorChar + TREE_PLAERS + Path.DirectorySeparatorChar;
-            CheckPath(path);
-            string pf = path + name;
-            NBTTools.Write(nbt, pf, true);
+            NBTTools.WriteToFile(nbt, PathPlayers + name, true);
         }
 
         /// <summary>
@@ -123,15 +128,38 @@ namespace MvkServer.World
         /// </summary>
         public TagCompound PlayerDataRead(string name)
         {
-            string path = GetCorePath() + slot
-                + Path.DirectorySeparatorChar + TREE_PLAERS + Path.DirectorySeparatorChar;
-            string pf = path + name;
-            if (File.Exists(pf))
+            string pathFile = PathPlayers + name;
+            if (File.Exists(pathFile))
             {
-                return NBTTools.Read(pf, true);
+                return NBTTools.ReadFromFile(pathFile, true);
             }
             return null;
         }
+
+        
+
+        /// <summary>
+        /// Записать чанк
+        /// </summary>
+        //public void ChunkDataWrite(TagCompound nbt, RegionFile region, vec2i posCh)
+        //{
+        //    //region.
+        //    //string path = GetCorePath() + slot
+        //    //    + Path.DirectorySeparatorChar + TREE_PLAERS + Path.DirectorySeparatorChar;
+        //    //CheckPath(path);
+        //    //string pf = path + name;
+        //    //NBTTools.Write(nbt, pf, true);
+        //}
+
+        ///// <summary>
+        ///// Прочесть чанк
+        ///// </summary>
+        ///// <returns></returns>
+        //public TagCompound ChunkDataRead(RegionFile region, vec2i posCh)
+        //{
+
+        //    return null;
+        //}
 
         /// <summary>
         /// Удалить папку с файлами
@@ -155,7 +183,16 @@ namespace MvkServer.World
                     DeleteDirectory(dir);
                 }
 
-                Directory.Delete(path, false);
+                bool b = true;
+                while (b)
+                {
+                    try
+                    {
+                        Directory.Delete(path, false);
+                        b = false;
+                    }
+                    catch { }
+                }
             }
         }
     }

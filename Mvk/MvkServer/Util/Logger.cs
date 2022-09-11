@@ -43,6 +43,13 @@ namespace MvkServer.Util
         {
             Log("[ERROR] " + logMessage, args);
         }
+        /// <summary>
+        /// Создать файл c ошибкой
+        /// </summary>
+        public void Error(Exception e)
+        {
+            Log("[ERROR]{0}: {1}\r\n------\r\n{2} ", e.Source, e.Message, e.StackTrace);
+        }
 
         /// <summary>
         /// В такте, раз в минуту для записи в файл

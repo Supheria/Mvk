@@ -248,21 +248,6 @@ namespace MvkServer
                 long cacheTime = 0;
                 Log.Log("server.runed");
 
-                //Rand rand = new Rand(4);
-                //string s = "";
-                //for (int i = 0; i < 100; i++) s += rand.Next(5) + ".";
-                //Log.Log(s);
-                //s = "";
-                //rand.SetSeed(4);
-                //for (int i = 0; i < 100; i++) s += rand.Next(5) + ".";
-                //Log.Log(s);
-                //s = "";
-                //rand.SetSeed(4);
-                //for (int i = 0; i < 100; i++) s += rand.Next(5) + ".";
-                //Log.Log(s);
-
-                World.Players.LoginStart();
-
                 // Рабочий цикл сервера
                 while (serverRunning)
                 {
@@ -466,6 +451,17 @@ namespace MvkServer
 
                 //tickRx = 0;
                 //tickTx = 0;
+            }
+
+            if (TickCounter % 100 == 0) // 900 = 45 сек
+            {
+                World.profiler.StartSection("SaveChunks");
+                // Сохраняем чанки в регионы 
+                World.ChunkPrServ.SaveChunks();
+                World.profiler.EndStartSection("SaveToFileRegions");
+                // Сохраняем регионы в файл
+                World.Regions.WriteToFile(false);
+                World.profiler.EndSection();
             }
 
             // фиксируем время выполнения такта

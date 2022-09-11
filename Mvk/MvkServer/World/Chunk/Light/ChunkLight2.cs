@@ -14,7 +14,7 @@ namespace MvkServer.World.Chunk.Light
         /// <summary>
         /// Карта высот по чанку, z << 4 | x
         /// </summary>
-        private readonly byte[] heightMap = new byte[256];
+        public byte[] heightMap = new byte[256];
         /// <summary>
         /// Карта высот по чанку с учётом прозрачности, для стартового бокового освещения, z << 4 | x
         /// </summary>
@@ -22,7 +22,7 @@ namespace MvkServer.World.Chunk.Light
         /// <summary>
         /// Высотная карта самый высокий блок в чанке от неба
         /// </summary>
-        private int heightMapMax = 0;
+        public int heightMapMax = 0;
         /// <summary>
         /// Была ли обработка освещения при старте чанка
         /// </summary>

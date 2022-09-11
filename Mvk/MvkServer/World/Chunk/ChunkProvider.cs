@@ -49,6 +49,25 @@ namespace MvkServer.World.Chunk
         public int Count => chunkMapping.Count;
 
         /// <summary>
+        /// Cгенерировать список регионов
+        /// </summary>
+        public List<vec2i> GetRegionList()
+        {
+            List<vec2i> listRegion = new List<vec2i>();
+            Dictionary<vec2i, ChunkBase>.KeyCollection keys = chunkMapping.Keys();
+            vec2i r = new vec2i();
+            foreach (vec2i pos in keys)
+            {
+                r = new vec2i(pos.x >> 5, pos.y >> 5);
+                if (!listRegion.Contains(r))
+                {
+                    listRegion.Add(r);
+                }
+            }
+            return listRegion;
+        }
+
+        /// <summary>
         /// Список чанков для отладки
         /// </summary>
         [Obsolete("Список чанков только для отладки")]

@@ -36,6 +36,10 @@ namespace MvkServer.World
         /// Трекер сущностей
         /// </summary>
         public EntityTracker Tracker { get; protected set; }
+        /// <summary>
+        /// Регионы для хранения данных чанков
+        /// </summary>
+        public RegionProvider Regions { get; private set; }
 
         /// <summary>
         /// Счётчик для обновления сущностей
@@ -59,6 +63,7 @@ namespace MvkServer.World
             Tracker = new EntityTracker(this);
             Log = ServerMain.Log;
             profiler = new Profiler(Log);
+            Regions = new RegionProvider(this);
         }
 
         /// <summary>
@@ -190,7 +195,7 @@ namespace MvkServer.World
         /// <summary>
         /// Отметить блок для обновления 
         /// </summary>
-        public override void MarkBlockForUpdate(int x, int y, int z) => Players.FlagBlockForUpdate(x, y, z);
+        public override void MarkBlockForRenderUpdate(int x, int y, int z) => Players.FlagBlockForUpdate(x, y, z);
         /// <summary>
         /// Отметить  блоки для обновления
         /// </summary>
@@ -215,6 +220,27 @@ namespace MvkServer.World
                     {
                         Players.FlagChunkForUpdate(ch, y);
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Отметить блоки для изминения
+        /// </summary>
+        public override void MarkBlockRangeForModified(int x0, int z0, int x1, int z1)
+        {
+            int c0x = (x0) >> 4;
+            int c0z = (z0) >> 4;
+            int c1x = (x1) >> 4;
+            int c1z = (z1) >> 4;
+            ChunkBase chunk;
+            int x, z;
+            for (x = c0x; x <= c1x; x++)
+            {
+                for (z = c0z; z <= c1z; z++)
+                {
+                    chunk = ChunkPr.GetChunk(new vec2i(x, z));
+                    if (chunk != null) chunk.Modified();
                 }
             }
         }
@@ -327,9 +353,9 @@ namespace MvkServer.World
             try
             {
                 string tracker = "";// Tracker.ToString(); 
-                return string.Format("Ch {0}-{2} EPl {1} E: {4}\r\n{3} {5}",
+                return string.Format("R {6} Ch {0}-{2} EPl {1} E: {4}\r\n{3} {5}",
                     ChunkPr.Count, Players.PlayerCount, Players.CountPlayerInstances(), Players.ToStringDebug() // 0 - 3
-                    , base.ToStringDebug(), tracker); // 4  - 5
+                    , base.ToStringDebug(), tracker, Regions.Count()); // 4  - 5
             }
             catch(Exception e)
             {

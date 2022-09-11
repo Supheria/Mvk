@@ -1,6 +1,7 @@
 ﻿using MvkServer.Entity;
 using MvkServer.Entity.Item;
 using MvkServer.Glm;
+using MvkServer.NBT;
 using MvkServer.Util;
 using MvkServer.World.Biome;
 using MvkServer.World.Block;
@@ -49,23 +50,23 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public ChunkLight2 Light { get; private set; }
         /// <summary>
-        /// Загружен ли чанк
+        /// Загружен ли чанк #1
         /// </summary>
         public bool IsChunkLoaded { get; private set; } = false;
         /// <summary>
-        /// Было ли декорация чанка
+        /// Было ли декорация чанка #2
         /// </summary>
         public bool IsPopulated { get; private set; } = false;
         /// <summary>
-        /// Было ли карта высот с небесным освещением
+        /// Было ли карта высот с небесным освещением #3
         /// </summary>
         public bool IsHeightMapSky { get; private set; } = false;
         /// <summary>
-        /// Было ли боковое небесное освещение и блочное освещение
+        /// Было ли боковое небесное освещение и блочное освещение #4
         /// </summary>
         public bool IsSideLightSky { get; private set; } = false;
         /// <summary>
-        /// Готов ли чанк для отправки клиентам
+        /// Готов ли чанк для отправки клиентам #5
         /// </summary>
         public bool IsSendChunk { get; private set; } = false;
         /// <summary>
@@ -322,7 +323,7 @@ namespace MvkServer.World.Chunk
                     }
                 }
                 // Карта высот с вертикальным небесным освещением
-               // Stopwatch stopwatch = new Stopwatch();
+                // Stopwatch stopwatch = new Stopwatch();
                 //stopwatch.Start();
                 Light.GenerateHeightMapSky();
                 IsHeightMapSky = true;
@@ -391,6 +392,7 @@ namespace MvkServer.World.Chunk
                     }
                 }
                 IsSendChunk = true;
+                //isModified = true;
             }
         }
 
@@ -411,7 +413,7 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public void SetBinary(byte[] buffer, bool biom, int flagsYAreas)
         {
-           // World.Log.Log("SetBinaryBegin {0} {1}", Position, GetDebugAllSegment());
+            // World.Log.Log("SetBinaryBegin {0} {1}", Position, GetDebugAllSegment());
             int count = 0;
             byte light;
             try
@@ -447,7 +449,7 @@ namespace MvkServer.World.Chunk
                 Logger.Crach(ex);
             }
 
-           //World.Log.Log("SetBinaryEnd {0} {1}", Position, GetDebugAllSegment());
+            //World.Log.Log("SetBinaryEnd {0} {1}", Position, GetDebugAllSegment());
         }
 
         /// <summary>
@@ -652,13 +654,15 @@ namespace MvkServer.World.Chunk
         /// </summary>
         /// <param name="blockPos">позиция блока</param>
         /// <param name="blockState">данные нового блока</param>
-        public BlockState SetBlockState(BlockPos blockPos, BlockState blockState, bool isModify)
+        /// <param name="isModify">Пометка надо сохранение чанка</param>
+        /// <param name="isModifyRender">Пометка надо обновить рендер чанка</param>
+        public BlockState SetBlockState(BlockPos blockPos, BlockState blockState, bool isModify, bool isModifyRender)
         {
             int bx = blockPos.X & 15;
             int by = blockPos.Y;
             int bz = blockPos.Z & 15;
 
-           // Light.CheckPrecipitationHeightMap(blockPos);
+            // Light.CheckPrecipitationHeightMap(blockPos);
 
             BlockState blockStateOld = GetBlockState(bx, by, bz);
 
@@ -684,7 +688,7 @@ namespace MvkServer.World.Chunk
             }
             int index = (by & 15) << 8 | bz << 4 | bx;
             storage.SetData(index, blockState.data);
-            
+
             //StorageArrays[chy].Set(bx, by & 15, bz, blockState);
 
             if (blockOld != block)
@@ -692,12 +696,12 @@ namespace MvkServer.World.Chunk
                 // проверка света
                 //if (World.IsRemote)
 
-               // bool replaceAir = (block.IsAir && !blockOld.IsAir) || (!block.IsAir && blockOld.IsAir);
+                // bool replaceAir = (block.IsAir && !blockOld.IsAir) || (!block.IsAir && blockOld.IsAir);
                 bool differenceOpacity = block.LightOpacity != blockOld.LightOpacity;
                 if (/*replaceAir || */differenceOpacity || block.LightValue != blockOld.LightValue)
                 {
                     World.Light.ActionChunk(this);
-                    World.Light.CheckLightFor(blockPos.X, blockPos.Y, blockPos.Z, differenceOpacity, isModify);//, replaceAir);
+                    World.Light.CheckLightFor(blockPos.X, blockPos.Y, blockPos.Z, differenceOpacity, isModify, isModifyRender);//, replaceAir);
                 }
                 else
                 {
@@ -707,9 +711,10 @@ namespace MvkServer.World.Chunk
                     {
                         World.Light.ClearDebugString();
                     }
-                    if (isModify) World.MarkBlockForUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+                    if (isModifyRender) World.MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+                    if (isModify) Modified();
                 }
-                
+
 
                 if (World.IsRemote)
                 {
@@ -765,7 +770,7 @@ namespace MvkServer.World.Chunk
             //    }
             //}
 
-            Modified();
+            
             return blockStateOld;
         }
 
@@ -908,24 +913,20 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Пыло сохранение чанка, пометка убирается
         /// </summary>
-        public void SavedNotModified() => isModified = false;
-        /// <summary>
-        /// Внести время сохранения чанка
-        /// </summary>
-        public void SetLastSaveTime(uint time) => lastSaveTime = time;
+        //public void SavedNotModified() => isModified = false;
 
         /// <summary>
         /// Возвращает true, если этот чанке необходимо сохранить
         /// </summary>
-        public bool NeedsSaving()
-        {
-            if (hasEntities && World.GetTotalWorldTime() != lastSaveTime || isModified)
-            {
-                return true;
-            }
+        //public bool NeedsSaving()
+        //{
+        //    if (hasEntities && World.GetTotalWorldTime() != lastSaveTime || isModified)
+        //    {
+        //        return true;
+        //    }
 
-            return isModified;
-        }
+        //    return isModified;
+        //}
 
         /// <summary>
         /// Заменить флаг на наличие сущностей в чанке.
@@ -948,6 +949,120 @@ namespace MvkServer.World.Chunk
         /// Задать совокупное количество тиков, которые игроки провели в этом чанке 
         /// </summary>
         public void SetInhabitedTime(uint time) => InhabitedTime = time;
+
+        /// <summary>
+        /// Сохранить чанк в файл региона
+        /// </summary>
+        public void SaveFileChunk(WorldServer worldServer)
+        {
+            if (IsSendChunk && (hasEntities || isModified))
+            {
+                lastSaveTime = World.GetTotalWorldTime();
+                TagCompound nbt = new TagCompound();
+                WriteChunkToNBT(nbt);
+                worldServer.Regions.Get(Position).WriteChunk(nbt, Position.x, Position.y);
+                //worldServer.File.ChunkDataWrite(nbt, worldServer.Regions.Get(Position), Position);
+                isModified = false;
+            }
+        }
+
+        /// <summary>
+        /// Прочесть чанк в файл региона
+        /// </summary>
+        public void LoadFileChunk(WorldServer worldServer)
+        {
+            RegionFile region = worldServer.Regions.Get(Position);
+            if (region != null)
+            {
+                TagCompound nbt = region.ReadChunk(Position.x, Position.y);
+                if (nbt != null)
+                {
+                    try
+                    {
+                        ReadChunkFromNBT(nbt);
+                        IsChunkLoaded = true;
+                        IsPopulated = true;
+                        IsHeightMapSky = true;
+                        IsSideLightSky = true;
+                        IsSendChunk = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        World.Log.Error(ex);
+                    }
+                }
+            }
+        }
+
+        #region NBT
+
+        public void WriteChunkToNBT(TagCompound nbt)
+        {
+            nbt.SetShort("Version", 1);
+            nbt.SetInt("PosX", Position.x);
+            nbt.SetInt("PosZ", Position.y);
+            nbt.SetLong("LastUpdate", World.GetTotalWorldTime());
+            nbt.SetLong("InhabitedTime", InhabitedTime);
+            nbt.SetShort("HeightMapMax", (short)Light.heightMapMax);
+            nbt.SetByteArray("HeightMap", Light.heightMap);
+            byte[] biomes = new byte[256];
+            for (int i = 0; i < 256; i++) biomes[i] = (byte)biome[i];
+            nbt.SetByteArray("Biomes", biomes);
+
+            TagList tagList = new TagList();
+            
+            for (int ys = 0; ys < COUNT_HEIGHT; ys++)
+            {
+                StorageArrays[ys].WriteDataToNBT(tagList);
+            }
+            nbt.SetTag("Sections", tagList);
+
+            // TODO::2022-09-11:hasEntities; Слава Украине!
+            //hasEntities = false;
+            // проверяю есть ли сущность, если есть то true;
+        }
+
+        public void ReadChunkFromNBT(TagCompound nbt)
+        {
+            InhabitedTime = (uint)nbt.GetLong("InhabitedTime");
+            Light.heightMapMax = nbt.GetShort("HeightMapMax");
+            Light.heightMap = nbt.GetByteArray("HeightMap");
+            byte[] biomes = nbt.GetByteArray("Biomes");
+            for (int i = 0; i < 256; i++) biome[i] = (EnumBiome)biomes[i];
+
+            TagList tagList = nbt.GetTagList("Sections", 10);
+            int count = tagList.TagCount();
+            if (tagList.GetTagType() == 10)
+            {
+                int y;
+                bool[] flag = new bool[COUNT_HEIGHT];
+                for (int i = 0; i < count; i++)
+                {
+                    TagCompound tagCompound = tagList.Get(i) as TagCompound;
+                    y = tagCompound.GetByte("Y");
+                    flag[y] = true;
+                    StorageArrays[y].ReadDataFromNBT(tagCompound);
+                }
+                if (count < COUNT_HEIGHT)
+                {
+                    TagCompound tagCompound = new TagCompound();
+                    for (int i = 0; i < COUNT_HEIGHT; i++)
+                    {
+                        if (!flag[i])
+                        {
+                            StorageArrays[i].ReadDataFromNBT(tagCompound);
+                        }
+                    }
+                }
+            }
+            //nbt.GetTagList("Inventory", 10);
+
+            // TODO::2022-09-11:hasEntities; Слава Украине!
+            // Проверяем сущность, если есть то //hasEntities = true;
+            return;
+        }
+
+        #endregion
 
         public override string ToString() => Position + " " 
             + (IsChunkLoaded ? "Loaded " : "")

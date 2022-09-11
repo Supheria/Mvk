@@ -579,7 +579,7 @@ namespace MvkServer.World
             int index = (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15);
             int id = chunk.StorageArrays[yc].data[index] & 0xFFF;
             chunk.StorageArrays[yc].data[index] = (ushort)(id | met << 12);
-            MarkBlockForUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+            MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
         }
 
         /// <summary>
@@ -587,7 +587,7 @@ namespace MvkServer.World
         /// </summary>
         /// <param name="blockPos">позици блока</param>
         /// <param name="blockState">данные блока</param>
-        /// <param name="flag">флаг, 1 частички старого блока, 2 уведомление соседей, 4 modify</param>
+        /// <param name="flag">флаг, 1 частички старого блока, 2 уведомление соседей, 4 modifyRender, 8 modifySave</param>
         /// <returns>true смена была</returns>
         public virtual bool SetBlockState(BlockPos blockPos, BlockState blockState, int flag)
         {
@@ -596,7 +596,7 @@ namespace MvkServer.World
             ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
             if (chunk == null) return false;
 
-            BlockState blockStateTrue = chunk.SetBlockState(blockPos, blockState, (flag & 4) != 0);
+            BlockState blockStateTrue = chunk.SetBlockState(blockPos, blockState, (flag & 8) != 0, (flag & 4) != 0);
             if (blockStateTrue.IsEmpty()) return false;
 
             if (!IsRemote)
@@ -694,7 +694,7 @@ namespace MvkServer.World
                 if (chunk != null)
                 {
                     chunk.SetEBlock(blockPos.GetPosition0(), enumBlock);
-                    MarkBlockForUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+                    MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
                 }
             }
         }
@@ -702,11 +702,15 @@ namespace MvkServer.World
         /// <summary>
         /// Отметить блок для обновления
         /// </summary>
-        public virtual void MarkBlockForUpdate(int x, int y, int z) { }
+        public virtual void MarkBlockForRenderUpdate(int x, int y, int z) { }
         /// <summary>
         /// Отметить блоки для обновления
         /// </summary>
         public virtual void MarkBlockRangeForRenderUpdate(int x0, int y0, int z0, int x1, int y1, int z1) { }
+        /// <summary>
+        /// Отметить блоки для изминения
+        /// </summary>
+        public virtual void MarkBlockRangeForModified(int x0, int z0, int x1, int z1) { }
 
         /// <summary>
         /// Возвращает все объекты указанного типа класса, которые пересекаются с AABB кроме переданного в него

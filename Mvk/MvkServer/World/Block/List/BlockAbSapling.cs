@@ -49,7 +49,7 @@ namespace MvkServer.World.Block.List
             if (!CanBlockStay(worldIn, blockPos))
             {
                 DropBlockAsItem(worldIn, blockPos, state, 0);
-                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 6);
+                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 14);
             }
         }
 

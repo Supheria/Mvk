@@ -1,6 +1,8 @@
 ﻿using MvkServer.Glm;
+using MvkServer.NBT;
 using MvkServer.Util;
 using MvkServer.World.Gen;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -46,66 +48,35 @@ namespace MvkServer.World.Chunk
         }
 
         /// <summary>
-        /// Два режима работы: если передано true, сохранить все чанки за один раз. Если передано false, сохраните до двух фрагментов.
+        /// Сохранить все чанки
         /// </summary>
-        /// <returns>Возвращает true, если все фрагменты были сохранены</returns>
-        public bool SaveChunks(bool all)
+        public void SaveChunks()
         {
-            int count = 0;
             Dictionary<vec2i, ChunkBase>.ValueCollection chunks = chunkMapping.Values();
             foreach (ChunkBase chunk in chunks)
             {
-                if (all)
-                {
-                    SaveChunkExtraData(chunk);
-                }
-                if (chunk.NeedsSaving())
-                {
-                    SaveChunkData(chunk);
-                    chunk.SavedNotModified();
-                    count++;
-                    if (count == 24 && !all) return false;
-                }
+                SaveChunkData(chunk);
             }
-
-            return true;
         }
 
         /// <summary>
-        /// Сохранить чанк
+        /// Сохранить основные данные чанка
         /// </summary>
         private void SaveChunkData(ChunkBase chunk)
         {
-            //if (chunkLoader != null)
-            //{
-            //    try
-            //    {
-            //        chunk.SetLastSaveTime(world.GetTotalWorldTime());
-            //        chunkLoader.SaveChunk(world, chunk);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        worldServer.Log.Error("Не удалось сохранить чанк {0}\r\n{1}", ex.Message, ex.StackTrace);
-            //    }
-            //}
-        }
-
-        /// <summary>
-        /// Сохранить дополнительные данные чанка
-        /// </summary>
-        private void SaveChunkExtraData(ChunkBase chunk)
-        {
-            //if (chunkLoader != null)
-            //{
-            //    try
-            //    {
-            //        chunkLoader.SaveExtraChunkData(world, chunk);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        worldServer.Log.Error("Не удалось сохранить чанк {0}\r\n{1}", ex.Message, ex.StackTrace);
-            //    }
-            //}
+            if (chunk != null)
+            {
+                try
+                {
+                    chunk.SaveFileChunk(worldServer);
+                }
+                catch (Exception ex)
+                {
+                    worldServer.Log.Error("Не удалось сохранить чанк [{2}] в регионе [{3}] {0}\r\n{1}",
+                    ex.Message, ex.StackTrace,
+                    chunk.Position, new vec2i(chunk.Position.x >> 5, chunk.Position.y >> 5));
+                }
+            }
         }
 
         /// <summary>
@@ -126,17 +97,41 @@ namespace MvkServer.World.Chunk
             if (chunk == null)
             {
                 chunk = new ChunkBase(world, pos);
-                // Загружаем
-                // chunk = LoadChunkFromFile(pos);
-                //if (chunk == null)
-                {
-                    ChunkGenerate.GenerateChunk(chunk);
-                }
-
+                LoadOrGen(chunk);
                 chunkMapping.Set(chunk);
                 chunk.OnChunkLoad();
             }
             return chunk;
+        }
+
+        /// <summary>
+        /// Загружаем, если нет чанка то генерируем
+        /// </summary>
+        /// <param name="chunk">Объект чанка не null</param>
+        private void LoadOrGen(ChunkBase chunk)
+        {
+            if (!chunk.IsChunkLoaded)
+            {
+                // Пробуем загрузить с файла
+                try
+                {
+                    //Stopwatch stopwatch = new Stopwatch();
+                    //stopwatch.Start();
+                    chunk.LoadFileChunk(worldServer);
+                   // if (chunk.IsChunkLoaded) world.Log.Log("ChunkLoad[{1}]: {0:0.00} ms", stopwatch.ElapsedTicks / (float)MvkStatic.TimerFrequency, chunk.Position);
+                }
+                catch (Exception ex)
+                {
+                    worldServer.Log.Error("Не удалось прочесть чанк [{2}] в регионе [{3}] {0}\r\n{1}",
+                        ex.Message, ex.StackTrace,
+                        chunk.Position, new vec2i(chunk.Position.x >> 5, chunk.Position.y >> 5));
+                }
+            }
+            if (!chunk.IsChunkLoaded)
+            {
+                // Начинаем генерацию
+                ChunkGenerate.GenerateChunk(chunk);
+            }
         }
 
         public int LoadGenRequestCount => listLoadGenRequest.CountForward;
@@ -173,265 +168,261 @@ namespace MvkServer.World.Chunk
             for (int i = 0; i < count; i++)
             {
                 chunk = listLoadGenRequest.GetNext();
-                // Загружаем
-                // chunk = LoadChunkFromFile(pos);
-                //if (chunk == null)
-                {
-                    ChunkGenerate.GenerateChunk(chunk);
-                }
+                LoadOrGen(chunk);
                 listLoadGenResponse.Add(chunk);
             }
         }
-                    /*
-                /// <summary>
-                /// Загрузить чанк
-                /// </summary>
-                public ChunkBase LoadChunk(vec2i pos)
+
+        /*
+    /// <summary>
+    /// Загрузить чанк
+    /// </summary>
+    public ChunkBase LoadChunk(vec2i pos)
+    {
+        DroppedChunks.Remove(pos);
+        ChunkBase chunk = GetChunk(pos);
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
+        if (chunk == null)
+        {
+
+            // Загружаем
+            // chunk = LoadChunkFromFile(pos);
+            if (chunk == null)
+            {
+                // чанка нет после загрузки, значит надо генерировать
+
+                // это пока временно
+                chunk = new ChunkBase(world, pos);
+                //chunk.ChunkLoadGen();
+
+                float[] heightNoise = new float[256];
+                float[] wetnessNoise = new float[256];
+                float[] grassNoise = new float[256];
+                float scale = 0.2f;
+                worldServer.Noise.HeightBiome.GenerateNoise2d(heightNoise, chunk.Position.x * 16, chunk.Position.y * 16, 16, 16, scale, scale);
+                worldServer.Noise.WetnessBiome.GenerateNoise2d(wetnessNoise, chunk.Position.x * 16, chunk.Position.y * 16, 16, 16, scale, scale);
+                scale = .5f;
+                worldServer.Noise.Down.GenerateNoise2d(grassNoise, chunk.Position.x * 16, chunk.Position.y * 16, 16, 16, scale, scale);
+
+                int count = 0;
+                int stolb = 0;
+                int yMax = 0;
+                for (int x = 0; x < 16; x++)
                 {
-                    DroppedChunks.Remove(pos);
-                    ChunkBase chunk = GetChunk(pos);
-                    Stopwatch stopwatch = new Stopwatch();
-                    stopwatch.Start();
-                    if (chunk == null)
+                    for (int z = 0; z < 16; z++)
                     {
-
-                        // Загружаем
-                        // chunk = LoadChunkFromFile(pos);
-                        if (chunk == null)
+                        float h = heightNoise[count] / 132f;
+                        int y0 = (int)(-h * 64f) + 32;
+                        if (x == 7 && z == 7) stolb = y0;
+                        chunk.SetEBlock(new vec3i(x, 0, z), Block.EnumBlock.Stone);
+                        //if (y0 > 0)
                         {
-                            // чанка нет после загрузки, значит надо генерировать
-
-                            // это пока временно
-                            chunk = new ChunkBase(world, pos);
-                            //chunk.ChunkLoadGen();
-
-                            float[] heightNoise = new float[256];
-                            float[] wetnessNoise = new float[256];
-                            float[] grassNoise = new float[256];
-                            float scale = 0.2f;
-                            worldServer.Noise.HeightBiome.GenerateNoise2d(heightNoise, chunk.Position.x * 16, chunk.Position.y * 16, 16, 16, scale, scale);
-                            worldServer.Noise.WetnessBiome.GenerateNoise2d(wetnessNoise, chunk.Position.x * 16, chunk.Position.y * 16, 16, 16, scale, scale);
-                            scale = .5f;
-                            worldServer.Noise.Down.GenerateNoise2d(grassNoise, chunk.Position.x * 16, chunk.Position.y * 16, 16, 16, scale, scale);
-
-                            int count = 0;
-                            int stolb = 0;
-                            int yMax = 0;
-                            for (int x = 0; x < 16; x++)
+                            bool stop = false;
+                            for (int y = 1; y < 256; y++)
                             {
-                                for (int z = 0; z < 16; z++)
+                                if (y < y0)
                                 {
-                                    float h = heightNoise[count] / 132f;
-                                    int y0 = (int)(-h * 64f) + 32;
-                                    if (x == 7 && z == 7) stolb = y0;
-                                    chunk.SetEBlock(new vec3i(x, 0, z), Block.EnumBlock.Stone);
-                                    //if (y0 > 0)
+                                    chunk.SetEBlock(new vec3i(x, y, z), Block.EnumBlock.Dirt);
+                                }
+                                else
+                                {
+                                    stop = true;
+                                    if (y <= 16)
                                     {
-                                        bool stop = false;
-                                        for (int y = 1; y < 256; y++)
+                                        chunk.SetEBlock(new vec3i(x, y, z), Block.EnumBlock.Water);
+                                    }
+                                    else
+                                    {
+                                        chunk.SetEBlock(new vec3i(x, y, z), Block.EnumBlock.Turf);//, chunk.World.Rand.Next(0, 4));
+                                        if (grassNoise[count] > .61f)
                                         {
-                                            if (y < y0)
-                                            {
-                                                chunk.SetEBlock(new vec3i(x, y, z), Block.EnumBlock.Dirt);
-                                            }
-                                            else
-                                            {
-                                                stop = true;
-                                                if (y <= 16)
-                                                {
-                                                    chunk.SetEBlock(new vec3i(x, y, z), Block.EnumBlock.Water);
-                                                }
-                                                else
-                                                {
-                                                    chunk.SetEBlock(new vec3i(x, y, z), Block.EnumBlock.Turf);//, chunk.World.Rand.Next(0, 4));
-                                                    if (grassNoise[count] > .61f)
-                                                    {
-                                                      //  chunk.SetEBlock(new vec3i(x, y + 1, z), Block.EnumBlock.Brol);
-                                                    }
-                                                    else if (grassNoise[count] > .1f)
-                                                    {
-                                                        chunk.SetEBlock(new vec3i(x, y + 1, z), Block.EnumBlock.TallGrass);//, chunk.World.Rand.Next(0, 5));
-                                                    }
-                                                }
-                                                if (y > yMax) yMax = y;
-                                                //break;
-                                            }
-                                            if (y >= 16 && stop)
-                                            {
-                                                break;
-                                            }
+                                          //  chunk.SetEBlock(new vec3i(x, y + 1, z), Block.EnumBlock.Brol);
+                                        }
+                                        else if (grassNoise[count] > .1f)
+                                        {
+                                            chunk.SetEBlock(new vec3i(x, y + 1, z), Block.EnumBlock.TallGrass);//, chunk.World.Rand.Next(0, 5));
                                         }
                                     }
-                                    count++;
+                                    if (y > yMax) yMax = y;
+                                    //break;
                                 }
-                            }
-
-                            if (pos.x == -1 && pos.y == -1)
-                            {
-                                for (int y = 1; y <= 16; y++)
+                                if (y >= 16 && stop)
                                 {
-                                    chunk.SetEBlock(new vec3i(3, y + stolb, 7), Block.EnumBlock.Dirt);
-                                    chunk.SetEBlock(new vec3i(7, y + stolb, 5), Block.EnumBlock.Glass);
-                                   // chunk.SetEBlock(new vec3i(7, y + stolb, 9), Block.EnumBlock.GlassWhite);
-                                    chunk.SetEBlock(new vec3i(11, y + stolb, 7), Block.EnumBlock.Lava);
-                                    chunk.SetEBlock(new vec3i(12, y + stolb, 7), Block.EnumBlock.LogOak);
-                                }
-                                //for (int y = 16; y <= 216; y++)
-                                //{
-                                //    chunk.SetEBlock(new vec3i(12, y + stolb, 7), Block.EnumBlock.LogOak);
-                                //    //chunk.SetEBlock(new vec3i(3, y + stolb, 7), Block.EnumBlock.Dirt);
-                                //}
-
-                                //chunk.SetEBlock(new vec3i(5, 2 + stolb, 5), Block.EnumBlock.Brol);
-
-                            }
-
-                            if (pos.x == -3 && pos.y == 0)
-                            {
-                                //for (int x = 1; x <= 5; x++)
-                                //    for (int y = 3; y <= 8; y++)
-                                //    {
-                                //        chunk.SetEBlock(new vec3i(x, stolb + y, 5), Block.EnumBlock.Dirt);
-                                //    }
-                                for (int x = 1; x <= 3; x++) for (int y = 6; y <= 8; y++) for (int z = 1; z <= 3; z++)
-                                {
-                                    chunk.SetEBlock(new vec3i(x, stolb + y, z), Block.EnumBlock.Dirt);
-                                }
-                                chunk.SetEBlock(new vec3i(0, 30 + stolb, 0), Block.EnumBlock.Dirt);
-                                chunk.SetEBlock(new vec3i(8, 10 + stolb, 1), Block.EnumBlock.Dirt);
-                                for (int x = 7; x <= 9; x++) for (int z = 1; z <= 3; z++)
-                                {
-                                    chunk.SetEBlock(new vec3i(x, stolb + 16, z), Block.EnumBlock.Water);
-                                }
-                                //for (int x = 0; x < 16; x++)
-                                //{
-                                //    for (int z = 0; z < 16; z++)
-                                //    {
-                                //        int y = 255;
-                                //        while(y > 0)
-                                //        {
-                                //            if (chunk.GetEBlock(x, y, z) == Block.EnumBlock.Air)
-                                //            {
-                                //                int yc = y >> 4;
-                                //                int yb = y & 15;
-                                //                chunk.StorageArrays[yc].SetLightFor(x, yb, z, Block.EnumSkyBlock.Sky, 15);
-                                //                //chunk.StorageArrays[yc].SetLightFor(x, yb, z, Block.EnumSkyBlock.Block, 15);
-                                //                y--;
-                                //            }
-                                //            else
-                                //            {
-                                //                y = -1;
-                                //            }
-                                //        }
-                                //    }
-                                //}
-                            }
-                            //if (pos.x == -3 && pos.y == 1)
-                            //{
-                            //    for (int x = 0; x < 16; x++)
-                            //    {
-                            //        for (int z = 0; z < 16; z++)
-                            //        {
-                            //            int y = 255;
-                            //            while (y > 0)
-                            //            {
-                            //                if (chunk.GetEBlock(x, y, z) == Block.EnumBlock.Air)
-                            //                {
-                            //                    int yc = y >> 4;
-                            //                    int yb = y & 15;
-                            //                    //chunk.StorageArrays[yc].SetLightFor(x, yb, z, Block.EnumSkyBlock.Sky, 15);
-                            //                    chunk.StorageArrays[yc].SetLightFor(x, yb, z, Block.EnumSkyBlock.Block, 10);
-                            //                    y--;
-                            //                }
-                            //                else
-                            //                {
-                            //                    y = -1;
-                            //                }
-                            //            }
-                            //        }
-                            //    }
-                            //}
-                            Cave(chunk, yMax >> 4);
-
-                        }
-
-                        List<vec3i> list = new List<vec3i>();
-
-                        for (int x = 0; x < 16; x++)
-                        {
-                            for (int z = 0; z < 16; z++)
-                            {
-                                for (int y = 0; y <= ChunkBase.COUNT_HEIGHT_BLOCK; y++)
-                                {
-                                    if (chunk.GetBlockState(x, y, z).GetBlock().LightValue > 0)
-                                    {
-                                        list.Add(new vec3i(x, y, z));
-                                    }
+                                    break;
                                 }
                             }
                         }
-                        long le1 = stopwatch.ElapsedTicks;
-                        chunk.Light.SetLightBlocks(list.ToArray());
-                        long le2 = stopwatch.ElapsedTicks;
-                        chunkMapping.Set(chunk);
-                        long le3 = stopwatch.ElapsedTicks;
-                        chunk.Light.GenerateHeightMapSky();
-                        long le4 = stopwatch.ElapsedTicks;
-                        chunk.OnChunkLoad();
-                        long le5 = stopwatch.ElapsedTicks;
-                        //worldServer.Log.Log("Chunk {0:0.00} {1:0.00} {2:0.00} {3:0.00} {4:0.00}",
-                        //    le1 / (float)MvkStatic.TimerFrequency,
-                        //    (le2 - le1) / (float)MvkStatic.TimerFrequency,
-                        //    (le3 - le2) / (float)MvkStatic.TimerFrequency,
-                        //    (le4 - le3) / (float)MvkStatic.TimerFrequency,
-                        //    (le5 - le4) / (float)MvkStatic.TimerFrequency
-                        //    );
+                        count++;
                     }
-
-                    return chunk;
                 }
 
-                /// <summary>
-                /// Генерация пещер
-                /// </summary>
-                private void Cave(ChunkBase chunk, int yMax)
+                if (pos.x == -1 && pos.y == -1)
                 {
-                    //Stopwatch stopwatch = new Stopwatch();
-                    //stopwatch.Start();
-
-                    int count = 0;
-                    float[] noise = new float[4096];
-                    for (int y0 = 0; y0 <= yMax; y0++)
+                    for (int y = 1; y <= 16; y++)
                     {
-                        worldServer.Noise.Cave.GenerateNoise3d(noise, chunk.Position.x * 16, y0 * 16, chunk.Position.y * 16, 16, 16, 16, .05f, .05f, .05f);
-                        count = 0;
-                        for (int x = 0; x < 16; x++)
+                        chunk.SetEBlock(new vec3i(3, y + stolb, 7), Block.EnumBlock.Dirt);
+                        chunk.SetEBlock(new vec3i(7, y + stolb, 5), Block.EnumBlock.Glass);
+                       // chunk.SetEBlock(new vec3i(7, y + stolb, 9), Block.EnumBlock.GlassWhite);
+                        chunk.SetEBlock(new vec3i(11, y + stolb, 7), Block.EnumBlock.Lava);
+                        chunk.SetEBlock(new vec3i(12, y + stolb, 7), Block.EnumBlock.LogOak);
+                    }
+                    //for (int y = 16; y <= 216; y++)
+                    //{
+                    //    chunk.SetEBlock(new vec3i(12, y + stolb, 7), Block.EnumBlock.LogOak);
+                    //    //chunk.SetEBlock(new vec3i(3, y + stolb, 7), Block.EnumBlock.Dirt);
+                    //}
+
+                    //chunk.SetEBlock(new vec3i(5, 2 + stolb, 5), Block.EnumBlock.Brol);
+
+                }
+
+                if (pos.x == -3 && pos.y == 0)
+                {
+                    //for (int x = 1; x <= 5; x++)
+                    //    for (int y = 3; y <= 8; y++)
+                    //    {
+                    //        chunk.SetEBlock(new vec3i(x, stolb + y, 5), Block.EnumBlock.Dirt);
+                    //    }
+                    for (int x = 1; x <= 3; x++) for (int y = 6; y <= 8; y++) for (int z = 1; z <= 3; z++)
+                    {
+                        chunk.SetEBlock(new vec3i(x, stolb + y, z), Block.EnumBlock.Dirt);
+                    }
+                    chunk.SetEBlock(new vec3i(0, 30 + stolb, 0), Block.EnumBlock.Dirt);
+                    chunk.SetEBlock(new vec3i(8, 10 + stolb, 1), Block.EnumBlock.Dirt);
+                    for (int x = 7; x <= 9; x++) for (int z = 1; z <= 3; z++)
+                    {
+                        chunk.SetEBlock(new vec3i(x, stolb + 16, z), Block.EnumBlock.Water);
+                    }
+                    //for (int x = 0; x < 16; x++)
+                    //{
+                    //    for (int z = 0; z < 16; z++)
+                    //    {
+                    //        int y = 255;
+                    //        while(y > 0)
+                    //        {
+                    //            if (chunk.GetEBlock(x, y, z) == Block.EnumBlock.Air)
+                    //            {
+                    //                int yc = y >> 4;
+                    //                int yb = y & 15;
+                    //                chunk.StorageArrays[yc].SetLightFor(x, yb, z, Block.EnumSkyBlock.Sky, 15);
+                    //                //chunk.StorageArrays[yc].SetLightFor(x, yb, z, Block.EnumSkyBlock.Block, 15);
+                    //                y--;
+                    //            }
+                    //            else
+                    //            {
+                    //                y = -1;
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                }
+                //if (pos.x == -3 && pos.y == 1)
+                //{
+                //    for (int x = 0; x < 16; x++)
+                //    {
+                //        for (int z = 0; z < 16; z++)
+                //        {
+                //            int y = 255;
+                //            while (y > 0)
+                //            {
+                //                if (chunk.GetEBlock(x, y, z) == Block.EnumBlock.Air)
+                //                {
+                //                    int yc = y >> 4;
+                //                    int yb = y & 15;
+                //                    //chunk.StorageArrays[yc].SetLightFor(x, yb, z, Block.EnumSkyBlock.Sky, 15);
+                //                    chunk.StorageArrays[yc].SetLightFor(x, yb, z, Block.EnumSkyBlock.Block, 10);
+                //                    y--;
+                //                }
+                //                else
+                //                {
+                //                    y = -1;
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
+                Cave(chunk, yMax >> 4);
+
+            }
+
+            List<vec3i> list = new List<vec3i>();
+
+            for (int x = 0; x < 16; x++)
+            {
+                for (int z = 0; z < 16; z++)
+                {
+                    for (int y = 0; y <= ChunkBase.COUNT_HEIGHT_BLOCK; y++)
+                    {
+                        if (chunk.GetBlockState(x, y, z).GetBlock().LightValue > 0)
                         {
-                            for (int z = 0; z < 16; z++)
-                            {
-                                for (int y = 0; y < 16; y++)
-                                {
-                                    if (noise[count] < -1f)
-                                    {
-                                        vec3i pos = new vec3i(x, y0 << 4 | y, z);
-                                        int y2 = y0 << 4 | y;
-                                        Block.EnumBlock enumBlock = chunk.GetBlockState(x, y2, z).GetBlock().EBlock;
-                                        if (enumBlock != Block.EnumBlock.Air && enumBlock != Block.EnumBlock.Stone
-                                            && enumBlock != Block.EnumBlock.Water)
-                                        {
-                                            chunk.SetEBlock(pos, Block.EnumBlock.Air);
-                                        }
-                                    }
-                                    count++;
-                                }
-                            }
+                            list.Add(new vec3i(x, y, z));
                         }
                     }
-                    //long le1 = stopwatch.ElapsedTicks;
-                    //worldServer.Log.Log("Cave t:{0:0.00}ms",
-                    //        le1 / (float)MvkStatic.TimerFrequency);
+                }
+            }
+            long le1 = stopwatch.ElapsedTicks;
+            chunk.Light.SetLightBlocks(list.ToArray());
+            long le2 = stopwatch.ElapsedTicks;
+            chunkMapping.Set(chunk);
+            long le3 = stopwatch.ElapsedTicks;
+            chunk.Light.GenerateHeightMapSky();
+            long le4 = stopwatch.ElapsedTicks;
+            chunk.OnChunkLoad();
+            long le5 = stopwatch.ElapsedTicks;
+            //worldServer.Log.Log("Chunk {0:0.00} {1:0.00} {2:0.00} {3:0.00} {4:0.00}",
+            //    le1 / (float)MvkStatic.TimerFrequency,
+            //    (le2 - le1) / (float)MvkStatic.TimerFrequency,
+            //    (le3 - le2) / (float)MvkStatic.TimerFrequency,
+            //    (le4 - le3) / (float)MvkStatic.TimerFrequency,
+            //    (le5 - le4) / (float)MvkStatic.TimerFrequency
+            //    );
+        }
 
-                }*/
+        return chunk;
+    }
+
+    /// <summary>
+    /// Генерация пещер
+    /// </summary>
+    private void Cave(ChunkBase chunk, int yMax)
+    {
+        //Stopwatch stopwatch = new Stopwatch();
+        //stopwatch.Start();
+
+        int count = 0;
+        float[] noise = new float[4096];
+        for (int y0 = 0; y0 <= yMax; y0++)
+        {
+            worldServer.Noise.Cave.GenerateNoise3d(noise, chunk.Position.x * 16, y0 * 16, chunk.Position.y * 16, 16, 16, 16, .05f, .05f, .05f);
+            count = 0;
+            for (int x = 0; x < 16; x++)
+            {
+                for (int z = 0; z < 16; z++)
+                {
+                    for (int y = 0; y < 16; y++)
+                    {
+                        if (noise[count] < -1f)
+                        {
+                            vec3i pos = new vec3i(x, y0 << 4 | y, z);
+                            int y2 = y0 << 4 | y;
+                            Block.EnumBlock enumBlock = chunk.GetBlockState(x, y2, z).GetBlock().EBlock;
+                            if (enumBlock != Block.EnumBlock.Air && enumBlock != Block.EnumBlock.Stone
+                                && enumBlock != Block.EnumBlock.Water)
+                            {
+                                chunk.SetEBlock(pos, Block.EnumBlock.Air);
+                            }
+                        }
+                        count++;
+                    }
+                }
+            }
+        }
+        //long le1 = stopwatch.ElapsedTicks;
+        //worldServer.Log.Log("Cave t:{0:0.00}ms",
+        //        le1 / (float)MvkStatic.TimerFrequency);
+
+    }*/
 
         /// <summary>
         /// Выгрузка ненужных чанков Для сервера
@@ -453,7 +444,8 @@ namespace MvkServer.World.Chunk
                 if (chunk != null)
                 {
                     chunk.OnChunkUnload();
-                    // TODO::Тут сохраняем чанк
+                    //Тут сохраняем чанк
+                    SaveChunkData(chunk);
                     chunkMapping.Remove(pos);
                 }
             }
@@ -491,5 +483,7 @@ namespace MvkServer.World.Chunk
             //GenAddChunks.Remove(pos);
             DroppedChunks.Add(pos);
         }
+
+        
     }
 }

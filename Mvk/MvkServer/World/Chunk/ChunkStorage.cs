@@ -1,4 +1,5 @@
-﻿using MvkServer.Util;
+﻿using MvkServer.NBT;
+using MvkServer.Util;
 using MvkServer.World.Block;
 using System;
 
@@ -171,13 +172,135 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Задать яркость неба
         /// </summary>
-       // public void SetLightSky(int x, int y, int z, byte value) => light[y << 8 | z << 4 | x] = (byte)(light[y << 8 | z << 4 | x] & 0xF0 | value);
+        // public void SetLightSky(int x, int y, int z, byte value) => light[y << 8 | z << 4 | x] = (byte)(light[y << 8 | z << 4 | x] & 0xF0 | value);
         /// <summary>
         /// Задать яркость блока
         /// </summary>
-      //  public void SetLightBlock(int x, int y, int z, byte value) => light[y << 8 | z << 4 | x] = (byte)(value << 4 | light[y << 8 | z << 4 | x] & 0xF);
+        //  public void SetLightBlock(int x, int y, int z, byte value) => light[y << 8 | z << 4 | x] = (byte)(value << 4 | light[y << 8 | z << 4 | x] & 0xF);
 
         #endregion
+
+        public void WriteDataToNBT(TagList nbt)
+        {
+            // нету блоков
+            bool emptyB = IsEmptyData();
+            // нету блоков освещения блока
+            bool emptyLB = true;
+            // нету блоков освещения неба
+            bool emptyLS = true;
+            for (int i = 0; i < 4096; i++)
+            {
+                if (lightBlock[i] > 0)
+                {
+                    emptyLB = false;
+                    break;
+                }
+            }
+            for (int i = 0; i < 4096; i++)
+            {
+                if (lightSky[i] < 15)
+                {
+                    emptyLS = false;
+                    break;
+                }
+            }
+
+            byte[] buffer;
+            TagCompound tagCompound = new TagCompound();
+            int count = 0;
+            if (!emptyB)
+            {
+                buffer = new byte[8192];
+                ushort data;
+                for (int i = 0; i < 4096; i++)
+                {
+                    data = this.data[i];
+                    buffer[count++] = (byte)(data & 0xFF);
+                    buffer[count++] = (byte)(data >> 8);
+                }
+                tagCompound.SetByteArray("BlockStates", buffer);
+            }
+
+            if (!emptyLB)
+            {
+                buffer = new byte[2048];
+                // яркость от блоков
+                for (int i = 0; i < 2048; i++)
+                {
+                    count = i * 2;
+                    buffer[i] = (byte)((lightBlock[count] & 0xF) | (lightBlock[count + 1] << 4));
+                }
+                tagCompound.SetByteArray("BlockLight", buffer);
+            }
+            if (!emptyLS)
+            {
+                buffer = new byte[2048];
+                // яркость от неба
+                for (int i = 0; i < 2048; i++)
+                {
+                    count = i * 2;
+                    buffer[i] = (byte)((lightSky[count] & 0xF) | (lightSky[count + 1] << 4));
+                }
+                tagCompound.SetByteArray("SkyLight", buffer);
+            }
+
+            if (!emptyB || !emptyLB || !emptyLS)
+            {
+                tagCompound.SetByte("Y", (byte)(yBase >> 4));
+                nbt.AppendTag(tagCompound);
+            }
+        }
+
+        public void ReadDataFromNBT(TagCompound nbt)
+        {
+            int count = 0;
+            int i;
+            byte[] buffer = nbt.GetByteArray("BlockStates");
+            // нету блоков
+            bool emptyB = buffer.Length != 8192;
+            if (!emptyB)
+            {
+                for (i = 0; i < 4096; i++)
+                {
+                    SetData(i, (ushort)(buffer[count++] | buffer[count++] << 8));
+                }
+            }
+            buffer = nbt.GetByteArray("BlockLight");
+            // нету блоков освещения блока
+            bool emptyLB = buffer.Length != 2048;
+            if (!emptyLB)
+            {
+                lightBlock = new byte[4096];
+                for (i = 0; i < 2048; i++)
+                {
+                    count = i * 2;
+                    lightBlock[count] = (byte)(buffer[i] & 0xF);
+                    lightBlock[count + 1] = (byte)(buffer[i] >> 4);
+                }
+            }
+            else
+            {
+                for (i = 0; i < 4096; i++) lightBlock[i] = 0;
+            }
+
+            buffer = nbt.GetByteArray("SkyLight");
+            // нету блоков освещения неба
+            bool emptyLS = buffer.Length != 2048;
+            if (!emptyLS)
+            {
+                lightSky = new byte[4096];
+                for (i = 0; i < 2048; i++)
+                {
+                    count = i * 2;
+                    lightSky[count] = (byte)(buffer[i] & 0xF);
+                    lightSky[count + 1] = (byte)(buffer[i] >> 4);
+                }
+            }
+            else
+            {
+                for (i = 0; i < 4096; i++) lightSky[i] = 15;
+            }
+        }
 
         /// <summary>
         /// Имеются ли блоки которым нужен случайный тик

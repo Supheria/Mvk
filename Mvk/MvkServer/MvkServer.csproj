@@ -285,6 +285,8 @@
     <Compile Include="World\Gen\Feature\WorldGenTree.cs" />
     <Compile Include="World\Gen\NoiseGeneratorPerlin.cs" />
     <Compile Include="World\Gen\NoiseGeneratorSimplex.cs" />
+    <Compile Include="World\RegionFile.cs" />
+    <Compile Include="World\RegionProvider.cs" />
     <Compile Include="World\WorldBase.cs" />
     <Compile Include="World\WorldBaseSky.cs" />
     <Compile Include="World\WorldFile.cs" />

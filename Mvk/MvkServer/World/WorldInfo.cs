@@ -78,6 +78,12 @@ namespace MvkServer.World
                 nbt.SetBool("Creative", IsCreativeMode);
 
                 World.File.WorldInfoWrite(nbt);
+
+                World.Log.Log("server.saving.worlds");
+                // Сохраняем чанки в регионы 
+                World.ChunkPrServ.SaveChunks();
+                // Сохраняем регионы в файл
+                World.Regions.WriteToFile(true);
             }
             catch(Exception ex)
             {

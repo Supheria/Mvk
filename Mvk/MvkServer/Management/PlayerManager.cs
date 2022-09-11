@@ -119,7 +119,7 @@ namespace MvkServer.Management
             //SpawnPositionCheck(entityPlayer);
 
             ReadEntityPlayerFromFile(entityPlayer);
-
+            
             entityPlayer.SetChunkPosManaged(entityPlayer.GetChunkPos());
             //entityPlayer.SetOverviewChunk(entityPlayer.OverviewChunk, 1);
             vec2i posCh = entityPlayer.GetChunkPos();
@@ -130,10 +130,10 @@ namespace MvkServer.Management
             // Добавляем игрок в конкретный чанк
             GetPlayerInstance(entityPlayer.PositionChunk, true).AddPlayer(entityPlayer, true, true);
 
-            entityPlayer.FlagSpawn = true;
+            //entityPlayer.FlagSpawn = true;
             // Тут проверяем место положение персонажа, и заносим при запуске
             World.SpawnEntityInWorld(entityPlayer);
-            // entityPlayer.FlagSpawn = false;
+            //entityPlayer.FlagSpawn = false;
 
             // TODO::отладка 5 кур
             
@@ -153,7 +153,7 @@ namespace MvkServer.Management
         /// <summary>
         /// Проверка вертикально позиции для спавна
         /// </summary>
-        private void SpawnPositionCheck(EntityLiving entity)
+        private void SpawnPositionCheck(EntityPlayerServer entity)
         {
             ChunkBase chunk = World.GetChunk(entity.GetChunkPos());
             if (chunk != null)
@@ -173,6 +173,11 @@ namespace MvkServer.Management
                 }
                 if (b) y0++;
                 entity.SetPosition(new vec3(entity.Position.x, y0, entity.Position.z));
+                entity.FlagSpawn = false;
+            }
+            else
+            {
+                entity.FlagSpawn = true;
             }
         }
 
@@ -313,6 +318,7 @@ namespace MvkServer.Management
                 {
                     // основной игрок, запуск сервера!!!
                     PlayerAdd(entityPlayer);
+                    entityPlayer.FlagBeginSpawn = true;
                     // После того как загрузиться запуститься метод LoginStart() для запуска пакета PacketS12Success
                     World.ServerMain.StartServer();
                     
@@ -344,22 +350,9 @@ namespace MvkServer.Management
         }
 
         /// <summary>
-        /// Запуск основного игрока который создал сервер
-        /// </summary>
-        public void LoginStart()
-        {
-            EntityPlayerServer player = GetEntityPlayerMain();
-            if (player != null)
-            {
-                SpawnPositionCheck(player);
-                ResponsePacketJoinGame(player);
-            }
-        }
-
-        /// <summary>
         /// Начало игры, прошли проверку на игрока, теперь в игре
         /// </summary>
-        private void ResponsePacketJoinGame(EntityPlayerServer player)
+        public void ResponsePacketJoinGame(EntityPlayerServer player)
         {
             player.SendPacket(new PacketS02JoinGame(player.Id, player.UUID, player.IsCreativeMode));
             player.SendPacket(new PacketS08PlayerPosLook(player.Position, player.RotationYawHead, player.RotationPitch));
@@ -392,12 +385,7 @@ namespace MvkServer.Management
                 if (state == PacketC16ClientStatus.EnumState.Respawn)
                 {
                     // Респавн игрока
-                    SpawnPositionTest(player);
-                    player.Respawn();
-                    player.SendPacket(new PacketS07Respawn());
-                    player.SendPacket(new PacketS08PlayerPosLook(player.Position, player.RotationYawHead, player.RotationPitch));
-
-                    World.SpawnEntityInWorld(player);
+                    player.FlagSpawn = true;
                 }
             }
         }
@@ -667,6 +655,12 @@ namespace MvkServer.Management
                 playerStartList.RemoveAt(0);
                 LoginStartTick(entityPlayer);
             }
+            // Обновление игроков спавна
+            for (int i = 0; i < players.Count; i++)
+            {
+                players[i].UpdateSpawn();
+            }
+            
         }
         /// <summary>
         /// Обновляет все экземпляры игроков, которые необходимо обновить 
@@ -907,17 +901,16 @@ namespace MvkServer.Management
         /// <summary>
         /// Прочесть данные игрока с файла
         /// </summary>
-        private void ReadEntityPlayerFromFile(EntityPlayerServer entityPlayer)
+        private bool ReadEntityPlayerFromFile(EntityPlayerServer entityPlayer)
         {
             TagCompound nbt = World.File.PlayerDataRead(entityPlayer.UUID);
             if (nbt == null)
             {
                 SpawnPositionTest(entityPlayer);
+                return false;
             }
-            else
-            {
-                entityPlayer.ReadEntityFromNBT(nbt);
-            }
+            entityPlayer.ReadEntityFromNBT(nbt);
+            return true;
         }
     }
 }

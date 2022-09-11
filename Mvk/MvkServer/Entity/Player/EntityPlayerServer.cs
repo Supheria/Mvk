@@ -52,6 +52,14 @@ namespace MvkServer.Entity.Player
         /// 0 - старт, 1 - загрузка, 2 - далее, нет загрузки
         /// </summary>
         public byte TrackerBeginFlag { get; private set; } = 0;
+        /// <summary>
+        /// Флаг спавна
+        /// </summary>
+        public bool FlagSpawn { get; set; } = false;
+        /// <summary>
+        /// Флаг начального спавна
+        /// </summary>
+        public bool FlagBeginSpawn { get; set; } = false;
 
         private Profiler profiler;
 
@@ -119,6 +127,40 @@ namespace MvkServer.Entity.Player
         {
             base.Respawn();
             destroyedItemsNetCache.Clear();
+        }
+
+        /// <summary>
+        /// Преверка спавна и респавна игроков
+        /// дла запуска чанков потом игрока
+        /// </summary>
+        public void UpdateSpawn()
+        {
+            if (FlagSpawn || FlagBeginSpawn)
+            {
+                // запрос на спавн
+                if (!World.IsRemote && World is WorldServer worldServer)
+                {
+                    if (FlagSpawn)
+                    {
+                        Respawn();
+                        worldServer.Players.SpawnPositionTest(this);
+                        worldServer.SpawnEntityInWorld(this);
+                    }
+                    if (!FlagSpawn)
+                    {
+                        if (FlagBeginSpawn)
+                        {
+                            worldServer.Players.ResponsePacketJoinGame(this);
+                            FlagBeginSpawn = false;
+                        }
+                        else
+                        {
+                            SendPacket(new PacketS07Respawn());
+                            SendPacket(new PacketS08PlayerPosLook(Position, RotationYawHead, RotationPitch));
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
