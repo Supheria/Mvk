@@ -31,12 +31,16 @@ namespace MvkServer.World.Block.List
             NoSideDimming = true;
             UseNeighborBrightness = true;
             Particle = numberTextureSide;
-            Hardness = 10;
             LightOpacity = 2;
             Material = EnumMaterial.GlassPane;
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
             InitBoxs();
         }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 10;
 
         /// <summary>
         /// Не однотипные блоки, пример: трава, цветы, кактус

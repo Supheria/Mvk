@@ -270,7 +270,7 @@ namespace MvkClient.Renderer
             Vertex(aabb.Min.x, aabb.Min.y, aabb.Min.z);
             End();
 
-            gl.Begin(OpenGL.GL_LINE_STRIP);
+            Begin(OpenGL.GL_LINE_STRIP);
             Vertex(aabb.Min.x, aabb.Max.y, aabb.Min.z);
             Vertex(aabb.Max.x, aabb.Max.y, aabb.Min.z);
             Vertex(aabb.Max.x, aabb.Max.y, aabb.Max.z);

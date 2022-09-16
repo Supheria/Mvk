@@ -14,10 +14,14 @@ namespace MvkServer.World.Block.List
         public BlockSandstone()
         {
             Particle = 7;
-            Hardness = 15;
             Material = EnumMaterial.Solid;
             InitBoxs();
         }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 15;
 
         /// <summary>
         /// Инициализация коробок

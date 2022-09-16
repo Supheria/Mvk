@@ -22,12 +22,16 @@ namespace MvkServer.World.Block.List
             BackSide = true;
             AllSideForcibly = true;
             IsReplaceable = true;
-            Hardness = 2;
             IsParticle = false;
             Material = EnumMaterial.Oil;
             samplesStep = new AssetsSample[0];
             InitBoxs();
         }
+
+        ///// <summary>
+        ///// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        ///// </summary>
+        //public override int Hardness(BlockState state) => 2;
 
         /// <summary>
         /// Спавн предмета при разрушении этого блока

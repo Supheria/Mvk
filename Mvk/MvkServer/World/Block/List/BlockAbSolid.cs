@@ -13,5 +13,10 @@ namespace MvkServer.World.Block.List
             Particle = numberTexture;
             InitBoxs(numberTexture, false, color);
         }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 25;
     }
 }

@@ -11,9 +11,13 @@
         public BlockBedrock()
         {
             Particle = 1;
-            Hardness = 6000000;
             Material = EnumMaterial.Bedrock;
             InitBoxs(1);
         }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 6000000;
     }
 }

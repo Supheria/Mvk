@@ -40,6 +40,17 @@ namespace MvkServer.World.Chunk
         /// Двойной список для ответа загрузки или генерации чанка
         /// </summary>
         private DoubleList<ChunkBase> listLoadGenResponse = new DoubleList<ChunkBase>(20);
+        /// <summary>
+        /// Список чанков для сохранения
+        /// </summary>
+        private List<ChunkBase> listSavingChunk = new List<ChunkBase>();
+        /// <summary>
+        /// Флаг для сохранения региона,
+        /// 0 - нет действий,
+        /// 1 - был запуск сохранения но чанки ещё не готовы,
+        /// 2 - надо сохранять регион
+        /// </summary>
+        private byte flagSaveRegion = 0;
 
         public ChunkProviderServer(WorldServer worldIn)
         {
@@ -47,28 +58,89 @@ namespace MvkServer.World.Chunk
             ChunkGenerate = new ChunkProviderGenerate(worldIn);
         }
 
+        #region Save
+
         /// <summary>
-        /// Сохранить все чанки
+        /// Начало сохранение чанков
+        /// </summary>
+        public void BeginSaving()
+        {
+            if (listSavingChunk.Count == 0)
+            {
+                // готовим список чанков для сохранения
+                Dictionary<vec2i, ChunkBase>.ValueCollection chunks = chunkMapping.Values();
+                foreach (ChunkBase chunk in chunks)
+                {
+                    listSavingChunk.Add(chunk);
+                }
+                flagSaveRegion = 1;
+            }
+        }
+
+        /// <summary>
+        /// Сохранение чанков в одном тике
+        /// </summary>
+        public void TickSaving()
+        {
+            if (flagSaveRegion == 1)
+            {
+                if (listSavingChunk.Count > 0)
+                {
+                    // Если были не сохранённые чанки сохраняем пакет из 50 чанков за тик
+                    int i = 0;
+                    bool b = true;
+                    while (i < 50 && b)
+                    {
+                        if (listSavingChunk.Count == 0) b = false;
+                        else if (SaveChunkData(listSavingChunk[0])) i++;
+                    }
+                }
+                else
+                {
+                    flagSaveRegion = 2;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Сохранение регионов
+        /// </summary>
+        public void SavingRegions()
+        {
+            if (flagSaveRegion == 2)
+            {
+                worldServer.Regions.WriteToFile(false);
+                flagSaveRegion = 0;
+            }
+        }
+
+        /// <summary>
+        /// Сохранить все чанки при закрытии мира
         /// </summary>
         public void SaveChunks()
         {
             Dictionary<vec2i, ChunkBase>.ValueCollection chunks = chunkMapping.Values();
+            int i = 0;
+            int s = 0;
             foreach (ChunkBase chunk in chunks)
             {
-                SaveChunkData(chunk);
+                if (SaveChunkData(chunk)) s++;
+                i++;
             }
+            worldServer.Log.Log("server.saving.chunk all count:{0} save count:{1}", i, s);
         }
 
         /// <summary>
         /// Сохранить основные данные чанка
         /// </summary>
-        private void SaveChunkData(ChunkBase chunk)
+        private bool SaveChunkData(ChunkBase chunk)
         {
             if (chunk != null)
             {
                 try
                 {
-                    chunk.SaveFileChunk(worldServer);
+                    listSavingChunk.Remove(chunk);
+                    return chunk.SaveFileChunk(worldServer);
                 }
                 catch (Exception ex)
                 {
@@ -77,7 +149,10 @@ namespace MvkServer.World.Chunk
                     chunk.Position, new vec2i(chunk.Position.x >> 5, chunk.Position.y >> 5));
                 }
             }
+            return false;
         }
+
+        #endregion
 
         /// <summary>
         /// Получить чанк по координатам чанка

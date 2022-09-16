@@ -169,6 +169,7 @@
     <Compile Include="World\Block\EnumMaterial.cs" />
     <Compile Include="World\Block\Face.cs" />
     <Compile Include="World\Block\List\BlockAbGlassPane.cs" />
+    <Compile Include="World\Block\List\BlockAbLog.cs" />
     <Compile Include="World\Block\List\BlockAbPlants.cs" />
     <Compile Include="World\Block\List\BlockAbSapling.cs" />
     <Compile Include="World\Block\List\BlockAbLeaves.cs" />

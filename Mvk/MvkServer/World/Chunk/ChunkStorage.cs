@@ -2,6 +2,7 @@
 using MvkServer.Util;
 using MvkServer.World.Block;
 using System;
+using System.Collections.Generic;
 
 namespace MvkServer.World.Chunk
 {
@@ -29,6 +30,10 @@ namespace MvkServer.World.Chunk
         /// Освещение небесное, 4 bit используется
         /// </summary>
         public byte[] lightSky;
+        /// <summary>
+        /// Дополнительные данные блока
+        /// </summary>
+        public Dictionary<ushort, ushort> addMet = new Dictionary<ushort, ushort>();
 
         /// <summary>
         /// Количество блоков не воздуха

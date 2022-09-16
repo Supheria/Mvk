@@ -25,6 +25,10 @@ namespace MvkServer.World.Block.List
         /// Номер текстуры стороны
         /// </summary>
         private readonly int numberTextureSide;
+        /// <summary>
+        /// Параметр метданных вверх когда ставит игрок для бревна 3 для досок 0
+        /// </summary>
+        protected int metUp = 0;
 
         public BlockAbWood(int numberTextureButt, int numberTextureSide, vec3 colorButt, vec3 colorSide)
         {
@@ -40,6 +44,11 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 20;
+
+        /// <summary>
         /// Коробки
         /// </summary>
         public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met];
@@ -51,9 +60,9 @@ namespace MvkServer.World.Block.List
         /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
         public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
         {
-            int met = 0;
-            if (side == Pole.East || side == Pole.West) met = 1;
-            else if (side == Pole.South || side == Pole.North) met = 2;
+            int met = metUp;
+            if (side == Pole.East || side == Pole.West) met = 1 + metUp;
+            else if (side == Pole.South || side == Pole.North) met = 2 + metUp;
 
             return base.Put(worldIn, blockPos, new BlockState(state.Id(), met, state.lightBlock, state.lightSky), side, facing);
         }

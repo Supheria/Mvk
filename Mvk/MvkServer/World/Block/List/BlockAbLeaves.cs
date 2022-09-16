@@ -11,6 +11,7 @@ namespace MvkServer.World.Block.List
         public BlockAbLeaves(int numberTexture)
         {
             Material = EnumMaterial.Leaves;
+            IsCollidable = false;
             LightOpacity = 2;
             UseNeighborBrightness = true;
             AllSideForcibly = true;
@@ -24,23 +25,28 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
-        {
-            int met = state.Met();
-            int metNew = 1;
-            for (int i = 0; i < 6; i++)
-            {
-                if (worldIn.GetBlockState(blockPos.Offset(i)).GetEBlock() == EnumBlock.Air)
-                {
-                    metNew = 0;
-                    break;
-                }
-            }
-            if (metNew != met)
-            {
-                worldIn.SetBlockStateMet(blockPos, metNew); 
-            }
-        }
+        //public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        //{
+        //    int met = state.Met();
+        //    int metNew = 1;
+        //    for (int i = 0; i < 6; i++)
+        //    {
+        //        if (worldIn.GetBlockState(blockPos.Offset(i)).GetEBlock() == EnumBlock.Air)
+        //        {
+        //            metNew = 0;
+        //            break;
+        //        }
+        //    }
+        //    if (metNew != met)
+        //    {
+        //        worldIn.SetBlockStateMet(blockPos, metNew); 
+        //    }
+        //}
+
+        /// <summary>
+        /// Возвращает количество предметов, которые выпадают при разрушении блока.
+        /// </summary>
+        public override int QuantityDropped(Rand random) => 0;
 
         /// <summary>
         /// Коробки

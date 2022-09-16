@@ -10,9 +10,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Блок досок ель
         /// </summary>
-        public BlockPlanksSpruce() : base(145, 144, new vec3(.58f, .42f, .22f), new vec3(.58f, .42f, .22f))
-        {
-            Hardness = 20;
-        }
+        public BlockPlanksSpruce() : base(145, 144, new vec3(.58f, .42f, .22f), new vec3(.58f, .42f, .22f)) { }
+
     }
 }

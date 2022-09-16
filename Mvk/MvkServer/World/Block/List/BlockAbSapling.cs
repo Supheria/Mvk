@@ -56,7 +56,7 @@ namespace MvkServer.World.Block.List
         public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos)
         {
             EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
-            return enumBlock == EnumBlock.Dirt || enumBlock == EnumBlock.Turf;
+            return /*enumBlock == EnumBlock.Dirt ||*/ enumBlock == EnumBlock.Turf;
         }
 
         /// <summary>

@@ -26,7 +26,6 @@ namespace MvkServer.World.Block.List
             AllSideForcibly = true;
             IsReplaceable = true;
             UseNeighborBrightness = true;
-            Hardness = 2;
             LightOpacity = 1;
             IsParticle = false;
             Material = EnumMaterial.Water;

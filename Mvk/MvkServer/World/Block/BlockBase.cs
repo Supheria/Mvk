@@ -64,10 +64,6 @@ namespace MvkServer.World.Block
         /// </summary>
         public bool Shadow { get; protected set; } = true;
         /// <summary>
-        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
-        /// </summary>
-        public int Hardness { get; protected set; } = 0;
-        /// <summary>
         /// Устойчивость блоков к взрывам. (для будущего)
         /// </summary>
         public float Resistance { get; protected set; } = 0;
@@ -236,11 +232,12 @@ namespace MvkServer.World.Block
         /// Получите твердость этого блока относительно способности данного игрока
         /// Тактов чтоб сломать
         /// </summary>
-        public int GetPlayerRelativeBlockHardness(EntityPlayer playerIn)
+        public int GetPlayerRelativeBlockHardness(EntityPlayer playerIn, BlockState blockState)
         {
             if (playerIn.IsCreativeMode) return 0;
             //return 0; // креатив
-            return Hardness; // выживание
+            return Hardness(blockState); // выживание
+
             //return Hardness / 3; // выживание
             //return hardness < 0.0F ? 0.0F : (!playerIn.canHarvestBlock(this) ? playerIn.func_180471_a(this) / hardness / 100.0F : playerIn.func_180471_a(this) / hardness / 30.0F);
         }
@@ -314,11 +311,15 @@ namespace MvkServer.World.Block
         /// Получите значение урона, которое должен упасть этот блок
         /// </summary>
         public virtual int DamageDropped(BlockState state) => 0;
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public virtual int Hardness(BlockState state) => 0;
 
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
         /// </summary>
-        public virtual ItemBase GetItemDropped(BlockState state, Rand rand, int fortune) => new ItemBlock(this);
+        public virtual ItemBase GetItemDropped(BlockState state, Rand rand, int fortune) => new ItemBlock(state.GetBlock());// this);
 
         /// <summary>
         /// Возвращает количество предметов, которые выпадают при разрушении блока.
@@ -339,6 +340,14 @@ namespace MvkServer.World.Block
         {
             if (CanBlockStay(worldIn, blockPos)) return worldIn.SetBlockState(blockPos, state, 15);
             return false;
+        }
+
+        /// <summary>
+        /// Разрушить блок
+        /// </summary>
+        public virtual void Destroy(WorldBase worldIn, BlockPos blockPos, BlockState state)
+        {
+            worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 15);
         }
 
         /// <summary>

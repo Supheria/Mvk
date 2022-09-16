@@ -453,16 +453,21 @@ namespace MvkServer
                 //tickTx = 0;
             }
 
-            if (TickCounter % 100 == 0) // 900 = 45 сек
+            if (TickCounter % 900 == 0) // 900 = 45 сек
             {
-                World.profiler.StartSection("SaveChunks");
-                // Сохраняем чанки в регионы 
-                World.ChunkPrServ.SaveChunks();
-                World.profiler.EndStartSection("SaveToFileRegions");
-                // Сохраняем регионы в файл
-                World.Regions.WriteToFile(false);
+                // Запуск сохранения чанков
+                World.profiler.StartSection("BeginSaving");
+                World.ChunkPrServ.BeginSaving();
                 World.profiler.EndSection();
             }
+
+            World.profiler.StartSection("TickSaving");
+            // Сохраняем пакет чанков в регионы 
+            World.ChunkPrServ.TickSaving();
+            World.profiler.EndStartSection("SaveToFileRegions");
+            // Сохраняем регионы в файл
+            World.ChunkPrServ.SavingRegions();
+            World.profiler.EndSection();
 
             // фиксируем время выполнения такта
             tickTimeArray[TickCounter % 4] = differenceTime;

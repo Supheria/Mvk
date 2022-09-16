@@ -601,9 +601,12 @@ namespace MvkServer.World
 
             if (!IsRemote)
             {
+                // Частички блока, только на сервере чтоб всем разослать
                 if ((flag & 1) != 0) ParticleDiggingBlock(blockStateTrue.GetBlock(), blockPos, 50);
-                if ((flag & 2) != 0) NotifyNeighborsOfStateChange(blockPos, blockState.GetBlock());
             }
+            // Уведомление соседей и на сервере и на клиенте
+            if ((flag & 2) != 0) NotifyNeighborsOfStateChange(blockPos, blockState.GetBlock());
+            
             //BlockBase block = blockState.GetBlock();
             //BlockBase blockNew = blockStateTrue.GetBlock();
 

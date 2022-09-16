@@ -14,15 +14,19 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockTurf()
         {
-            //NeedsRandomTick = true;
+            NeedsRandomTick = true;
             Particle = 65;
             Color = new vec3(.56f, .73f, .35f);
-            Hardness = 10;
             Material = EnumMaterial.Loose;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };
             InitBoxs();
         }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 10;
 
         /// <summary>
         /// Коробки
@@ -75,19 +79,38 @@ namespace MvkServer.World.Block.List
 
         public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         {
-            //EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
-            //if (enumBlock == EnumBlock.Air) 
-            //{
-            //    world.SetBlockState(blockPos.OffsetUp(), new BlockState(EnumBlock.Water));
-            //}
-            EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
-            if (enumBlock == EnumBlock.TallGrass)
+            BlockPos blockPosUp = blockPos.OffsetUp();
+            BlockState blockStateUp = world.GetBlockState(blockPosUp);
+            BlockBase blockUp = blockStateUp.GetBlock();
+            if (blockStateUp.lightSky < 7 || blockUp.LightOpacity > 2)
             {
-                world.SetBlockState(blockPos.OffsetUp(), new BlockState(EnumBlock.Air), 0);
+                // Засыхание дёрна
+                world.SetBlockState(blockPos, new BlockState(EnumBlock.Dirt), 14);
             }
             else
             {
-                world.SetBlockState(blockPos, new BlockState(EnumBlock.Dirt), 0);
+                if (blockStateUp.lightSky >= 9)
+                {
+                    // Распространение дёрна
+                    BlockPos blockPos2;
+                    BlockState blockState2;
+                    BlockState blockState2up;
+                    BlockBase blockBase2up;
+                    
+                    for (int i = 0; i < 4; i++)
+                    {
+                        blockPos2 = blockPos.Offset(random.Next(3) - 1, random.Next(5) - 3, random.Next(3) - 1);
+                        blockState2up = world.GetBlockState(blockPos2.OffsetUp());
+                        blockBase2up = blockState2up.GetBlock();
+                        blockState2 = world.GetBlockState(blockPos2);
+
+                        if (blockState2.GetEBlock() == EnumBlock.Dirt 
+                            && blockState2up.lightSky >= 7 && blockBase2up.LightOpacity <= 2)
+                        {
+                            world.SetBlockState(blockPos2, new BlockState(EnumBlock.Turf), 12);
+                        }
+                    }
+                }
             }
         }
     }

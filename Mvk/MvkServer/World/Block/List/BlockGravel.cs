@@ -10,9 +10,11 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Блок Гравий
         /// </summary>
-        public BlockGravel() : base(69, new vec3(1))
-        {
-            Hardness = 5;
-        }
+        public BlockGravel() : base(69, new vec3(1)) { }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 5;
     }
 }

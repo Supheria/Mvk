@@ -88,13 +88,14 @@ namespace MvkServer.Management
         /// </summary>
         public void DestroyStart(BlockPos blockPos)
         {
-            BlockBase block = world.GetBlockState(blockPos).GetBlock();
+            BlockState blockState = world.GetBlockState(blockPos);
+            BlockBase block = blockState.GetBlock();
             if (!block.IsAir)
             {
                 BlockPosDestroy = blockPos;
                 IsDestroyingBlock = true;
                 curblockDamage = 0;
-                initialDamage = block.GetPlayerRelativeBlockHardness(entityPlayer);
+                initialDamage = block.GetPlayerRelativeBlockHardness(entityPlayer, blockState);
                 durabilityRemainingOnBlock = GetProcess();
                 if (durabilityRemainingOnBlock < 0)
                 {
@@ -192,14 +193,14 @@ namespace MvkServer.Management
                             {
                                 block.DropBlockAsItemWithChance(world, BlockPosDestroy, blockState, 1.0f, 0);
                             }
-                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 15);
+                            block.Destroy(world, BlockPosDestroy, blockState);
                             worldServer.Tracker.SendToAllTrackingEntityCurrent(entityPlayer,
                                 new PacketS29SoundEffect(block.SampleBreak(worldServer), BlockPosDestroy.ToVec3(), 1f, block.SampleBreakPitch(worldServer.Rnd)));
                         }
                         else
                         {
                             // для клиента, чтоб не ждать
-                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 0);
+                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 2);
                         }
                     }
                     else if (durabilityRemainingOnBlock == (int)Status.Put)

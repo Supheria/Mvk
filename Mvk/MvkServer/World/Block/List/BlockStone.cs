@@ -10,9 +10,6 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Блок камня
         /// </summary>
-        public BlockStone() : base(2, new vec3(.7f))
-        {
-            Hardness = 25;
-        }
+        public BlockStone() : base(2, new vec3(.7f)) { }
     }
 }

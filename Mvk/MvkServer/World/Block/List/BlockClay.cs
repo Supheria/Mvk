@@ -10,9 +10,11 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Блок Глина
         /// </summary>
-        public BlockClay() : base(70, new vec3(1))
-        {
-            Hardness = 5;
-        }
+        public BlockClay() : base(70, new vec3(1)) { }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 5;
     }
 }

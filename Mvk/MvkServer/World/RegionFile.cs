@@ -122,6 +122,7 @@ namespace MvkServer.World
                 byte[] emp = new byte[4096];
                 int i, count, box;
                 int offset = 4096;
+                int all = 0;
                 using (NBTStream stream = new NBTStream())
                 {
                     for (i = 0; i < 1024; i++)
@@ -133,6 +134,7 @@ namespace MvkServer.World
                             box = ((count + 5) >> 12) + 1;
                             stream.WriteInt((offset / 4096) << 8 | box);
                             offset += (box << 12);
+                            all++;
                         }
                         else
                         {
@@ -140,21 +142,24 @@ namespace MvkServer.World
                         }
                         //stream.WriteInt(offsets[i]);
                     }
-                    for (i = 0; i < 1024; i++)
+                    if (all > 0)
                     {
-                        count = buffers[i].Length;
-                        if (count > 0)
+                        for (i = 0; i < 1024; i++)
                         {
-                            box = ((count + 5) >> 12) + 1;
-                            stream.WriteInt(count);
-                            stream.WriteByte(1); // 1 = gzip; 2 = zlib
-                            stream.Write(buffers[i], 0, count);
-                            stream.Write(emp, 0, (box << 12) - buffers[i].Length - 5);
+                            count = buffers[i].Length;
+                            if (count > 0)
+                            {
+                                box = ((count + 5) >> 12) + 1;
+                                stream.WriteInt(count);
+                                stream.WriteByte(1); // 1 = gzip; 2 = zlib
+                                stream.Write(buffers[i], 0, count);
+                                stream.Write(emp, 0, (box << 12) - buffers[i].Length - 5);
+                            }
                         }
-                    }
-                    stream.Seek(0, SeekOrigin.Begin);
-                    using (FileStream fileStream = new FileStream(pathFile, FileMode.Create))
+                        stream.Seek(0, SeekOrigin.Begin);
+                        using (FileStream fileStream = new FileStream(pathFile, FileMode.Create))
                             stream.CopyTo(fileStream);
+                    }
                 }
             }
             catch (Exception ex)

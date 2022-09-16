@@ -24,7 +24,6 @@ namespace MvkServer.World.Block.List
             AllSideForcibly = true;
             //UseNeighborBrightness = true; // Нельзя, будет глючная тень при AO
             IsReplaceable = true;
-            Hardness = 2;
            // LightOpacity = 4;
             LightValue = 15;
             IsParticle = false;
@@ -34,6 +33,11 @@ namespace MvkServer.World.Block.List
             //samplesStep = new AssetsSample[] { AssetsSample.LiquidSwim1, AssetsSample.LiquidSwim2, AssetsSample.LiquidSwim3, AssetsSample.LiquidSwim4 };
             InitBoxs();
         }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        //public override int Hardness(BlockState state) => 20;
 
         /// <summary>
         /// Спавн предмета при разрушении этого блока

@@ -14,7 +14,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockCactus()
         {
-            Hardness = 50;
+            NeedsRandomTick = true;
             Color = new vec3(.1f, .6f, .2f);
             AllSideForcibly = true;
             АmbientOcclusion = false;
@@ -27,6 +27,11 @@ namespace MvkServer.World.Block.List
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };
             InitBoxs();
         }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 20;
 
         /// <summary>
         /// Смена соседнего блока
@@ -51,6 +56,9 @@ namespace MvkServer.World.Block.List
         //    return false;
         //}
 
+        /// <summary>
+        /// Проверка установи блока, можно ли его установить тут
+        /// </summary>
         public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos)
         {
             EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
@@ -110,6 +118,38 @@ namespace MvkServer.World.Block.List
                     }
                 }
             }};
+        }
+
+        /// <summary>
+        /// Случайный эффект блока, для сервера
+        /// </summary>
+        public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+        {
+            BlockPos blockPosUp = blockPos.OffsetUp();
+
+            if (world.IsAirBlock(blockPosUp))
+            {
+                int i;
+
+                for (i = 1; world.GetBlockState(blockPos.Offset(0, -i, 0)).GetEBlock() == EnumBlock.Cactus; ++i) ;
+
+                if (i < 7)
+                {
+                    int age = blockState.Met();
+
+                    if (age == 15)
+                    {
+                        BlockState blockStateNew = blockState.NewMet(0);
+                        world.SetBlockState(blockPos, blockStateNew, 8);
+                        world.SetBlockState(blockPosUp, blockStateNew, 14);
+                        NeighborBlockChange(world, blockPosUp, blockStateNew, this);
+                    }
+                    else
+                    {
+                        world.SetBlockState(blockPos, blockState.NewMet((byte)(age + 1)), 8);
+                    }
+                }
+            }
         }
     }
 }

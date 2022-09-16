@@ -13,6 +13,10 @@ namespace MvkServer.World.Block
         /// </summary>
         public ushort data;
         /// <summary>
+        /// Дополнительные мет данные если имеются на блоке
+        /// </summary>
+        //public ushort addMet;
+        /// <summary>
         /// Освещение блочное, 4 bit используется
         /// </summary>
         public byte lightBlock;
@@ -39,12 +43,12 @@ namespace MvkServer.World.Block
             lightBlock = 0;
             lightSky = 0;
         }
-        public BlockState(int id, int met)
-        {
-            data = (ushort)(id & 0xFFF | met << 12);
-            lightBlock = 0;
-            lightSky = 0;
-        }
+        //public BlockState(int id, int met)
+        //{
+        //    data = (ushort)(id & 0xFFF | met << 12);
+        //    lightBlock = 0;
+        //    lightSky = 0;
+        //}
         public BlockState(ushort data)
         {
             this.data = data;
@@ -84,6 +88,11 @@ namespace MvkServer.World.Block
         /// Получить кэш блока
         /// </summary>
         public BlockBase GetBlock() => Blocks.GetBlockCache(GetEBlock());
+
+        /// <summary>
+        /// Веррнуть новый BlockState с новыйм мет данные
+        /// </summary>
+        public BlockState NewMet(byte met) => new BlockState((ushort)(data & 0xFFF | met << 12));
 
         /// <summary>
         /// Записать блок в буффер пакета

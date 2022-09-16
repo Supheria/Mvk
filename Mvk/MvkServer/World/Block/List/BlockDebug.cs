@@ -14,7 +14,6 @@ namespace MvkServer.World.Block.List
         public BlockDebug()
         {
             //Boxes = new Box[] { new Box(1) };
-            Hardness = 100;
             Particle = 1;
             FullBlock = false;
             АmbientOcclusion = false;
@@ -28,6 +27,11 @@ namespace MvkServer.World.Block.List
             Material = EnumMaterial.Debug;
             InitBoxs();
         }
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        public override int Hardness(BlockState state) => 100;
 
         /// <summary>
         /// Не однотипные блоки, пример: трава, цветы, кактус

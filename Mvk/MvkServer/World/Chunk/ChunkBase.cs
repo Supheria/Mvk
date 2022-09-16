@@ -953,7 +953,7 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Сохранить чанк в файл региона
         /// </summary>
-        public void SaveFileChunk(WorldServer worldServer)
+        public bool SaveFileChunk(WorldServer worldServer)
         {
             if (IsSendChunk && (hasEntities || isModified))
             {
@@ -963,7 +963,9 @@ namespace MvkServer.World.Chunk
                 worldServer.Regions.Get(Position).WriteChunk(nbt, Position.x, Position.y);
                 //worldServer.File.ChunkDataWrite(nbt, worldServer.Regions.Get(Position), Position);
                 isModified = false;
+                return true;
             }
+            return false;
         }
 
         /// <summary>
@@ -1017,9 +1019,16 @@ namespace MvkServer.World.Chunk
             }
             nbt.SetTag("Sections", tagList);
 
-            // TODO::2022-09-11:hasEntities; Слава Украине!
-            //hasEntities = false;
             // проверяю есть ли сущность, если есть то true;
+            hasEntities = false;
+            for (int yc = 0; yc < COUNT_HEIGHT; yc++)
+            {
+                if (ListEntities[yc].Count > 0)
+                {
+                    hasEntities = true;
+                    break;
+                }
+            }
         }
 
         public void ReadChunkFromNBT(TagCompound nbt)
@@ -1059,6 +1068,7 @@ namespace MvkServer.World.Chunk
 
             // TODO::2022-09-11:hasEntities; Слава Украине!
             // Проверяем сущность, если есть то //hasEntities = true;
+            // Скорее всего будет добавление сущности AddEntity, а там hasEntities = true;
             return;
         }
 
