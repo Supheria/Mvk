@@ -56,7 +56,7 @@ namespace MvkClient.Renderer
             GLRender.LineWidth(2f);
 
             AxisAlignedBB[] axes = movingObject.Block.GetBlock().GetCollisionBoxesToList(
-                movingObject.BlockPosition, movingObject.Block.Met());
+                movingObject.BlockPosition, movingObject.Block.met);
             float dis = glm.distance(pos, movingObject.BlockPosition.ToVec3()) * .01f;
             dis *= dis;
             dis += 0.001f;

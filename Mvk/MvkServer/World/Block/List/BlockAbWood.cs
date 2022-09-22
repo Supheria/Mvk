@@ -9,6 +9,12 @@ namespace MvkServer.World.Block.List
     /// </summary>
     public abstract class BlockAbWood : BlockBase
     {
+        /***
+         * Met
+         * 0 - вверх
+         * 1/2 - бок
+         */
+
         /// <summary>
         /// Цвет торца
         /// </summary>
@@ -36,6 +42,9 @@ namespace MvkServer.World.Block.List
             this.colorSide = colorSide;
             this.numberTextureButt = numberTextureButt;
             this.numberTextureSide = numberTextureSide;
+            Combustibility = true;
+            IgniteOddsSunbathing = 10;
+            BurnOdds = 20;
             Material = EnumMaterial.Wood;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigWood1, AssetsSample.DigWood2, AssetsSample.DigWood3, AssetsSample.DigWood4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepWood1, AssetsSample.StepWood2, AssetsSample.StepWood3, AssetsSample.StepWood4 };
@@ -64,7 +73,7 @@ namespace MvkServer.World.Block.List
             if (side == Pole.East || side == Pole.West) met = 1 + metUp;
             else if (side == Pole.South || side == Pole.North) met = 2 + metUp;
 
-            return base.Put(worldIn, blockPos, new BlockState(state.Id(), met, state.lightBlock, state.lightSky), side, facing);
+            return base.Put(worldIn, blockPos, new BlockState(state.id, (ushort)met, state.lightBlock, state.lightSky), side, facing);
         }
 
         /// <summary>

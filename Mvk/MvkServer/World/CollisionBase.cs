@@ -62,7 +62,7 @@ namespace MvkServer.World
                             BlockBase block = blockState.GetBlock();
                             if (block.IsCollidable || blockState.IsEmpty())
                             {
-                                list.AddRange(block.GetCollisionBoxesToList(new BlockPos(x, y, z), blockState.Met()));
+                                list.AddRange(block.GetCollisionBoxesToList(new BlockPos(x, y, z), blockState.met));
                             }
                         }
                     }
@@ -86,7 +86,7 @@ namespace MvkServer.World
                 // Цельный блок на коллизию
                 if (block.FullBlock) return true;
                 // Выбираем часть блока
-                foreach(AxisAlignedBB aabbBlock in block.GetCollisionBoxesToList(new BlockPos(x, y, z), blockState.Met()))
+                foreach(AxisAlignedBB aabbBlock in block.GetCollisionBoxesToList(new BlockPos(x, y, z), blockState.met))
                 {
                     if (aabbBlock.IntersectsWith(aabb)) return true;
                 }

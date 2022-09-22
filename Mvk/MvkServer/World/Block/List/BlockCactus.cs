@@ -9,6 +9,10 @@ namespace MvkServer.World.Block.List
     /// </summary>
     public class BlockCactus : BlockBase
     {
+        /***
+         * Met
+         * 0 - 15 age
+         */ 
         /// <summary>
         /// Блок кактуса
         /// </summary>
@@ -41,7 +45,7 @@ namespace MvkServer.World.Block.List
             if (!CanBlockStay(worldIn, blockPos))
             {
                 DropBlockAsItem(worldIn, blockPos, state, 0);
-                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 14);
+                Destroy(worldIn, blockPos, state);
             }
         }
 
@@ -135,7 +139,7 @@ namespace MvkServer.World.Block.List
 
                 if (i < 7)
                 {
-                    int age = blockState.Met();
+                    int age = blockState.met;
 
                     if (age == 15)
                     {

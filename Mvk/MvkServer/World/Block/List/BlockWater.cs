@@ -79,18 +79,18 @@ namespace MvkServer.World.Block.List
             }
         }
 
-        public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
-        {
-            //EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
-            //if (enumBlock == EnumBlock.Air) 
-            //{
-            //    world.SetBlockState(blockPos.OffsetUp(), new BlockState(EnumBlock.Water));
-            //}
-            EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
-            if (enumBlock == EnumBlock.Air)
-            {
-                world.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 0);
-            }
-        }
+        //public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+        //{
+        //    //EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
+        //    //if (enumBlock == EnumBlock.Air) 
+        //    //{
+        //    //    world.SetBlockState(blockPos.OffsetUp(), new BlockState(EnumBlock.Water));
+        //    //}
+        //    EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
+        //    if (enumBlock == EnumBlock.Air)
+        //    {
+        //        world.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 0);
+        //    }
+        //}
     }
 }

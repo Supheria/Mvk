@@ -106,14 +106,13 @@ namespace MvkServer.World
             //this.villageCollectionObj.tick();
             //this.villageSiege.tick();
             profiler.EndSection();
-
-            //TODO::2022-08-04 мгновенный тик блока, смотрим на ява WorldServer #492
         }
 
+        /// <summary>
+        /// Тикание блоков и чанков
+        /// </summary>
         private void TickBlocks()
         {
-            if (ServerMain.IsTickBlocksPause) return;
-
             SetActivePlayerChunksAndCheckLight();
             // цикл активных чанков
             int count = activeChunkSet.Count;
@@ -130,12 +129,12 @@ namespace MvkServer.World
                 profiler.StartSection("GetChunk");
                 chunk = GetChunk(activeChunkSet[i]);
                 
-                if (chunk != null && chunk.IsChunkLoaded)
+                if (chunk != null && chunk.IsSendChunk)
                 {
                     xc0 = chunk.Position.x << 4;
                     yc0 = chunk.Position.y << 4;
                     profiler.EndStartSection("TickChunk");
-                    chunk.Update();
+                    chunk.UpdateServer();
                     profiler.EndStartSection("TickBlocks");
 
                     if (randomTickSpeed > 0)
@@ -186,11 +185,21 @@ namespace MvkServer.World
         //            ChunkBase chunk = GetChunk(entity.GetChunkPos());
         //            chunk.Update();
         //        }
-                
+
         //    }
-            
+
         //    //ChunkPrServ.
         //}
+
+        /// <summary>
+        /// Задать тик блока
+        /// </summary>
+        public override void SetBlockTick(BlockPos blockPos, uint timeTackt)
+        {
+            if (!blockPos.IsValid()) return;
+            ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
+            if (chunk != null) chunk.SetBlockTick(blockPos.X & 15, blockPos.Y, blockPos.Z & 15, timeTackt);
+        }
 
         /// <summary>
         /// Отметить блок для обновления 

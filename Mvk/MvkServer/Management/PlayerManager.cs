@@ -685,7 +685,7 @@ namespace MvkServer.Management
                         && World.ChunkPrServ.LoadGenRequestCount < MvkGlobal.COUNT_CHUNK_LOAD_OR_GEN_TPS && all > 0)
                     {
                         vec2i posCh = player.LoadingChunks.FirstRemove();
-                        if (!World.ChunkPrServ.IsChunk(posCh))
+                        if (!World.ChunkPrServ.IsChunkLoaded(posCh))
                         {
 
                             World.ChunkPrServ.LoadGenRequestAdd(posCh);

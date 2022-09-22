@@ -8,6 +8,15 @@ namespace MvkServer.World.Block.List
     /// </summary>
     public abstract class BlockAbLog : BlockAbWood
     {
+        /***
+         * Met
+         * 0 - вверх, генерация
+         * 1/2 - бок, генерация
+         * 3 - вверх, игрок
+         * 4/5 - бок, игрок
+         * 6 - вверх, генерация, нижний блок для пня
+         */
+
         protected EnumBlock leaves;
         protected int idLeaves;
         // ширина кроны
@@ -18,6 +27,9 @@ namespace MvkServer.World.Block.List
         public BlockAbLog(int numberTextureButt, int numberTextureSide, vec3 colorButt, vec3 colorSide, EnumBlock leaves) 
             : base(numberTextureButt, numberTextureSide, colorButt, colorSide)
         {
+            Combustibility = true;
+            IgniteOddsSunbathing = 5;
+            BurnOdds = 10;
             this.leaves = leaves;
             idLeaves = (int)leaves;
             metUp = 3;
@@ -26,7 +38,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
-        public override int Hardness(BlockState state) => state.Met() == 6 ? 100 : 30;
+        public override int Hardness(BlockState state) => state.met == 6 ? 100 : 30;
 
         /// <summary>
         /// Коробки
@@ -44,15 +56,16 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Разрушить блок
         /// </summary>
-        public override void Destroy(WorldBase worldIn, BlockPos blockPos, BlockState state)
+        public override void Destroy(WorldBase worldIn, BlockPos blockPos, BlockState state, bool sound, bool particles)
         {
-            base.Destroy(worldIn, blockPos, state);
-            int met = state.Met();
+            base.Destroy(worldIn, blockPos, state, sound, particles);
+            int met = state.met;
             if (met == 0 || met == 6)
             {
                 EnumBlock enumBlock;
                 BlockPos bPos = new BlockPos();
                 BlockState blockState;
+                BlockBase block;
                 int x, y, z, x1, z1;
                 int bx = blockPos.X;
                 int by = blockPos.Y;
@@ -68,12 +81,13 @@ namespace MvkServer.World.Block.List
                     bPos.Y = y;
                     bPos.Z = blockPos.Z;
                     blockState = worldIn.GetBlockState(bPos);
-                    met = blockState.Met();
+                    met = blockState.met;
                     enumBlock = blockState.GetEBlock();
                     if ((enumBlock == EBlock && met == 0) || enumBlock == leaves)
                     {
-                        blockState.GetBlock().DropBlockAsItem(worldIn, bPos, blockState, 0);
-                        worldIn.SetBlockState(bPos, new BlockState(EnumBlock.Air), 12);
+                        block = blockState.GetBlock();
+                        block.DropBlockAsItem(worldIn, bPos, blockState, 0);
+                        block.Destroy(worldIn, bPos, blockState);
                     }
                     for (x = bx - size; x <= bx + size; ++x)
                     {
@@ -90,11 +104,12 @@ namespace MvkServer.World.Block.List
                                     bPos.Z = z;
                                     blockState = worldIn.GetBlockState(bPos);
                                     enumBlock = blockState.GetEBlock();
-                                    met = blockState.Met();
+                                    met = blockState.met;
                                     if ((enumBlock == EBlock && (met == 1 || met == 2)) || enumBlock == leaves)
                                     {
-                                        blockState.GetBlock().DropBlockAsItem(worldIn, bPos, blockState, 0);
-                                        worldIn.SetBlockState(bPos, new BlockState(EnumBlock.Air), 12);
+                                        block = blockState.GetBlock();
+                                        block.DropBlockAsItem(worldIn, bPos, blockState, 0);
+                                        block.Destroy(worldIn, bPos, blockState);
                                     }
                                 }
                             }

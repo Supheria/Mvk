@@ -22,6 +22,10 @@ namespace MvkServer.World.Block
         /// Массив нужности случайного тика для блока
         /// </summary>
         public static bool[] blocksRandomTick;
+        /// <summary>
+        /// Массив с дополнительными metdata свыше 4 бита
+        /// </summary>
+        public static bool[] blocksAddMet;
 
         private static BlockBase ToBlock(EnumBlock eBlock)
         {
@@ -92,6 +96,7 @@ namespace MvkServer.World.Block
             blocksInt = new BlockBase[count];
             blocksLightOpacity = new byte[count];
             blocksRandomTick = new bool[count];
+            blocksAddMet = new bool[count];
 
             for (int i = 0; i < count; i++)
             {
@@ -101,6 +106,7 @@ namespace MvkServer.World.Block
                 blocksInt[i] = block;
                 blocksLightOpacity[i] = (byte)(block.LightOpacity << 4 | block.LightValue);
                 blocksRandomTick[i] = block.NeedsRandomTick;
+                blocksAddMet[i] = block.IsAddMet;
             }
         }
 

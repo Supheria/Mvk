@@ -19,7 +19,7 @@ namespace MvkServer.World
         /// <summary>
         /// Радиус активных чанков во круг игрока
         /// </summary>
-        private const int RADIUS_ACTION_CHUNK = 7;
+        private const int RADIUS_ACTION_CHUNK = 9;
 
         /// <summary>
         /// Объект лога
@@ -179,7 +179,7 @@ namespace MvkServer.World
                     bool b = true;
                 }
                 EntityBase entity = entityRemove.FirstRemove();
-                if (entity.AddedToChunk && ChunkPr.IsChunk(entity.PositionChunk))
+                if (entity.AddedToChunk && ChunkPr.IsChunkLoaded(entity.PositionChunk))
                 {
                     GetChunk(entity.PositionChunk).RemoveEntity(entity);
                 }
@@ -210,12 +210,12 @@ namespace MvkServer.World
 
                 if (!entity.AddedToChunk || !posCh.Equals(entity.PositionChunk) || y != entity.PositionChunkY)
                 {
-                    if (entity.AddedToChunk && ChunkPr.IsChunk(entity.PositionChunk))
+                    if (entity.AddedToChunk && ChunkPr.IsChunkLoaded(entity.PositionChunk))
                     {
                         // Удаляем из старого псевдо чанка
                         GetChunk(entity.PositionChunk).RemoveEntityAtIndex(entity, entity.PositionChunkY);
                     }
-                    if (ChunkPr.IsChunk(posCh))
+                    if (ChunkPr.IsChunkLoaded(posCh))
                     {
                         // Добавляем в новый псевдочанк
                         entity.AddedToChunk = true;
@@ -409,7 +409,7 @@ namespace MvkServer.World
                 ChunkBase chunk = GetChunk(blockPos.GetPositionChunk());
                 if (chunk != null)
                 {
-                    return chunk.GetBlockState(blockPos.X & 15, blockPos.Y, blockPos.Z & 15).data == 0;
+                    return chunk.GetBlockState(blockPos.X & 15, blockPos.Y, blockPos.Z & 15).id == 0;
                 }
             }
             return false;
@@ -504,7 +504,7 @@ namespace MvkServer.World
                 blockState = GetBlockState(blockPos);
                 block = blockState.GetBlock();
 
-                if ((!collidable || (collidable && block.IsCollidable)) && block.CollisionRayTrace(blockPos, blockState.Met(), a, dir, maxDist))
+                if ((!collidable || (collidable && block.IsCollidable)) && block.CollisionRayTrace(blockPos, blockState.met, a, dir, maxDist))
                 {
                     end.x = px + t * dx;
                     end.y = py + t * dy;
@@ -570,17 +570,21 @@ namespace MvkServer.World
         /// <summary>
         /// Изменить метданные блока
         /// </summary>
-        public void SetBlockStateMet(BlockPos blockPos, int met)
+        public void SetBlockStateMet(BlockPos blockPos, ushort met)
         {
             if (!blockPos.IsValid()) return;
             ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
             if (chunk == null) return;
             int yc = blockPos.Y >> 4;
             int index = (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15);
-            int id = chunk.StorageArrays[yc].data[index] & 0xFFF;
-            chunk.StorageArrays[yc].data[index] = (ushort)(id | met << 12);
+            chunk.StorageArrays[yc].NewMetBlock(index, met);
             MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
         }
+
+        /// <summary>
+        /// Задать блок неба, с флагом: уведомление соседей, modifyRender, modifySave
+        /// </summary>
+        //public bool SetBlockToAir(BlockPos blockPos) => SetBlockState(blockPos, new BlockState(EnumBlock.Air), 14);
 
         /// <summary>
         /// Сменить блок
@@ -653,6 +657,11 @@ namespace MvkServer.World
             //}
             //return false;
         }
+
+        /// <summary>
+        /// Задать тик блока
+        /// </summary>
+        public virtual void SetBlockTick(BlockPos blockPos, uint timeTackt) { }
 
         /// <summary>
         /// Уведомить соседей об изменении состояния
@@ -759,14 +768,14 @@ namespace MvkServer.World
             {
                 for (int z = minZ; z < maxZ; z++)
                 {
-                    if (ChunkPr.IsChunk(new vec2i(x >> 4, z >> 4)))
+                    if (ChunkPr.IsChunkLoaded(new vec2i(x >> 4, z >> 4)))
                     {
                         for (int y = minY - 1; y < maxY; y++)
                         {
                             BlockPos blockPos = new BlockPos(x, y, z);
                             BlockState blockState = GetBlockState(blockPos);
                             BlockBase block = blockState.GetBlock();
-                            AxisAlignedBB mask = block.GetCollision(blockPos, blockState.Met());
+                            AxisAlignedBB mask = block.GetCollision(blockPos, blockState.met);
                             if (mask != null && mask.IntersectsWith(aabb))
                             {
                                 blocks.Add(block);
@@ -780,13 +789,37 @@ namespace MvkServer.World
         }
 
         /// <summary>
+        /// Получить список блоков которые входят в рамку и пересекаются по коллизии
+        /// </summary>
+        //public Dictionary<vec3i, BlockState> GetBlocks(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+        //{
+        //    Dictionary<vec3i, BlockState> blocks = new Dictionary<vec3i, BlockState>();
+
+        //    for (int x = minX; x <= maxX; x++)
+        //    {
+        //        for (int z = minZ; z <= maxZ; z++)
+        //        {
+        //            if (ChunkPr.IsChunk(new vec2i(x >> 4, z >> 4)))
+        //            {
+        //                for (int y = minY; y <= maxY; y++)
+        //                {
+        //                    blocks.Add(new vec3i(x, y, z), GetBlockState(new BlockPos(x, y, z)));
+        //                }
+        //            }
+        //        }
+        //    }
+
+        //    return blocks;
+        //}
+
+        /// <summary>
         /// Возвращает среднюю длину краев ограничивающей рамки блока больше или равна 1
         /// </summary>
         public bool GetAverageEdgeLengthBlock(BlockPos blockPos)
         {
             BlockState blockState = GetBlockState(blockPos);
             BlockBase block = blockState.GetBlock();
-            AxisAlignedBB axis = block.GetCollision(blockPos, blockState.Met());
+            AxisAlignedBB axis = block.GetCollision(blockPos, blockState.met);
             return axis != null && axis.GetAverageEdgeLength() >= 1f;
         }
 
@@ -797,13 +830,6 @@ namespace MvkServer.World
         /// <param name="pos">позиция блока</param>
         /// <param name="progress">сколько тактом блок должен разрушаться</param>
         public virtual void SendBlockBreakProgress(int breakerId, BlockPos pos, int progress) { }
-
-        /// <summary>
-        /// Проверить облость загруженных чанков, координаты в блоках
-        /// </summary>
-        public bool IsAreaLoaded(BlockPos blockPos, int radius) => IsAreaLoaded(
-                blockPos.X - radius, blockPos.Y - radius, blockPos.Z - radius,
-                blockPos.X + radius, blockPos.Y + radius, blockPos.Z + radius);
 
         /// <summary>
         /// Проверить облость загруженных чанков, координаты в блоках
@@ -821,7 +847,7 @@ namespace MvkServer.World
                 {
                     for (int z = minZ; z <= maxZ; ++z)
                     {
-                        if (!ChunkPr.IsChunk(new vec2i(x, z))) return false;
+                        if (!ChunkPr.IsChunkLoaded(new vec2i(x, z))) return false;
                     }
                 }
                 return true;
@@ -830,21 +856,6 @@ namespace MvkServer.World
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Проверить облость загруженных чанков, координаты в блоках
-        /// </summary>
-        public bool IsAreaLoaded(vec2i pos, int radius)
-        {
-            for (int x = pos.x - radius; x <= pos.x + radius; x++)
-            {
-                for (int z = pos.y - radius; z <= pos.y + radius; z++)
-                {
-                    if (!ChunkPr.IsChunk(new vec2i(x, z))) return false;
-                }
-            }
-            return true;
         }
 
         /// <summary>

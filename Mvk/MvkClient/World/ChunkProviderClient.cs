@@ -1,6 +1,7 @@
 ﻿using MvkClient.Renderer.Chunk;
 using MvkServer.Glm;
 using MvkServer.Network.Packets.Client;
+using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 using MvkServer.World.Chunk;
 using System.Collections.Generic;
@@ -70,7 +71,7 @@ namespace MvkClient.World
         /// <summary>
         /// Заносим данные с пакета сервера
         /// </summary>
-        public void PacketChunckData(ChunkQueue packet)
+        public void PacketChunckData(/*ChunkQueue*/ PacketS21ChunkData packet)
         {
             vec2i pos = packet.GetPos();
             ChunkRender chunkRender;
@@ -133,6 +134,7 @@ namespace MvkClient.World
                 {
                     chunk = new ChunkRender(ClientWorld, pos);
                 }
+                
                 chunk.SetBinary(packet.GetBuffer(), packet.IsBiom(), packet.GetFlagsYAreas());
 
                 if (isNew)
@@ -143,7 +145,7 @@ namespace MvkClient.World
                 }
                 else
                 {
-                    if (packet.biom) chunk.Light.GenerateHeightMap();
+                    if (packet.IsBiom()) chunk.Light.GenerateHeightMap();
                 }
             }
 

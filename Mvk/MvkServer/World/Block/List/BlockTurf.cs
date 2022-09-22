@@ -14,6 +14,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockTurf()
         {
+            Combustibility = true;
             NeedsRandomTick = true;
             Particle = 65;
             Color = new vec3(.56f, .73f, .35f);

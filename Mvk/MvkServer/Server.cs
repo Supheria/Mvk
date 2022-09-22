@@ -39,17 +39,9 @@ namespace MvkServer
         /// Серверный объект мира
         /// </summary>
         public WorldServer World { get; protected set; }
-        /// <summary>
-        /// Пауза при старте для случайных блоков, чтоб не загружало сразу.
-        /// </summary>
-        public bool IsTickBlocksPause { get; private set; } = true;
 
         public EntityPlayerServer test;
 
-        /// <summary>
-        /// Счётчик тактов для паузы случайных блоков
-        /// </summary>
-        private int countTickBlocksPause = 50;
         /// <summary>
         /// Поток генерации мира
         /// </summary>
@@ -360,8 +352,6 @@ namespace MvkServer
         {
             long realTime = stopwatchTps.ElapsedTicks;
             TickCounter++;
-
-            if (IsTickBlocksPause && --countTickBlocksPause <= 0) IsTickBlocksPause = false;
 
             packets.Update();
             // Выполнение такта

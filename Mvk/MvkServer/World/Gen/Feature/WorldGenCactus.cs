@@ -20,7 +20,7 @@ namespace MvkServer.World.Gen.Feature
                 {
                     if (Blocks.GetBlockCache(40).CanBlockStay(world, blockPos))
                     {
-                        world.SetBlockState(blockPos, new BlockState(40), 0);
+                        world.SetBlockState(blockPos, new BlockState(EnumBlock.Cactus), 0);
                         blockPos = blockPos.OffsetUp();
                     }
                     else

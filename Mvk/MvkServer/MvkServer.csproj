@@ -147,6 +147,7 @@
     <Compile Include="Util\RayCross.cs" />
     <Compile Include="Util\Smooth.cs" />
     <Compile Include="Util\SmoothFrame.cs" />
+    <Compile Include="Util\TickBlock.cs" />
     <Compile Include="World\Biome\BiomeBase.cs" />
     <Compile Include="World\Biome\BiomeBirchForest.cs" />
     <Compile Include="World\Biome\BiomeConiferousForest.cs" />

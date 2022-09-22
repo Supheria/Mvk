@@ -214,7 +214,7 @@ namespace MvkServer.World.Gen
                         {
                             for (z = 0; z < 16; z++)
                             {
-                                chunkStorage.SetData(y << 8 | z << 4 | x, chunkPrimer.data[x << 12 | z << 8 | y0]);
+                                chunkStorage.SetData(y << 8 | z << 4 | x, chunkPrimer.id[x << 12 | z << 8 | y0]);
                             }
                         }
                     }
@@ -301,16 +301,16 @@ namespace MvkServer.World.Gen
                     if (y < h)
                     {
                         index = x << 12 | z << 8 | y;
-                        id = chunkPrimer.data[index];
+                        id = chunkPrimer.id[index];
                         if (id == 3 || id == 9 || id == 10 || id == 7
-                            || (id == 8 && chunkPrimer.data[index + 1] != 13))
+                            || (id == 8 && chunkPrimer.id[index + 1] != 13))
                         {
                             if (y < 12)
                             {
-                                chunkPrimer.data[index] = 15; // лава
+                                chunkPrimer.id[index] = 15; // лава
                                 chunkPrimer.arrayLightBlocks.Add(new vec3i(x, y, z));
                             }
-                            else chunkPrimer.data[index] = 0; // воздух
+                            else chunkPrimer.id[index] = 0; // воздух
                             //chunkPrimer.data[index] = 3;
                         }
                     }

@@ -28,7 +28,7 @@ namespace MvkServer.World.Gen.Feature
 
         public WorldGenMinable(BlockState blockState, int count, ushort exchangeId)
         {
-            blockId = blockState.data;
+            blockId = blockState.id;
             this.blockState = blockState;
             this.count = count;
             this.exchangeId = exchangeId;

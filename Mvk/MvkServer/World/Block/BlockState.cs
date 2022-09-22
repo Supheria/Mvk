@@ -8,14 +8,13 @@ namespace MvkServer.World.Block
     public struct BlockState
     {
         /// <summary>
-        /// Данные блока
-        /// 12 bit Id блока и 4 bit параметр блока
+        /// ID блока 12 bit
         /// </summary>
-        public ushort data;
+        public ushort id;
         /// <summary>
-        /// Дополнительные мет данные если имеются на блоке
+        /// Дополнительные параметры блока 4 bita или если IsAddMet то 16 bit;
         /// </summary>
-        //public ushort addMet;
+        public ushort met;
         /// <summary>
         /// Освещение блочное, 4 bit используется
         /// </summary>
@@ -25,33 +24,17 @@ namespace MvkServer.World.Block
         /// </summary>
         public byte lightSky;
 
-        public BlockState(ushort data, byte lightBlock, byte lightSky)
+        public BlockState(ushort id, ushort met = 0, byte lightBlock = 0, byte lightSky = 0)
         {
-            this.data = data;
-            this.lightBlock = lightBlock;
-            this.lightSky = lightSky;
-        }
-        public BlockState(int id, int met, byte lightBlock, byte lightSky)
-        {
-            data = (ushort)(id & 0xFFF | met << 12);
+            this.id = id;
+            this.met = met;
             this.lightBlock = lightBlock;
             this.lightSky = lightSky;
         }
         public BlockState(EnumBlock eBlock)
         {
-            data = (ushort)eBlock;
-            lightBlock = 0;
-            lightSky = 0;
-        }
-        //public BlockState(int id, int met)
-        //{
-        //    data = (ushort)(id & 0xFFF | met << 12);
-        //    lightBlock = 0;
-        //    lightSky = 0;
-        //}
-        public BlockState(ushort data)
-        {
-            this.data = data;
+            id = (ushort)eBlock;
+            met = 0;
             lightBlock = 0;
             lightSky = 0;
         }
@@ -59,30 +42,22 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Пустой ли объект
         /// </summary>
-        public bool IsEmpty() => data == 4096;
+        public bool IsEmpty() => id == 0 && met == 1;
         /// <summary>
         /// Пометить пустой блок
         /// </summary>
         public BlockState Empty()
         {
             // id воздуха, но мет данные 1
-            data = 4096;
+            id = 0;
+            met = 1;
             return this;
         }
 
         /// <summary>
-        /// Получить id
-        /// </summary>
-        public int Id() => data & 0xFFF;
-        /// <summary>
-        /// Получить метданные
-        /// </summary>
-        public int Met() => data >> 12;
-
-        /// <summary>
         /// Получить тип блок
         /// </summary>
-        public EnumBlock GetEBlock() => (EnumBlock)(data & 0xFFF);
+        public EnumBlock GetEBlock() => (EnumBlock)id;
 
         /// <summary>
         /// Получить кэш блока
@@ -92,14 +67,15 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Веррнуть новый BlockState с новыйм мет данные
         /// </summary>
-        public BlockState NewMet(byte met) => new BlockState((ushort)(data & 0xFFF | met << 12));
+        public BlockState NewMet(ushort met) => new BlockState(id, met, lightBlock, lightSky);
 
         /// <summary>
         /// Записать блок в буффер пакета
         /// </summary>
         public void WriteStream(StreamBase stream)
         {
-            stream.WriteUShort(data);
+            stream.WriteUShort(id);
+            stream.WriteUShort(met);
             stream.WriteByte(lightBlock);
             stream.WriteByte(lightSky);
         }
@@ -109,7 +85,8 @@ namespace MvkServer.World.Block
         /// </summary>
         public void ReadStream(StreamBase stream)
         {
-            data = stream.ReadUShort();
+            id = stream.ReadUShort();
+            met = stream.ReadUShort();
             lightBlock = stream.ReadByte();
             lightSky = stream.ReadByte();
         }
@@ -119,16 +96,16 @@ namespace MvkServer.World.Block
             if (obj.GetType() == typeof(BlockState))
             {
                 var vec = (BlockState)obj;
-                if (data == vec.data && lightBlock == vec.lightBlock && lightSky == vec.lightSky) return true;
+                if (id == vec.id && met == vec.met && lightBlock == vec.lightBlock && lightSky == vec.lightSky) return true;
             }
             return false;
         }
 
-        public override int GetHashCode() => data ^ lightBlock ^ lightSky;
+        public override int GetHashCode() => id ^ met ^ lightBlock ^ lightSky;
 
         public override string ToString()
         {
-            return string.Format("#{0} M:{1}", Id(), Met());
+            return string.Format("#{0} M:{1}", id, met);
         }
     }
 }

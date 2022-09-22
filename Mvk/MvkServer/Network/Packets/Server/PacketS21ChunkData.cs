@@ -43,57 +43,62 @@ namespace MvkServer.Network.Packets.Server
             this.biom = biom;
             buffer = new byte[0];
 
-           // this.flagsYAreas = 0;
             this.flagsYAreas = flagsYAreas;
             if (flagsYAreas > 0)
             {
+                ushort data, countMet;
+                int i, j, count;
                 List<ChunkStorage> storages = new List<ChunkStorage>();
-
+                count = 0;
                 for (int y = 0; y < ChunkBase.COUNT_HEIGHT; y++)
                 {
-                    if (/*(!biom || !chunk.StorageArrays[y].IsEmptyData()) && */(flagsYAreas & 1 << y) != 0)
+                    if ((flagsYAreas & 1 << y) != 0)
                     {
                         this.flagsYAreas |= 1 << y;
                         storages.Add(chunk.StorageArrays[y]);
+                        // Считаем количество дополнительных метданных
+                        count += chunk.StorageArrays[y].addMet.Count;
                     }
                 }
-                buffer = new byte[storages.Count * CountBufChunck() + CountBufBiom()];
-                int count = 0;
-                ushort data;
+
+                buffer = new byte[storages.Count * CountBufChunck() + CountBufBiom() + count * 4];
+                count = 0;
+                
                 ChunkStorage chunkStorage;
-                for (int j = 0; j < storages.Count; j++)
+                for (j = 0; j < storages.Count; j++)
                 {
                     chunkStorage = storages[j];
                     bool emptyData = chunkStorage.IsEmptyData();
-                    for (int i = 0; i < 4096; i++)
+                    for (i = 0; i < 4096; i++)
                     {
-                        //if (chunk.Position.x < 0 && chunk.Position.x > -8)
-                        //{
-                        //    buffer[count++] = 0;
-                        //    buffer[count++] = 0;
-                        //    buffer[count++] = 0xFF;
-                        //}
-                        //else
+                        if (emptyData)
                         {
-                            if (emptyData)
-                            {
-                                buffer[count++] = 0;
-                                buffer[count++] = 0;
-                            }
-                            else
-                            {
-                                data = chunkStorage.data[i];
-                                buffer[count++] = (byte)(data & 0xFF);
-                                buffer[count++] = (byte)(data >> 8);
-                            }
-                            buffer[count++] = (byte)(chunkStorage.lightBlock[i] << 4 | chunkStorage.lightSky[i] & 0xF);
+                            buffer[count++] = 0;
+                            buffer[count++] = 0;
                         }
+                        else
+                        {
+                            data = chunkStorage.data[i];
+                            buffer[count++] = (byte)(data & 0xFF);
+                            buffer[count++] = (byte)(data >> 8);
+                        }
+                        buffer[count++] = (byte)(chunkStorage.lightBlock[i] << 4 | chunkStorage.lightSky[i] & 0xF);
+                    }
+                    countMet = (ushort)chunkStorage.addMet.Count;
+                    buffer[count++] = (byte)(countMet & 0xFF);
+                    buffer[count++] = (byte)(countMet >> 8);
+                    foreach (KeyValuePair<ushort, ushort> entry in chunkStorage.addMet)
+                    {
+                        buffer[count++] = (byte)(entry.Key & 0xFF);
+                        buffer[count++] = (byte)(entry.Key >> 8);
+                        buffer[count++] = (byte)(entry.Value & 0xFF);
+                        buffer[count++] = (byte)(entry.Value >> 8);
                     }
                 }
                 if (biom)
                 {
                     // добавляем данные биома
-                    for (int i = 0; i < 256; i++)
+                    for (i = 0; i < 256; i++)
                     {
                         buffer[count++] = (byte)chunk.biome[i];
                     }
@@ -113,9 +118,9 @@ namespace MvkServer.Network.Packets.Server
         //}
 
         /// <summary>
-        /// количество буфер данных псевдо чанка // 16 * 16 * 16 * 3
+        /// количество буфер данных псевдо чанка // 16 * 16 * 16 * 3 + 2 на доп метданных
         /// </summary>
-        private int CountBufChunck() => 12288;
+        private int CountBufChunck() => 12290;
         /// <summary>
         /// количество буфер данных для биома чанка // 16 * 16
         /// </summary>

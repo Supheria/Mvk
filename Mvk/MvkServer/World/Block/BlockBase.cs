@@ -3,6 +3,7 @@ using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.Item.List;
+using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
 using MvkServer.Util;
 using System;
@@ -117,6 +118,28 @@ namespace MvkServer.World.Block
         /// Может на этот блок поставить другой, к примеру трава
         /// </summary>
         public bool IsReplaceable { get; protected set; } = false;
+        /// <summary>
+        /// Имеет ли блок дополнительные данные свыше 4 bit
+        /// </summary>
+        public bool IsAddMet { get; protected set; } = false;
+        /// <summary>
+        /// Горючесть материала
+        /// </summary>
+        public bool Combustibility { get; protected set; } = false;
+        /// <summary>
+        /// Увеличить шансы загорания 0-100 %
+        /// 100 мгновенно загарается без рандома
+        /// 99 уже через рандом, не так быстро загорается но шанс очень большой
+        /// Из-за долго жизни огня, 30 как правило загорится если вверх, рядом 1/1
+        /// </summary>
+        public byte IgniteOddsSunbathing { get; protected set; } = 0;
+        /// <summary>
+        /// Шансы на сжигание 0-100 %
+        /// 100 мгновенно згарает без рандома
+        /// 99 уже через рандом, не так быстро сгорит но шанс очень большой
+        /// Из-за долго жизни огня, 60 как правило сгорит
+        /// </summary>
+        public byte BurnOdds { get; protected set; } = 0;
 
         protected Box[][] boxes;
 
@@ -345,12 +368,20 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Разрушить блок
         /// </summary>
-        public virtual void Destroy(WorldBase worldIn, BlockPos blockPos, BlockState state)
+        /// <param name="sound">звуковой эффект разрушения</param>
+        /// <param name="particles">Частички старого блока</param>
+        public virtual void Destroy(WorldBase worldIn, BlockPos blockPos, BlockState state, bool sound = false, bool particles = false)
         {
-            worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 15);
+            worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), particles ? 15 : 14);
+            if (sound && !worldIn.IsRemote && worldIn is WorldServer worldServer)
+            {
+                vec3 pos = blockPos.ToVec3();
+                worldServer.Tracker.SendToAllEntityDistance(pos, 32f,
+                    new PacketS29SoundEffect(SampleBreak(worldServer), pos, 1f, SampleBreakPitch(worldServer.Rnd)));
+            }
         }
 
-        /// <summary>
+        /// <summary> 
         /// Проверка установи блока, можно ли его установить тут
         /// </summary>
         public virtual bool CanBlockStay(WorldBase worldIn, BlockPos blockPos) => true;

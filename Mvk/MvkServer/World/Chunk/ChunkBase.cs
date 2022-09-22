@@ -109,6 +109,10 @@ namespace MvkServer.World.Chunk
         /// Время последнего сохранения этого фрагмента согласно World.worldTime
         /// </summary>
         private long lastSaveTime;
+        /// <summary>
+        /// Блоки которые должны тикать мгновенно в чанке
+        /// </summary>
+        private List<TickBlock> tickBlocks = new List<TickBlock>();
 
         protected ChunkBase() { }
         public ChunkBase(WorldBase worldIn, vec2i pos)
@@ -414,22 +418,34 @@ namespace MvkServer.World.Chunk
         public void SetBinary(byte[] buffer, bool biom, int flagsYAreas)
         {
             // World.Log.Log("SetBinaryBegin {0} {1}", Position, GetDebugAllSegment());
+            int sy, i, value;
+            ushort countMet;
             int count = 0;
             byte light;
+            ushort id, key;
             try
             {
-                for (int sy = 0; sy < COUNT_HEIGHT; sy++)
+                for (sy = 0; sy < COUNT_HEIGHT; sy++)
                 {
                     if ((flagsYAreas & 1 << sy) != 0)
                     {
                         ChunkStorage storage = StorageArrays[sy];
-                        for (int i = 0; i < 4096; i++)
+                        for (i = 0; i < 4096; i++)
                         {
-                            storage.SetData(i, (ushort)(buffer[count++] | buffer[count++] << 8));
+                            value = buffer[count++] | buffer[count++] << 8;
+                            id = (ushort)(value & 0xFFF);
+                            storage.SetData(i, id, (ushort)(value >> 12));
                             light = buffer[count++];
                             storage.lightBlock[i] = (byte)(light >> 4);
                             storage.lightSky[i] = (byte)(light & 0xF);
-
+                            if (!Blocks.blocksAddMet[id]) storage.addMet.Remove((ushort)i);
+                        }
+                        countMet = (ushort)(buffer[count++] | buffer[count++] << 8);
+                        for (i = 0; i < countMet; i++)
+                        {
+                            key = (ushort)(buffer[count++] | buffer[count++] << 8);
+                            if (storage.addMet.ContainsKey(key)) storage.addMet[key] = (ushort)(buffer[count++] | buffer[count++] << 8);
+                            else storage.addMet.Add(key, (ushort)(buffer[count++] | buffer[count++] << 8) );
                         }
                         ModifiedToRender(sy);
                     }
@@ -437,7 +453,7 @@ namespace MvkServer.World.Chunk
                 // биом
                 if (biom)
                 {
-                    for (int i = 0; i < 256; i++)
+                    for (i = 0; i < 256; i++)
                     {
                         biome[i] = (EnumBiome)buffer[count++];
                     }
@@ -567,7 +583,7 @@ namespace MvkServer.World.Chunk
                 } else
                 {
                     int index = (y & 15) << 8 | z << 4 | x;
-                    return new BlockState(0, chunkStorage.lightBlock[index], chunkStorage.lightSky[index]);
+                    return new BlockState(0, 0, chunkStorage.lightBlock[index], chunkStorage.lightSky[index]);
                 }
             }
             return new BlockState().Empty();
@@ -606,26 +622,23 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Задать тип блок по координатам чанка XZ 0..15, Y 0..255
         /// </summary>
-        public void SetEBlock(vec3i pos, EnumBlock eBlock) => SetEBlock(pos, eBlock, 0);
-
-        public void SetEBlock(vec3i pos, EnumBlock eBlock, int met)
+        public void SetEBlock(vec3i pos, EnumBlock eBlock, ushort met = 0)
         {
             int y = pos.y >> 4;
             if (pos.x >> 4 == 0 && pos.z >> 4 == 0 && pos.y >= 0 && y < COUNT_HEIGHT)
             {
-                StorageArrays[y].SetData((pos.y & 15) << 8 | pos.z << 4 | pos.x, (ushort)((ushort)eBlock & 0xFFF | met << 12));
+                StorageArrays[y].SetData((pos.y & 15) << 8 | pos.z << 4 | pos.x, (ushort)eBlock, met);
             }
         }
         /// <summary>
         /// Задать тип блок по координатам чанка XZ 0..15, Y 0..255
         /// </summary>
-        public void SetEBlock(int x, int y, int z, EnumBlock eBlock) => SetEBlock(x, y, z, eBlock, 0);
-        public void SetEBlock(int x, int y, int z, EnumBlock eBlock, int met)
+        public void SetEBlock(int x, int y, int z, EnumBlock eBlock, ushort met = 0)
         {
             int chy = y >> 4;
             if (x >> 4 == 0 && z >> 4 == 0 && y >= 0 && chy < COUNT_HEIGHT)
             {
-                StorageArrays[chy].SetData((y & 15) << 8 | z << 4 | x, (ushort)((ushort)eBlock & 0xFFF | met << 12));
+                StorageArrays[chy].SetData((y & 15) << 8 | z << 4 | x, (ushort)eBlock, met);
             }
         }
 
@@ -643,7 +656,7 @@ namespace MvkServer.World.Chunk
             //}
             ChunkStorage storage = StorageArrays[chy];
 
-            storage.SetData(index, blockState.data);
+            storage.SetData(index, blockState.id, blockState.met);
             storage.lightBlock[index] = blockState.lightBlock;
             storage.lightSky[index] = blockState.lightSky;
             //storage.light[by << 8 | bz << 4 | bx] = (byte)(blockState.lightBlock << 4 | blockState.lightSky & 0xF);
@@ -687,12 +700,15 @@ namespace MvkServer.World.Chunk
                 //StorageArrays[chy].LightSky();
             }
             int index = (by & 15) << 8 | bz << 4 | bx;
-            storage.SetData(index, blockState.data);
+            storage.SetData(index, blockState.id, blockState.met);
 
             //StorageArrays[chy].Set(bx, by & 15, bz, blockState);
 
             if (blockOld != block)
             {
+                // Отмена тик блока
+                RemoveBlockTick(bx, by, bz);
+
                 // проверка света
                 //if (World.IsRemote)
 
@@ -772,6 +788,46 @@ namespace MvkServer.World.Chunk
 
             
             return blockStateOld;
+        }
+
+        /// <summary>
+        /// Задать тик блока с локальной позицие и время через сколько тактов надо тикнуть
+        /// </summary>
+        public void SetBlockTick(int x, int y, int z, uint timeTackt)
+        {
+            TickBlock tickBlock;
+            bool empty = true;
+            for (int i = 0; i < tickBlocks.Count; i++)
+            {
+                tickBlock = tickBlocks[i];
+                if (tickBlock.x == x && tickBlock.y == y && tickBlock.z == z)
+                {
+                    tickBlock.scheduledTime = timeTackt + World.GetTotalWorldTime();
+                    tickBlocks[i] = tickBlock;
+                    empty = false;
+                    break;
+                }
+            }
+            if (empty) tickBlocks.Add(new TickBlock() { x = x, y = y, z = z, scheduledTime = timeTackt + World.GetTotalWorldTime() });
+        }
+
+        /// <summary>
+        /// Отменить мгновенный тик блока
+        /// </summary>
+        private void RemoveBlockTick(int x, int y, int z)
+        {
+            TickBlock tickBlock;
+            int index = -1;
+            for (int i = 0; i < tickBlocks.Count; i++)
+            {
+                tickBlock = tickBlocks[i];
+                if (tickBlock.x == x && tickBlock.y == y && tickBlock.z == z)
+                {
+                    index = i;
+                    break;
+                }
+            }
+            if (index != -1) tickBlocks.RemoveAt(index);
         }
 
         #endregion
@@ -938,11 +994,47 @@ namespace MvkServer.World.Chunk
 
 
         /// <summary>
-        /// Обновление в такте активных чанков
+        /// Обновление в такте активных чанков, только на сервере
         /// </summary>
-        public void Update()
+        public void UpdateServer()
         {
+            TickBlock tickBlock;
+            List<int> listRemove = new List<int>();
+            List<vec3i> listTick = new List<vec3i>();
 
+            uint time = World.GetTotalWorldTime();
+            // Пробегаемся по всем тикам блоков и собираем которые надо выполнять
+            for (int i = 0; i < tickBlocks.Count; i++)
+            {
+                tickBlock = tickBlocks[i];
+                if (tickBlock.scheduledTime <= time)
+                {
+                    listRemove.Add(i);
+                    listTick.Add(new vec3i(tickBlock.x, tickBlock.y, tickBlock.z));
+                }
+            }
+            if (listRemove.Count > 0)
+            {
+                int count = listRemove.Count - 1;
+                // Удаляем которые надо выполнять
+                for (int i = count; i >= 0; i--)
+                {
+                    tickBlocks.RemoveAt(listRemove[i]);
+                }
+                BlockState blockState;
+                vec3i pos;
+                int chx = Position.x << 4;
+                int chz = Position.y << 4;
+                // Выполнение
+                for (int i = 0; i <= count; i++)
+                {
+                    pos = listTick[i];
+                    blockState = GetBlockState(pos.x, pos.y, pos.z);
+                    BlockBase block = blockState.GetBlock();
+                    block.UpdateTick(World, new BlockPos(chx | pos.x, pos.y, chz | pos.z),
+                        blockState, World.Rnd);
+                }
+            }
         }
 
         /// <summary>
@@ -1000,10 +1092,11 @@ namespace MvkServer.World.Chunk
 
         public void WriteChunkToNBT(TagCompound nbt)
         {
+            uint time = World.GetTotalWorldTime();
             nbt.SetShort("Version", 1);
             nbt.SetInt("PosX", Position.x);
             nbt.SetInt("PosZ", Position.y);
-            nbt.SetLong("LastUpdate", World.GetTotalWorldTime());
+            nbt.SetLong("LastUpdate", time);
             nbt.SetLong("InhabitedTime", InhabitedTime);
             nbt.SetShort("HeightMapMax", (short)Light.heightMapMax);
             nbt.SetByteArray("HeightMap", Light.heightMap);
@@ -1011,13 +1104,30 @@ namespace MvkServer.World.Chunk
             for (int i = 0; i < 256; i++) biomes[i] = (byte)biome[i];
             nbt.SetByteArray("Biomes", biomes);
 
-            TagList tagList = new TagList();
+            TagList tagListSections = new TagList();
             
             for (int ys = 0; ys < COUNT_HEIGHT; ys++)
             {
-                StorageArrays[ys].WriteDataToNBT(tagList);
+                StorageArrays[ys].WriteDataToNBT(tagListSections);
             }
-            nbt.SetTag("Sections", tagList);
+            nbt.SetTag("Sections", tagListSections);
+
+            if (tickBlocks.Count > 0)
+            {
+                TagList tagListTickBlocks = new TagList();
+                TickBlock tickBlock;
+                for (int i = 0; i < tickBlocks.Count; i++)
+                {
+                    tickBlock = tickBlocks[i];
+                    TagCompound tagCompound = new TagCompound();
+                    tagCompound.SetByte("X", (byte)tickBlock.x);
+                    tagCompound.SetByte("Y", (byte)tickBlock.y);
+                    tagCompound.SetByte("Z", (byte)tickBlock.z);
+                    tagCompound.SetInt("Time", (int)(tickBlock.scheduledTime - time));
+                    tagListTickBlocks.AppendTag(tagCompound);
+                }
+                nbt.SetTag("TileTicks", tagListTickBlocks);
+            }
 
             // проверяю есть ли сущность, если есть то true;
             hasEntities = false;
@@ -1033,21 +1143,23 @@ namespace MvkServer.World.Chunk
 
         public void ReadChunkFromNBT(TagCompound nbt)
         {
+            uint time = World.GetTotalWorldTime();
+            uint timeDelta = time - (uint)nbt.GetLong("LastUpdate");
             InhabitedTime = (uint)nbt.GetLong("InhabitedTime");
             Light.heightMapMax = nbt.GetShort("HeightMapMax");
             Light.heightMap = nbt.GetByteArray("HeightMap");
             byte[] biomes = nbt.GetByteArray("Biomes");
             for (int i = 0; i < 256; i++) biome[i] = (EnumBiome)biomes[i];
 
-            TagList tagList = nbt.GetTagList("Sections", 10);
-            int count = tagList.TagCount();
-            if (tagList.GetTagType() == 10)
+            TagList tagListSections = nbt.GetTagList("Sections", 10);
+            int count = tagListSections.TagCount();
+            if (tagListSections.GetTagType() == 10)
             {
                 int y;
                 bool[] flag = new bool[COUNT_HEIGHT];
                 for (int i = 0; i < count; i++)
                 {
-                    TagCompound tagCompound = tagList.Get(i) as TagCompound;
+                    TagCompound tagCompound = tagListSections.Get(i) as TagCompound;
                     y = tagCompound.GetByte("Y");
                     flag[y] = true;
                     StorageArrays[y].ReadDataFromNBT(tagCompound);
@@ -1064,7 +1176,24 @@ namespace MvkServer.World.Chunk
                     }
                 }
             }
-            //nbt.GetTagList("Inventory", 10);
+
+            tickBlocks.Clear();
+            TagList tagListTickBlocks = nbt.GetTagList("TileTicks", 10);
+            count = tagListTickBlocks.TagCount();
+            if (tagListTickBlocks.GetTagType() == 10)
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    TagCompound tagCompound = tagListTickBlocks.Get(i) as TagCompound;
+                    tickBlocks.Add(new TickBlock()
+                    {
+                        x = tagCompound.GetByte("X"),
+                        y = tagCompound.GetByte("Y"),
+                        z = tagCompound.GetByte("Z"),
+                        scheduledTime = (uint)tagCompound.GetInt("Time") + time
+                    });
+                }
+            }
 
             // TODO::2022-09-11:hasEntities; Слава Украине!
             // Проверяем сущность, если есть то //hasEntities = true;

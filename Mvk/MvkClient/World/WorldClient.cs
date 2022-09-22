@@ -75,11 +75,11 @@ namespace MvkClient.World
         /// <summary>
         /// Флаг потока пакетов чанка
         /// </summary>
-        private bool packetChunkLoopRunning = false;
+        //private bool packetChunkLoopRunning = false;
         /// <summary>
         /// Массив очередей чанков для рендера
         /// </summary>
-        private DoubleList<ChunkQueue> packetChunkQueues = new DoubleList<ChunkQueue>();
+        //private DoubleList<ChunkQueue> packetChunkQueues = new DoubleList<ChunkQueue>();
 
         public WorldClient(Client client) : base()
         {
@@ -95,54 +95,53 @@ namespace MvkClient.World
             Log = new Logger("Client");
             Log.Log("client.start");
 
-            // Запускаем отдельный поток для рендера
-            packetChunkLoopRunning = true;
-            Thread myThread = new Thread(PacketChunkLoop);
-            myThread.Start();
+            // Запускаем отдельный поток для чанков
+            //packetChunkLoopRunning = true;
+            //Thread myThread = new Thread(PacketChunkLoop);
+            //myThread.Start();
         }
-
 
         /// <summary>
         /// Остановить поток рендера чанков
         /// </summary>
-        public void StopChunkLoop() => packetChunkLoopRunning = false;
+        //public void StopChunkLoop() => packetChunkLoopRunning = false;
 
-        public void AddPacketChunkQueue(PacketS21ChunkData packet)
-        {
-            packetChunkQueues.Add(new ChunkQueue()
-            {
-                pos = packet.GetPos(),
-                buffer = packet.GetBuffer(),
-                flagsYAreas = packet.GetFlagsYAreas(),
-                biom = packet.IsBiom()
-            });
-        }
+        //public void AddPacketChunkQueue(PacketS21ChunkData packet)
+        //{
+        //    packetChunkQueues.Add(new ChunkQueue()
+        //    {
+        //        pos = packet.GetPos(),
+        //        buffer = packet.GetBuffer(),
+        //        flagsYAreas = packet.GetFlagsYAreas(),
+        //        biom = packet.IsBiom()
+        //    });
+        //}
 
         /// <summary>
         /// Поток пакетов чанка
         /// </summary>
-        private void PacketChunkLoop()
-        {
-            try
-            {
-                int count, i;
-                while (packetChunkLoopRunning)
-                {
-                    packetChunkQueues.Step();
-                    count = packetChunkQueues.CountBackward;
-                    for (i = 0; i < count; i++)
-                    {
-                        ChunkPrClient.PacketChunckData(packetChunkQueues.GetNext());
-                        if (!packetChunkLoopRunning) break;
-                    }
-                    Thread.Sleep(1);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Crach(ex);
-            }
-        }
+        //private void PacketChunkLoop()
+        //{
+        //    try
+        //    {
+        //        int count, i;
+        //        while (packetChunkLoopRunning)
+        //        {
+        //            packetChunkQueues.Step();
+        //            count = packetChunkQueues.CountBackward;
+        //            for (i = 0; i < count; i++)
+        //            {
+        //                ChunkPrClient.PacketChunckData(packetChunkQueues.GetNext());
+        //                if (!packetChunkLoopRunning) break;
+        //            }
+        //            Thread.Sleep(1);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Logger.Crach(ex);
+        //    }
+        //}
 
         /// <summary>
         /// Игровое время

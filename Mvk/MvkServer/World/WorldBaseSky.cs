@@ -6,7 +6,7 @@ namespace MvkServer.World
     /// <summary>
     /// Продолжение мира, но тут все расчёты по небу
     /// </summary>
-    public abstract partial class WorldBase
+    abstract partial class WorldBase
     {
         /// <summary>
         /// Скорость суток в тактах

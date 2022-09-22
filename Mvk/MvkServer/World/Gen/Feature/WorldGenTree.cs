@@ -229,7 +229,6 @@ namespace MvkServer.World.Gen.Feature
             int bz = blockPos.Z;
             int index, y, bx2, bz2;
             ChunkStorage chunkStorage;
-            ushort stump = (ushort)(idLog & 0xFFF | 6 << 12);
 
             if (posCh.x == bx >> 4 && posCh.y == bz >> 4)
             {
@@ -245,7 +244,7 @@ namespace MvkServer.World.Gen.Feature
                         {
                             chunkStorage = chunk.StorageArrays[index];
                             index = (y & 15) << 8 | bz2 << 4 | bx2;
-                            chunkStorage.SetData(index, i == 0 ? stump : idLog);
+                            chunkStorage.SetData(index, idLog, (ushort)(i == 0 ? 6 : 0));
                         }
                     }
                 }
@@ -271,7 +270,6 @@ namespace MvkServer.World.Gen.Feature
             bx2 = bx & 15;
             bz2 = bz & 15;
             int k = 0;
-            ushort stump = (ushort)(idLog & 0xFFF | 6 << 12);
             for (i = count; i >= 0; i--)
             {
                 y = by + i;
@@ -283,7 +281,7 @@ namespace MvkServer.World.Gen.Feature
                     {
                         chunkStorage = chunk.StorageArrays[chy];
                         index = (y & 15) << 8 | bz2 << 4 | bx2;
-                        chunkStorage.SetData(index, i == 0 ? stump : idLog);
+                        chunkStorage.SetData(index, idLog, (ushort)(i == 0 ? 6 : 0));
                     }
                     // Ветки
                     if (i >= trunkHeight)
@@ -306,7 +304,7 @@ namespace MvkServer.World.Gen.Feature
                                     {
                                         chunkStorage = chunk.StorageArrays[chy];
                                         index = (y & 15) << 8 | bz3 << 4 | bx3;
-                                        chunkStorage.SetData(index, (ushort)(idLog & 0xFFF | (2 - j) << 12));
+                                        chunkStorage.SetData(index, idLog, (ushort)(2 - j));
                                     }
                                 }
                             }

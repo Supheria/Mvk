@@ -85,15 +85,15 @@ namespace MvkServer.World.Biome
 
                 int yb = yh - bodyHeight;
                 // заполняем камнем
-                for (y = 3; y < yb; y++) chunk.data[index | y] = 3;
+                for (y = 3; y < yb; y++) chunk.id[index | y] = 3;
                 // заполняем тело
-                for (y = yb; y < yh; y++) chunk.data[index | y] = blockIdBody;
-                chunk.data[x << 12 | z << 8 | yh] = yh < 96 ? blockIdBody : blockIdUp;
+                for (y = yb; y < yh; y++) chunk.id[index | y] = blockIdBody;
+                chunk.id[x << 12 | z << 8 | yh] = yh < 96 ? blockIdBody : blockIdUp;
             }
             else
             {
                 // заполняем камнем
-                for (y = 3; y <= yh; y++) chunk.data[index | y] = 3;
+                for (y = 3; y <= yh; y++) chunk.id[index | y] = 3;
             }
 
             if (yh < 96)
@@ -103,7 +103,7 @@ namespace MvkServer.World.Biome
                 for (y = yh; y < 97; y++)
                 {
                     // заполняем водой
-                    chunk.data[index | y] = 13;
+                    chunk.id[index | y] = 13;
                 }
             }
         }
@@ -130,9 +130,9 @@ namespace MvkServer.World.Biome
                 {
                     float n = downNoise[count];
                     count++;
-                    chunk.data[x << 12 | z << 8] = 2;
-                    chunk.data[x << 12 | z << 8 | 1] = (ushort)(n < .1 ? 2 : 3);
-                    chunk.data[x << 12 | z << 8 | 2] = (ushort)(n < -.1 ? 2 : 3);
+                    chunk.id[x << 12 | z << 8] = 2;
+                    chunk.id[x << 12 | z << 8 | 1] = (ushort)(n < .1 ? 2 : 3);
+                    chunk.id[x << 12 | z << 8 | 2] = (ushort)(n < -.1 ? 2 : 3);
                 }
             }
         }

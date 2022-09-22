@@ -409,9 +409,11 @@ namespace MvkClient.Network
 
         private void Handle21ChunkData(PacketS21ChunkData packet)
         {
+            ClientMain.World.ChunkPrClient.PacketChunckData(packet);
+
             // Заносим в дополнительный поток пакетов вокселей, 
             // чтоб минимизировать загрузку основного клиентского потока где есть Tick, ибо будет проседать fps
-            ClientMain.World.AddPacketChunkQueue(packet);
+            //ClientMain.World.AddPacketChunkQueue(packet);
         }
 
         private void Handle23BlockChange(PacketS23BlockChange packet)

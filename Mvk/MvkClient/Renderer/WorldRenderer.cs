@@ -363,6 +363,7 @@ namespace MvkClient.Renderer
                 GLRender.CullEnable();
                 GLWindow.gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_FILL);
             }
+
             return chunks;
         }
 

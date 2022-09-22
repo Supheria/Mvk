@@ -28,7 +28,7 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Проверить наличие чанка в массиве
         /// </summary>
-        public bool IsChunk(vec2i pos)
+        public bool IsChunkLoaded(vec2i pos)
         {
             if (chunkMapping.Contains(pos))
             {

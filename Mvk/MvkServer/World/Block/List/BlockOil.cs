@@ -14,7 +14,10 @@ namespace MvkServer.World.Block.List
         public BlockOil()
         {
             // Затычка, для сортировки, и прорисовки из нутри когда к примеру блок стекла
-            Translucent = true; 
+            Translucent = true;
+            Combustibility = true;
+            IgniteOddsSunbathing = 100;
+            BurnOdds = 100;
             IsAction = false;
             IsCollidable = false;
             АmbientOcclusion = false;

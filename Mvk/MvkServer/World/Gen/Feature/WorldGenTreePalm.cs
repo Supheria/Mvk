@@ -47,7 +47,6 @@ namespace MvkServer.World.Gen.Feature
             int bz;
             int index, y, bx2, bz2;
             ChunkStorage chunkStorage;
-            ushort stump = (ushort)(idLog & 0xFFF | 6 << 12);
 
             int count2 = count - 1;
             for (int i = 0; i < count; i++)
@@ -67,7 +66,7 @@ namespace MvkServer.World.Gen.Feature
                         {
                             chunkStorage = chunk.StorageArrays[index];
                             index = (y & 15) << 8 | bz2 << 4 | bx2;
-                            chunkStorage.SetData(index, i == 0 ? stump : idLog);
+                            chunkStorage.SetData(index, idLog, (ushort)(i == 0 ? 6 : 0));
                         }
                     }
                 }

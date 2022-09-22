@@ -23,6 +23,9 @@ namespace MvkServer.World.Block.List
             LightOpacity = 0;
             IsCollidable = false;
             UseNeighborBrightness = true;
+            Combustibility = true;
+            IgniteOddsSunbathing = 60;
+            BurnOdds = 100;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             InitBoxs();
         }
@@ -49,7 +52,7 @@ namespace MvkServer.World.Block.List
             if (!CanBlockStay(worldIn, blockPos))
             {
                 DropBlockAsItem(worldIn, blockPos, state, 0);
-                worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 14);
+                Destroy(worldIn, blockPos, state);
             }
         }
 

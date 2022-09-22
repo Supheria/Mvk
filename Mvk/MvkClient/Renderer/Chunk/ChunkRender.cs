@@ -143,7 +143,7 @@ namespace MvkClient.Renderer.Chunk
                 // буфер альфа блоков
                 List<BlockBuffer> alphas = new List<BlockBuffer>();
                 vec3i posPlayer = ClientWorld.ClientMain.Player.PositionAlphaBlock;
-                ushort id = 0;
+                ushort data, id, met;
                 int cbX = Position.x << 4;
                 int cbY = chY << 4;
                 int cbZ = Position.y << 4;
@@ -167,15 +167,18 @@ namespace MvkClient.Renderer.Chunk
                         for (int x = 0; x < 16; x++)
                         {
                             i = y << 8 | z << 4 | x;
-                            id = chunkStorage.data[i];
-                            if (id == 0 || id == 4096) continue;
-                            blockRender.block = Blocks.blocksInt[id & 0xFFF];
+                            data = chunkStorage.data[i];
+                            if (data == 0 || data == 4096) continue;
+                            id = (ushort)(data & 0xFFF);
+                            met = Blocks.blocksAddMet[id] ? chunkStorage.addMet[(ushort)i] : (ushort)(data >> 12);
+                            
+                            blockRender.block = Blocks.blocksInt[id];
 
                             if (blockRender.block.Translucent)
                             {
                                 // Альфа!
-                                blockAlphaRender.blockState.data = id;
-                                blockAlphaRender.met = blockAlphaRender.blockState.Met();
+                                blockAlphaRender.blockState.id = id;
+                                blockAlphaRender.met = blockAlphaRender.blockState.met = met;
                                 blockAlphaRender.blockState.lightBlock = chunkStorage.lightBlock[i];
                                 blockAlphaRender.blockState.lightSky = chunkStorage.lightSky[i];
                                 blockAlphaRender.posChunkX = x;
@@ -183,7 +186,7 @@ namespace MvkClient.Renderer.Chunk
                                 blockAlphaRender.posChunkZ = z;
                                 realZ = cbZ | z;
                                 blockAlphaRender.posChunkY0 = y;
-                                blockAlphaRender.block = Blocks.blocksInt[id & 0xFFF];
+                                blockAlphaRender.block = blockRender.block;
                                 blockAlphaRender.DamagedBlocksValue = GetDestroyBlocksValue(x, realY, z);
                                 blockAlphaRender.RenderMesh();
                                 if (blockAlphaRender.blockUV.buffer.count > 0)
@@ -198,8 +201,8 @@ namespace MvkClient.Renderer.Chunk
                             }
                             else
                             {
-                                blockRender.blockState.data = id;
-                                blockRender.met = blockRender.blockState.Met();
+                                blockRender.blockState.id = id;
+                                blockRender.met = blockRender.blockState.met = met;
                                 blockRender.blockState.lightBlock = chunkStorage.lightBlock[i];
                                 blockRender.blockState.lightSky = chunkStorage.lightSky[i];
                                 blockRender.posChunkX = x;

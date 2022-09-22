@@ -51,26 +51,26 @@ namespace MvkServer.World.Biome
             {
                 for (y = 3; y < yh; y++)
                 {
-                    chunk.data[x << 12 | z << 8 | y] = 3; // Дёрн
+                    chunk.id[x << 12 | z << 8 | y] = 3; // Дёрн
                 }
-                chunk.data[x << 12 | z << 8 | yh] = 8; // Земля
+                chunk.id[x << 12 | z << 8 | yh] = 8; // Земля
                 yh++;
                 for (y = yh; y < 97; y++)
                 {
-                    chunk.data[x << 12 | z << 8 | y] = 13; // Вода
+                    chunk.id[x << 12 | z << 8 | y] = 13; // Вода
                 }
             }
             else
             {
                 for (y = 3; y < 95; y++)
                 {
-                    chunk.data[x << 12 | z << 8 | y] = 3; // Дёрн
+                    chunk.id[x << 12 | z << 8 | y] = 3; // Дёрн
                 }
                 for (y = 95; y < yh; y++)
                 {
-                    chunk.data[x << 12 | z << 8 | y] = 8; // Земля
+                    chunk.id[x << 12 | z << 8 | y] = 8; // Земля
                 }
-                chunk.data[x << 12 | z << 8 | yh] = 9; // Дёрн
+                chunk.id[x << 12 | z << 8 | yh] = 9; // Дёрн
             }
         }
     }

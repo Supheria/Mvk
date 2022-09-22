@@ -137,10 +137,9 @@ namespace MvkServer.World.Block.List
         /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
         public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
         {
-            if (base.Put(worldIn, blockPos, state, side, facing))
+            if (CanBlockStay(worldIn, blockPos))
             {
-                MetUpdate(worldIn, blockPos, state);
-                return true;
+                return worldIn.SetBlockState(blockPos, state.NewMet(MetUpdate(worldIn, blockPos)), 15);
             }
             return false;
         }
@@ -148,21 +147,20 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock) 
-            => MetUpdate(worldIn, blockPos, state);
-
-        private void MetUpdate(WorldBase worldIn, BlockPos blockPos, BlockState state)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
         {
-            int met = state.Met();
-            int metNew = 0;
-            if (DoesBlockHaveSolidTopSurface(worldIn, blockPos.OffsetSouth())) metNew |= 1;
-            if (DoesBlockHaveSolidTopSurface(worldIn, blockPos.OffsetEast())) metNew |= 2;
-            if (DoesBlockHaveSolidTopSurface(worldIn, blockPos.OffsetNorth())) metNew |= 4;
-            if (DoesBlockHaveSolidTopSurface(worldIn, blockPos.OffsetWest())) metNew |= 8;
-            if (metNew != met)
-            {
-                worldIn.SetBlockStateMet(blockPos, metNew);
-            }
+            ushort met = MetUpdate(worldIn, blockPos);
+            if (met != state.met) worldIn.SetBlockStateMet(blockPos, met);
+        }
+
+        private ushort MetUpdate(WorldBase worldIn, BlockPos blockPos)
+        {
+            ushort pole = 0;
+            if (DoesBlockHaveSolidTopSurface(worldIn, blockPos.OffsetSouth())) pole |= 1;
+            if (DoesBlockHaveSolidTopSurface(worldIn, blockPos.OffsetEast())) pole |= 2;
+            if (DoesBlockHaveSolidTopSurface(worldIn, blockPos.OffsetNorth())) pole |= 4;
+            if (DoesBlockHaveSolidTopSurface(worldIn, blockPos.OffsetWest())) pole |= 8;
+            return pole;
         }
 
         /// <summary>

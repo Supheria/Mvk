@@ -20,15 +20,16 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Разрушить блок
         /// </summary>
-        public override void Destroy(WorldBase worldIn, BlockPos blockPos, BlockState state)
+        public override void Destroy(WorldBase worldIn, BlockPos blockPos, BlockState state, bool sound, bool particles)
         {
-            base.Destroy(worldIn, blockPos, state);
-            int met = state.Met();
+            base.Destroy(worldIn, blockPos, state, sound, particles);
+            int met = state.met;
             if (met == 0 || met == 6)
             {
                 EnumBlock enumBlock;
                 BlockPos bPos = new BlockPos();
                 BlockState blockState;
+                BlockBase block;
                 int x, y, z, x1, z1;
                 int size = crownWidth;
                 int checkSize = size * size + 1;
@@ -43,10 +44,11 @@ namespace MvkServer.World.Block.List
                     bPos.Z = blockPos.Z;
                     blockState = worldIn.GetBlockState(bPos);
                     enumBlock = blockState.GetEBlock();
-                    if ((enumBlock == EBlock && blockState.Met() == 0))
+                    if ((enumBlock == EBlock && blockState.met == 0))
                     {
-                        blockState.GetBlock().DropBlockAsItem(worldIn, bPos, blockState, 0);
-                        worldIn.SetBlockState(bPos, new BlockState(EnumBlock.Air), 12);
+                        block = blockState.GetBlock();
+                        block.DropBlockAsItem(worldIn, bPos, blockState, 0);
+                        block.Destroy(worldIn, bPos, blockState);
                     }
                     else
                     {
@@ -58,17 +60,18 @@ namespace MvkServer.World.Block.List
                             bPos.Y = y;
                             blockState = worldIn.GetBlockState(bPos);
                             enumBlock = blockState.GetEBlock();
-                            if ((enumBlock == EBlock && blockState.Met() == 0))
+                            if ((enumBlock == EBlock && blockState.met == 0))
                             {
                                 blockPos.X = bPos.X;
                                 blockPos.Z = bPos.Z;
                                 break;
                             }
                         }
-                        if ((enumBlock == EBlock && blockState.Met() == 0) || enumBlock == leaves)
+                        if ((enumBlock == EBlock && blockState.met == 0) || enumBlock == leaves)
                         {
-                            blockState.GetBlock().DropBlockAsItem(worldIn, bPos, blockState, 0);
-                            worldIn.SetBlockState(bPos, new BlockState(EnumBlock.Air), 12);
+                            block = blockState.GetBlock();
+                            block.DropBlockAsItem(worldIn, bPos, blockState, 0);
+                            block.Destroy(worldIn, bPos, blockState);
                         }
                     }
                     int bx = blockPos.X;
@@ -88,10 +91,11 @@ namespace MvkServer.World.Block.List
                                     bPos.Z = z;
                                     blockState = worldIn.GetBlockState(bPos);
                                     enumBlock = blockState.GetEBlock();
-                                    if ((enumBlock == EBlock && blockState.Met() == 0) || enumBlock == leaves)
+                                    if ((enumBlock == EBlock && blockState.met == 0) || enumBlock == leaves)
                                     {
-                                        blockState.GetBlock().DropBlockAsItem(worldIn, bPos, blockState, 0);
-                                        worldIn.SetBlockState(bPos, new BlockState(EnumBlock.Air), 12);
+                                        block = blockState.GetBlock();
+                                        block.DropBlockAsItem(worldIn, bPos, blockState, 0);
+                                        block.Destroy(worldIn, bPos, blockState);
                                     }
                                 }
                             }

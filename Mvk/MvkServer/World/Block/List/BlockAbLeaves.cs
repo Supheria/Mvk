@@ -19,6 +19,9 @@ namespace MvkServer.World.Block.List
             BiomeColor = true;
             Color = new vec3(.56f, .73f, .35f);
             Particle = numberTexture;
+            Combustibility = true;
+            IgniteOddsSunbathing = 30;
+            BurnOdds = 60;
             InitBoxs();
         }
 

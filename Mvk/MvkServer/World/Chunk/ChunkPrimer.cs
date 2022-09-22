@@ -16,7 +16,7 @@ namespace MvkServer.World.Chunk
         /// x << 12 | z << 8 | y;
         /// 65536 = 16 * 16 * 256
         /// </summary>
-        public ushort[] data = new ushort[65536];
+        public ushort[] id = new ushort[65536];
         /// <summary>
         /// Индексы блоков которые надо осветить, плафоны
         /// </summary>
@@ -43,7 +43,7 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public void Clear()
         {
-            for (int i = 0; i < 65536; i++) data[i] = 0;
+            for (int i = 0; i < 65536; i++) id[i] = 0;
             for (int i = 0; i < 256; i++)
             {
                 biome[i] = EnumBiome.Plain;

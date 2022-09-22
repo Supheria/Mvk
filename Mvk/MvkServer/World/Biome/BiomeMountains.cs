@@ -55,16 +55,16 @@ namespace MvkServer.World.Biome
             // Определяем высоту тела
             int yb = BodyHeight(area, yh);
             // заполняем камнем
-            for (y = 3; y < yb; y++) chunk.data[index | y] = 3;
+            for (y = 3; y < yb; y++) chunk.id[index | y] = 3;
             // заполняем тело
-            for (y = yb; y <= yh; y++) chunk.data[index | y] = blockIdBody2;
+            for (y = yb; y <= yh; y++) chunk.id[index | y] = blockIdBody2;
 
             // Проплешены из земли
             // 108 - 124
             float k = (yh - 106f) / 4f;
             if (area > k || area < -k)
             {
-                chunk.data[index | yh] = blockIdUp;
+                chunk.id[index | yh] = blockIdUp;
                 y = 1;
                 h = 4f;
                 while (true)
@@ -72,7 +72,7 @@ namespace MvkServer.World.Biome
                     k = ((yh + y) - 106f) / h;
                     if (area > k || area < -k)
                     {
-                        chunk.data[index | (yh - y)] = blockIdBody;
+                        chunk.id[index | (yh - y)] = blockIdBody;
                         if (h > 1.5f) h -= .5f;
                         y++;
                     }

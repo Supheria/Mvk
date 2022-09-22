@@ -98,10 +98,14 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public BlockState GetBlockState(int x, int y, int z)
         {
-            int index = y << 8 | z << 4 | x;
+            ushort index = (ushort)(y << 8 | z << 4 | x);
             try
             {
-                return new BlockState(data[index], lightBlock[index], lightSky[index]);
+                ushort value = data[index];
+                ushort id = (ushort)(value & 0xFFF);
+                return new BlockState(id,
+                    Blocks.blocksAddMet[id] ? addMet.ContainsKey(index) ? addMet[index] : (ushort)0 : (ushort)(value >> 12),
+                    lightBlock[index], lightSky[index]);
             }
             catch(Exception ex)
             {
@@ -137,21 +141,22 @@ namespace MvkServer.World.Chunk
         /// Задать данные блока, XYZ 0..15 
         /// index = y << 8 | z << 4 | x
         /// </summary>
-        public void SetData(int index, ushort value)
+        public void SetData(int index, ushort id, ushort met = 0)
         {
-            if ((value & 0xFFF) == 0)
+            if (id == 0)
             {
                 // воздух, проверка на чистку
                 if (countBlock > 0 && (data[index] & 0xFFF) != 0)
                 {
                     countBlock--;
                     if (Blocks.blocksRandomTick[data[index] & 0xFFF]) countTickBlock--;
+                    addMet.Remove((ushort)index);
                     if (countBlock == 0)
                     {
                         data = null;
                         countTickBlock = 0;
                     }
-                    else data[index] = value;
+                    else data[index] = 0;
                 }
             }
             else
@@ -163,10 +168,44 @@ namespace MvkServer.World.Chunk
                 }
                 if ((data[index] & 0xFFF) == 0) countBlock++;
                 bool rold = Blocks.blocksRandomTick[data[index] & 0xFFF];
-                bool rnew = Blocks.blocksRandomTick[value & 0xFFF];
+                bool rnew = Blocks.blocksRandomTick[id];
                 if (!rold && rnew) countTickBlock++;
                 else if (rold && !rnew) countTickBlock--;
-                data[index] = value;
+                ushort key = (ushort)index;
+                if (Blocks.blocksAddMet[id])
+                {
+                    data[index] = id;
+                    if (addMet.ContainsKey(key)) addMet[key] = met;
+                    else addMet.Add(key, met);
+                }
+                else
+                {
+                    data[index] = (ushort)(id & 0xFFF | met << 12);
+                    addMet.Remove(key);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Заменить только мет данные блока
+        /// </summary>
+        /// <param name="index">y << 8 | z << 4 | x</param>
+        public void NewMetBlock(int index, ushort met)
+        {
+            if (countBlock > 0)
+            {
+                int id = data[index] & 0xFFF;
+                ushort key = (ushort)index;
+                if (Blocks.blocksAddMet[id])
+                {
+                    if (addMet.ContainsKey(key)) addMet[key] = met;
+                    else addMet.Add(key, met);
+                }
+                else
+                {
+                    data[index] = (ushort)(id & 0xFFF | met << 12);
+                    addMet.Remove(key);
+                }
             }
         }
 
@@ -224,6 +263,19 @@ namespace MvkServer.World.Chunk
                     buffer[count++] = (byte)(data >> 8);
                 }
                 tagCompound.SetByteArray("BlockStates", buffer);
+                if (addMet.Count > 0)
+                {
+                    buffer = new byte[addMet.Count * 4];
+                    count = 0;
+                    foreach (KeyValuePair<ushort, ushort> entry in addMet)
+                    {
+                        buffer[count++] = (byte)(entry.Key & 0xFF);
+                        buffer[count++] = (byte)(entry.Key >> 8);
+                        buffer[count++] = (byte)(entry.Value & 0xFF);
+                        buffer[count++] = (byte)(entry.Value >> 8);
+                    }
+                    tagCompound.SetByteArray("BlockAddMet", buffer);
+                }
             }
 
             if (!emptyLB)
@@ -262,18 +314,29 @@ namespace MvkServer.World.Chunk
             int i;
             byte[] buffer = nbt.GetByteArray("BlockStates");
             // нету блоков
-            bool emptyB = buffer.Length != 8192;
-            if (!emptyB)
+            if (buffer.Length == 8192)
             {
                 for (i = 0; i < 4096; i++)
                 {
-                    SetData(i, (ushort)(buffer[count++] | buffer[count++] << 8));
+                    int value = buffer[count++] | buffer[count++] << 8;
+                    SetData(i, (ushort)(value & 0xFFF), (ushort)(value >> 12));
                 }
             }
+            buffer = nbt.GetByteArray("BlockAddMet");
+            addMet.Clear();
+            count = 0;
+            int countMet = buffer.Length / 4;
+            for (i = 0; i < countMet; i++)
+            {
+                addMet.Add(
+                    (ushort)(buffer[count++] | buffer[count++] << 8),
+                    (ushort)(buffer[count++] | buffer[count++] << 8)
+                );
+            }
+
             buffer = nbt.GetByteArray("BlockLight");
             // нету блоков освещения блока
-            bool emptyLB = buffer.Length != 2048;
-            if (!emptyLB)
+            if (buffer.Length == 2048)
             {
                 lightBlock = new byte[4096];
                 for (i = 0; i < 2048; i++)
@@ -290,8 +353,7 @@ namespace MvkServer.World.Chunk
 
             buffer = nbt.GetByteArray("SkyLight");
             // нету блоков освещения неба
-            bool emptyLS = buffer.Length != 2048;
-            if (!emptyLS)
+            if (buffer.Length == 2048)
             {
                 lightSky = new byte[4096];
                 for (i = 0; i < 2048; i++)

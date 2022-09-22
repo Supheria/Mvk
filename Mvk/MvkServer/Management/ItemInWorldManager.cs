@@ -185,22 +185,22 @@ namespace MvkServer.Management
                     else if (durabilityRemainingOnBlock == (int)Status.Stop)
                     {
                         // Уничтожение блока
+                        BlockState blockState = world.GetBlockState(BlockPosDestroy);
+                        BlockBase block = blockState.GetBlock();
+
                         if (world is WorldServer worldServer)
                         {
-                            BlockState blockState = world.GetBlockState(BlockPosDestroy);
-                            BlockBase block = blockState.GetBlock();
                             if (!entityPlayer.IsCreativeMode)
                             {
                                 block.DropBlockAsItemWithChance(world, BlockPosDestroy, blockState, 1.0f, 0);
                             }
-                            block.Destroy(world, BlockPosDestroy, blockState);
-                            worldServer.Tracker.SendToAllTrackingEntityCurrent(entityPlayer,
-                                new PacketS29SoundEffect(block.SampleBreak(worldServer), BlockPosDestroy.ToVec3(), 1f, block.SampleBreakPitch(worldServer.Rnd)));
+                            block.Destroy(worldServer, BlockPosDestroy, blockState, true, true);
                         }
                         else
                         {
+                            block.Destroy(world, BlockPosDestroy, blockState);
                             // для клиента, чтоб не ждать
-                            world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 2);
+                            //world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 2);
                         }
                     }
                     else if (durabilityRemainingOnBlock == (int)Status.Put)

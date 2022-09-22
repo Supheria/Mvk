@@ -480,7 +480,7 @@ namespace MvkClient
             // отправялем на сервер, выход мира, с возможной ошибкой
             locServer.ExitingWorld(error);
             // Остановить поток данных чанка
-            World.StopChunkLoop();
+            //World.StopChunkLoop();
             // Остановка потока рендера
             World.WorldRender.StopRender();
             IsGamePlay = false;

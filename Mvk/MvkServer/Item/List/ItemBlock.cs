@@ -50,7 +50,7 @@ namespace MvkServer.Item.List
             bool isCheckCollision = !Block.IsCollidable;
             if (!isCheckCollision)
             {
-                AxisAlignedBB axisBlock = Block.GetCollision(blockPos, blockState.Met());
+                AxisAlignedBB axisBlock = Block.GetCollision(blockPos, blockState.met);
                 // Проверка коллизии игрока и блока
                 isCheckCollision = axisBlock != null && !playerIn.BoundingBox.IntersectsWith(axisBlock)
                     && worldIn.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityLiving, axisBlock, playerIn.Id).Count == 0;
