@@ -137,12 +137,12 @@ namespace MvkServer.Management
 
             // TODO::отладка 5 кур
             
-            for (int i = 0; i < 3; i++)
-            {
-                EntityChicken entityChicken = new EntityChicken(World);
-                entityChicken.SetPosition(entityPlayer.Position + new vec3(3, 100 + World.Rnd.Next(24), 0));
-                World.SpawnEntityInWorld(entityChicken);
-            }
+            //for (int i = 0; i < 3; i++)
+            //{
+            //    EntityChicken entityChicken = new EntityChicken(World);
+            //    entityChicken.SetPosition(entityPlayer.Position + new vec3(3, 100 + World.Rnd.Next(24), 0));
+            //    World.SpawnEntityInWorld(entityChicken);
+            //}
         }
 
         /// <summary>
@@ -823,19 +823,19 @@ namespace MvkServer.Management
             }
         }
 
-        /// <summary>
-        /// Флаг псевдочанка который был изменён
-        /// </summary>
-        /// <param name="ch">координаты чанка</param>
-        /// <param name="y">координата псевдочанка</param>
-        public void FlagChunkForUpdate(vec2i ch, int y)
-        {
-            PlayerInstance playerInstance = GetPlayerInstance(ch, false);
-            if (playerInstance != null)
-            {
-                playerInstance.FlagChunkForUpdate(y);
-            }
-        }
+        ///// <summary>
+        ///// Флаг псевдочанка который был изменён
+        ///// </summary>
+        ///// <param name="ch">координаты чанка</param>
+        ///// <param name="y">координата псевдочанка</param>
+        //public void FlagChunkForUpdate(vec2i ch, int y)
+        //{
+        //    PlayerInstance playerInstance = GetPlayerInstance(ch, false);
+        //    if (playerInstance != null)
+        //    {
+        //        playerInstance.FlagChunkForUpdate(y);
+        //    }
+        //}
 
         /// <summary>
         /// Отправить процесс разрущения блока

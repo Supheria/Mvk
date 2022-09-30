@@ -31,20 +31,6 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Установить блок
-        /// </summary>
-        /// <param name="side">Сторона на какой ставим блок</param>
-        /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
-        //public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
-        //{
-        //    if (Check(worldIn, blockPos))
-        //    {
-        //        return base.Put(worldIn, blockPos, state, side, facing);
-        //    }
-        //    return false;
-        //}
-
-        /// <summary>
         /// Смена соседнего блока
         /// </summary>
         public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
@@ -107,5 +93,21 @@ namespace MvkServer.World.Block.List
                 }
             }};
         }
+
+        /// <summary>
+        /// Обновить блок в такте
+        /// </summary>
+        public override void UpdateTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+        {
+            if (blockState.lightSky > 9 && random.Next(14) == 0 && world.IsAreaLoaded(blockPos, 6))
+            {
+                GenefateTree(world, random, blockPos);
+            }
+        }
+
+        /// <summary>
+        /// Генерация дерева
+        /// </summary>
+        protected virtual void GenefateTree(WorldBase world, Rand rand, BlockPos blockPos) { }
     }
 }

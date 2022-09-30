@@ -76,8 +76,9 @@ namespace MvkServer.World.Block
         {
             stream.WriteUShort(id);
             stream.WriteUShort(met);
-            stream.WriteByte(lightBlock);
-            stream.WriteByte(lightSky);
+            stream.WriteByte((byte)(lightBlock << 4 | lightSky & 0xF));
+            //stream.WriteByte(lightBlock);
+            //stream.WriteByte(lightSky);
         }
 
         /// <summary>
@@ -87,8 +88,11 @@ namespace MvkServer.World.Block
         {
             id = stream.ReadUShort();
             met = stream.ReadUShort();
-            lightBlock = stream.ReadByte();
-            lightSky = stream.ReadByte();
+            byte light = stream.ReadByte();
+            lightBlock = (byte)(light >> 4);
+            lightSky = (byte)(light & 0xF);
+            //lightBlock = stream.ReadByte();
+            //lightSky = stream.ReadByte();
         }
 
         public override bool Equals(object obj)

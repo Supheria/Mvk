@@ -173,6 +173,11 @@ namespace MvkServer.NBT
             return typeOld == 1 || typeOld == 2 || typeOld == 3 || typeOld == 4 || typeOld == 5 || typeOld == 6;
         }
 
+        /// <summary>
+        /// Вернуть, не имеет ли это соединение тегов
+        /// </summary>
+        public override bool HasNoTags() => tagMap.Count == 0;
+
         #region Get
 
         /// <summary>

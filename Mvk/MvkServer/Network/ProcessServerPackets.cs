@@ -211,7 +211,12 @@ namespace MvkServer.Network
             EntityPlayerServer entityPlayer = ServerMain.World.Players.GetPlayerSocket(socket);
             if (entityPlayer != null)
             {
-                if (packet.GetDigging() == PacketC07PlayerDigging.EnumDigging.Stop)
+                if (packet.GetDigging() == PacketC07PlayerDigging.EnumDigging.Destroy)
+                {
+                    // Мгновенное разрушение блока
+                    entityPlayer.TheItemInWorldManager.Destroy(packet.GetBlockPos());
+                }
+                else if (packet.GetDigging() == PacketC07PlayerDigging.EnumDigging.Stop)
                 {
                     // Окончено разрушение, блок сломан
                     entityPlayer.TheItemInWorldManager.DestroyStop();
@@ -287,7 +292,7 @@ namespace MvkServer.Network
             if (entityPlayer != null && packet.GetAction() == PacketC0CPlayerAction.EnumAction.Fall)
             {
                 // Падение с высоты
-                if (packet.GetParam() > 5)
+                if (!entityPlayer.IsCreativeMode && packet.GetParam() > 5)
                 {
                     float damage = packet.GetParam() - 5;
                     entityPlayer.AttackEntityFrom(EnumDamageSource.Fall, damage);

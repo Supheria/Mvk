@@ -51,9 +51,9 @@ namespace MvkServer.Network.Packets.Client
             /// </summary>
             Stop = 2,
             /// <summary>
-            /// Поставить
+            /// Мгновенное разрушение
             /// </summary>
-            //Put = 3
+            Destroy = 3
         }
     }
 }

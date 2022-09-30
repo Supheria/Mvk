@@ -513,7 +513,7 @@ namespace MvkServer.World.Block.List
                 }
 
                 if (age > 15) age = 15; else if (age < 0) age = 0;
-                world.SetBlockStateMet(blockPos, (ushort)(pole << 4 | age & 0xF));
+                world.SetBlockStateMet(blockPos, (ushort)(pole << 4 | age & 0xF), false);
                 // Для продолжения жизни, и запуска соседних, можно дольше
                 world.SetBlockTick(blockPos, (uint)(random.Next(10) + 30));
             }
@@ -525,6 +525,21 @@ namespace MvkServer.World.Block.List
             BlockBase block = blockState.GetBlock();
             if (block.EBlock == EnumBlock.Turf)
             {
+                BlockPos blockPosUp = blockPos.OffsetUp();
+                BlockState blockStateUp = world.GetBlockState(blockPosUp);
+                BlockBase blockUp = blockStateUp.GetBlock();
+                if (blockUp.Material == EnumMaterial.Sapling)
+                {
+                    Destroy(world, blockPosUp, blockStateUp);
+                    if (CanBlockStay(world, blockPosUp))
+                    {
+                        if (world.SetBlockState(blockPosUp, new BlockState(EnumBlock.Fire).NewMet(MetUpdate(world, blockPosUp, 0)), 15))
+                        {
+                            // запустить мгновенный тик
+                            world.SetBlockTick(blockPosUp, (uint)(world.Rnd.Next(10) + 30 - (blockUp.IgniteOddsSunbathing / 4)));
+                        }
+                    }
+                }
                 world.SetBlockState(blockPos, new BlockState(EnumBlock.Dirt), 14);
             }
             else

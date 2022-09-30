@@ -156,7 +156,7 @@ namespace MvkClient.Renderer.Block
                     xc += xcn;
                     zc += zcn;
                     chunkCheck = chunk.Chunk(xcn, zcn);
-                    if (chunkCheck == null || !chunkCheck.IsChunkLoaded)
+                    if (chunkCheck == null || !chunkCheck.IsChunkPresent)
                     {
                         return 0x0F; // Только яркость неба макс
                     }
@@ -530,7 +530,7 @@ namespace MvkClient.Renderer.Block
             yc = pY >> 4;
             // Определяем рабочий чанк соседнего блока
             chunkCheck = (xc == chunk.Position.x && zc == chunk.Position.y) ? chunk : chunk.Chunk(xcn, zcn);
-            if (chunkCheck == null || !chunkCheck.IsChunkLoaded)
+            if (chunkCheck == null || !chunkCheck.IsChunkPresent)
             {
                 aoLight.lightSky = 15;
                 aoLight.color = new vec3(1);

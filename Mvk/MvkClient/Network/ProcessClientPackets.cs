@@ -89,6 +89,7 @@ namespace MvkClient.Network
                 case 0x19: Handle19EntityStatus((PacketS19EntityStatus)packet); break;
                 case 0x1C: Handle1CEntityMetadata((PacketS1CEntityMetadata)packet); break;
                 case 0x21: Handle21ChunkData((PacketS21ChunkData)packet); break;
+                case 0x22: Handle22MultiBlockChange((PacketS22MultiBlockChange)packet); break;
                 case 0x23: Handle23BlockChange((PacketS23BlockChange)packet); break;
                 case 0x25: Handle25BlockBreakAnim((PacketS25BlockBreakAnim)packet); break;
                 case 0x29: Handle29SoundEffect((PacketS29SoundEffect)packet); break;
@@ -414,6 +415,11 @@ namespace MvkClient.Network
             // Заносим в дополнительный поток пакетов вокселей, 
             // чтоб минимизировать загрузку основного клиентского потока где есть Tick, ибо будет проседать fps
             //ClientMain.World.AddPacketChunkQueue(packet);
+        }
+
+        private void Handle22MultiBlockChange(PacketS22MultiBlockChange packet)
+        {
+            packet.ReceivedBlocks(ClientMain.World);
         }
 
         private void Handle23BlockChange(PacketS23BlockChange packet)

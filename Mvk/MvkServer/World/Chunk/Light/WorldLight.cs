@@ -22,7 +22,7 @@ namespace MvkServer.World.Chunk.Light
         /// <summary>
         /// Вспомогательный массив, значения в битах 00000000 LLLLzzzz zzyyyyyy yyxxxxxx
         /// 388096 * 3, где 388096 максимально возможное количество блоков в чанке плюс соседние блоки
-        /// (16 * 16 + (14 * 16 + 13 * 6 + 13) * 4) * 256 = 388 096
+        /// (16 * 16 + (14 * 16 + 13 * 6 + 13) * 4) * 256 = 388 096 * 3 (для смещения и затемнения)
         /// </summary>
         private readonly int[] arCache = new int[1164288];
         /// <summary>
@@ -454,7 +454,7 @@ namespace MvkServer.World.Chunk.Light
                 pos.x += chBeginX;
                 pos.y += chBeginY;
                 chunks[i] = World.ChunkPr.GetChunk(pos);
-                if (chunks[i] == null || !chunks[i].IsChunkLoaded) return false;
+                if (chunks[i] == null || !chunks[i].IsChunkPresent) return false;
             }
             return true;
         }
@@ -856,6 +856,7 @@ namespace MvkServer.World.Chunk.Light
             }
             else
             {
+                // TODO::2022-09-24 переизбыток трафика при горении огня!!! Передаётся целый псевдо чанк, когда можно попробовать передовать блоки
                 World.MarkBlockRangeForRenderUpdate(axisX0, axisY0, axisZ0, axisX1, axisY1, axisZ1);
             }
         }
@@ -962,6 +963,158 @@ namespace MvkServer.World.Chunk.Light
                 }
             }
             return (byte)light;
+        }
+
+        #endregion
+
+        #region CheckLoaded
+
+        /// <summary>
+        /// Проверяем освещение если соседний чанк загружен, основной сгенериорван
+        /// </summary>
+        public void CheckBrighterLightLoaded()
+        {
+            byte[] xz = new byte[] { 1, 0, 1, 0, 15, 0, 15, 0 };
+            byte[] poleX = new byte[] { 1, 0, 2, 0, 1, 0, 2, 0 };
+
+            for (int i = 0; i < 8; i += 2)
+            {
+                if (chunks[i].IsLoaded)
+                {
+                    // Соседний загружен с ним и работаем
+                    if (poleX[i] == 2)
+                    {
+                        CheckBrighterLightLoadedBlockX(chunks[i], xz[i]);
+                        CheckBrighterLightLoadedSkyX(chunks[i], xz[i]);
+                    }
+                    if (poleX[i] == 1)
+                    {
+                        CheckBrighterLightLoadedBlockZ(chunks[i], xz[i]);
+                        CheckBrighterLightLoadedSkyZ(chunks[i], xz[i]);
+                    }
+                }
+            }
+        }
+
+        // Для ускорения 4 метода похожи, чтоб дополнительных if-ов
+
+        /// <summary>
+        /// Проверка блочного по X
+        /// </summary>
+        private void CheckBrighterLightLoadedBlockX(ChunkBase chunk, int x)
+        {
+            int yh, yco, indexBlock;
+            byte light;
+            ChunkStorage chunkStorage;
+            indexBegin = indexEnd = 0;
+            int offset = x == 1 ? -15 : 16;
+            for (int z = 0; z < 16; z++)
+            {
+                yh = chunk.Light.GetHeight(x, z);
+                for (int y = 0; y < yh; y++)
+                {
+                    yco = y >> 4;
+                    chunkStorage = chunk.StorageArrays[yco];
+                    if (chunkStorage.countBlock != 0)
+                    {
+                        indexBlock = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
+                        light = chunkStorage.lightBlock[indexBlock];
+                        if (light > 0)
+                        {
+                            arCache[indexEnd++] = (x - offset + 32 | y << 6 | z + 32 << 14 | light << 20);
+                        }
+                    }
+                }
+            }
+            BrighterLightBlock();
+        }
+        /// <summary>
+        /// Проверка блочного по Z
+        /// </summary>
+        private void CheckBrighterLightLoadedBlockZ(ChunkBase chunk, int z)
+        {
+            int yh, yco, indexBlock;
+            byte light;
+            ChunkStorage chunkStorage;
+            indexBegin = indexEnd = 0;
+            int offset = z == 1 ? -15 : 16;
+            for (int x = 0; x < 16; x++)
+            {
+                yh = chunk.Light.GetHeight(x, z);
+                for (int y = 0; y < yh; y++)
+                {
+                    yco = y >> 4;
+                    chunkStorage = chunk.StorageArrays[yco];
+                    if (chunkStorage.countBlock != 0)
+                    {
+                        indexBlock = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
+                        light = chunkStorage.lightBlock[indexBlock];
+                        if (light > 0)
+                        {
+                            arCache[indexEnd++] = (x + 32 | y << 6 | z - offset + 32 << 14 | light << 20);
+                        }
+                    }
+                }
+            }
+            BrighterLightBlock();
+        }
+        /// <summary>
+        /// Проверка небесного по X
+        /// </summary>
+        private void CheckBrighterLightLoadedSkyX(ChunkBase chunk, int x)
+        {
+            int yco, indexBlock;
+            byte light;
+            ChunkStorage chunkStorage;
+            indexBegin = indexEnd = 0;
+            int offset = x == 1 ? -15 : 16;
+            for (int z = 0; z < 16; z++)
+            {
+                for (int y = 0; y <= ChunkBase.COUNT_HEIGHT_BLOCK; y++)
+                {
+                    yco = y >> 4;
+                    chunkStorage = chunk.StorageArrays[yco];
+                    if (chunkStorage.countBlock != 0)
+                    {
+                        indexBlock = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
+                        light = chunkStorage.lightSky[indexBlock];
+                        if (light > 0)
+                        {
+                            arCache[indexEnd++] = (x - offset + 32 | y << 6 | z + 32 << 14 | light << 20);
+                        }
+                    }
+                }
+            }
+            BrighterLightSky();
+        }
+        /// <summary>
+        /// Проверка небесного по Z
+        /// </summary>
+        private void CheckBrighterLightLoadedSkyZ(ChunkBase chunk, int z)
+        {
+            int yco, indexBlock;
+            byte light;
+            ChunkStorage chunkStorage;
+            indexBegin = indexEnd = 0;
+            int offset = z == 1 ? -15 : 16;
+            for (int x = 0; x < 16; x++)
+            {
+                for (int y = 0; y <= ChunkBase.COUNT_HEIGHT_BLOCK; y++)
+                {
+                    yco = y >> 4;
+                    chunkStorage = chunk.StorageArrays[yco];
+                    if (chunkStorage.countBlock != 0)
+                    {
+                        indexBlock = (y & 15) << 8 | (z & 15) << 4 | (x & 15);
+                        light = chunkStorage.lightSky[indexBlock];
+                        if (light > 0)
+                        {
+                            arCache[indexEnd++] = (x + 32 | y << 6 | z - offset + 32 << 14 | light << 20);
+                        }
+                    }
+                }
+            }
+            BrighterLightSky();
         }
 
         #endregion

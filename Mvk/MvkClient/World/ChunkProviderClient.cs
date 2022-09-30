@@ -161,7 +161,7 @@ namespace MvkClient.World
             if (chunk != null)
             {
                 vec2i pos = chunk.Position;
-                if (chunk.IsChunkLoaded)
+                if (chunk.IsChunkPresent)
                 {
                     chunk.OnChunkUnload();
                     // заносим в массив чистки чанков по сетки для основного потока
@@ -202,7 +202,7 @@ namespace MvkClient.World
             for (i = 0; i < count; i++)
             {
                 chunkRender = addChunks.GetNext();
-                if (chunkRender.IsChunkLoaded)
+                if (chunkRender.IsChunkPresent)
                 {
                     chunkMapping.Set(chunkRender);
                     vec2i pos = chunkRender.Position;
@@ -228,7 +228,7 @@ namespace MvkClient.World
                 ChunkRender chunk = GetChunkRender(pos);
                 if (chunk != null)
                 {
-                    if (!chunk.IsChunkLoaded) chunk.MeshDelete();
+                    if (!chunk.IsChunkPresent) chunk.MeshDelete();
                 }
             }
         }

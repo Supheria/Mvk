@@ -1015,7 +1015,7 @@ namespace MvkServer.Entity
         /// <summary>
         /// Скакой скоростью анимируется удар рукой, в тактах, менять можно от инструмента, чар и навыков
         /// </summary>
-        public int GetArmSwingAnimationEnd() => 8; 
+        public int GetArmSwingAnimationEnd() => 6; 
 
         /// <summary>
         /// Размахивает предметом, который держит игрок
@@ -1186,7 +1186,8 @@ namespace MvkServer.Entity
                 HandleLiquidMovement();
             }
 
-            if (y < 0f) fallDistance -= y;
+            if (IsFlying) fallDistance = 0;
+            else if (y < 0f) fallDistance -= y;
             if (OnGround)
             {
                 if (IsFlying)

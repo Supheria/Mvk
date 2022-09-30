@@ -30,6 +30,11 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public const int COUNT_HEIGHT_BLOCK = 255;
         /// <summary>
+        /// Количество блоков за так в чанке без приоритетных
+        /// </summary>
+        private const int COUNT_BLOCK_TICK = 4;
+
+        /// <summary>
         /// Данные чанка
         /// </summary>
         public ChunkStorage[] StorageArrays { get; private set; } = new ChunkStorage[COUNT_HEIGHT];
@@ -50,9 +55,9 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public ChunkLight2 Light { get; private set; }
         /// <summary>
-        /// Загружен ли чанк #1
+        /// Присутствует, этап загрузки или начальная генерация #1
         /// </summary>
-        public bool IsChunkLoaded { get; private set; } = false;
+        public bool IsChunkPresent { get; private set; } = false;
         /// <summary>
         /// Было ли декорация чанка #2
         /// </summary>
@@ -69,6 +74,10 @@ namespace MvkServer.World.Chunk
         /// Готов ли чанк для отправки клиентам #5
         /// </summary>
         public bool IsSendChunk { get; private set; } = false;
+        /// <summary>
+        /// Загружен ли чанк, false если была генерация, для дополнительной правки освещения
+        /// </summary>
+        public bool IsLoaded { get; private set; } = false;
         /// <summary>
         /// Биомы
         /// x << 4 | z;
@@ -230,7 +239,7 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public void OnChunkUnload()
         {
-            IsChunkLoaded = false;
+            IsChunkPresent = false;
             for (int y = 0; y < COUNT_HEIGHT; y++)
             {
                 World.UnloadEntities(ListEntities[y]);
@@ -246,7 +255,7 @@ namespace MvkServer.World.Chunk
 
         public void OnChunkLoad()
         {
-            IsChunkLoaded = true;
+            IsChunkPresent = true;
             for (int y = 0; y < COUNT_HEIGHT; y++)
             {
                 // Продумать загрузку чанка у сущности тип 
@@ -264,7 +273,7 @@ namespace MvkServer.World.Chunk
                 for (int i = 0; i < 9; i++)
                 {
                     chunk = worldServer.ChunkPrServ.GetChunk(MvkStatic.AreaOne9[i] + Position);
-                    if (chunk != null && chunk.IsChunkLoaded)
+                    if (chunk != null && chunk.IsChunkPresent)
                     {
                         chunk.Populate(worldServer.ChunkPrServ);
                     }
@@ -287,7 +296,7 @@ namespace MvkServer.World.Chunk
                 for (int i = 0; i < 9; i++)
                 {
                     chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
-                    if (chunk == null || !chunk.IsChunkLoaded)
+                    if (chunk == null || !chunk.IsChunkPresent)
                     {
                         return;
                     }
@@ -301,7 +310,7 @@ namespace MvkServer.World.Chunk
                 for (int i = 0; i < 9; i++)
                 {
                     chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
-                    if (chunk != null && chunk.IsChunkLoaded && chunk.IsPopulated)
+                    if (chunk != null && chunk.IsChunkPresent && chunk.IsPopulated)
                     {
                         chunk.HeightMapSky(provider);
                     }
@@ -321,7 +330,7 @@ namespace MvkServer.World.Chunk
                 for (int i = 0; i < 9; i++)
                 {
                     chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
-                    if (chunk == null || !chunk.IsChunkLoaded || !chunk.IsPopulated)
+                    if (chunk == null || !chunk.IsChunkPresent || !chunk.IsPopulated)
                     {
                         return;
                     }
@@ -336,7 +345,7 @@ namespace MvkServer.World.Chunk
                 for (int i = 0; i < 9; i++)
                 {
                     chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
-                    if (chunk != null && chunk.IsChunkLoaded && chunk.IsPopulated && chunk.IsHeightMapSky)
+                    if (chunk != null && chunk.IsChunkPresent && chunk.IsPopulated && chunk.IsHeightMapSky)
                     {
                         chunk.SideLightSky(provider);
                     }
@@ -356,7 +365,7 @@ namespace MvkServer.World.Chunk
                 for (int i = 0; i < 9; i++)
                 {
                     chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
-                    if (chunk == null || !chunk.IsChunkLoaded || !chunk.IsPopulated || !chunk.IsHeightMapSky)
+                    if (chunk == null || !chunk.IsChunkPresent || !chunk.IsPopulated || !chunk.IsHeightMapSky)
                     {
                         return;
                     }
@@ -371,7 +380,7 @@ namespace MvkServer.World.Chunk
                 for (int i = 0; i < 9; i++)
                 {
                     chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
-                    if (chunk != null && chunk.IsChunkLoaded && chunk.IsPopulated && chunk.IsHeightMapSky && chunk.IsSideLightSky)
+                    if (chunk != null && chunk.IsChunkPresent && chunk.IsPopulated && chunk.IsHeightMapSky && chunk.IsSideLightSky)
                     {
                         chunk.SendChunk(provider);
                     }
@@ -390,7 +399,7 @@ namespace MvkServer.World.Chunk
                 for (int i = 0; i < 9; i++)
                 {
                     chunk = provider.GetChunk(MvkStatic.AreaOne9[i] + Position);
-                    if (chunk == null || !chunk.IsChunkLoaded || !chunk.IsPopulated || !chunk.IsHeightMapSky || !chunk.IsSideLightSky)
+                    if (chunk == null || !chunk.IsChunkPresent || !chunk.IsPopulated || !chunk.IsHeightMapSky || !chunk.IsSideLightSky)
                     {
                         return;
                     }
@@ -458,7 +467,7 @@ namespace MvkServer.World.Chunk
                         biome[i] = (EnumBiome)buffer[count++];
                     }
                 }
-                IsChunkLoaded = true;
+                IsChunkPresent = true;
             }
             catch (Exception ex)
             {
@@ -574,19 +583,25 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public BlockState GetBlockState(int x, int y, int z)
         {
-            if (x >> 4 == 0 && z >> 4 == 0)
-            {
-                ChunkStorage chunkStorage = StorageArrays[y >> 4];
-                if (chunkStorage.countBlock != 0)
-                {
-                    return chunkStorage.GetBlockState(x, y & 15, z);
-                } else
-                {
-                    int index = (y & 15) << 8 | z << 4 | x;
-                    return new BlockState(0, 0, chunkStorage.lightBlock[index], chunkStorage.lightSky[index]);
-                }
-            }
+            if (x >> 4 == 0 && z >> 4 == 0) return GetBlockStateNotCheck(x, y, z);
             return new BlockState().Empty();
+        }
+
+        /// <summary>
+        /// Получить блок данных, XZ 0..15, Y 0..255 без проверки
+        /// </summary>
+        public BlockState GetBlockStateNotCheck(int x, int y, int z)
+        {
+            ChunkStorage chunkStorage = StorageArrays[y >> 4];
+            if (chunkStorage.countBlock != 0)
+            {
+                return chunkStorage.GetBlockState(x, y & 15, z);
+            }
+            else
+            {
+                int index = (y & 15) << 8 | z << 4 | x;
+                return new BlockState(0, 0, chunkStorage.lightBlock[index], chunkStorage.lightSky[index]);
+            }
         }
 
         /// <summary>
@@ -727,10 +742,9 @@ namespace MvkServer.World.Chunk
                     {
                         World.Light.ClearDebugString();
                     }
-                    if (isModifyRender) World.MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
                     if (isModify) Modified();
                 }
-
+                if (isModifyRender) World.MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
 
                 if (World.IsRemote)
                 {
@@ -793,7 +807,7 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Задать тик блока с локальной позицие и время через сколько тактов надо тикнуть
         /// </summary>
-        public void SetBlockTick(int x, int y, int z, uint timeTackt)
+        public void SetBlockTick(int x, int y, int z, uint timeTackt, bool priority = false)
         {
             TickBlock tickBlock;
             bool empty = true;
@@ -803,12 +817,13 @@ namespace MvkServer.World.Chunk
                 if (tickBlock.x == x && tickBlock.y == y && tickBlock.z == z)
                 {
                     tickBlock.scheduledTime = timeTackt + World.GetTotalWorldTime();
+                    tickBlock.priority = priority;
                     tickBlocks[i] = tickBlock;
                     empty = false;
                     break;
                 }
             }
-            if (empty) tickBlocks.Add(new TickBlock() { x = x, y = y, z = z, scheduledTime = timeTackt + World.GetTotalWorldTime() });
+            if (empty) tickBlocks.Add(new TickBlock() { x = x, y = y, z = z, scheduledTime = timeTackt + World.GetTotalWorldTime(), priority = priority });
         }
 
         /// <summary>
@@ -1003,19 +1018,21 @@ namespace MvkServer.World.Chunk
             List<vec3i> listTick = new List<vec3i>();
 
             uint time = World.GetTotalWorldTime();
+            int count = 0;
             // Пробегаемся по всем тикам блоков и собираем которые надо выполнять
             for (int i = 0; i < tickBlocks.Count; i++)
             {
                 tickBlock = tickBlocks[i];
-                if (tickBlock.scheduledTime <= time)
+                if (tickBlock.scheduledTime <= time && (count < COUNT_BLOCK_TICK || tickBlock.priority))
                 {
+                    count++;
                     listRemove.Add(i);
                     listTick.Add(new vec3i(tickBlock.x, tickBlock.y, tickBlock.z));
                 }
             }
             if (listRemove.Count > 0)
             {
-                int count = listRemove.Count - 1;
+                count = listRemove.Count - 1;
                 // Удаляем которые надо выполнять
                 for (int i = count; i >= 0; i--)
                 {
@@ -1074,11 +1091,12 @@ namespace MvkServer.World.Chunk
                     try
                     {
                         ReadChunkFromNBT(nbt);
-                        IsChunkLoaded = true;
+                        IsChunkPresent = true;
                         IsPopulated = true;
                         IsHeightMapSky = true;
                         IsSideLightSky = true;
                         IsSendChunk = true;
+                        IsLoaded = true;
                     }
                     catch (Exception ex)
                     {
@@ -1100,6 +1118,7 @@ namespace MvkServer.World.Chunk
             nbt.SetLong("InhabitedTime", InhabitedTime);
             nbt.SetShort("HeightMapMax", (short)Light.heightMapMax);
             nbt.SetByteArray("HeightMap", Light.heightMap);
+            nbt.SetByteArray("HeightMapGen", heightMapGen);
             byte[] biomes = new byte[256];
             for (int i = 0; i < 256; i++) biomes[i] = (byte)biome[i];
             nbt.SetByteArray("Biomes", biomes);
@@ -1124,6 +1143,7 @@ namespace MvkServer.World.Chunk
                     tagCompound.SetByte("Y", (byte)tickBlock.y);
                     tagCompound.SetByte("Z", (byte)tickBlock.z);
                     tagCompound.SetInt("Time", (int)(tickBlock.scheduledTime - time));
+                    tagCompound.SetBool("P", tickBlock.priority);
                     tagListTickBlocks.AppendTag(tagCompound);
                 }
                 nbt.SetTag("TileTicks", tagListTickBlocks);
@@ -1148,6 +1168,7 @@ namespace MvkServer.World.Chunk
             InhabitedTime = (uint)nbt.GetLong("InhabitedTime");
             Light.heightMapMax = nbt.GetShort("HeightMapMax");
             Light.heightMap = nbt.GetByteArray("HeightMap");
+            heightMapGen = nbt.GetByteArray("HeightMapGen");
             byte[] biomes = nbt.GetByteArray("Biomes");
             for (int i = 0; i < 256; i++) biome[i] = (EnumBiome)biomes[i];
 
@@ -1190,7 +1211,8 @@ namespace MvkServer.World.Chunk
                         x = tagCompound.GetByte("X"),
                         y = tagCompound.GetByte("Y"),
                         z = tagCompound.GetByte("Z"),
-                        scheduledTime = (uint)tagCompound.GetInt("Time") + time
+                        scheduledTime = (uint)tagCompound.GetInt("Time") + time,
+                        priority = tagCompound.GetBool("P")
                     });
                 }
             }
@@ -1204,7 +1226,7 @@ namespace MvkServer.World.Chunk
         #endregion
 
         public override string ToString() => Position + " " 
-            + (IsChunkLoaded ? "Loaded " : "")
+            + (IsChunkPresent ? "Loaded " : "")
             + (IsPopulated ? "Populated " : "")
             + (IsHeightMapSky ? "HeightMap " : "")
             + (IsSideLightSky ? "Light " : "");

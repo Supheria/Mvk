@@ -30,6 +30,14 @@ namespace MvkServer.World.Gen.Feature
         public virtual bool GenerateArea(WorldBase world, ChunkBase chunk, Rand rand, BlockPos blockPos) => true;
 
         /// <summary>
+        /// Сгенерировать область в кеш
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="rand"></param>
+        /// <param name="blockPos"></param>
+        protected virtual bool GenerateCache(WorldBase world, Rand rand, BlockPos blockPos) => false;
+
+        /// <summary>
         /// Сменить блок 
         /// </summary>
         protected bool SetBlock(WorldBase world, BlockPos blockPos, vec2i posCh, ushort id)

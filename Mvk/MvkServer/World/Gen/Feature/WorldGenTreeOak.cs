@@ -12,8 +12,10 @@ namespace MvkServer.World.Gen.Feature
         {
             log = EnumBlock.LogOak;
             leaves = EnumBlock.LeavesOak;
+            sapling = EnumBlock.SaplingOak;
             idLog = (ushort)log;
             idLeaves = (ushort)leaves;
+            idSapling = (ushort)sapling;
             isBranches = true;
         }
 

@@ -15,6 +15,7 @@ namespace MvkServer.World.Block.List
         public BlockTurf()
         {
             Combustibility = true;
+            IgniteOddsSunbathing = 5;
             NeedsRandomTick = true;
             Particle = 65;
             Color = new vec3(.56f, .73f, .35f);
@@ -83,7 +84,7 @@ namespace MvkServer.World.Block.List
             BlockPos blockPosUp = blockPos.OffsetUp();
             BlockState blockStateUp = world.GetBlockState(blockPosUp);
             BlockBase blockUp = blockStateUp.GetBlock();
-            if (blockStateUp.lightSky < 7 || blockUp.LightOpacity > 2)
+            if (!(blockUp.IsAir || blockUp.Material == EnumMaterial.Sapling) || blockStateUp.lightSky < 7 || blockUp.LightOpacity > 2)
             {
                 // Засыхание дёрна
                 world.SetBlockState(blockPos, new BlockState(EnumBlock.Dirt), 14);

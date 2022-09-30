@@ -200,7 +200,7 @@ namespace MvkClient.World
             for (int i = 0; i < MvkStatic.AreaOne8.Length; i++)
             {
                 ChunkRender chunk = ChunkPrClient.GetChunkRender(pos + MvkStatic.AreaOne8[i]);
-                if (chunk == null || !chunk.IsChunkLoaded) return false;
+                if (chunk == null || !chunk.IsChunkPresent) return false;
             }
             return true; 
         }
@@ -312,7 +312,8 @@ namespace MvkClient.World
         {
             if (blockPos.IsValid())
             {
-                ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
+                SetBlockState(blockPos, blockState, 4);
+                /*ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
                 if (chunk != null)
                 {
                     chunk.SetBlockStateClient(blockPos, blockState);
@@ -321,7 +322,7 @@ namespace MvkClient.World
                     vec3i min = blockPos.ToVec3i() - 1;
                     vec3i max = blockPos.ToVec3i() + 1;
                     AreaModifiedToRender(min.x >> 4, min.y >> 4, min.z >> 4, max.x >> 4, max.y >> 4, max.z >> 4);
-                }
+                }*/
             }
         }
 
@@ -351,16 +352,16 @@ namespace MvkClient.World
             long l2 = GLWindow.stopwatch.ElapsedTicks;
             Debug.DFloat = (l2 - l) / (float)MvkStatic.TimerFrequency;
             // Это если обновлять сразу!
-            if (result)
-            {
-                //blockState.GetBlock().PlayPut(this, blockPos);
-                // Для рендера, проверка соседнего чанка, если блок крайний,
-                // то будет доп рендер чанков рядом
-                vec3i min = blockPos.ToVec3i() - 1;
-                vec3i max = blockPos.ToVec3i() + 1;
+            //if (result)
+            //{
+            //    //blockState.GetBlock().PlayPut(this, blockPos);
+            //    // Для рендера, проверка соседнего чанка, если блок крайний,
+            //    // то будет доп рендер чанков рядом
+            //    vec3i min = blockPos.ToVec3i() - 1;
+            //    vec3i max = blockPos.ToVec3i() + 1;
 
-                AreaModifiedToRender(min.x >> 4, min.y >> 4, min.z >> 4, max.x >> 4, max.y >> 4, max.z >> 4);
-            }
+            //    AreaModifiedToRender(min.x >> 4, min.y >> 4, min.z >> 4, max.x >> 4, max.y >> 4, max.z >> 4);
+            //}
 
             return true;
             //return false;

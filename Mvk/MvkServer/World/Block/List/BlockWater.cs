@@ -15,7 +15,6 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockWater()
         {
-           // NeedsRandomTick = true;
             Translucent = true;
             IsAction = false;
             IsCollidable = false;
@@ -79,18 +78,39 @@ namespace MvkServer.World.Block.List
             }
         }
 
-        //public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+        /// <summary>
+        /// Смена соседнего блока
+        /// </summary>
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        {
+            worldIn.SetBlockTick(blockPos, 5);
+        }
+
+        /// <summary>
+        /// Обновить блок в такте
+        /// </summary>
+        //public override void UpdateTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         //{
-        //    //EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
-        //    //if (enumBlock == EnumBlock.Air) 
-        //    //{
-        //    //    world.SetBlockState(blockPos.OffsetUp(), new BlockState(EnumBlock.Water));
-        //    //}
-        //    EnumBlock enumBlock = world.GetBlockState(blockPos.OffsetUp()).GetEBlock();
-        //    if (enumBlock == EnumBlock.Air)
+        //    if (Water(world, blockPos.OffsetDown()))
         //    {
-        //        world.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 0);
+        //        Water(world, blockPos.OffsetSouth());
+        //        Water(world, blockPos.OffsetEast());
+        //        Water(world, blockPos.OffsetNorth());
+        //        Water(world, blockPos.OffsetWest());
         //    }
         //}
+
+        private bool Water(WorldBase world, BlockPos blockPos)
+        {
+            BlockState blockState = world.GetBlockState(blockPos);
+            BlockBase block = blockState.GetBlock();
+            if (block.IsAir)
+            {
+                world.SetBlockState(blockPos, new BlockState(EnumBlock.Water), 14);
+                world.SetBlockTick(blockPos, 5);
+                return false;
+            }
+            return block.EBlock != EnumBlock.Water;
+        }
     }
 }

@@ -258,6 +258,37 @@ namespace MvkClient.Entity
             RotationYawPrev = RotationYaw;
             RotationYawHeadPrev = RotationYawHead;
 
+            // счётчик паузы для анимации удара
+            leftClickPauseCounter++;
+            // тик мгновенного удаления
+            itemInWorldManager.UpdateDestroy();
+            // обновляем счётчик удара
+            ItemInWorldManager.StatusAnimation statusUpdate = itemInWorldManager.UpdateBlock();
+            if (statusUpdate == ItemInWorldManager.StatusAnimation.Animation)
+            {
+                leftClickPauseCounter = 100;
+            }
+            else if (statusUpdate == ItemInWorldManager.StatusAnimation.NotAnimation)
+            {
+                leftClickPauseCounter = 0;
+            }
+
+            if (!AtackUpdate())
+            {
+                // Если нет атаки то проверяем установку или разрушение блока
+                if (handAction != ActionHand.None)
+                {
+                    HandActionUpdate();
+                    if (leftClickPauseCounter > GetArmSwingAnimationEnd() / 2  // для анимации разбития блока, пока не разобъёшь пауза между ударами
+                        || blankShot) // мгновенный удар, первый удар, установить, атака
+                    {
+                        SwingItem();
+                        blankShot = false;
+                        leftClickPauseCounter = 0;
+                    }
+                }
+            }
+
             base.Update();
 
             // Обновление курсоро, не зависимо от действия игрока, так как рядом может быть изминение
@@ -276,36 +307,7 @@ namespace MvkClient.Entity
                 UpdateActionPacket();
             }
 
-            // счётчик паузы для анимации удара
-            leftClickPauseCounter++;
-
-            // обновляем счётчик удара
-            ItemInWorldManager.StatusAnimation statusUpdate = itemInWorldManager.UpdateBlock();
-            if (statusUpdate == ItemInWorldManager.StatusAnimation.Animation)
-            {
-                leftClickPauseCounter = 100;
-            }
-            else if (statusUpdate == ItemInWorldManager.StatusAnimation.NotAnimation)
-            {
-                leftClickPauseCounter = 0;
-            }
-
-            if (!AtackUpdate())
-            {
-                // Если нет атаки то проверяем установку или разрушение блока
-                if (handAction != ActionHand.None)
-                {
-                    HandActionUpdate();
-                    if (leftClickPauseCounter > GetArmSwingAnimationEnd() / 2 // для анимации разбития блока, пока не разобъёшь пауза между ударами
-                        || blankShot) // мгновенный удар, первый удар, установить, атака
-                    {
-                        SwingItem();
-                        blankShot = false;
-                        leftClickPauseCounter = 0;
-                    }
-                }
-            }
-
+            
             // синхронизация выброного слота
             SyncCurrentPlayItem();
 
@@ -384,7 +386,7 @@ namespace MvkClient.Entity
             }
             if (ActionChanged.HasFlag(EnumActionChanged.IsSprinting))
             {
-                Fov.Set(IsSprinting() ? 1.22f : 1.43f, 4);
+                Fov.Set(IsSprinting() ? 1.62f : 1.43f, 4);
                 isSS = true;
             }
 
@@ -425,7 +427,7 @@ namespace MvkClient.Entity
         public void MouseMove(float deltaX, float deltaY)
         {
             // Чувствительность мыши
-            float speedMouse = 2f;// 1.5f;
+            float speedMouse = 3f;// 2f;// 1.5f;
 
             if (deltaX == 0 && deltaY == 0) return;
             float pitch = RotationPitchLast - deltaY / (float)GLWindow.WindowHeight * speedMouse;
@@ -829,7 +831,7 @@ namespace MvkClient.Entity
                 {
                     // В стаке блок, и по лучу можем устанавливать блок
                     BlockPos blockPos = new BlockPos(moving.GetPut(itemBlock.Block));
-                    if (itemBlock.ItemUse(itemStack, this, World, blockPos, moving.Side, moving.Facing))
+                    if (itemBlock.CanPlaceBlockOnSide(itemStack, this, World, blockPos, moving.Side, moving.Facing))
                     {
                         ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(blockPos, moving.Side, moving.Facing));
                         itemInWorldManager.Put(blockPos, moving.Side, moving.Facing, Inventory.CurrentItem);
@@ -853,10 +855,23 @@ namespace MvkClient.Entity
         {
             if (!itemInWorldManager.IsDestroyingBlock && moving.IsBlock())
             {
-                // Начало разбитие блока
-                ClientWorld.ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Start));
-                itemInWorldManager.DestroyStart(moving.BlockPosition);
-                //blankShot = true;
+                BlockState blockState = World.GetBlockState(moving.BlockPosition);
+                BlockBase block = blockState.GetBlock();
+
+                if (block.GetPlayerRelativeBlockHardness(this, blockState) == 0)
+                {
+                    // Ломаем мгновенно, без захода в тик
+                    ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Destroy));
+                    itemInWorldManager.InstantDestroy(moving.BlockPosition);
+                    blankShot = true;
+                }
+                else
+                {
+                    // Ломаем через тик
+                    // Начало разбитие блока
+                    ClientWorld.ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Start));
+                    itemInWorldManager.DestroyStart(moving.BlockPosition);
+                }
             }
             else if (start)
             {

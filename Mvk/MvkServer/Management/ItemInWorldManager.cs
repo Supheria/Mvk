@@ -16,7 +16,7 @@ namespace MvkServer.Management
         /// <summary>
         /// Позиция блока который разрушаем
         /// </summary>
-        public BlockPos BlockPosDestroy { get; private set; }// = new BlockPos();
+        public BlockPos BlockPosDestroy { get; private set; }
         /// <summary>
         /// Истинно, если игрок уничтожает блок или ставит
         /// </summary>
@@ -66,6 +66,10 @@ namespace MvkServer.Management
         /// Статус действия
         /// </summary>
         private Status status = Status.None;
+        /// <summary>
+        /// Список мгновенной поломки
+        /// </summary>
+        private DoubleList<BlockPos> listDestroy = new DoubleList<BlockPos>(20); 
 
         public ItemInWorldManager(WorldBase world, EntityPlayer entityPlayer)
         {
@@ -77,11 +81,6 @@ namespace MvkServer.Management
         /// Нет паузы в обновлении между ударами
         /// </summary>
         public bool NotPauseUpdate => pause == 0;
-
-        /// <summary>
-        /// Истинно, если игрок уничтожает блок или ставит
-        /// </summary>
-        //public bool IsDestroyingBlock => !BlockPosDestroy.IsEmpty;
 
         /// <summary>
         /// Начато разрушение
@@ -102,7 +101,7 @@ namespace MvkServer.Management
                     // При старте нельзя помечать как стоп (-2) это должно быть в игровом такте
                     durabilityRemainingOnBlock = 0;
                 }
-                pause = entityPlayer.GetArmSwingAnimationEnd() / 2;
+                pause = entityPlayer.GetArmSwingAnimationEnd();
             } 
         }
 
@@ -115,6 +114,35 @@ namespace MvkServer.Management
         /// Окончено разрушение, блок сломан
         /// </summary>
         public void DestroyStop() => status = Status.Stop;
+
+        /// <summary>
+        /// Мгновенное разрушение блока
+        /// </summary>
+        public void InstantDestroy(BlockPos blockPos) => listDestroy.Add(blockPos);
+
+        /// <summary>
+        /// Разрушение блока
+        /// </summary>
+        public void Destroy(BlockPos blockPos)
+        {
+            // Уничтожение блока
+            BlockState blockState = world.GetBlockState(blockPos);
+            BlockBase block = blockState.GetBlock();
+
+            if (world is WorldServer worldServer)
+            {
+                if (!entityPlayer.IsCreativeMode)
+                {
+                    block.DropBlockAsItemWithChance(world, blockPos, blockState, 1.0f, 0);
+                }
+                block.Destroy(worldServer, blockPos, blockState, true, true);
+            }
+            else
+            {
+                block.Destroy(world, blockPos, blockState);
+            }
+            pause = entityPlayer.GetArmSwingAnimationEnd();
+        }
 
         /// <summary>
         /// Установить блок
@@ -145,9 +173,21 @@ namespace MvkServer.Management
         /// </summary>
         public void PutAbout()
         {
-            //BlockPosDestroy = new BlockPos();
             IsDestroyingBlock = false;
             pause = 0;
+        }
+
+        /// <summary>
+        /// Обновление мгновенного удаление, только на клиенте надо в тике
+        /// </summary>
+        public void UpdateDestroy()
+        {
+            listDestroy.Step();
+            int count = listDestroy.CountBackward;
+            for (int i = 0; i < count; i++)
+            {
+                Destroy(listDestroy.GetNext());
+            }
         }
 
         /// <summary>
@@ -185,23 +225,7 @@ namespace MvkServer.Management
                     else if (durabilityRemainingOnBlock == (int)Status.Stop)
                     {
                         // Уничтожение блока
-                        BlockState blockState = world.GetBlockState(BlockPosDestroy);
-                        BlockBase block = blockState.GetBlock();
-
-                        if (world is WorldServer worldServer)
-                        {
-                            if (!entityPlayer.IsCreativeMode)
-                            {
-                                block.DropBlockAsItemWithChance(world, BlockPosDestroy, blockState, 1.0f, 0);
-                            }
-                            block.Destroy(worldServer, BlockPosDestroy, blockState, true, true);
-                        }
-                        else
-                        {
-                            block.Destroy(world, BlockPosDestroy, blockState);
-                            // для клиента, чтоб не ждать
-                            //world.SetBlockState(BlockPosDestroy, new BlockState(EnumBlock.Air), 2);
-                        }
+                        Destroy(BlockPosDestroy);
                     }
                     else if (durabilityRemainingOnBlock == (int)Status.Put)
                     {
@@ -228,7 +252,6 @@ namespace MvkServer.Management
                             }
                         }
                     }
-                   // BlockPosDestroy = new BlockPos();
                     IsDestroyingBlock = false;
                 }
                 else

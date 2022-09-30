@@ -67,6 +67,9 @@ namespace MvkServer.World.Chunk.Light
         /// </summary>
         public byte GetHeightOpacity(int x, int z) => heightMapOpacity[z << 4 | x];
 
+        /// <summary>
+        /// Проверка высот
+        /// </summary>
         public void CheckHeightMap(BlockPos blockPos, byte lightOpacity)
         {
             int x = blockPos.X & 15;
@@ -209,6 +212,14 @@ namespace MvkServer.World.Chunk.Light
                 World.Light.ActionChunk(Chunk);
                 if (!World.Light.UpChunks()) return;
                 World.Light.HeavenSideLighting();
+                
+                // Проверка рядом загруженныйх если основное генерируемое на освещение
+                if (!Chunk.IsLoaded)
+                {
+                    World.Light.CheckBrighterLightLoaded();
+                }
+
+
                 //int c1 = World.Light.GetCountBlock();
                 //long le1 = stopwatch.ElapsedTicks;
                 //int c2 = 0;

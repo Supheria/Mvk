@@ -194,11 +194,11 @@ namespace MvkServer.World
         /// <summary>
         /// Задать тик блока
         /// </summary>
-        public override void SetBlockTick(BlockPos blockPos, uint timeTackt)
+        public override void SetBlockTick(BlockPos blockPos, uint timeTackt, bool priority = false)
         {
             if (!blockPos.IsValid()) return;
             ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
-            if (chunk != null) chunk.SetBlockTick(blockPos.X & 15, blockPos.Y, blockPos.Z & 15, timeTackt);
+            if (chunk != null) chunk.SetBlockTick(blockPos.X & 15, blockPos.Y, blockPos.Z & 15, timeTackt, priority);
         }
 
         /// <summary>
@@ -208,30 +208,30 @@ namespace MvkServer.World
         /// <summary>
         /// Отметить  блоки для обновления
         /// </summary>
-        public override void MarkBlockRangeForRenderUpdate(int x0, int y0, int z0, int x1, int y1, int z1)
-        {
-            int c0x = (x0) >> 4;
-            int c0y = (y0) >> 4;
-            if (c0y < 0) c0y = 0;
-            int c0z = (z0) >> 4;
-            int c1x = (x1) >> 4;
-            int c1y = (y1) >> 4;
-            if (c1y > ChunkBase.COUNT_HEIGHT15) c1y = ChunkBase.COUNT_HEIGHT15;
-            int c1z = (z1) >> 4;
-            vec2i ch;
-            int x, y, z;
-            for (x = c0x; x <= c1x; x++)
-            {
-                for (z = c0z; z <= c1z; z++)
-                {
-                    ch = new vec2i(x, z);
-                    for (y = c0y; y <= c1y; y++)
-                    {
-                        Players.FlagChunkForUpdate(ch, y);
-                    }
-                }
-            }
-        }
+        //public override void MarkBlockRangeForRenderUpdate(int x0, int y0, int z0, int x1, int y1, int z1)
+        //{
+        //    int c0x = (x0) >> 4;
+        //    int c0y = (y0) >> 4;
+        //    if (c0y < 0) c0y = 0;
+        //    int c0z = (z0) >> 4;
+        //    int c1x = (x1) >> 4;
+        //    int c1y = (y1) >> 4;
+        //    if (c1y > ChunkBase.COUNT_HEIGHT15) c1y = ChunkBase.COUNT_HEIGHT15;
+        //    int c1z = (z1) >> 4;
+        //    vec2i ch;
+        //    int x, y, z;
+        //    for (x = c0x; x <= c1x; x++)
+        //    {
+        //        for (z = c0z; z <= c1z; z++)
+        //        {
+        //            ch = new vec2i(x, z);
+        //            for (y = c0y; y <= c1y; y++)
+        //            {
+        //                Players.FlagChunkForUpdate(ch, y);
+        //            }
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Отметить блоки для изминения

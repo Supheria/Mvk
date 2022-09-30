@@ -12,8 +12,10 @@ namespace MvkServer.World.Gen.Feature
         {
             log = EnumBlock.LogFruit;
             leaves = EnumBlock.LeavesFruit;
+            sapling = EnumBlock.SaplingFruit;
             idLog = (ushort)log;
             idLeaves = (ushort)leaves;
+            idSapling = (ushort)sapling;
         }
 
         protected override int Radius(int y0)

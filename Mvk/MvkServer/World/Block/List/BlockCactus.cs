@@ -25,7 +25,7 @@ namespace MvkServer.World.Block.List
             UseNeighborBrightness = true;
             Material = EnumMaterial.Sapling;
             Shadow = false;
-            LightOpacity = 15;
+            LightOpacity = 0;
             Particle = 193;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };

@@ -2,6 +2,8 @@
 using MvkServer.Util;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace MvkServer.World.Gen.Feature
 {
@@ -19,6 +21,10 @@ namespace MvkServer.World.Gen.Feature
         /// </summary>
         protected ushort idLeaves;
         /// <summary>
+        /// ID саженца
+        /// </summary>
+        protected ushort idSapling;
+        /// <summary>
         /// Тип бревна
         /// </summary>
         protected EnumBlock log;
@@ -26,6 +32,10 @@ namespace MvkServer.World.Gen.Feature
         /// Тип листвы
         /// </summary>
         protected EnumBlock leaves;
+        /// <summary>
+        /// Тип саженца
+        /// </summary>
+        protected EnumBlock sapling;
 
         // высота ствола дерева до кроны
         protected int trunkHeight;
@@ -60,9 +70,13 @@ namespace MvkServer.World.Gen.Feature
         /// Наличие веток
         /// </summary>
         protected bool isBranches = false;
+        /// <summary>
+        /// Список блоков которые будет построено дерево
+        /// </summary>
+        protected ListMvk<BlockCache> blockCaches = new ListMvk<BlockCache>(16384);
 
-        protected virtual bool IsPut(EnumBlock enumBlock) 
-            => enumBlock == EnumBlock.Air || enumBlock == EnumBlock.TallGrass
+        protected virtual bool IsPut(EnumBlock enumBlock)
+            => enumBlock == EnumBlock.Air || enumBlock == sapling || enumBlock == EnumBlock.TallGrass
                 || enumBlock == EnumBlock.FlowerClover || enumBlock == EnumBlock.FlowerDandelion;
 
         protected virtual int Radius(int y0)
@@ -84,9 +98,78 @@ namespace MvkServer.World.Gen.Feature
             crownHeight = rand.Next(3) + 9;
             crownHeightUp = 3;
         }
-
+        
         public override bool GenerateArea(WorldBase world, ChunkBase chunk, Rand rand, BlockPos blockPos)
         {
+            if (GenerateCache(world, rand, blockPos))
+            {
+                ChunkStorage chunkStorage;
+                vec2i posCh = chunk.Position;
+                int index, x, y, z, chy, bx, bz, i;
+                int count = blockCaches.Count;
+                BlockCache blockCache;
+                for (i = 0; i < count; i++)
+                {
+                    blockCache = blockCaches[i];
+                    x = blockCache.x;
+                    y = blockCache.y;
+                    z = blockCache.z;
+                    if (y >= 0 && y <= ChunkBase.COUNT_HEIGHT_BLOCK && posCh.x == x >> 4 && posCh.y == z >> 4)
+                    {
+                        bx = x & 15;
+                        bz = z & 15;
+                        if (bx >> 4 == 0 && bz >> 4 == 0)
+                        {
+                            chy = y >> 4;
+                            chunkStorage = chunk.StorageArrays[chy];
+                            index = (y & 15) << 8 | bz << 4 | bx;
+                            chunkStorage.SetData(index, blockCache.id, blockCache.met);
+                        }
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Генерация дерева, от саженца
+        /// </summary>
+        public bool GenefateTree(WorldBase world, Rand rand, BlockPos blockPos)
+        {
+            if (GenerateCache(world, rand, blockPos))
+            {
+                BlockState blockState = world.GetBlockState(blockPos);
+                blockState.GetBlock().Destroy(world, blockPos, blockState);
+                int i;
+                int count = blockCaches.Count;
+                BlockPos pos;
+                BlockCache blockCache;
+                for (i = 0; i < count; i++)
+                {
+                    blockCache = blockCaches[i];
+                    pos.X = blockCache.x;
+                    pos.Y = blockCache.y;
+                    pos.Z = blockCache.z;
+                    if (pos.IsValid())
+                    {
+                        world.SetBlockState(pos, new BlockState(blockCache.id, blockCache.met), 14);
+                    }
+                }
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Сгенерировать дерево в кеш
+        /// </summary>
+        /// <param name="world"></param>
+        /// <param name="rand"></param>
+        /// <param name="blockPos"></param>
+        protected override bool GenerateCache(WorldBase world, Rand rand, BlockPos blockPos)
+        {
+            blockCaches.Clear();
             branchesAndLeaves = (ushort)(rand.Next(65536) & rand.Next(65536));
             RandSize(rand);
 
@@ -94,13 +177,12 @@ namespace MvkServer.World.Gen.Feature
             EnumBlock enumBlockDown = world.GetBlockState(blockPos.OffsetDown()).GetEBlock();
 
             if ((IsPut(enumBlock) && (enumBlockDown == EnumBlock.Dirt || enumBlockDown == EnumBlock.Turf
-                || enumBlockDown == EnumBlock.Sand || enumBlockDown == EnumBlock.Clay || enumBlockDown == EnumBlock.Gravel)) 
+                || enumBlockDown == EnumBlock.Sand || enumBlockDown == EnumBlock.Clay || enumBlockDown == EnumBlock.Gravel))
                 || (enumBlock == log && enumBlockDown != log))
             {
                 BlockPos bPos = new BlockPos();
-                vec2i posCh = chunk.Position;
-                
-                int index, x, y, z, x1, z1, bx2, bz2;
+
+                int x, y, z, x1, z1;
                 int bx = blockPos.X + offsetCrown.x;
                 int by = blockPos.Y + trunkHeight;
                 int bz = blockPos.Z + offsetCrown.y;
@@ -108,7 +190,6 @@ namespace MvkServer.World.Gen.Feature
                 int checkSize = size * size + 1;
                 int y0;
                 bool check = true;
-                ChunkStorage chunkStorage;
 
                 for (y0 = 0; y0 < crownHeight; ++y0)
                 {
@@ -127,7 +208,7 @@ namespace MvkServer.World.Gen.Feature
                                 bPos.Y = y;
                                 bPos.Z = z;
                                 enumBlock = world.GetBlockState(bPos).GetEBlock();
-                                if (!IsPut(enumBlock) 
+                                if (!IsPut(enumBlock)
                                     && enumBlock != EnumBlock.LeavesOak && enumBlock != EnumBlock.LogOak
                                     && enumBlock != EnumBlock.LeavesBirch && enumBlock != EnumBlock.LogBirch
                                     && enumBlock != EnumBlock.LeavesSpruce && enumBlock != EnumBlock.LogSpruce
@@ -146,7 +227,7 @@ namespace MvkServer.World.Gen.Feature
 
                 if (check)
                 {
-                    SetBlock(world, blockPos.OffsetDown(), posCh, (ushort)blockPut);
+                    blockCaches.Add(new BlockCache(blockPos.OffsetDown(), blockPut));
                     bool notLeaves = false;
                     int indexBranches = 0;
                     int ychu = crownHeight - crownHeightUntouchable;
@@ -163,42 +244,21 @@ namespace MvkServer.World.Gen.Feature
                                 z1 = z - bz;
                                 if (x1 * x1 + z1 * z1 <= checkSize)
                                 {
-                                    if (posCh.x == x >> 4 && posCh.y == z >> 4)
+                                    // Генератор отсутствия листвы
+                                    if (y0 < ychu && x1 * x1 + z1 * z1 >= checkSize - 1)
                                     {
-                                        index = y >> 4;
-                                        bx2 = x & 15;
-                                        bz2 = z & 15;
-                                        if (bx2 >> 4 == 0 && bz2 >> 4 == 0 && index >= 0 && index < ChunkBase.COUNT_HEIGHT)
-                                        {
-                                            chunkStorage = chunk.StorageArrays[index];
-                                            index = (y & 15) << 8 | bz2 << 4 | bx2;
-                                            // Генератор отсутствия листвы
-                                            if (y0 < ychu && x1 * x1 + z1 * z1 >= checkSize - 1)
-                                            {
-                                                notLeaves = (branchesAndLeaves & (1 << indexBranches)) != 0;
-                                                indexBranches++;
-                                                if (indexBranches > 16) indexBranches = 0;
-                                            }
-                                            else
-                                            {
-                                                notLeaves = false;
-                                            }
+                                        notLeaves = (branchesAndLeaves & (1 << indexBranches)) != 0;
+                                        indexBranches++;
+                                        if (indexBranches > 16) indexBranches = 0;
+                                    }
+                                    else
+                                    {
+                                        notLeaves = false;
+                                    }
 
-                                            if (!notLeaves)
-                                            {
-                                                if (chunkStorage.countBlock > 0)
-                                                {
-                                                    if (chunkStorage.data[index] == 0)
-                                                    {
-                                                        chunkStorage.SetData(index, idLeaves);
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    chunkStorage.SetData(index, idLeaves);
-                                                }
-                                            }
-                                        }
+                                    if (!notLeaves)
+                                    {
+                                        blockCaches.Add(new BlockCache(x, y, z, idLeaves));
                                     }
                                 }
                             }
@@ -207,11 +267,11 @@ namespace MvkServer.World.Gen.Feature
 
                     if (isBranches)
                     {
-                        TrunkBranches(posCh, blockPos, chunk, trunkHeight + crownHeight - crownHeightUp);
+                        TrunkBranches(blockPos, trunkHeight + crownHeight - crownHeightUp);
                     }
                     else
                     {
-                        Trunk(posCh, blockPos, chunk, trunkHeight + crownHeight - crownHeightUp);
+                        Trunk(blockPos, trunkHeight + crownHeight - crownHeightUp);
                     }
                     return true;
                 }
@@ -222,98 +282,57 @@ namespace MvkServer.World.Gen.Feature
         /// <summary>
         /// Ствол
         /// </summary>
-        protected virtual void Trunk(vec2i posCh, BlockPos blockPos, ChunkBase chunk, int count)
+        protected virtual void Trunk(BlockPos blockPos, int count)
         {
             int bx = blockPos.X;
             int by = blockPos.Y;
             int bz = blockPos.Z;
-            int index, y, bx2, bz2;
-            ChunkStorage chunkStorage;
+            int i, y;
 
-            if (posCh.x == bx >> 4 && posCh.y == bz >> 4)
+            for (i = 0; i < count; i++)
             {
-                bx2 = bx & 15;
-                bz2 = bz & 15;
-                if (bx2 >> 4 == 0 && bz2 >> 4 == 0)
-                {
-                    for (int i = 0; i < count; i++)
-                    {
-                        y = by + i;
-                        index = y >> 4;
-                        if (index >= 0 && index < ChunkBase.COUNT_HEIGHT)
-                        {
-                            chunkStorage = chunk.StorageArrays[index];
-                            index = (y & 15) << 8 | bz2 << 4 | bx2;
-                            chunkStorage.SetData(index, idLog, (ushort)(i == 0 ? 6 : 0));
-                        }
-                    }
-                }
+                y = by + i;
+                blockCaches.Add(new BlockCache(bx, y, bz, idLog, (ushort)(i == 0 ? 6 : 0)));
             }
         }
 
         /// <summary>
         /// Ствол с ветками
         /// </summary>
-        protected virtual void TrunkBranches(vec2i posCh, BlockPos blockPos, ChunkBase chunk, int count)
+        protected virtual void TrunkBranches(BlockPos blockPos, int count)
         {
             int bx = blockPos.X;
-            int by;
+            int by = blockPos.Y;
             int bz = blockPos.Z;
-            int index, y, bx2, bz2, bx3, bz3, chy, bxv, bzv, i, j;
+            int y, i, j;
             vec2i vec;
-            ChunkStorage chunkStorage;
             count--;
             int indexBranches = 0;
-            bool check = posCh.x == bx >> 4 && posCh.y == bz >> 4;
             bool bit;
-            by = blockPos.Y;
-            bx2 = bx & 15;
-            bz2 = bz & 15;
             int k = 0;
             for (i = count; i >= 0; i--)
             {
                 y = by + i;
-                chy = y >> 4;
-                if (chy >= 0 && chy < ChunkBase.COUNT_HEIGHT)
+                // Ствол
+                blockCaches.Add(new BlockCache(bx, y, bz, idLog, (ushort)(i == 0 ? 6 : 0)));
+
+                // Ветки
+                if (i >= trunkHeight)
                 {
-                    // Ствол
-                    if (check && bx2 >> 4 == 0 && bz2 >> 4 == 0)
+                    for (j = 0; j < 2; j++)
                     {
-                        chunkStorage = chunk.StorageArrays[chy];
-                        index = (y & 15) << 8 | bz2 << 4 | bx2;
-                        chunkStorage.SetData(index, idLog, (ushort)(i == 0 ? 6 : 0));
-                    }
-                    // Ветки
-                    if (i >= trunkHeight)
-                    {
-                        for (j = 0; j < 2; j++)
+                        bit = (branchesAndLeaves & (1 << indexBranches)) != 0;
+                        indexBranches++;
+                        if (indexBranches > 16) indexBranches = 0;
+                        vec = MvkStatic.AreaOne4[j + k];
+                        if (bit)
                         {
-                            bit = (branchesAndLeaves & (1 << indexBranches)) != 0;
-                            indexBranches++;
-                            if (indexBranches > 16) indexBranches = 0;
-                            vec = MvkStatic.AreaOne4[j + k];
-                            if (bit)
-                            {
-                                bxv = bx + vec.x;
-                                bzv = bz + vec.y;
-                                if (posCh.x == bxv >> 4 && posCh.y == bzv >> 4)
-                                {
-                                    bx3 = bxv & 15;
-                                    bz3 = bzv & 15;
-                                    if (bx3 >> 4 == 0 && bz3 >> 4 == 0)
-                                    {
-                                        chunkStorage = chunk.StorageArrays[chy];
-                                        index = (y & 15) << 8 | bz3 << 4 | bx3;
-                                        chunkStorage.SetData(index, idLog, (ushort)(2 - j));
-                                    }
-                                }
-                            }
+                            blockCaches.Add(new BlockCache(bx + vec.x, y, bz + vec.y, idLog, (ushort)(2 - j)));
                         }
-                        k = (k == 0 ? 2 : 0);
                     }
+                    k = (k == 0 ? 2 : 0);
                 }
             }
         }
-
     }
 }

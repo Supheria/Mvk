@@ -52,7 +52,6 @@ namespace MvkServer.World
         /// </summary>
         public void WriteToFile(bool isStoping)
         {
-
             lock (locker)
             {
                 foreach (RegionFile region in map.Values)
@@ -65,7 +64,7 @@ namespace MvkServer.World
                 // Проверяем какие регионы можно выгрузить
                 List<vec2i> list = world.ChunkPr.GetRegionList();
                 List<vec2i> listRemove = new List<vec2i>();
-                foreach(vec2i key in map.Keys)
+                foreach (vec2i key in map.Keys)
                 {
                     if (!list.Contains(key))
                     {

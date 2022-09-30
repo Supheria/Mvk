@@ -33,7 +33,7 @@ namespace MvkServer.World.Chunk
             if (chunkMapping.Contains(pos))
             {
                 ChunkBase chunk = GetChunk(pos);
-                return chunk != null && chunk.IsChunkLoaded;
+                return chunk != null && chunk.IsChunkPresent;
             }
             return false;
         }

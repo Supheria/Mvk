@@ -15,6 +15,10 @@ namespace MvkServer.Management
     public class PlayerInstance
     {
         /// <summary>
+        /// Количество блоков отправляемые за так изменённые в чанке
+        /// </summary>
+        private const int COUNT_MULTY_BLOCKS = 1024;
+        /// <summary>
         /// Позиция текущего чанка
         /// </summary>
         public vec2i CurrentChunk { get; private set; }
@@ -31,13 +35,13 @@ namespace MvkServer.Management
         /// </summary>
         private uint previousWorldTime;
         /// <summary>
-        /// Сколько блоков надо обновить до 64шт
+        /// Сколько блоков надо обновить до COUNT_MULTY_BLOCKS шт
         /// </summary>
         private int numBlocksToUpdate;
         /// <summary>
         /// Массив каких блоков надо обновить
         /// </summary>
-        private vec3i[] locationOfBlockChange = new vec3i[64];
+        private vec3i[] locationOfBlockChange = new vec3i[COUNT_MULTY_BLOCKS];
         /// <summary>
         /// Флаг какие псевдо чанки надо обновлять
         /// </summary>
@@ -110,7 +114,7 @@ namespace MvkServer.Management
         /// <summary>
         /// Флаг блока который был изменён
         /// </summary>
-        /// <param name="pos">локальные координаты 0..15</param>
+        /// <param name="pos">локальные координаты xz 0..15, y 0..255</param>
         public void FlagBlockForUpdate(vec3i pos)
         {
             if (numBlocksToUpdate == 0)
@@ -120,7 +124,7 @@ namespace MvkServer.Management
 
             flagsYAreasToUpdate |= 1 << (pos.y >> 4);
 
-            if (numBlocksToUpdate < 64)
+            if (numBlocksToUpdate < COUNT_MULTY_BLOCKS)
             {
                 for (int i = 0; i < numBlocksToUpdate; i++)
                 {
@@ -128,22 +132,27 @@ namespace MvkServer.Management
                 }
                 locationOfBlockChange[numBlocksToUpdate++] = pos;
             }
+            else
+            {
+                // TODO::2022-09-27 надо отладить, добираемся ли мы до этого количества
+                throw new System.Exception("PlayerInstance вышел за предел COUNT_MULTY_BLOCKS");
+            }
         }
 
         /// <summary>
         /// Флаг псевдочанка который был изменён
         /// </summary>
         /// <param name="y"></param>
-        public void FlagChunkForUpdate(int y)
-        {
-            if (numBlocksToUpdate == 0)
-            {
-                playerManager.PlayerInstancesToUpdateAdd(this);
-            }
+        //public void FlagChunkForUpdate(int y)
+        //{
+        //    if (numBlocksToUpdate == 0)
+        //    {
+        //        playerManager.PlayerInstancesToUpdateAdd(this);
+        //    }
 
-            numBlocksToUpdate = 64;
-            flagsYAreasToUpdate |= 1 << y;
-        }
+        //    numBlocksToUpdate = COUNT_MULTY_BLOCKS;
+        //    flagsYAreasToUpdate |= 1 << y;
+        //}
 
         /// <summary>
         /// Перепроверить чанки игроков в попадание в обзоре, если нет, убрать
@@ -212,37 +221,25 @@ namespace MvkServer.Management
                     //    SendTileToAllPlayersWatchingChunk(playerManager.World.GetTileEntity(blockPos));
                     //}
                 }
-                //else if (numBlocksToUpdate < 64)
-                //{
-                //    // Заменён 2 - 64 блока
-                //    //SendToAllPlayersWatchingChunk(new PacketS22MultiBlockChange(numBlocksToUpdate, locationOfBlockChange, playerManager.World.GetChunk(CurrentChunk)));
+                else if (numBlocksToUpdate < COUNT_MULTY_BLOCKS)
+                {
+                    // Заменён 2 - COUNT_MULTY_BLOCKS блока
+                    SendToAllPlayersWatchingChunk(new PacketS22MultiBlockChange(numBlocksToUpdate, locationOfBlockChange, playerManager.World.GetChunk(CurrentChunk)));
 
-                //    // Тайлы
-                //    //for (int i = 0; i < numBlocksToUpdate; i++)
-                //    //{
-                //    //    BlockPos blockPos = GetBlockPos(locationOfBlockChange[i]);
-                //    //    if (playerManager.World.GetBlock(blockPos).HasTileEntity())
-                //    //    {
-                //    //        SendTileToAllPlayersWatchingChunk(playerManager.World.GetTileEntity(blockPos));
-                //    //    }
-                //    //}
-                //}
+                    // Тайлы
+                    //for (int i = 0; i < numBlocksToUpdate; i++)
+                    //{
+                    //    BlockPos blockPos = GetBlockPos(locationOfBlockChange[i]);
+                    //    if (playerManager.World.GetBlock(blockPos).HasTileEntity())
+                    //    {
+                    //        SendTileToAllPlayersWatchingChunk(playerManager.World.GetTileEntity(blockPos));
+                    //    }
+                    //}
+                }
                 else
                 {
-                    // больше 64
-                    //if (CheckChunk8())
-                   // {
-                    PacketS21ChunkData packetS21ChunkData = new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate);
-                    //ChunkBase chunk = playerManager.World.GetChunk(CurrentChunk);
-                    //playerManager.World.Log.Log("2PI64:[{0}] {1} {3} b:{2}", CurrentChunk, flagsYAreasToUpdate, packetS21ChunkData.GetBuffer().Length, chunk.GetDebugAllSegment());
-                    //if ((CurrentChunk.x == 2 && CurrentChunk.y == 2) 
-                    //|| (CurrentChunk.x == 1 && CurrentChunk.y == 1)
-                    //|| (CurrentChunk.x == -1 && CurrentChunk.y == -4))
-                    //playerManager.World.Log.Log("2PI64: {0} {1} {2} {3}", CurrentChunk, flagsYAreasToUpdate, packetS21ChunkData.GetBuffer().Length, chunk.GetDebugAllSegment());
-                    //SendToAllPlayersWatchingChunk(packetS21ChunkData);
-                    SendToAllPlayersWatchingChunkCheck(packetS21ChunkData, CurrentChunk);
-                   // }
-                    //SendToAllPlayersWatchingChunk(new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate));
+                    // больше COUNT_MULTY_BLOCKS
+                    SendToAllPlayersWatchingChunkCheck(new PacketS21ChunkData(playerManager.World.GetChunk(CurrentChunk), false, flagsYAreasToUpdate), CurrentChunk);
 
                     // Тайлы
                     //int x0 = CurrentChunk.x << 4;

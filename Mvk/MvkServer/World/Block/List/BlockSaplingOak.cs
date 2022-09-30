@@ -1,4 +1,7 @@
-﻿namespace MvkServer.World.Block.List
+﻿using MvkServer.Util;
+using MvkServer.World.Gen.Feature;
+
+namespace MvkServer.World.Block.List
 {
     /// <summary>
     /// Блок саженца дуба
@@ -8,6 +11,12 @@
         /// <summary>
         /// Блок саженца дуба
         /// </summary>
-        public BlockSaplingOak() : base(132) { }
+        public BlockSaplingOak() : base(132) => NeedsRandomTick = true;
+
+        /// <summary>
+        /// Генерация дерева
+        /// </summary>
+        protected override void GenefateTree(WorldBase world, Rand rand, BlockPos blockPos) 
+            => new WorldGenTreeOak().GenefateTree(world, rand, blockPos);
     }
 }

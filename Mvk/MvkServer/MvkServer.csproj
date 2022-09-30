@@ -85,6 +85,7 @@
     <Compile Include="Network\Packets\Client\PacketC00Ping.cs" />
     <Compile Include="Network\Packets\Client\PacketC16ClientStatus.cs" />
     <Compile Include="Network\Packets\Server\PacketS1CEntityMetadata.cs" />
+    <Compile Include="Network\Packets\Server\PacketS22MultiBlockChange.cs" />
     <Compile Include="Network\Packets\Server\PacketS2AParticles.cs" />
     <Compile Include="Network\Packets\Server\PacketS29SoundEffect.cs" />
     <Compile Include="Network\Packets\Server\PacketS2FSetSlot.cs" />
@@ -106,6 +107,7 @@
     <Compile Include="Network\Packets\Server\PacketS25BlockBreakAnim.cs" />
     <Compile Include="Network\Packets\Server\PacketS23BlockChange.cs" />
     <Compile Include="Sound\AssetsSample.cs" />
+    <Compile Include="Util\BlockCache.cs" />
     <Compile Include="Util\ListMessy.cs" />
     <Compile Include="Util\DoubleList.cs" />
     <Compile Include="Util\EnumDamageSource.cs" />

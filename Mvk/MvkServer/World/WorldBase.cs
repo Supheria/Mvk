@@ -20,6 +20,7 @@ namespace MvkServer.World
         /// Радиус активных чанков во круг игрока
         /// </summary>
         private const int RADIUS_ACTION_CHUNK = 9;
+        
 
         /// <summary>
         /// Объект лога
@@ -570,7 +571,7 @@ namespace MvkServer.World
         /// <summary>
         /// Изменить метданные блока
         /// </summary>
-        public void SetBlockStateMet(BlockPos blockPos, ushort met)
+        public void SetBlockStateMet(BlockPos blockPos, ushort met, bool isRender = true)
         {
             if (!blockPos.IsValid()) return;
             ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
@@ -578,7 +579,7 @@ namespace MvkServer.World
             int yc = blockPos.Y >> 4;
             int index = (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15);
             chunk.StorageArrays[yc].NewMetBlock(index, met);
-            MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+            if (isRender) MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
         }
 
         /// <summary>
@@ -661,7 +662,7 @@ namespace MvkServer.World
         /// <summary>
         /// Задать тик блока
         /// </summary>
-        public virtual void SetBlockTick(BlockPos blockPos, uint timeTackt) { }
+        public virtual void SetBlockTick(BlockPos blockPos, uint timeTackt, bool priority = false) { }
 
         /// <summary>
         /// Уведомить соседей об изменении состояния
@@ -830,6 +831,12 @@ namespace MvkServer.World
         /// <param name="pos">позиция блока</param>
         /// <param name="progress">сколько тактом блок должен разрушаться</param>
         public virtual void SendBlockBreakProgress(int breakerId, BlockPos pos, int progress) { }
+
+        /// <summary>
+        /// Проверить облость загруженных чанков по XZ, координат в блока и радиус в блоках
+        /// </summary>
+        public bool IsAreaLoaded(BlockPos blockPos, int radius) => IsAreaLoaded(blockPos.X - radius, blockPos.Y, blockPos.Z - radius,
+                blockPos.X + radius, blockPos.Y, blockPos.Z + radius);
 
         /// <summary>
         /// Проверить облость загруженных чанков, координаты в блоках

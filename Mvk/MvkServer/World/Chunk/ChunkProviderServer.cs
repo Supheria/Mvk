@@ -185,7 +185,7 @@ namespace MvkServer.World.Chunk
         /// <param name="chunk">Объект чанка не null</param>
         private void LoadOrGen(ChunkBase chunk)
         {
-            if (!chunk.IsChunkLoaded)
+            if (!chunk.IsChunkPresent)
             {
                 // Пробуем загрузить с файла
                 try
@@ -193,7 +193,7 @@ namespace MvkServer.World.Chunk
                     //Stopwatch stopwatch = new Stopwatch();
                     //stopwatch.Start();
                     chunk.LoadFileChunk(worldServer);
-                   // if (chunk.IsChunkLoaded) world.Log.Log("ChunkLoad[{1}]: {0:0.00} ms", stopwatch.ElapsedTicks / (float)MvkStatic.TimerFrequency, chunk.Position);
+                    // if (chunk.IsChunkLoaded) world.Log.Log("ChunkLoad[{1}]: {0:0.00} ms", stopwatch.ElapsedTicks / (float)MvkStatic.TimerFrequency, chunk.Position);
                 }
                 catch (Exception ex)
                 {
@@ -201,11 +201,11 @@ namespace MvkServer.World.Chunk
                         ex.Message, ex.StackTrace,
                         chunk.Position, new vec2i(chunk.Position.x >> 5, chunk.Position.y >> 5));
                 }
-            }
-            if (!chunk.IsChunkLoaded)
-            {
-                // Начинаем генерацию
-                ChunkGenerate.GenerateChunk(chunk);
+                if (!chunk.IsChunkPresent)
+                {
+                    // Начинаем генерацию
+                    ChunkGenerate.GenerateChunk(chunk);
+                }
             }
         }
 

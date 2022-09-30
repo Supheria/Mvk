@@ -21,6 +21,10 @@
         /// Время когда этот блок должен сработать
         /// </summary>
         public uint scheduledTime;
+        /// <summary>
+        /// Приоритет
+        /// </summary>
+        public bool priority;
 
         public override string ToString()
         {

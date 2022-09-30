@@ -289,7 +289,7 @@ namespace MvkClient.Renderer
                 if (fs.IsChunk())
                 {
                     chunk = fs.GetChunk();
-                    if (chunk == null || !chunk.IsChunkLoaded) continue;
+                    if (chunk == null || !chunk.IsChunkPresent) continue;
                     vs = fs.GetSortList();
                     // Пробегаем по псевдо чанкам одно чанка
                     for (j = 0; j < vs.Length; j++)
