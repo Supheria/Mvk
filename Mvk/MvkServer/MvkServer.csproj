@@ -49,6 +49,7 @@
     <Compile Include="Entity\Mob\EntityChicken.cs" />
     <Compile Include="Inventory\IInventory.cs" />
     <Compile Include="Inventory\InventoryPlayer.cs" />
+    <Compile Include="Inventory\Slot.cs" />
     <Compile Include="Item\ItemBase.cs" />
     <Compile Include="Item\ItemStack.cs" />
     <Compile Include="Item\List\ItemBlock.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="Network\Packets\Client\PacketC09HeldItemChange.cs" />
     <Compile Include="Network\Packets\Client\PacketC0AAnimation.cs" />
     <Compile Include="Network\Packets\Client\PacketC04PlayerPosition.cs" />
+    <Compile Include="Network\Packets\Client\PacketC10CreativeInventoryAction.cs" />
     <Compile Include="Network\Packets\Client\PacketC15ClientSetting.cs" />
     <Compile Include="Network\Packets\Client\PacketC03UseEntity.cs" />
     <Compile Include="Network\Packets\Client\PacketC05PlayerLook.cs" />
@@ -171,6 +173,7 @@
     <Compile Include="World\Block\EnumBlock.cs" />
     <Compile Include="World\Block\EnumMaterial.cs" />
     <Compile Include="World\Block\Face.cs" />
+    <Compile Include="World\Block\Liquid.cs" />
     <Compile Include="World\Block\List\BlockAbGlassPane.cs" />
     <Compile Include="World\Block\List\BlockAbLog.cs" />
     <Compile Include="World\Block\List\BlockAbPlants.cs" />

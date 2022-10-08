@@ -215,6 +215,7 @@ namespace MvkClient
         public void GLResized(int width, int height)
         {
             GLWindow.Resized(width, height);
+            Setting.UpSizeInterface();
             Screen.Resized();
             if (IsGamePlay && Player != null)
             {
@@ -229,12 +230,36 @@ namespace MvkClient
         /// <param name="key">индекс клавиши</param>
         public void KeyDown(int key)
         {
-            Debug.DInt = key;
+            Debug.Keyboard = key;
 
-            if (World != null && IsGamePlayAction())
+            if (World != null)
             {
-                if (key == 9) MouseGamePlay(false); // Tab
-                else if (isMouseGamePlay) World.Key.Down(key);
+                if (key == 16) World.Key.KeyShiftDown();
+
+                if (IsGamePlayAction())
+                {
+                    if (key == 9) MouseGamePlay(false); // Tab
+                    else if (isMouseGamePlay) World.Key.Down(key);
+                }
+                else
+                {
+                    if (key == 27) // ESC
+                    {
+                        // если контейнер или меню возращаемся в игру
+                        if (World.ClientMain.Screen.IsScreenPause()
+                            || World.ClientMain.Screen.IsScreenConteiner())
+                        {
+                            World.ClientMain.Screen.GameMode();
+                        }
+                    }
+                    if (key == 69) // E
+                    {
+                        if (World.ClientMain.Screen.IsScreenConteiner())
+                        {
+                            World.ClientMain.Screen.GameMode();
+                        }
+                    }
+                }
             }
             else if (key == 114) Debug.IsDraw = !Debug.IsDraw; // F3
         }
@@ -253,7 +278,11 @@ namespace MvkClient
         /// <param name="key">индекс клавиши</param>
         public void KeyUp(int key)
         {
-            if (World != null && isMouseGamePlay) World.Key.Up(key);
+            if (World != null)
+            {
+                if (key == 16) World.Key.KeyShiftUp();
+                if (isMouseGamePlay) World.Key.Up(key);
+            }
         }
 
         /// <summary>

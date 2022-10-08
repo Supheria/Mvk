@@ -12,6 +12,10 @@
         /// <summary>
         /// Руский язык
         /// </summary>
-        Russian
+        Russian,
+        /// <summary>
+        /// Белорусский язык
+        /// </summary>
+        Belarusian
     }
 }

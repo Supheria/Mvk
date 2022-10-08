@@ -209,5 +209,11 @@
   <ItemGroup>
     <None Include="Resources\Atlas2.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ConteinerItems.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Belarusian.txt" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

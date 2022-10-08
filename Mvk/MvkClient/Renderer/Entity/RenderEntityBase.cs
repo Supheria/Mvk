@@ -49,6 +49,16 @@ namespace MvkClient.Renderer.Entity
             {
                 RenderShadow(entity, offset, .5f, timeIndex);
             }
+
+            if (entity.InFire())
+            {
+                EntityPlayerSP playerSP = renderManager.ClientMain.Player;
+                if (entity.Id != playerSP.Id
+                    || (entity.Id == playerSP.Id && playerSP.ViewCamera != EnumViewCamera.Eye))
+                {
+                    RenderEntityOnFire(entity, offset, timeIndex);
+                }
+            }
         }
 
         /// <summary>
@@ -170,5 +180,62 @@ namespace MvkClient.Renderer.Entity
                 GLRender.DepthMask(true);
             }
         }
+
+        /// <summary>
+        /// Отрисовывает огонь в позиции
+        /// </summary>
+        protected void RenderEntityOnFire(EntityBase entity, vec3 offset, float timeIndex)
+        {
+            GLRender.PushMatrix();
+
+            vec3 pos = entity.GetPositionFrame(timeIndex);
+            vec3 offsetPos = pos - offset;
+            GLRender.CullDisable();
+            GLRender.Translate(offsetPos);
+            float size = entity.Width * 2.8f;
+            GLRender.Scale(size);
+
+            GLRender.Rotate(-glm.degrees(renderManager.CameraRotationYaw), 0, 1, 0);
+            float h = entity.Height / size;
+            GLRender.Translate(0, 0, -.3f + (float)((int)h) * .02f);
+            GLRender.Color(1);
+
+            float x = .5f;
+            float y = (entity.Position.y - entity.BoundingBox.Min.y);
+            float z = 0;
+
+            uint time = entity.World.GetTotalWorldTime();
+            int frame = (int)(time - (time / 32) * 32);
+
+            float u1 = .890625f;
+            float u2 = .90625f;
+            float v1 = frame * .015625f;
+            float v2 = v1 + .015625f;
+
+            GLRender.Texture2DEnable();
+            GLWindow.Texture.BindTexture(AssetsTexture.Atlas);
+
+            while (h > 0)
+            {
+                GLRender.Begin(OpenGL.GL_TRIANGLE_STRIP);
+                GLRender.VertexWithUV(-x, -y, z, u2, v2);
+                GLRender.VertexWithUV(x, -y, z, u1, v2);
+                GLRender.VertexWithUV(-x, 1.4f - y, z, u2, v1);
+                GLRender.VertexWithUV(x, 1.4f - y, z, u1, v1);
+                GLRender.End();
+
+                h -= .45f;
+                y -= .45f;
+                x *= .9f;
+                z += .03f;
+
+                v1 += .0625f;
+                while(v1 >= .5f) v1 -= .5f;
+                v2 = v1 + .015625f;
+            }
+            GLRender.PopMatrix();
+            GLRender.CullEnable();
+        }
+        
     }
 }

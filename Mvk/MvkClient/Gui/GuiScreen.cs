@@ -37,6 +37,10 @@ namespace MvkClient.Gui
         /// Является ли скрин конец игры
         /// </summary>
         public bool IsScreenGameOver() => screen != null && screen.GetType() == typeof(ScreenGameOver);
+        /// <summary>
+        /// Имеется ли скрин контейнера
+        /// </summary>
+        public bool IsScreenConteiner() => screen != null && screen.IsConteiner;
 
         /// <summary>
         /// Изменён размер окна
@@ -102,6 +106,7 @@ namespace MvkClient.Gui
         public void Exchange(Screen screenNew)
         {
             if (screen != null) screen.Delete();
+            // TODO::Активация 20 fps в меню
             ClientMain.SetWishFps(20);
             if (ClientMain.World != null) ClientMain.Player.InputNone();
             screen = screenNew;
@@ -110,6 +115,10 @@ namespace MvkClient.Gui
             OnChanged();
         }
 
+        /// <summary>
+        /// Активация контейнера во время игры
+        /// </summary>
+        public void InGameConteiner() => Exchange(new ScreenConteiner(ClientMain));
         /// <summary>
         /// Активация меню во время игры
         /// </summary>

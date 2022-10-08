@@ -76,6 +76,7 @@ namespace MvkServer.Network
                 case 0x09: Handle09HeldItemChange(socket, (PacketC09HeldItemChange)packet); break;
                 case 0x0A: Handle0AAnimation(socket, (PacketC0AAnimation)packet); break;
                 case 0x0C: Handle0CPlayerAction(socket, (PacketC0CPlayerAction)packet); break;
+                case 0x10: Handle10CreativeInventoryAction(socket, (PacketC10CreativeInventoryAction)packet); break;
                 case 0x15: Handle15ClientSetting(socket, (PacketC15ClientSetting)packet); break;
                 case 0x16: Handle16ClientStatus(socket, (PacketC16ClientStatus)packet); break;
             }
@@ -301,6 +302,22 @@ namespace MvkServer.Network
                 }
                 entityPlayer.MarkPlayerActive();
             }
+        }
+
+        /// <summary>
+        /// Пакет действия креативного инвентаря
+        /// </summary>
+        private void Handle10CreativeInventoryAction(Socket socket, PacketC10CreativeInventoryAction packet)
+        {
+            EntityPlayerServer entityPlayer = ServerMain.World.Players.GetPlayerSocket(socket);
+            if (entityPlayer != null)
+            {
+                //packet.GetSlotId();
+                entityPlayer.Inventory.SetInventorySlotContents(packet.GetSlotId(), packet.GetStack().Item == null ? null : packet.GetStack());
+                entityPlayer.Inventory.SendSlot(packet.GetSlotId());
+            }
+
+            // ServerMain.World.Players.ClientSetting(socket, packet);
         }
 
         /// <summary>

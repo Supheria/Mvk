@@ -117,6 +117,14 @@ namespace MvkServer.Entity
         /// </summary>
         protected vec3 motionDebug = new vec3(0);
         /// <summary>
+        /// Параметр долголетия сущности в огне в тактах
+        /// </summary>
+        protected int fire;
+        /// <summary>
+        /// Неуязвимость при уроне в тиках огня, лавы, кактуса и подобного
+        /// </summary>
+        protected byte invulnerable = 0;
+        /// <summary>
         /// Находится ли этот объект в настоящее время в воде
         /// </summary>
         private bool inWater;
@@ -128,6 +136,7 @@ namespace MvkServer.Entity
         /// Находится ли этот объект в настоящее время в нефте
         /// </summary>
         private bool inOil;
+        
 
         public EntityBase(WorldBase world)
         {
@@ -245,6 +254,43 @@ namespace MvkServer.Entity
         /// Убить сущность
         /// </summary>
         public void Kill() => SetDead();
+
+        /// <summary>
+        /// Задать время сколько будет горет сущность в тактах
+        /// </summary>
+        public virtual void SetFire(int takt)
+        {
+            if (fire < takt)
+            {
+                int f = fire - (fire / 20) * 20;
+                fire = takt + f;
+            }
+        }
+
+        /// <summary>
+        /// Нанесет указанное количество урона сущности, если сущность не защищена от огненного урона.
+        /// </summary>
+        protected void DealFireDamage(int amount)
+        {
+            AttackEntityFrom(EnumDamageSource.InFire, amount);
+            SetFire(160);
+        }
+
+        /// <summary>
+        /// Поджечь от лавы
+        /// </summary>
+        protected void SetOnFireFromLava()
+        {
+            AttackEntityFrom(EnumDamageSource.Lava, 4f);
+            SetFire(300);
+        }
+
+        /// <summary>
+        /// Сущности наносит урон только на сервере
+        /// </summary>
+        /// <param name="amount">сила урона</param>
+        /// <returns>true - урон был нанесён</returns>
+        public virtual bool AttackEntityFrom(EnumDamageSource source, float amount, string name = "") => false;
 
         /// <summary>
         /// Обновить ограничительную рамку
@@ -562,8 +608,10 @@ namespace MvkServer.Entity
         protected void HandleLiquidMovement()
         {
             AxisAlignedBB axis = BoundingBox.Expand(new vec3(-.10001f, -.40001f, -.10001f));
+
+            Liquid liquid = World.BeingInLiquid(axis);
             // Проверка в воде
-            if (World.HandleMaterialAcceleration(axis, EnumMaterial.Water))
+            if (liquid.IsWater())
             {
                 //if (!inWater && !this.firstUpdate)
                 //{
@@ -578,9 +626,8 @@ namespace MvkServer.Entity
                 if (inWater) EffectsGettingOutWater();
                 inWater = false;
             }
-
             // Проверка в лаве
-            if (World.HandleMaterialAcceleration(axis, EnumMaterial.Lava))
+            if (liquid.IsLava())
             {
                 inLava = true;
             }
@@ -589,7 +636,7 @@ namespace MvkServer.Entity
                 inLava = false;
             }
             // Проверка в нефте
-            if (World.HandleMaterialAcceleration(axis, EnumMaterial.Oil))
+            if (liquid.IsOil())
             {
                 inOil = true;
             }
@@ -597,6 +644,73 @@ namespace MvkServer.Entity
             {
                 inOil = false;
             }
+        }
+
+        /// <summary>
+        /// Проверка соприкосновений с другими блоками плюс прикосновение с огнём
+        /// </summary>
+        protected void DoBlockCollisions()
+        {
+            AxisAlignedBB aabb = BoundingBox.Expand(new vec3(.01f, .01f, .01f));
+            vec3i min = aabb.MinInt();
+            vec3i max = aabb.MaxInt();
+            int minX = min.x;
+            int maxX = max.x + 1;
+            int minY = min.y;
+            int maxY = max.y + 1;
+            int minZ = min.z;
+            int maxZ = max.z + 1;
+
+            if (!World.IsAreaLoaded(minX, minY, minZ, maxX, maxY, maxZ)) return;
+
+            BlockPos blockPos = new BlockPos();
+            BlockState blockState;
+            BlockBase block;
+            bool isFire = false;
+            for (int x = minX; x < maxX; x++)
+            {
+                for (int y = minY; y < maxY; y++)
+                {
+                    for (int z = minZ; z < maxZ; z++)
+                    {
+                        blockPos.X = x;
+                        blockPos.Y = y;
+                        blockPos.Z = z;
+                        blockState = World.GetBlockState(blockPos);
+                        block = blockState.GetBlock();
+                        block.OnEntityCollidedWithBlock(World, blockPos, blockState, this);
+                        if (!isFire && block.EBlock == EnumBlock.Fire) isFire = true;
+                    }
+                }
+            }
+
+            if (isFire)
+            {
+                // прикосновение с огнём
+                DealFireDamage(1);
+            }
+        }
+
+        /// <summary>
+        /// Горит ли сущность
+        /// </summary>
+        public virtual bool InFire() => fire > 0;
+
+        /// <summary>
+        /// определяем горим ли мы, и раз в секунду %20, наносим урон
+        /// </summary>
+        protected bool UpdateFire()
+        {
+            if (fire > 1)
+            {
+                fire--;
+                if (fire % 20 == 0)
+                {
+                    AttackEntityFrom(EnumDamageSource.OnFire, 1);
+                }
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

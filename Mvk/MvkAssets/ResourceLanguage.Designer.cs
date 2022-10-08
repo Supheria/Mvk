@@ -61,11 +61,53 @@ namespace MvkAssets {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на gui.singleplayer:Адзіночная гульня
+        ///gui.multiplayer:Сеткавая гульня
+        ///gui.options:Налады
+        ///gui.exit:Вынахад
+        ///gui.exit.world:Выхад са свету
+        ///gui.nikname:Імя гульца
+        ///gui.fps:FPS
+        ///gui.maxfps:Максімум FPS
+        ///gui.overview.chunks:Агляд чанкаў
+        ///gui.volume.sound:Агульная гучнасць
+        ///gui.volume.music:Гучнасць музыкі
+        ///gui.volume.off:Выключаны гук
+        ///gui.smooth.lighting.on:Плыўнае асвятленне ўключана
+        ///gui.smooth.lighting.off:Плыўнае асвятленне выключана
+        ///gui.size.interface:Інтэрфейс
+        ///gui.apply:Ужыць
+        ///gui.cancel:Адмена
+        ///gui.no [остаток строки не уместился]&quot;;.
+        /// </summary>
+        internal static string Belarusian {
+            get {
+                return ResourceManager.GetString("Belarusian", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на gui.singleplayer:Singleplayer
-        ///gui.multiplayere:Multiplayere
+        ///gui.multiplayer:Multiplayer
         ///gui.options:Options
-        ///gui.exit:Exit
-        ///.
+        ///gui.exit:Quit
+        ///gui.nikname:Player name
+        ///gui.fps:FPS
+        ///gui.maxfps:Maximum FPS
+        ///gui.overview.chunks:Chunks overview
+        ///gui.volume.sound:Overall volume
+        ///gui.volume.music:Music volume
+        ///gui.volume.off:Sound off
+        ///gui.smooth.lighting.on:Smooth lighting on
+        ///gui.smooth.lighting.off:Smooth lighting off
+        ///gui.size.interface:Interface
+        ///gui.apply:Apply
+        ///gui.cancel:Cancel
+        ///gui.no:No
+        ///gui.yes:Yes
+        ///gui.connect:Connect
+        ///gui.world.empty:- Empty -
+        ///g [остаток строки не уместился]&quot;;.
         /// </summary>
         internal static string English {
             get {
@@ -75,9 +117,23 @@ namespace MvkAssets {
         
         /// <summary>
         ///   Ищет локализованную строку, похожую на gui.singleplayer:Одиночная игра
-        ///#gui.multiplayere:Сетевая игра
-        ///gui.options:Настройки...
-        ///gui.exit:Выход.
+        ///gui.multiplayer:Сетевая игра
+        ///gui.options:Настройки
+        ///gui.exit:Выход
+        ///gui.exit.world:Выход из мира
+        ///gui.nikname:Имя игрока
+        ///gui.fps:FPS
+        ///gui.maxfps:Максимум FPS
+        ///gui.overview.chunks:Обзор чанков
+        ///gui.volume.sound:Общая громкость
+        ///gui.volume.music:Громкость музыки
+        ///gui.volume.off:Выключен звук
+        ///gui.smooth.lighting.on:Плавное освещение включено
+        ///gui.smooth.lighting.off:Плавное освещение выключено
+        ///gui.size.interface:Интерфейс
+        ///gui.apply:Применить
+        ///gui.cancel:Отмена
+        ///gui.no:Нет        /// [остаток строки не уместился]&quot;;.
         /// </summary>
         internal static string Russian {
             get {

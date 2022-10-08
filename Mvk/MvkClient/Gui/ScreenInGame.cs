@@ -94,8 +94,11 @@ namespace MvkClient.Gui
             DrawEffDamage(ClientMain.Player.DamageTime, timeIndex);
             // Эффект воды если надо
             DrawEffEyes(timeIndex);
-
-
+            if (ClientMain.Player.InFire() && ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
+            {
+                // Огонь
+                DrawFire();
+            }
 
             GLRender.PushMatrix();
             GLRender.Translate(Width / 2, Height, 0);
@@ -106,8 +109,10 @@ namespace MvkClient.Gui
             DrawInventory();
             // Статусы
             DrawStat();
-
+            
             GLRender.PopMatrix();
+
+            
         }
 
         /// <summary>
@@ -330,6 +335,27 @@ namespace MvkClient.Gui
                 GLRender.Texture2DDisable();
                 GLRender.Rectangle(0, 0, Width, Height, new vec4(0.7f, 0.4f, 0.3f, 0.7f * dt));
             }
+        }
+
+        /// <summary>
+        /// Огонь
+        /// </summary>
+        private void DrawFire()
+        {
+            uint time = ClientMain.TickCounter;
+            int frame = (int)(time - (time / 32) * 32);
+
+            float u1 = .890625f;
+            float u2 = .90625f;
+            float v1 = frame * .015625f;
+            float v2 = v1 + .015625f;
+
+            GLRender.PushMatrix();
+            GLRender.Texture2DEnable();
+            GLWindow.Texture.BindTexture(AssetsTexture.Atlas);
+            GLRender.Color(1, 1, 1, .3f);
+            GLRender.Rectangle(0, 0, Width, Height, u1, v1, u2, v2);
+            GLRender.PopMatrix();
         }
     }
 }

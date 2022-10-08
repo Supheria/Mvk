@@ -26,6 +26,10 @@ namespace MvkServer.World.Block
         /// Массив с дополнительными metdata свыше 4 бита
         /// </summary>
         public static bool[] blocksAddMet;
+        /// <summary>
+        /// Массив всех блоков которые попадают в креативный инвентарь 
+        /// </summary>
+        public static int[] blocksInventory;
 
         private static BlockBase ToBlock(EnumBlock eBlock)
         {
@@ -108,6 +112,17 @@ namespace MvkServer.World.Block
                 blocksRandomTick[i] = block.NeedsRandomTick;
                 blocksAddMet[i] = block.IsAddMet;
             }
+
+            blocksInventory = new int[]
+            {
+                2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
+                20, 21, 22, 23, 24, 12, 13, 15, 17, 19,
+                25, 26, 27, 28, 29, 40, 41, 42, 43, 44,
+                30, 31, 32, 33, 34, 45, 46, 47, 48, 49,
+                35, 36, 37, 38, 39, 50, 51, 52, 53,
+                // 54, 55, 56, 57, 58, 59,
+                //1, 7, 8, 9
+            }; ;
         }
 
         /// <summary>

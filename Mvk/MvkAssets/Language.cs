@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace MvkAssets
 {
@@ -11,7 +12,7 @@ namespace MvkAssets
         /// <summary>
         /// Массив всех слов
         /// </summary>
-        protected static Hashtable hashtable = new Hashtable();
+        protected static Dictionary<string, string> list = new Dictionary<string, string>();
 
         /// <summary>
         /// Выбрать язык
@@ -22,7 +23,7 @@ namespace MvkAssets
             string strAll = Assets.GetLanguage(keyLang);
             string[] stringSeparators = new string[] { "\r\n" };
             string[] strs = strAll.Split(stringSeparators, StringSplitOptions.None);
-            hashtable.Clear();
+            list.Clear();
             foreach (string strLine in strs)
             {
                 // комментарий
@@ -32,9 +33,9 @@ namespace MvkAssets
                 if (index > 0)
                 {
                     string key = strLine.Substring(0, index);
-                    if (!hashtable.ContainsKey(key))
+                    if (!list.ContainsKey(key))
                     {
-                        hashtable.Add(strLine.Substring(0, index), strLine.Substring(index + 1));
+                        list.Add(strLine.Substring(0, index), strLine.Substring(index + 1));
                     }
                 }
             }
@@ -58,6 +59,6 @@ namespace MvkAssets
         /// <summary>
         /// Перевести фразу
         /// </summary>
-        public static string T(string key) => hashtable.ContainsKey(key) ? hashtable[key].ToString() : key;
+        public static string T(string key) => list.ContainsKey(key) ? list[key].ToString() : key;
     }
 }

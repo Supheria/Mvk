@@ -47,7 +47,7 @@ namespace MvkServer.Item
             // HACK:: доделать id item
             if (id > 0 && id < 4096) // Block
             {
-                return new ItemBlock(Blocks.GetBlockCache((EnumBlock)id));
+                return new ItemBlock(Blocks.GetBlockCache(id));
             }
             // остальное предметы, пока их нет
             return null;
@@ -79,5 +79,7 @@ namespace MvkServer.Item
         /// <param name="side">Сторона, по которой щелкнули правой кнопкой мыши</param>
         /// <param name="facing"></param>
         public virtual bool ItemUse(ItemStack stack, EntityPlayer playerIn, WorldBase worldIn, BlockPos blockPos, Pole side, vec3 facing) => false;
+
+        public override string ToString() => Id.ToString();
     }
 }

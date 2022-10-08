@@ -125,7 +125,9 @@ namespace MvkClient.Renderer
             for (int i = 0; i <= BlocksCount.COUNT; i++)
             {
                 EnumBlock enumBlock = (EnumBlock)i;
-                mapBlocksGui.Add(enumBlock, new RenderBlockGui(enumBlock));//, 32f));
+                RenderBlockGui renderBlock = new RenderBlockGui(enumBlock);
+                mapBlocksGui.Add(enumBlock, renderBlock);//, 32f));
+                renderBlock.Render();
                 //listBlocksGui[i] = new RenderBlockGui((EnumBlock)i, 64f);
             }
             // Отладочный блок

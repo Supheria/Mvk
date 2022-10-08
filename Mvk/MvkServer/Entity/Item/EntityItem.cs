@@ -17,10 +17,7 @@ namespace MvkServer.Entity.Item
         /// Возраст (используется для его анимации вверх и вниз, а также для истечения срока его действия) 
         /// </summary>
         public int Age { get; private set; }
-        /// <summary>
-        /// Состояние (Например, урон для инструментов) 
-        /// </summary>
-        public int Health { get; protected set; } = 5;
+        
         /// <summary>
         /// Случайная начальная высота с плавающей запятой 
         /// </summary>
@@ -37,6 +34,11 @@ namespace MvkServer.Entity.Item
         /// Задержка перед всплытием
         /// </summary>
         private int delayBeforeSurface = 0;
+        /// <summary>
+        /// Состояние (Например, урон для инструментов) 
+        /// </summary>
+        private int health = 5;
+
         /// <summary>
         /// Владелец, кто выкинул
         /// </summary>
@@ -97,6 +99,9 @@ namespace MvkServer.Entity.Item
             else
             {
                 base.Update();
+
+                if (invulnerable > 0) invulnerable--;
+
                 if (delayBeforeCanPickup > 0 && delayBeforeCanPickup != 32767) delayBeforeCanPickup --;
 
                 bool isLiquid = IsInWater() || IsInLava() || IsInOil();
@@ -175,10 +180,40 @@ namespace MvkServer.Entity.Item
                 if (Age != -32768) Age++;
 
                 HandleLiquidMovement();
+                // надо поджечь
+                if (IsInLava()) SetOnFireFromLava();
+
+                DoBlockCollisions();
+                UpdateFire();
 
                 // Если сущность живёт 5 мин или больше она умирает
                 if (!World.IsRemote && Age >= 6000) SetDead();
             }
+        }
+
+        /// <summary>
+        /// Сущности наносит урон только на сервере
+        /// </summary>
+        /// <param name="amount">сила урона</param>
+        /// <returns>true - урон был нанесён</returns>
+        public override bool AttackEntityFrom(EnumDamageSource source, float amount, string name = "")
+        {
+            if (World.IsRemote) return false;
+            if (health <= 0f) return false;
+
+            // иммунка на огонь и лаву в тиках
+            if (source == EnumDamageSource.Lava || source == EnumDamageSource.InFire
+                || source == EnumDamageSource.Cactus)
+            {
+                if (invulnerable > 0) return false;
+                invulnerable = 1;
+            }
+
+            health -= Mth.Ceiling(amount);
+
+            if (health <= 0) SetDead();
+
+            return true;
         }
 
         /// <summary>

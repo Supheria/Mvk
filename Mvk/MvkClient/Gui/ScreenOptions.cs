@@ -67,7 +67,7 @@ namespace MvkClient.Gui
             sliderSizeInterface = new Slider(1, 2, 1, Language.T("gui.size.interface"))
             {
                 Width = 192,
-                Value = Setting.SizeInterface
+                Value = Setting.SizeInterfaceOptions
             };
             labelLanguage = new Label(Language.T("gui.language"), FontSize.Font12)
             {
@@ -190,7 +190,7 @@ namespace MvkClient.Gui
             Setting.Nickname = textBoxNickname.Text;
             Setting.Language = cacheLanguage;
             Setting.SmoothLighting = cacheSmoothLighting;
-            Setting.SizeInterface = sliderSizeInterface.Value;
+            Setting.SetSizeInterface(sliderSizeInterface.Value);
             Setting.Save();
             Language.SetLanguage((AssetsLanguage)cacheLanguage);
 

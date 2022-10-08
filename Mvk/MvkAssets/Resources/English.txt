@@ -30,3 +30,4 @@ gui.language:Language
 gui.error:Error
 gui.menu:On the menu
 gui.error.server.disconnect:Server dropped connection
+gui.conteiner.inventory:Inventory

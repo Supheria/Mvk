@@ -7,7 +7,6 @@ using MvkServer.Glm;
 using SharpGL;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 namespace MvkClient.Gui
 {
@@ -33,6 +32,10 @@ namespace MvkClient.Gui
         /// Основной клиент
         /// </summary>
         public Client ClientMain { get; protected set; }
+        /// <summary>
+        /// Является ли окно контейнером во время игры
+        /// </summary>
+        public bool IsConteiner { get; protected set; } = false;
         /// <summary>
         /// Откуда зашёл
         /// </summary>
@@ -86,6 +89,7 @@ namespace MvkClient.Gui
         {
             Width = GLWindow.WindowWidth;
             Height = GLWindow.WindowHeight;
+            sizeInterface = Setting.SizeInterface;
             foreach (Control control in Controls)
             {
                 control.Resized();
@@ -116,7 +120,10 @@ namespace MvkClient.Gui
                 }
             }
             GLRender.ListCall(dList);
+            DrawAdd();
         }
+
+        protected virtual void DrawAdd() { }
 
         /// <summary>
         /// Рендер листа

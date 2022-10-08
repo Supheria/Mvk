@@ -1,6 +1,7 @@
 ﻿using MvkAssets;
 using MvkClient.Renderer;
 using MvkClient.Renderer.Font;
+using MvkClient.Setitings;
 using MvkClient.World;
 using MvkServer.Glm;
 using MvkServer.Util;
@@ -76,10 +77,15 @@ namespace MvkClient
         /// </summary>
         public static long Traffic = 0;
 
+        public static int Keyboard = 0;
+        public static string DebugString = "";
+        
         public static int DInt = 0;
         public static long DLong = 0;
         public static float DFloat = 0;
         public static string DStr = "";
+
+
 
         public static bool DStart = false;
 
@@ -106,8 +112,11 @@ namespace MvkClient
             return version + "\r\n"
                 + strTpsFps + "\r\n"
                 + "Sound: " + strSound + "\r\n"
+                + "Key: " + Keyboard + "\r\n"
                 + s + c 
+                + "DS: " + DebugString + "\r\n"
                 + BlockFocus
+                + string.Format("")
                 + string.Format("Mesh: {0}/{6} Poligons: {4}\r\nint: {1} float: {2:0.00} string: {3} long: {5}", 
                 CountMesh, DInt, DFloat, DStr, CountPoligon, DLong, CountMeshAll);
         }
@@ -132,6 +141,7 @@ namespace MvkClient
                 GLWindow.gl.LoadIdentity();
                 GLWindow.gl.Enable(OpenGL.GL_TEXTURE_2D);
                 GLWindow.Texture.BindTexture(AssetsTexture.Font12);
+                GLRender.Scale(Setting.SizeInterface);
                 FontRenderer.RenderText(11f, 11f, new vec4(.2f, .2f, .2f, 1f), ToStringDebug(), FontSize.Font12);
                 FontRenderer.RenderText(10f, 10f, new vec4(0.9f, 0.9f, .6f, 1f), ToStringDebug(), FontSize.Font12);
                 GLRender.ListEnd();

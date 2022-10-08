@@ -1,0 +1,38 @@
+﻿gui.singleplayer:Адзіночная гульня
+gui.multiplayer:Сеткавая гульня
+gui.options:Налады
+gui.exit:Вынахад
+gui.exit.world:Выхад са свету
+gui.nikname:Імя гульца
+gui.fps:FPS
+gui.maxfps:Максімум FPS
+gui.overview.chunks:Агляд чанкаў
+gui.volume.sound:Агульная гучнасць
+gui.volume.music:Гучнасць музыкі
+gui.volume.off:Выключаны гук
+gui.smooth.lighting.on:Плыўнае асвятленне ўключана
+gui.smooth.lighting.off:Плыўнае асвятленне выключана
+gui.size.interface:Інтэрфейс
+gui.apply:Ужыць
+gui.cancel:Адмена
+gui.no:Не
+gui.yes:Так
+gui.connect:Злучыцца
+gui.world.empty:- Пуста -
+gui.world.broken:Свет зламаны!
+gui.world.delete:Вы сапраўды хочаце выдаліць свет?
+gui.saving:Захаванне...
+gui.process:Працэс...
+gui.loading.world:Загрузка свету {0:0.0} %
+gui.ip:IP адрас
+gui.back.game:Вярнуцца ў гульню
+gui.language:Мова
+gui.error:Памылка
+gui.menu:У меню
+gui.error.server.disconnect:Сервер разарваў злучэнне
+gui.net:Адкрыць сетку
+gui.net.on:Сетка адкрыта
+gui.game.over:Вы памерлі!
+gui.respawn:Адрадзіцца
+world.player.duplicate:Гулец з такім імем ужо ў гульні!
+gui.conteiner.inventory:Інвентар

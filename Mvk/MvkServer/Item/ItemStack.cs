@@ -82,7 +82,7 @@ namespace MvkServer.Item
         /// <summary>
         /// Копия стака
         /// </summary>
-        public ItemStack Copy() => new ItemStack(Item.Copy(), Amount, ItemDamage);
+        public ItemStack Copy() => new ItemStack(Item?.Copy(), Amount, ItemDamage);
 
         /// <summary>
         /// Сравнить два стака предметов

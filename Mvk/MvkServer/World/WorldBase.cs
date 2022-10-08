@@ -841,7 +841,7 @@ namespace MvkServer.World
         /// <summary>
         /// Проверить облость загруженных чанков, координаты в блоках
         /// </summary>
-        protected bool IsAreaLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
+        public bool IsAreaLoaded(int minX, int minY, int minZ, int maxX, int maxY, int maxZ)
         {
             if (maxY >= 0 && minY < ChunkBase.COUNT_HEIGHT * 16)
             {
@@ -929,11 +929,9 @@ namespace MvkServer.World
         //}
 
         /// <summary>
-        /// Проверка нахождения материала в рамке AABB
+        /// Проверка нахождения в жидкости в рамке AABB
         /// </summary>
-        /// <param name="aabb"></param>
-        /// <param name="material"></param>
-        public bool HandleMaterialAcceleration(AxisAlignedBB aabb, EnumMaterial material)//, EntityBase entity)
+        public Liquid BeingInLiquid(AxisAlignedBB aabb)
         {
             vec3i min = aabb.MinInt();
             vec3i max = aabb.MaxInt();
@@ -944,8 +942,11 @@ namespace MvkServer.World
             int minZ = min.z;
             int maxZ = max.z + 1;
 
-            if (!IsAreaLoaded(minX, minY, minZ, maxX, maxY, maxZ)) return false;
+            Liquid liquid = new Liquid();
+            if (!IsAreaLoaded(minX, minY, minZ, maxX, maxY, maxZ)) return liquid;
+
             BlockPos blockPos = new BlockPos();
+            EnumMaterial material;
             for (int x = minX; x < maxX; x++)
             {
                 for (int y = minY; y < maxY; y++)
@@ -955,11 +956,14 @@ namespace MvkServer.World
                         blockPos.X = x;
                         blockPos.Y = y;
                         blockPos.Z = z;
-                        if (GetBlockState(blockPos).GetBlock().Material == material) return true;
+                        material = GetBlockState(blockPos).GetBlock().Material;
+                        if (material == EnumMaterial.Water) liquid.Water();
+                        else if (material == EnumMaterial.Lava) liquid.Lava();
+                        else if (material == EnumMaterial.Oil) liquid.Oil();
                     }
                 }
             }
-            return false;
+            return liquid;
 
                 // Толчки воды
                 //if (var11.lengthVector() > 0.0D && entity.isPushedByWater())

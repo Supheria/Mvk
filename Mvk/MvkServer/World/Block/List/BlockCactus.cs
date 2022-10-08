@@ -1,4 +1,5 @@
-﻿using MvkServer.Glm;
+﻿using MvkServer.Entity;
+using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -154,6 +155,14 @@ namespace MvkServer.World.Block.List
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Вызывается при столкновении объекта с блоком
+        /// </summary>
+        public override void OnEntityCollidedWithBlock(WorldBase worldIn, BlockPos pos, BlockState state, EntityBase entityIn)
+        {
+            entityIn.AttackEntityFrom(EnumDamageSource.Cactus, 1.0F);
         }
     }
 }

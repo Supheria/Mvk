@@ -70,6 +70,10 @@
         /// <summary>
         /// Иконка для InGame 512*512
         /// </summary>
-        Icons
+        Icons,
+        /// <summary>
+        /// Контейнер инвенторя креатива
+        /// </summary>
+        ConteinerItems
     }
 }

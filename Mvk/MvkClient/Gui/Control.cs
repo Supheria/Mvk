@@ -94,7 +94,10 @@ namespace MvkClient.Gui
         /// <summary>
         /// Изменён размер окна
         /// </summary>
-        public virtual void Resized() { }
+        public virtual void Resized()
+        {
+            sizeInterface = Setting.SizeInterface;
+        }
 
         /// <summary>
         /// Прорисовка контрола

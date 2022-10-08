@@ -110,7 +110,6 @@ namespace MvkClient.Network
         {
             packets.Step();
             int count = packets.CountBackward;
-            Debug.DInt = count;
             for (int i = 0; i < count; i++)
             {
                 UpdateReceivePacketClient(packets.GetNext());

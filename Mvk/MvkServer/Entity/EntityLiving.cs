@@ -192,6 +192,15 @@ namespace MvkServer.Entity
         /// </summary>
         public void SetAir(int air) => MetaData.UpdateObject(1, (short)air);
 
+        /// <summary>
+        /// Горит ли сущность
+        /// </summary>
+        public override bool InFire() => GetFlag(0);
+        /// <summary>
+        /// Задать горит ли сущность
+        /// </summary>
+        public void SetInFire(bool fire) => SetFlag(0, fire);
+
         #endregion
 
         /// <summary>
@@ -335,8 +344,11 @@ namespace MvkServer.Entity
                 // метод определения если есть ускорение и мы не на воде, определяем по нижниму блоку какой спавн частиц и спавним их
                 // ... func_174830_Y
 
+                if (invulnerable > 0) invulnerable--;
+
                 // определяем горим ли мы, и раз в секунду %20, наносим урон
-                // ...
+                if (UpdateFire()) SetInFire(fire > 1);
+
 
                 // определяем тонем ли мы
                 DrownServer();
@@ -346,10 +358,27 @@ namespace MvkServer.Entity
             }
         }
 
-        protected void SetOnFireFromLava()
+        /// <summary>
+        /// Задать время сколько будет горет сущность в тактах
+        /// </summary>
+        public override void SetFire(int takt)
         {
-            //AttackEntityFrom(EnumDamageSource.Lava, 4f);
-            // SetFire(15);
+            //TODO::EntityLiving Тут можно сделать проверку на броню игрока, которая будет сокращать время
+            if (fire < takt)
+            {
+                int f = fire - (fire / 20) * 20;
+                fire = takt + f;
+                SetInFire(fire > 0);
+            }
+        }
+
+        /// <summary>
+        /// Погасить
+        /// </summary>
+        public void Extinguish()
+        {
+            fire = 0;
+            SetInFire(false);
         }
 
         /// <summary>
@@ -357,8 +386,10 @@ namespace MvkServer.Entity
         /// </summary>
         protected void EntityUpdateLocation()
         {
-            // метод проверки нахождения по кализии в воде ли мы, и меняем статус IsWater
+            // метод проверки нахождения по кализии в жидкостях
             HandleLiquidMovement();
+            // соприкосновение с блоками, и огнём
+            DoBlockCollisions();
 
             // определяем в лаве ли мы по кализии
             // ... func_180799_ab
@@ -416,7 +447,8 @@ namespace MvkServer.Entity
         /// </summary>
         protected int DecreaseAirSupply(int oldAir, bool isOil)
         {
-            //int air = 1; // TODO:: тут чара, броня и прочее в будущем для воды
+            // TODO::EntityLiving тут чара, броня и прочее в будущем для воды
+            //int air = 1; 
             return oldAir - (isOil ? 2 : 1);
             //return air > 0 && rand.Next(air + 1) > 0 ? oldAir : oldAir - 1;
         }
@@ -430,6 +462,7 @@ namespace MvkServer.Entity
             {
                 bool isWater = IsInsideOfMaterial(EnumMaterial.Water);
                 bool isOil = IsInsideOfMaterial(EnumMaterial.Oil);
+
                 if (isWater || isOil)
                 {
                     //if (!this.canBreatheUnderwater() && !this.isPotionActive(Potion.waterBreathing.id) && !var7)
@@ -477,11 +510,19 @@ namespace MvkServer.Entity
         /// </summary>
         /// <param name="amount">сила урона</param>
         /// <returns>true - урон был нанесён</returns>
-        public bool AttackEntityFrom(EnumDamageSource source, float amount, string name = "")
+        public override bool AttackEntityFrom(EnumDamageSource source, float amount, string name = "")
         {
             if (World.IsRemote) return false;
             entityAge = 0;
             if (Health <= 0f) return false;
+
+            // иммунка на огонь и лаву в тиках
+            if (source == EnumDamageSource.Lava || source == EnumDamageSource.InFire 
+                || source == EnumDamageSource.Cactus)
+            {
+                if (invulnerable > 0) return false;
+                invulnerable = 10;
+            }
 
             Health -= amount;
             if (World is WorldServer worldServer)
@@ -999,7 +1040,7 @@ namespace MvkServer.Entity
         protected override void EffectsContactWithWater()
         {
             fallDistance = 0f;
-            //fire = 0;
+            Extinguish();
         }
 
         /// <summary>
@@ -1162,6 +1203,12 @@ namespace MvkServer.Entity
             fallDistanceResult = 0f;
             fallDistance = 0f;
             Motion = new vec3(0);
+            invulnerable = 100;
+            //immunityLava = 0;
+            //immunityFire = 0;
+            //immunity = false;
+            fire = 0;
+            SetInFire(false);
             IsDead = false;
         }
 

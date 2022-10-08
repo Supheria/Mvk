@@ -11,11 +11,15 @@ namespace MvkClient.Actions
         /// <summary>
         /// Основной клиент
         /// </summary>
-        public Client ClientMain { get; protected set; }
+        public Client ClientMain { get; private set; }
         /// <summary>
         /// Клиентский объект мира
         /// </summary>
-        public WorldClient World { get; protected set; }
+        public WorldClient World { get; private set; }
+        /// <summary>
+        /// Нажата ли клавиша Shift
+        /// </summary>
+        public bool KeyShift { get; private set; }
 
         /// <summary>
         /// Объект времени с момента запуска проекта
@@ -36,6 +40,9 @@ namespace MvkClient.Actions
             ClientMain = world.ClientMain;
             stopwatch.Start();
         }
+
+        public void KeyShiftDown() => KeyShift = true;
+        public void KeyShiftUp() => KeyShift = false;
 
         /// <summary>
         /// Нажата клавиша
@@ -69,6 +76,7 @@ namespace MvkClient.Actions
             else if (key == 117) Debug.ScreenFileBiome(World); // F6
             else if (key == 118) Debug.IsDrawOrto = !Debug.IsDrawOrto; // F7
             else if (key == 119) Debug.IsDrawVoxelLine = !Debug.IsDrawVoxelLine; // F8
+            else if (key == 69) World.ClientMain.Screen.InGameConteiner(); // E
             else if (key == 75) ClientMain.Player.Kill(); // K
             else if (key == 82)
             {

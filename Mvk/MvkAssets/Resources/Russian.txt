@@ -35,3 +35,4 @@ gui.net.on:Сеть открыта
 gui.game.over:Вы умерли!
 gui.respawn:Возродиться
 world.player.duplicate:Игрок с таким именем уже в игре!
+gui.conteiner.inventory:Инвентарь

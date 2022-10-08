@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MvkClient.Renderer;
+using System;
 using System.IO;
 
 namespace MvkClient.Setitings
@@ -43,12 +44,40 @@ namespace MvkClient.Setitings
         /// </summary>
         public static bool SmoothLighting { get; set; } = true;
         /// <summary>
-        /// Размер интерфеса
+        /// Размер интерфеса в опциях
         /// </summary>
-        public static int SizeInterface { get; set; } = 1;
+        public static int SizeInterfaceOptions { get; private set; } = 1;
+        /// <summary>
+        /// Размер интерфеса с учётом размера окна
+        /// </summary>
+        public static int SizeInterface { get; private set; } = 1;
 
         public static float ToFloatSoundVolume() => SoundVolume / 100f;
         public static float ToFloatMusicVolume() => MusicVolume / 100f;
+
+        /// <summary>
+        /// Задать разер интерфейса
+        /// </summary>
+        public static void SetSizeInterface(int size)
+        {
+            SizeInterfaceOptions = size;
+            UpSizeInterface();
+        }
+
+        /// <summary>
+        /// Обновить размер интерфейса за счёт окна
+        /// </summary>
+        public static void UpSizeInterface()
+        {
+            if (SizeInterfaceOptions > 1 && GLWindow.WindowHeight < 880)
+            {
+                SizeInterface = 1;
+            }
+            else
+            {
+                SizeInterface = SizeInterfaceOptions;
+            }
+        }
 
         /// <summary>
         /// Загрузить настройки
@@ -81,7 +110,7 @@ namespace MvkClient.Setitings
                         else if (Check(vs, "Language")) Language = int.Parse(vs[1]);
                         else if (Check(vs, "IpAddress")) IpAddress = vs[1].ToString();
                         else if (Check(vs, "SmoothLighting")) SmoothLighting = int.Parse(vs[1]) == 1;
-                        else if (Check(vs, "SizeInterface")) SizeInterface = int.Parse(vs[1]);
+                        else if (Check(vs, "SizeInterface")) SetSizeInterface(int.Parse(vs[1]));
                     }
                 }
             }
@@ -111,7 +140,7 @@ namespace MvkClient.Setitings
                 file.WriteLine("Language: " + Language.ToString());
                 file.WriteLine("IpAddress: " + IpAddress.ToString());
                 file.WriteLine("SmoothLighting: " + (SmoothLighting ? "1" : "0"));
-                file.WriteLine("SizeInterface: " + SizeInterface.ToString());
+                file.WriteLine("SizeInterface: " + SizeInterfaceOptions.ToString());
                 file.Close();
             }
         }

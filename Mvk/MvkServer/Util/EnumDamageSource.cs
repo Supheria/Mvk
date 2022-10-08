@@ -26,9 +26,17 @@
         /// </summary>
         OutOfWorld,
         /// <summary>
-        /// В огне
+        /// В огне, когда зашёл в него
         /// </summary>
         InFire,
+        /// <summary>
+        /// От огня, когда долго горел из-за огня
+        /// </summary>
+        OnFire,
+        /// <summary>
+        /// Соприкосновение с кактусом
+        /// </summary>
+        Cactus,
         /// <summary>
         /// Моб
         /// </summary>

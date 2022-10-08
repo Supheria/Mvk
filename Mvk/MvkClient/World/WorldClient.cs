@@ -688,7 +688,7 @@ namespace MvkClient.World
             }
         }
 
-        public override void DebugString(string logMessage, params object[] args) => Debug.DStr = string.Format(logMessage, args);
+        public override void DebugString(string logMessage, params object[] args) => Debug.DebugString = string.Format(logMessage, args);
 
         /// <summary>
         /// Строка для дебага

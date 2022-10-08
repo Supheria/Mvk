@@ -140,6 +140,11 @@ namespace MvkServer.Inventory
         }
 
         /// <summary>
+        /// Отправить пакет слота
+        /// </summary>
+        public void SendSlot(int slotIn) => SendSetSlotPlayer(slotIn);
+
+        /// <summary>
         /// Добавляет стек предметов в инвентарь, возвращает false, если это невозможно.
         /// </summary>
         public bool AddItemStackToInventory(ItemStack stack)

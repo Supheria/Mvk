@@ -1,4 +1,5 @@
-﻿using MvkServer.Entity.Item;
+﻿using MvkServer.Entity;
+using MvkServer.Entity.Item;
 using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Item;
@@ -175,7 +176,7 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Коробки для рендера 2д GUI
         /// </summary>
-        public virtual Box[] GetBoxesGui() => boxes[0];
+        public virtual Box[] GetBoxesGui() => boxes != null ? boxes[0] : new Box[0];
 
         /// <summary>
         /// Инициализация коробок
@@ -439,6 +440,10 @@ namespace MvkServer.World.Block
         /// </summary>
         public virtual void NeighborBlockChange(WorldBase worldIn, BlockPos pos, BlockState state, BlockBase neighborBlock) { }
 
+        /// <summary>
+        /// Вызывается при столкновении объекта с блоком
+        /// </summary>
+        public virtual void OnEntityCollidedWithBlock(WorldBase worldIn, BlockPos pos, BlockState state, EntityBase entityIn) { }
         /// <summary>
         /// Строка
         /// </summary>
