@@ -8,35 +8,27 @@ namespace MvkServer.World.Block.List
     /// <summary>
     /// Блок стоячей воды
     /// </summary>
-    public class BlockWater : BlockBase
+    public class BlockWater : BlockAbLiquid
     {
         /// <summary>
         /// Блок стоячей воды
         /// </summary>
-        public BlockWater()
+        public BlockWater() : base()
         {
             Translucent = true;
-            IsAction = false;
-            IsCollidable = false;
-            АmbientOcclusion = false;
             BiomeColor = true;
-            Shadow = false;
-            BackSide = true;
-            AllSideForcibly = true;
-            IsReplaceable = true;
-            UseNeighborBrightness = true;
             LightOpacity = 1;
-            IsParticle = false;
             Material = EnumMaterial.Water;
             samplesBreak = new AssetsSample[] { AssetsSample.LiquidSplash1, AssetsSample.LiquidSplash2 };
             samplesStep = new AssetsSample[] { AssetsSample.LiquidSwim1, AssetsSample.LiquidSwim2, AssetsSample.LiquidSwim3, AssetsSample.LiquidSwim4 };
+            faces = new Face[]
+            {
+                new Face(63, true).SetAnimation(32, 2),
+                new Face(62, true).SetAnimation(64, 1)
+            };
+
             InitBoxs();
         }
-
-        /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
 
         /// <summary>
         /// Инициализация коробок
@@ -61,56 +53,8 @@ namespace MvkServer.World.Block.List
             }};
         }
 
-        /// <summary>
-        /// Случайный эффект частички и/или звука на блоке только для клиента
-        /// </summary>
-        public override void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
-        {
-            //if (random.Next(64) == 0)
-            //{
-            //    world.PlaySound(AssetsSample.MobChickenPlop, blockPos.ToVec3() + .5f, (float)random.NextDouble() * .25f + .75f, (float)random.NextDouble() * 1.0f + .5f);
-            //}
-            //else 
-            if (random.Next(10) == 0)
-            {
-                world.SpawnParticle(EnumParticle.Suspend, 1,
-                    new vec3(blockPos.X + .5f, blockPos.Y + .5f, blockPos.Z + .5f), new vec3(1f), 0);
-            }
-        }
+        
 
-        /// <summary>
-        /// Смена соседнего блока
-        /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
-        {
-            worldIn.SetBlockTick(blockPos, 5);
-        }
-
-        /// <summary>
-        /// Обновить блок в такте
-        /// </summary>
-        //public override void UpdateTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
-        //{
-        //    if (Water(world, blockPos.OffsetDown()))
-        //    {
-        //        Water(world, blockPos.OffsetSouth());
-        //        Water(world, blockPos.OffsetEast());
-        //        Water(world, blockPos.OffsetNorth());
-        //        Water(world, blockPos.OffsetWest());
-        //    }
-        //}
-
-        private bool Water(WorldBase world, BlockPos blockPos)
-        {
-            BlockState blockState = world.GetBlockState(blockPos);
-            BlockBase block = blockState.GetBlock();
-            if (block.IsAir)
-            {
-                world.SetBlockState(blockPos, new BlockState(EnumBlock.Water), 14);
-                world.SetBlockTick(blockPos, 5);
-                return false;
-            }
-            return block.EBlock != EnumBlock.Water;
-        }
+        
     }
 }

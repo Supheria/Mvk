@@ -121,6 +121,12 @@
   <data name="Click" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\Click.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="DamageFallBig" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageFallBig.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageFallSmall" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageFallSmall.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="DigGlass1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\DigGlass1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -196,6 +202,12 @@
   <data name="FireFizz" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\FireFizz.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="LiquidLava" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\LiquidLava.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="LiquidLavaPop" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\LiquidLavaPop.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="LiquidSplash1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\LiquidSplash1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -213,6 +225,9 @@
   </data>
   <data name="LiquidSwim4" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\LiquidSwim4.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="LiquidWater" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\LiquidWater.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="MobChickenPlop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\MobChickenPlop.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

@@ -32,7 +32,7 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Количество блоков за так в чанке без приоритетных
         /// </summary>
-        private const int COUNT_BLOCK_TICK = 4;
+        private const int COUNT_BLOCK_TICK = 8;
 
         /// <summary>
         /// Данные чанка
@@ -752,9 +752,22 @@ namespace MvkServer.World.Chunk
                     World.DebugString(World.Light.ToDebugString());
                 }
             }
+            else if (blockState.met != blockStateOld.met)
+            {
+                if (isModifyRender) World.MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+            }
+
+            if (!World.IsRemote && blockOld != block)
+            {
+                block.OnBlockAdded(World, blockPos, blockState);
+            }
+
             //MarkBlockForUpdate(blockPos);
 
             if (storage.countBlock == 0 || (storage.data[index]) != (ushort)block.EBlock) return new BlockState();
+
+
+            
 
             //if (heightMapUp)
             //{
@@ -779,10 +792,6 @@ namespace MvkServer.World.Chunk
             //    }
             //}
 
-            //if (!this.worldObj.isRemote && blockOld != block)
-            //{
-            //    block.onBlockAdded(this.worldObj, blockPos, blockState);
-            //}
 
             //if (block instanceof ITileEntityProvider)
             //{
@@ -800,7 +809,7 @@ namespace MvkServer.World.Chunk
             //    }
             //}
 
-            
+
             return blockStateOld;
         }
 
@@ -1105,6 +1114,11 @@ namespace MvkServer.World.Chunk
                 }
             }
         }
+
+        /// <summary>
+        /// Количество тикающих блоков в чанке
+        /// </summary>
+        public int GetTickBlockCount() => tickBlocks.Count;
 
         #region NBT
 

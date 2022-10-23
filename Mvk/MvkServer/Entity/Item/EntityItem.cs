@@ -200,6 +200,7 @@ namespace MvkServer.Entity.Item
         {
             if (World.IsRemote) return false;
             if (health <= 0f) return false;
+            if (!base.AttackEntityFrom(source, amount, name)) return false;
 
             // иммунка на огонь и лаву в тиках
             if (source == EnumDamageSource.Lava || source == EnumDamageSource.InFire

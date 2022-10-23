@@ -47,6 +47,7 @@ namespace MvkServer.World.Block
 
         public Face(int numberTexture) : this(Pole.All, numberTexture) { }
         public Face(Pole pole, int numberTexture) : this(pole, numberTexture, false, new vec3(1)) { }
+        public Face(int numberTexture, bool isColor) : this(Pole.All, numberTexture, isColor, new vec3(1)) { }
         public Face(Pole pole, int numberTexture, vec3 color) : this(pole, numberTexture, false, color) { }
         public Face(Pole pole, int numberTexture, bool isColor, vec3 color)
         {

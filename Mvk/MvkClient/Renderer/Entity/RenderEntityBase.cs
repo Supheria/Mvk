@@ -207,8 +207,8 @@ namespace MvkClient.Renderer.Entity
             uint time = entity.World.GetTotalWorldTime();
             int frame = (int)(time - (time / 32) * 32);
 
-            float u1 = .890625f;
-            float u2 = .90625f;
+            float u1 = .84375f;
+            float u2 = .859375f;
             float v1 = frame * .015625f;
             float v2 = v1 + .015625f;
 

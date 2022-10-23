@@ -224,7 +224,19 @@
         /// <summary>
         /// Стеклянная панель красная
         /// </summary>
-        GlassPaneRed = 53
+        GlassPaneRed = 53,
+        /// <summary>
+        /// Керамика
+        /// </summary>
+        Terracotta = 54,
+        /// <summary>
+        /// Базальт
+        /// </summary>
+        Basalt = 55,
+        /// <summary>
+        /// Обсидиан
+        /// </summary>
+        Obsidian = 56
     }
 
     /// <summary>
@@ -232,6 +244,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 53;
+        public const int COUNT = 56;
     }
 }

@@ -46,9 +46,9 @@ namespace MvkServer.World.Block
         /// </summary>
         public bool AllSideForcibly { get; protected set; } = false;
         /// <summary>
-        /// Сторону рисуем с двух сторон, пример: вода, лава
+        /// Блок жидкости: вода, лава, нефть
         /// </summary>
-        public bool BackSide { get; protected set; } = false;
+        public bool Liquid { get; protected set; } = false;
         /// <summary>
         /// Обрабатывается блок эффектом АmbientOcclusion
         /// </summary>
@@ -142,7 +142,14 @@ namespace MvkServer.World.Block
         /// </summary>
         public byte BurnOdds { get; protected set; } = 0;
 
+        /// <summary>
+        /// Коробки для прорисовки блока
+        /// </summary>
         protected Box[][] boxes;
+        /// <summary>
+        /// Сторона для прорисовки жидкого блока
+        /// </summary>
+        protected Face[] faces;
 
         /// <summary>
         /// Семплы сломоного блока
@@ -177,6 +184,11 @@ namespace MvkServer.World.Block
         /// Коробки для рендера 2д GUI
         /// </summary>
         public virtual Box[] GetBoxesGui() => boxes != null ? boxes[0] : new Box[0];
+
+        /// <summary>
+        /// Получить сторону для жидкого блока, index = 0 up/down, 1 = бок
+        /// </summary>
+        public Face GetFace(int index) => faces[index];
 
         /// <summary>
         /// Инициализация коробок
@@ -367,6 +379,12 @@ namespace MvkServer.World.Block
         }
 
         /// <summary>
+        /// Действие блока после его установки
+        /// </summary>
+        public virtual void OnBlockAdded(WorldBase worldIn, BlockPos blockPos, BlockState state) { }
+
+
+        /// <summary>
         /// Разрушить блок
         /// </summary>
         /// <param name="sound">звуковой эффект разрушения</param>
@@ -444,6 +462,11 @@ namespace MvkServer.World.Block
         /// Вызывается при столкновении объекта с блоком
         /// </summary>
         public virtual void OnEntityCollidedWithBlock(WorldBase worldIn, BlockPos pos, BlockState state, EntityBase entityIn) { }
+        /// <summary>
+        /// Изменить ускорение на блоке
+        /// </summary>
+        public virtual vec3 ModifyAcceleration(WorldBase worldIn, BlockPos blockPos, vec3 motion) => motion;
+
         /// <summary>
         /// Строка
         /// </summary>

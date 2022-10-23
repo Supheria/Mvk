@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Sound;
+﻿using MvkServer.Sound;
 using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
@@ -7,42 +6,36 @@ namespace MvkServer.World.Block.List
     /// <summary>
     /// Блок стоячей лавы
     /// </summary>
-    public class BlockLava : BlockBase
+    public class BlockLava : BlockAbLiquid
     {
         /// <summary>
         /// Блок стоячей лавы
         /// </summary>
-        public BlockLava()
+        public BlockLava() : base()
         {
+            material = EnumMaterial.Lava;
+            eBlock = EnumBlock.Lava;
+            eBlockFlowing = EnumBlock.LavaFlowing;
+            tickRate = 30;
+            stepWave = 4;
+            Particle = 60;
+
+            NeedsRandomTick = true;
             // Затычка, для сортировки, и прорисовки из нутри когда к примеру блок стекла
-            Translucent = true; 
-            IsAction = false;
-            IsCollidable = false;
-            АmbientOcclusion = false;
-            Shadow = false;
-            BackSide = true;
-            AllSideForcibly = true;
-            //UseNeighborBrightness = true; // Нельзя, будет глючная тень при AO
-            IsReplaceable = true;
-           // LightOpacity = 4;
+            // Translucent = true; 
+            // LightOpacity = 4;
             LightValue = 15;
-            IsParticle = false;
             Material = EnumMaterial.Lava;
             samplesStep = new AssetsSample[0];
             //samplesBreak = new AssetsSample[] { AssetsSample.LiquidSplash1, AssetsSample.LiquidSplash2 };
             //samplesStep = new AssetsSample[] { AssetsSample.LiquidSwim1, AssetsSample.LiquidSwim2, AssetsSample.LiquidSwim3, AssetsSample.LiquidSwim4 };
+            faces = new Face[]
+            {
+                new Face(60).SetAnimation(32, 4),
+                new Face(59).SetAnimation(32, 1)
+            };
             InitBoxs();
         }
-
-        /// <summary>
-        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
-        /// </summary>
-        //public override int Hardness(BlockState state) => 20;
-
-        /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
 
         /// <summary>
         /// Инициализация коробок
@@ -56,15 +49,21 @@ namespace MvkServer.World.Block.List
                 {
                     Faces = new Face[]
                     {
-                        new Face(Pole.Up, 61).SetAnimation(32, 4),
-                        new Face(Pole.Down, 61).SetAnimation(32, 4),
-                        new Face(Pole.East, 60).SetAnimation(64, 1),
-                        new Face(Pole.North, 60).SetAnimation(64, 1),
-                        new Face(Pole.South, 60).SetAnimation(64, 1),
-                        new Face(Pole.West, 60).SetAnimation(64, 1)
+                        new Face(Pole.Up, 60).SetAnimation(32, 4),
+                        new Face(Pole.Down, 60).SetAnimation(32, 4),
+                        new Face(Pole.East, 59).SetAnimation(32, 1),
+                        new Face(Pole.North, 59).SetAnimation(32, 1),
+                        new Face(Pole.South, 59).SetAnimation(32, 1),
+                        new Face(Pole.West, 59).SetAnimation(32, 1)
                     }
                 }
             }};
         }
+
+        /// <summary>
+        /// Случайный эффект блока, для сервера
+        /// </summary>
+        public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random) 
+            => SetFireTo(world, blockPos, random);
     }
 }

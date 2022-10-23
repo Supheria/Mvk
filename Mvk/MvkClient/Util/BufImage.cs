@@ -30,6 +30,12 @@ namespace MvkClient.Util
             buffer = BitmapToByteArray(bitmap);
         }
 
+        public BufImage(byte[] buffer, int size)
+        {
+            width = height = size;
+            this.buffer = buffer;
+        }
+
         /// <summary>
         /// Конвертация из Bitmap в объект BufferedImage
         /// </summary>

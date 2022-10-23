@@ -6,40 +6,34 @@ namespace MvkServer.World.Block.List
     /// <summary>
     /// Блок стоячей нефти
     /// </summary>
-    public class BlockOil : BlockBase
+    public class BlockOil : BlockAbLiquid
     {
         /// <summary>
         /// Блок стоячей нефти
         /// </summary>
-        public BlockOil()
+        public BlockOil() : base()
         {
+            material = EnumMaterial.Oil;
+            eBlock = EnumBlock.Oil;
+            eBlockFlowing = EnumBlock.OilFlowing;
+            tickRate = 15;
+            stepWave = 3;
+
             // Затычка, для сортировки, и прорисовки из нутри когда к примеру блок стекла
-            Translucent = true;
+            //Translucent = true;
             Combustibility = true;
             IgniteOddsSunbathing = 100;
             BurnOdds = 100;
-            IsAction = false;
-            IsCollidable = false;
-            АmbientOcclusion = false;
-            Shadow = false;
-            BackSide = true;
-            AllSideForcibly = true;
-            IsReplaceable = true;
-            IsParticle = false;
+            LightOpacity = 1;
             Material = EnumMaterial.Oil;
             samplesStep = new AssetsSample[0];
+            faces = new Face[]
+            {
+                new Face(57).SetAnimation(32, 8),
+                new Face(56).SetAnimation(32, 16)
+            };
             InitBoxs();
         }
-
-        ///// <summary>
-        ///// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
-        ///// </summary>
-        //public override int Hardness(BlockState state) => 2;
-
-        /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
 
         /// <summary>
         /// Инициализация коробок
@@ -53,15 +47,38 @@ namespace MvkServer.World.Block.List
                 {
                     Faces = new Face[]
                     {
-                        new Face(Pole.Up, 59).SetAnimation(32, 8),
-                        new Face(Pole.Down, 59).SetAnimation(32, 8),
-                        new Face(Pole.East, 58).SetAnimation(64, 4),
-                        new Face(Pole.North, 58).SetAnimation(64, 4),
-                        new Face(Pole.South, 58).SetAnimation(64, 4),
-                        new Face(Pole.West, 58).SetAnimation(64, 4)
+                        new Face(Pole.Up, 57).SetAnimation(32, 8),
+                        new Face(Pole.Down, 57).SetAnimation(32, 8),
+                        new Face(Pole.East, 56).SetAnimation(32, 2),
+                        new Face(Pole.North, 56).SetAnimation(32, 2),
+                        new Face(Pole.South, 56).SetAnimation(32, 2),
+                        new Face(Pole.West, 56).SetAnimation(32, 2)
                     }
                 }
             }};
+        }
+
+        /// <summary>
+        /// Статус для растекания на огонь
+        /// </summary>
+        protected override bool IsFire(EnumMaterial eMaterial) => false;
+
+        /// <summary>
+        /// Обновить блок в такте
+        /// </summary>
+        public override void UpdateTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+        {
+            BlockPos blockPosUp = blockPos.OffsetUp();
+            if (world.GetBlockState(blockPosUp).GetEBlock() == EnumBlock.Water)
+            {
+                // блок воды сверху, значит меняем их местами
+                world.SetBlockState(blockPosUp, new BlockState(EnumBlock.Oil), 14);
+                world.SetBlockState(blockPos, new BlockState(EnumBlock.Water), 14);
+            }
+            else
+            {
+                base.UpdateTick(world, blockPos, blockState, random);
+            }
         }
     }
 }

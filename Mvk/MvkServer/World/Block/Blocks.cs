@@ -30,6 +30,10 @@ namespace MvkServer.World.Block
         /// Массив всех блоков которые попадают в креативный инвентарь 
         /// </summary>
         public static int[] blocksInventory;
+        /// <summary>
+        /// Объект жидкости
+        /// </summary>
+       // public static BlockAbLiquid BlockLiquid { get; private set; } = new BlockAbLiquid();
 
         private static BlockBase ToBlock(EnumBlock eBlock)
         {
@@ -49,8 +53,11 @@ namespace MvkServer.World.Block
                 case EnumBlock.Gravel: return new BlockGravel();
                 case EnumBlock.Clay: return new BlockClay();
                 case EnumBlock.Water: return new BlockWater();
+                case EnumBlock.WaterFlowing: return new BlockWaterFlowing();
                 case EnumBlock.Lava: return new BlockLava();
+                case EnumBlock.LavaFlowing: return new BlockLavaFlowing();
                 case EnumBlock.Oil: return new BlockOil();
+                case EnumBlock.OilFlowing: return new BlockOilFlowing();
                 case EnumBlock.Fire: return new BlockFire();
                 case EnumBlock.LogOak: return new BlockLogOak();
                 case EnumBlock.LogBirch: return new BlockLogBirch();
@@ -86,6 +93,9 @@ namespace MvkServer.World.Block
                 case EnumBlock.GlassPane: return new BlockGlassPane();
                 case EnumBlock.GlassPaneWhite: return new BlockGlassPaneWhite();
                 case EnumBlock.GlassPaneRed: return new BlockGlassPaneRed();
+                case EnumBlock.Terracotta: return new BlockTerracotta();
+                case EnumBlock.Basalt: return new BlockBasalt();
+                case EnumBlock.Obsidian: return new BlockObsidian();
             }
 
             return new BlockAir(true);
@@ -119,10 +129,9 @@ namespace MvkServer.World.Block
                 20, 21, 22, 23, 24, 12, 13, 15, 17, 19,
                 25, 26, 27, 28, 29, 40, 41, 42, 43, 44,
                 30, 31, 32, 33, 34, 45, 46, 47, 48, 49,
-                35, 36, 37, 38, 39, 50, 51, 52, 53,
-                // 54, 55, 56, 57, 58, 59,
-                //1, 7, 8, 9
-            }; ;
+                35, 36, 37, 38, 39, 50, 51, 52, 53, 54,
+                55, 56 //1, 7, 8, 9
+            };
         }
 
         /// <summary>
@@ -133,5 +142,7 @@ namespace MvkServer.World.Block
         /// Получить объект блока с кеша, для получения информационных данных
         /// </summary>
         public static BlockBase GetBlockCache(int index) => blocksInt[index];
+
+        
     }
 }

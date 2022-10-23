@@ -88,6 +88,8 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\DamageFallBig.ogg" />
+    <None Include="Resources\DamageFallSmall.ogg" />
     <None Include="Resources\DigGlass1.ogg" />
     <None Include="Resources\DigGlass2.ogg" />
     <None Include="Resources\DigGlass3.ogg" />
@@ -113,12 +115,15 @@
     <None Include="Resources\DigWood4.ogg" />
     <None Include="Resources\Fire.ogg" />
     <None Include="Resources\FireFizz.ogg" />
+    <None Include="Resources\LiquidLava.ogg" />
+    <None Include="Resources\LiquidLavaPop.ogg" />
     <None Include="Resources\LiquidSplash1.ogg" />
     <None Include="Resources\LiquidSplash2.ogg" />
     <None Include="Resources\LiquidSwim1.ogg" />
     <None Include="Resources\LiquidSwim2.ogg" />
     <None Include="Resources\LiquidSwim3.ogg" />
     <None Include="Resources\LiquidSwim4.ogg" />
+    <None Include="Resources\LiquidWater.ogg" />
     <None Include="Resources\MobChickenStep1.ogg" />
     <None Include="Resources\MobChickenStep2.ogg" />
     <None Include="Resources\StepGrass1.ogg" />

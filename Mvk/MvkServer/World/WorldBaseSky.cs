@@ -45,6 +45,14 @@ namespace MvkServer.World
             return f;
         }
 
+        ///// <summary>
+        ///// Получить яркость солнца и луны
+        ///// </summary>
+        //public float GetSunMoonLight(float sunLight, int moonPhase)
+        //{
+        //    return Mth.Max(sunLight, MvkStatic.LightMoonPhase[moonPhase]);
+        //}
+
         /// <summary>
         /// Яркость звёзд 0.0 - 0.75
         /// </summary>

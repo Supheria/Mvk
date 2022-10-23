@@ -293,7 +293,7 @@ namespace MvkServer.Network
             if (entityPlayer != null && packet.GetAction() == PacketC0CPlayerAction.EnumAction.Fall)
             {
                 // Падение с высоты
-                if (!entityPlayer.IsCreativeMode && packet.GetParam() > 5)
+                if (packet.GetParam() > 5)
                 {
                     float damage = packet.GetParam() - 5;
                     entityPlayer.AttackEntityFrom(EnumDamageSource.Fall, damage);

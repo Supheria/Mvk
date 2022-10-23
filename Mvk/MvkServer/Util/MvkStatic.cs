@@ -64,6 +64,14 @@ namespace MvkServer.Util
         /// Длинна массива при нужном обзоре DistSqrt37
         /// </summary>
         public static int[] DistSqrt37Light { get; private set; } = new int[38];
+        /// <summary>
+        /// Яркость для текстур
+        /// </summary>
+        public static float[] LightBrightnessTable { get; private set; } = new float[16];
+        /// <summary>
+        /// Яркость фазы лун
+        /// </summary>
+        public static float[] LightMoonPhase { get; private set; }
 
         /// <summary>
         /// Инициализация, запускаем при старте
@@ -99,7 +107,14 @@ namespace MvkServer.Util
                 DistSqrt37 = GetSqrt(i);
                 DistSqrt37Light[i] = DistSqrt37.Length;
             }
-            
+
+            float fm = 0f;
+            for (int i = 0; i < 16; i++)
+            {
+                float f = 1f - i / 15f;
+                LightBrightnessTable[i] = (1f - f) / (f * 3f + 1f) * (1f - fm) + fm;
+            }
+            LightMoonPhase = new float[] { .8f, .48f, .32f, .16f, 0, .16f, .32f, .48f };
         }
 
         /// <summary>

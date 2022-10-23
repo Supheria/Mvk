@@ -175,6 +175,8 @@
     <Compile Include="World\Block\Face.cs" />
     <Compile Include="World\Block\Liquid.cs" />
     <Compile Include="World\Block\List\BlockAbGlassPane.cs" />
+    <Compile Include="World\Block\List\BlockAbLiquidFlowing.cs" />
+    <Compile Include="World\Block\List\BlockAbLiquid.cs" />
     <Compile Include="World\Block\List\BlockAbLog.cs" />
     <Compile Include="World\Block\List\BlockAbPlants.cs" />
     <Compile Include="World\Block\List\BlockAbSapling.cs" />
@@ -185,6 +187,11 @@
     <Compile Include="World\Block\List\BlockAbLoose.cs" />
     <Compile Include="World\Block\List\BlockAir.cs" />
     <Compile Include="World\Block\List\BlockClay.cs" />
+    <Compile Include="World\Block\List\BlockLavaFlowing.cs" />
+    <Compile Include="World\Block\List\BlockOilFlowing.cs" />
+    <Compile Include="World\Block\List\BlockBasalt.cs" />
+    <Compile Include="World\Block\List\BlockObsidian.cs" />
+    <Compile Include="World\Block\List\BlockTerracotta.cs" />
     <Compile Include="World\Block\List\BlockFlowerClover.cs" />
     <Compile Include="World\Block\List\BlockAbGlass.cs" />
     <Compile Include="World\Block\List\BlockGlassPane.cs" />
@@ -229,6 +236,7 @@
     <Compile Include="World\Block\List\BlockOreCoal.cs" />
     <Compile Include="World\Block\List\BlockTallGrass.cs" />
     <Compile Include="World\Block\List\BlockLava.cs" />
+    <Compile Include="World\Block\List\BlockWaterFlowing.cs" />
     <Compile Include="World\Block\List\BlockWater.cs" />
     <Compile Include="World\Block\List\BlockGlassRed.cs" />
     <Compile Include="World\Block\List\BlockGlass.cs" />

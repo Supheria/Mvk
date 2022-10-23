@@ -377,6 +377,13 @@ namespace MvkServer.Entity
         /// </summary>
         public void Extinguish()
         {
+            if (InFire())
+            {
+                World.PlaySound(AssetsSample.FireFizz, Position, .7f, 1.6f + (rand.NextFloat() - rand.NextFloat()) * .4f);
+                
+                World.SpawnParticle(EnumParticle.Smoke, 20, new vec3(Position.x, Position.y + Height / 2, Position.z),
+                    new vec3(Width * 2, Height, Width * 2), 0, 40);
+            }
             fire = 0;
             SetInFire(false);
         }
@@ -474,14 +481,8 @@ namespace MvkServer.Entity
                             SetAir(0);
 
                             // эффект раз в секунду, и урон
-                            //for (int var3 = 0; var3 < 8; ++var3)
-                            //{
-                            //    float var4 = this.rand.nextFloat() - this.rand.nextFloat();
-                            //    float var5 = this.rand.nextFloat() - this.rand.nextFloat();
-                            //    float var6 = this.rand.nextFloat() - this.rand.nextFloat();
-                            //    this.worldObj.spawnParticle(EnumParticleTypes.WATER_BUBBLE, this.posX + (double)var4, this.posY + (double)var5, this.posZ + (double)var6, this.motionX, this.motionY, this.motionZ, new int[0]);
-                            //}
-                            //this.attackEntityFrom(DamageSource.drown, 2.0F);
+                            World.SpawnParticle(EnumParticle.Bubble, 8,
+                                new vec3(Position.x, Position.y + Health / 2, Position.z), new vec3(Width * 2f, Health, Width * 2f), 0);
                             AttackEntityFrom(EnumDamageSource.Drown, 2f);
                         }
                     }
@@ -515,6 +516,7 @@ namespace MvkServer.Entity
             if (World.IsRemote) return false;
             entityAge = 0;
             if (Health <= 0f) return false;
+            if (!base.AttackEntityFrom(source, amount, name)) return false;
 
             // иммунка на огонь и лаву в тиках
             if (source == EnumDamageSource.Lava || source == EnumDamageSource.InFire 
@@ -1357,7 +1359,7 @@ namespace MvkServer.Entity
         {
             if (IsSprinting() && !IsInWater())
             {
-                ParticleBlockDown(Position, 1);
+                ParticleBlockDown(Position, 3);
                 // TODO::звук при беге
             }
         }
@@ -1366,12 +1368,33 @@ namespace MvkServer.Entity
         /// </summary>
         public void ParticleFall(float distance)
         {
-            if (distance > 2)
+            if (distance > 3)
             {
                 int count = (int)distance + 2;
                 if (count > 20) count = 20;
-                ParticleBlockDown(Position, count);
-                // TODO::звук при падении
+
+                BlockBase blockDown = World.GetBlockState(new BlockPos(Position.x, Position.y - 0.20002f, Position.z)).GetBlock();
+                if (blockDown.IsParticle)
+                {
+                    World.SpawnParticle(EnumParticle.Digging, count * 5, Position,
+                        new vec3(Width * 2, 0, Width * 2), 0, (int)blockDown.EBlock);
+                }
+
+                // Звук при падении
+                if (distance > 12)
+                {
+                    World.PlaySound(this, AssetsSample.DamageFallBig, Position, 1, 1);
+                }
+                else if(distance > 4)
+                {
+                    World.PlaySound(this, AssetsSample.DamageFallSmall, Position, .5f, 1);
+                }
+
+                // Звук блока под нагами
+                if (IsSampleStep(blockDown))
+                {
+                    World.PlaySound(this, SampleStep(World, blockDown), Position, .5f, .75f);
+                }
             }
         }
 
@@ -1383,9 +1406,8 @@ namespace MvkServer.Entity
             BlockBase block = World.GetBlockState(new BlockPos(pos.x, pos.y - 0.20002f, pos.z)).GetBlock();
             if (block.IsParticle)
             {
-                World.SpawnParticle(EnumParticle.Digging, count,
-                    new vec3(pos.x + .5f, pos.y + .25f, pos.z + .5f), 
-                    new vec3(Width, 0, Width), 0, (int)block.EBlock);
+                World.SpawnParticle(EnumParticle.Digging, count, pos, 
+                    new vec3(Width * 2, 0, Width * 2), 0, (int)block.EBlock);
             }
         }
 
@@ -1410,17 +1432,19 @@ namespace MvkServer.Entity
         {
             float y = Position.y + GetEyeHeight();
             BlockPos blockPos = new BlockPos(Position.x, y, Position.z);
-            BlockBase block = World.GetBlockState(blockPos).GetBlock();
+            BlockState blockState = World.GetBlockState(blockPos);
+            BlockBase block = blockState.GetBlock();
 
             if (block.Material == materialIn)
             {
                 // нужна проверка течении воды, у неё блок не целый
-                //float var7 = BlockLiquid.getLiquidHeightPercent(var5.getBlock().getMetaFromState(var5)) - 0.11111111F;
-                //float var8 = (float)(blockPos.Y + 1f) - var7;
-                //bool var9 = y < (double)var8;
-                //return !var9 && this is EntityPlayer ? false : var9;
+                if (block.EBlock == EnumBlock.WaterFlowing || block.EBlock == EnumBlock.OilFlowing || block.EBlock == EnumBlock.LavaFlowing)
+                {
+                    float h = blockState.met / 15f;
+                    float h2 = blockPos.Y + h;
+                    return y < h2;
+                }
                 return true;
-                     
             }
             else
             {

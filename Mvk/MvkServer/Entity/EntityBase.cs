@@ -290,7 +290,14 @@ namespace MvkServer.Entity
         /// </summary>
         /// <param name="amount">сила урона</param>
         /// <returns>true - урон был нанесён</returns>
-        public virtual bool AttackEntityFrom(EnumDamageSource source, float amount, string name = "") => false;
+        public virtual bool AttackEntityFrom(EnumDamageSource source, float amount, string name = "")
+        {
+            if (IsImmuneToAll() && source != EnumDamageSource.OutOfWorld) return false;
+            if (IsImmuneToFall() && source == EnumDamageSource.Fall) return false;
+            if (IsImmuneToFire() && (source == EnumDamageSource.InFire || source == EnumDamageSource.OnFire || source == EnumDamageSource.Lava)) return false;
+            if (IsImmuneToLackOfAir() && source == EnumDamageSource.Drown) return false;
+            return true;
+        }
 
         /// <summary>
         /// Обновить ограничительную рамку
@@ -644,6 +651,15 @@ namespace MvkServer.Entity
             {
                 inOil = false;
             }
+
+            if (inOil || inWater)
+            {
+                // толкаем сущность от течения
+                if (IsPushedByLiquid() && liquid.IsPushedByLiquid())
+                {
+                    Motion = Motion + liquid.GetVec();
+                }
+            }
         }
 
         /// <summary>
@@ -714,6 +730,12 @@ namespace MvkServer.Entity
         }
 
         /// <summary>
+        /// Толкается ли сущность в жидкости
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsPushedByLiquid() => true;
+
+        /// <summary>
         /// Воздействия при нахождении в воде
         /// </summary>
         protected virtual void EffectsContactWithWater() { }
@@ -725,7 +747,24 @@ namespace MvkServer.Entity
         /// Эффект выхода из воды
         /// </summary>
         protected virtual void EffectsGettingOutWater() { }
-            
+
+        /// <summary>
+        /// Имеется ли у сущности иммунитет от горения в огне и лаве
+        /// </summary>
+        protected virtual bool IsImmuneToFire() => false;
+        /// <summary>
+        /// Имеется ли у сущности иммунитет к отсутствии воздуха
+        /// </summary>
+        protected virtual bool IsImmuneToLackOfAir() => false;
+        /// <summary>
+        /// Имеется ли у сущности иммунитет к падению
+        /// </summary>
+        protected virtual bool IsImmuneToFall() => false;
+        /// <summary>
+        /// Имеется ли у сущности иммунитет на всё
+        /// </summary>
+        protected virtual bool IsImmuneToAll() => false;
+
         /// <summary>
         /// Получить яркость для рендера 0.0 - 1.0
         /// </summary>

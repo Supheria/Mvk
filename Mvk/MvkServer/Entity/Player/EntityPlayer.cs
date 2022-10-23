@@ -66,7 +66,7 @@ namespace MvkServer.Entity.Player
             // TODO::2022-03-29 Временно предметы при старте у игрока
             if (!world.IsRemote)
             {
-                Inventory.SetInventorySlotContents(0, new ItemStack(Blocks.GetBlockCache(EnumBlock.Cobblestone), 64));
+                Inventory.SetInventorySlotContents(0, new ItemStack(Blocks.GetBlockCache(EnumBlock.Water), 64));
                 Inventory.SetInventorySlotContents(1, new ItemStack(Blocks.GetBlockCache(EnumBlock.PlanksOak), 64));
 
                 Inventory.SetInventorySlotContents(2, new ItemStack(Blocks.GetBlockCache(EnumBlock.SaplingOak), 16));
@@ -235,6 +235,11 @@ namespace MvkServer.Entity.Player
         /// Семпл хотьбы
         /// </summary>
         public override AssetsSample SampleStep(WorldBase worldIn, BlockBase blockDown) => blockDown.SampleStep(worldIn);
+
+        /// <summary>
+        /// Имеется ли у сущности иммунитет на всё
+        /// </summary>
+        protected override bool IsImmuneToAll() => IsCreativeMode;
 
         public override void WriteEntityToNBT(TagCompound nbt)
         {

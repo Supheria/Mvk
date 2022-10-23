@@ -52,15 +52,7 @@ namespace MvkClient
                 }
 
                 // Atlas
-                BufferedImage buffered = new BufferedImage(AssetsTexture.Atlas, Assets.Atlas);
-                //buffered.SetImages(new BufImage[]
-                //{
-                //    new BufImage(Assets.Atlas8),
-                //    new BufImage(Assets.Atlas4),
-                //    new BufImage(Assets.Atlas2),
-                //    new BufImage(Assets.Atlas1),
-                //});
-
+                BufferedImage buffered = new BufferedImage(AssetsTexture.Atlas, Assets.Atlas, true);
                 OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture, buffered));
 
                 int i = 0;

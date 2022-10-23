@@ -46,7 +46,7 @@ namespace MvkServer.World.Block.List
             if (!CanBlockStay(worldIn, blockPos))
             {
                 DropBlockAsItem(worldIn, blockPos, state, 0);
-                Destroy(worldIn, blockPos, state);
+                Destroy(worldIn, blockPos, state, true);
             }
         }
 

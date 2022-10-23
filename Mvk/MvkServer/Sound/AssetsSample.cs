@@ -34,12 +34,19 @@
         Fire,
         FireFizz,
 
+        DamageFallBig,
+        DamageFallSmall,
+
         LiquidSplash1,
         LiquidSplash2,
         LiquidSwim1,
         LiquidSwim2,
         LiquidSwim3,
         LiquidSwim4,
+
+        LiquidLava,
+        LiquidLavaPop,
+        LiquidWater,
 
         MobChickenPlop,
         MobChickenStep1,

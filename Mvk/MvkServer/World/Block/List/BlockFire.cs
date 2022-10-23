@@ -94,14 +94,15 @@ namespace MvkServer.World.Block.List
         {
             if (CanBlockStay(worldIn, blockPos))
             {
-                if (worldIn.SetBlockState(blockPos, state.NewMet(MetUpdate(worldIn, blockPos, 0)), 15))
-                {
-                    // запустить мгновенный тик
-                    worldIn.SetBlockTick(blockPos, (uint)(worldIn.Rnd.Next(10) + 5));
-                    return true;
-                }
+                return worldIn.SetBlockState(blockPos, state.NewMet(MetUpdate(worldIn, blockPos, 0)), 15);
             }
             return false;
+        }
+
+        public override void OnBlockAdded(WorldBase worldIn, BlockPos blockPos, BlockState state)
+        {
+            // запустить мгновенный тик
+            worldIn.SetBlockTick(blockPos, (uint)(worldIn.Rnd.Next(10) + 5));
         }
 
         /// <summary>
@@ -199,7 +200,7 @@ namespace MvkServer.World.Block.List
                 {
                     From = new vec3(MvkStatic.Xy[15], 0, 0),
                     To = new vec3(MvkStatic.Xy[15], 1.25f, 1f),
-                    Faces = new Face[] { new Face(Pole.West, 57).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.West, 54).SetAnimation(32, 1) }
                 }
             };
         }
@@ -213,7 +214,7 @@ namespace MvkServer.World.Block.List
                 {
                     From = new vec3(MvkStatic.Xy[1], 0, 0),
                     To = new vec3(MvkStatic.Xy[1], 1.25f, 1f),
-                    Faces = new Face[] { new Face(Pole.East, 57).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.East, 54).SetAnimation(32, 1) }
                 }
             };
         }
@@ -227,7 +228,7 @@ namespace MvkServer.World.Block.List
                 {
                     From = new vec3(0, 0, MvkStatic.Xy[1]),
                     To = new vec3(1f, 1.25f, MvkStatic.Xy[1]),
-                    Faces = new Face[] { new Face(Pole.South, 57).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.South, 54).SetAnimation(32, 1) }
                 },
             };
         }
@@ -241,7 +242,7 @@ namespace MvkServer.World.Block.List
                 {
                     From = new vec3(0, 0, MvkStatic.Xy[15]),
                     To = new vec3(1f, 1.25f, MvkStatic.Xy[15]),
-                    Faces = new Face[] { new Face(Pole.North, 57).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.North, 54).SetAnimation(32, 1) }
                 },
             };
         }
@@ -256,7 +257,7 @@ namespace MvkServer.World.Block.List
                     From = new vec3(0, .9375f, -.05f),
                     To = new vec3(1, .9375f, 1.125f),
                     RotatePitch = .1f,
-                    Faces = new Face[] { new Face(Pole.Down, 57).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.Down, 54).SetAnimation(32, 1) }
                 },
                 new Box()
                 {
@@ -264,7 +265,7 @@ namespace MvkServer.World.Block.List
                     To = new vec3(1, .9375f, 1.125f),
                     RotatePitch = .1f,
                     RotateYaw = glm.pi,
-                    Faces = new Face[] { new Face(Pole.Down, 57).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.Down, 54).SetAnimation(32, 1) }
                 }
             };
         }
@@ -316,10 +317,10 @@ namespace MvkServer.World.Block.List
                 {
                     Faces = new Face[]
                     {
-                        new Face(Pole.East, 57).SetAnimation(32, 1),
-                        new Face(Pole.North, 57).SetAnimation(32, 1),
-                        new Face(Pole.South, 57).SetAnimation(32, 1),
-                        new Face(Pole.West, 57).SetAnimation(32, 1)
+                        new Face(Pole.East, 54).SetAnimation(32, 1),
+                        new Face(Pole.North, 54).SetAnimation(32, 1),
+                        new Face(Pole.South, 54).SetAnimation(32, 1),
+                        new Face(Pole.West, 54).SetAnimation(32, 1)
                     }
                 },
                 new Box()
@@ -327,14 +328,14 @@ namespace MvkServer.World.Block.List
                     From = new vec3(0, -.0625f, .5f),
                     To = new vec3(1f, 1.25f, .5f),
                     RotatePitch = .5f,
-                    Faces = new Face[] { new Face(Pole.North, 2105).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.North, 2102).SetAnimation(32, 1) }
                 },
                 new Box()
                 {
                     From = new vec3(0, -.0625f, .5f),
                     To = new vec3(1f, 1.25f, .5f),
                     RotatePitch = -.5f,
-                    Faces = new Face[] { new Face(Pole.South, 2105).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.South, 2102).SetAnimation(32, 1) }
                 },
                 new Box()
                 {
@@ -342,7 +343,7 @@ namespace MvkServer.World.Block.List
                     To = new vec3(1f, 1.25f, .5f),
                     RotatePitch = .5f,
                     RotateYaw = glm.pi90,
-                    Faces = new Face[] { new Face(Pole.North, 2105).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.North, 2102).SetAnimation(32, 1) }
                 },
                 new Box()
                 {
@@ -350,7 +351,7 @@ namespace MvkServer.World.Block.List
                     To = new vec3(1f, 1.25f, .5f),
                     RotatePitch = -.5f,
                     RotateYaw = glm.pi90,
-                    Faces = new Face[] { new Face(Pole.South, 2105).SetAnimation(32, 1) }
+                    Faces = new Face[] { new Face(Pole.South, 2102).SetAnimation(32, 1) }
                 }
             };
 
@@ -523,7 +524,12 @@ namespace MvkServer.World.Block.List
         {
             BlockState blockState = world.GetBlockState(blockPos);
             BlockBase block = blockState.GetBlock();
-            if (block.EBlock == EnumBlock.Turf)
+            if (block.EBlock == EnumBlock.Clay)
+            {
+                // Если глина, то превращается в керамику
+                world.SetBlockState(blockPos, new BlockState(EnumBlock.Terracotta), 14);
+            }
+            else if (block.EBlock == EnumBlock.Turf)
             {
                 BlockPos blockPosUp = blockPos.OffsetUp();
                 BlockState blockStateUp = world.GetBlockState(blockPosUp);

@@ -41,6 +41,10 @@ namespace MvkClient.Renderer
         /// </summary>
         public ArrayMvk<byte> buffer = new ArrayMvk<byte>(4128768);
         /// <summary>
+        /// Буфер сплошных блоков кэш
+        /// </summary>
+        public ArrayMvk<byte> bufferCache = new ArrayMvk<byte>(4032);
+        /// <summary>
         /// Буфер альфа блоков
         /// </summary>
         public ArrayMvk<byte> bufferAlpha = new ArrayMvk<byte>(4128768);
@@ -84,6 +88,10 @@ namespace MvkClient.Renderer
         /// Яркость неба
         /// </summary>
         private float skyLight;
+        /// <summary>
+        /// Яркость солнца
+        /// </summary>
+        private float sunLight;
         /// <summary>
         /// Текстурная карта освещения
         /// </summary>
@@ -186,12 +194,12 @@ namespace MvkClient.Renderer
         /// </summary>
         public void Draw(float timeIndex)
         {
-            textureLightMap.Update(skyLight);
-
             celestialAngle = World.CalculateCelestialAngle(timeIndex);
+            sunLight = World.GetSunLight(celestialAngle);
             skyLight = World.GetSkyLight(celestialAngle);
             colorFog = World.GetFogColor(skyLight);
-            
+
+            textureLightMap.Update(sunLight, MvkStatic.LightMoonPhase[World.GetMoonPhase()]);
 
             // Обновить кадр основного игрока, камера и прочее
             ClientMain.Player.UpdateFrame(timeIndex);
@@ -536,8 +544,6 @@ namespace MvkClient.Renderer
             float angleRad = celestialAngle * glm.pi360;
             // Цвет неба
             vec3 colorSky = World.GetSkyColor(skyLight);
-            // Яркость солнца 
-            float sunLight = World.GetSunLight(celestialAngle);
             // Яркость звёзд 0.0 - 0.75
             float starBrightness = World.GetStarBrightness(celestialAngle);
             // Цвет заката и рассвета

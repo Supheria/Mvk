@@ -150,9 +150,11 @@ namespace MvkClient.Renderer.Chunk
 
                 BlockAlphaRender blockAlphaRender = new BlockAlphaRender(this);
                 blockAlphaRender.blockUV.buffer = ClientWorld.WorldRender.bufferAlphaCache;
+                blockAlphaRender.blockUV.bufferCache = ClientWorld.WorldRender.bufferCache;
 
                 BlockRender blockRender = new BlockRender(this);
                 blockRender.blockUV.buffer = ClientWorld.WorldRender.buffer;
+                blockRender.blockUV.bufferCache = ClientWorld.WorldRender.bufferCache;
 
                 int realY, realZ, i;
 

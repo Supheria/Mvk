@@ -10,6 +10,10 @@ namespace MvkClient.Renderer.Block
     public class BlockSide
     {
         public ArrayMvk<byte> buffer;
+        /// <summary>
+        /// Буфер кэш для внутренней части жидких блоков
+        /// </summary>
+        public ArrayMvk<byte> bufferCache;
 
         public float v1x;
         public float v1y;
@@ -40,10 +44,6 @@ namespace MvkClient.Renderer.Block
 
         public byte animationFrame;
         public byte animationPause;
-        /// <summary>
-        /// Видим только лицевую сторону полигона
-        /// </summary>
-        public bool cullFace;
 
         /// <summary>
         /// Ввернуть сторону блока, без проверки вращения 
@@ -98,24 +98,91 @@ namespace MvkClient.Renderer.Block
                 u4 = u1x; v4 = u1y;
             }
 
-            if (cullFace)
+            // снаружи
+            AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
+            AddVertex(pos2x, pos2y, pos2z, u2, v2, colorsr[1], colorsg[1], colorsb[1], lights[1]);
+            AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
+            AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
+            AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
+            AddVertex(pos4x, pos4y, pos4z, u4, v4, colorsr[3], colorsg[3], colorsb[3], lights[3]);
+        }
+
+        /// <summary>
+        /// Сгенерировать сетку VBO четырёхугольника снаружи
+        /// </summary>
+        public void BufferSideOutside(float pos1x, float pos1y, float pos1z,
+            float pos2x, float pos2y, float pos2z,
+            float pos3x, float pos3y, float pos3z,
+            float pos4x, float pos4y, float pos4z,
+            float u1, float v1, float u2, float v2,
+            float u3, float v3, float u4, float v4
+            )
+        {
+            AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
+            AddVertex(pos2x, pos2y, pos2z, u2, v2, colorsr[1], colorsg[1], colorsb[1], lights[1]);
+            AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
+            AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
+            AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
+            AddVertex(pos4x, pos4y, pos4z, u4, v4, colorsr[3], colorsg[3], colorsb[3], lights[3]);
+        }
+
+        /// <summary>
+        /// Сгенерировать сетку VBO четырёхугольника снаружи
+        /// </summary>
+        public void BufferSideOutsideCache(float pos1x, float pos1y, float pos1z,
+            float pos2x, float pos2y, float pos2z,
+            float pos3x, float pos3y, float pos3z,
+            float pos4x, float pos4y, float pos4z,
+            float u1, float v1, float u2, float v2,
+            float u3, float v3, float u4, float v4
+            )
+        {
+            AddVertexCache(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
+            AddVertexCache(pos2x, pos2y, pos2z, u2, v2, colorsr[1], colorsg[1], colorsb[1], lights[1]);
+            AddVertexCache(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
+            AddVertexCache(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
+            AddVertexCache(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
+            AddVertexCache(pos4x, pos4y, pos4z, u4, v4, colorsr[3], colorsg[3], colorsb[3], lights[3]);
+        }
+
+        /// <summary>
+        /// Сгенерировать сетку VBO четырёхугольника изнутри
+        /// </summary>
+        public void BufferSideInside(float pos1x, float pos1y, float pos1z,
+            float pos2x, float pos2y, float pos2z,
+            float pos3x, float pos3y, float pos3z,
+            float pos4x, float pos4y, float pos4z,
+            float u1, float v1, float u2, float v2,
+            float u3, float v3, float u4, float v4
+            )
+        {
+            AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
+            AddVertex(pos2x, pos2y, pos2z, u2, v2, colorsr[1], colorsg[1], colorsb[1], lights[1]);
+            AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
+            AddVertex(pos4x, pos4y, pos4z, u4, v4, colorsr[3], colorsg[3], colorsb[3], lights[3]);
+            AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
+            AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
+        }
+
+        /// <summary>
+        /// Сгенерировать сетку VBO четырёхугольника с двух сторон
+        /// </summary>
+        public void BufferSideTwo(float pos1x, float pos1y, float pos1z,
+            float pos2x, float pos2y, float pos2z,
+            float pos3x, float pos3y, float pos3z,
+            float pos4x, float pos4y, float pos4z,
+            float u1, float v1, float u2, float v2,
+            float u3, float v3, float u4, float v4,
+            bool insideNot = false
+            )
+        {
+            if (!insideNot)
             {
-                AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
-                AddVertex(pos2x, pos2y, pos2z, u2, v2, colorsr[1], colorsg[1], colorsb[1], lights[1]);
-                AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
-                AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
-                AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
-                AddVertex(pos4x, pos4y, pos4z, u4, v4, colorsr[3], colorsg[3], colorsb[3], lights[3]);
+                BufferSideInside(pos1x, pos1y, pos1z, pos2x, pos2y, pos2z, pos3x, pos3y, pos3z, pos4x, pos4y, pos4z,
+                    u1, v1, u2, v2, u3, v3, u4, v4);
             }
-            else
-            {
-                AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
-                AddVertex(pos2x, pos2y, pos2z, u2, v2, colorsr[1], colorsg[1], colorsb[1], lights[1]);
-                AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
-                AddVertex(pos4x, pos4y, pos4z, u4, v4, colorsr[3], colorsg[3], colorsb[3], lights[3]);
-                AddVertex(pos3x, pos3y, pos3z, u3, v3, colorsr[2], colorsg[2], colorsb[2], lights[2]);
-                AddVertex(pos1x, pos1y, pos1z, u1, v1, colorsr[0], colorsg[0], colorsb[0], lights[0]);
-            }
+            BufferSideOutsideCache(pos1x, pos1y, pos1z, pos2x, pos2y, pos2z, pos3x, pos3y, pos3z, pos4x, pos4y, pos4z,
+                u1, v1, u2, v2, u3, v3, u4, v4);
         }
 
         /// <summary>
@@ -156,6 +223,36 @@ namespace MvkClient.Renderer.Block
             buffer.buffer[buffer.count++] = animationFrame;
             buffer.buffer[buffer.count++] = animationPause;
             buffer.count += 2;
+        }
+
+        /// <summary>
+        /// Добавить вершину в кэш
+        /// </summary>
+        private void AddVertexCache(float x, float y, float z, float u, float v, byte r, byte g, byte b, byte light)
+        {
+            bufferCache.AddRange(BitConverter.GetBytes(x));
+            bufferCache.AddRange(BitConverter.GetBytes(y));
+            bufferCache.AddRange(BitConverter.GetBytes(z));
+            bufferCache.AddRange(BitConverter.GetBytes(u));
+            bufferCache.AddRange(BitConverter.GetBytes(v));
+            bufferCache.buffer[bufferCache.count++] = r;
+            bufferCache.buffer[bufferCache.count++] = g;
+            bufferCache.buffer[bufferCache.count++] = b;
+            bufferCache.buffer[bufferCache.count++] = light;
+            bufferCache.buffer[bufferCache.count++] = animationFrame;
+            bufferCache.buffer[bufferCache.count++] = animationPause;
+            bufferCache.count += 2;
+        }
+
+        /// <summary>
+        /// Добавить кэш сетку в основной буфер
+        /// </summary>
+        public void AddBufferCache()
+        {
+            if (bufferCache.count > 0)
+            {
+                buffer.AddRange(bufferCache);
+            }
         }
     }
 }

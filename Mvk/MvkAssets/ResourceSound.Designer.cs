@@ -73,6 +73,26 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] DamageFallBig {
+            get {
+                object obj = ResourceManager.GetObject("DamageFallBig", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageFallSmall {
+            get {
+                object obj = ResourceManager.GetObject("DamageFallSmall", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] DigGlass1 {
             get {
                 object obj = ResourceManager.GetObject("DigGlass1", resourceCulture);
@@ -323,6 +343,26 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] LiquidLava {
+            get {
+                object obj = ResourceManager.GetObject("LiquidLava", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] LiquidLavaPop {
+            get {
+                object obj = ResourceManager.GetObject("LiquidLavaPop", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] LiquidSplash1 {
             get {
                 object obj = ResourceManager.GetObject("LiquidSplash1", resourceCulture);
@@ -376,6 +416,16 @@ namespace MvkAssets {
         internal static byte[] LiquidSwim4 {
             get {
                 object obj = ResourceManager.GetObject("LiquidSwim4", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] LiquidWater {
+            get {
+                object obj = ResourceManager.GetObject("LiquidWater", resourceCulture);
                 return ((byte[])(obj));
             }
         }

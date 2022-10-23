@@ -17,8 +17,8 @@ namespace MvkServer.World.Block.List
             Combustibility = true;
             IgniteOddsSunbathing = 5;
             NeedsRandomTick = true;
-            Particle = 65;
-            Color = new vec3(.56f, .73f, .35f);
+            Particle = 64;
+            Color = new vec3(1);
             Material = EnumMaterial.Loose;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };
@@ -40,7 +40,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         protected void InitBoxs()
         {
-            vec3 colorGreen = Color;
+            vec3 colorGreen = new vec3(.56f, .73f, .35f);
             vec3 colorBrown = new vec3(.62f, .44f, .37f);
 
             boxes = new Box[4][];

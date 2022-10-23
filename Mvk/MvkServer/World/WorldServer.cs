@@ -347,6 +347,14 @@ namespace MvkServer.World
         }
 
         /// <summary>
+        /// Проиграть звуковой эффект, глобальная координата
+        /// </summary>
+        public override void PlaySound(AssetsSample key, vec3 pos, float volume, float pitch)
+        {
+            Tracker.SendToAllEntityDistance(pos, 32, new PacketS29SoundEffect(key, pos, volume, pitch));
+        }
+
+        /// <summary>
         /// Заспавнить частицу
         /// </summary>
         public override void SpawnParticle(EnumParticle particle, int count, vec3 pos, vec3 offset, float motion,  params int[] items)
@@ -361,10 +369,17 @@ namespace MvkServer.World
         {
             try
             {
+                int chBt = 0;
+                EntityPlayerServer entityPlayerServer = Players.GetEntityPlayerMain();
+                ChunkBase chunk = GetChunk(entityPlayerServer.PositionChunk);
+                chBt = chunk.GetTickBlockCount();
                 string tracker = "";// Tracker.ToString(); 
-                return string.Format("R {6} Ch {0}-{2} EPl {1} E: {4}\r\n{3} {5}",
+                return string.Format("R {6} Ch {0}-{2} EPl {1} E: {4}\r\n{3} {5}\r\nChBt: {7}",
                     ChunkPr.Count, Players.PlayerCount, Players.CountPlayerInstances(), Players.ToStringDebug() // 0 - 3
-                    , base.ToStringDebug(), tracker, Regions.Count()); // 4  - 5
+                    , base.ToStringDebug(), tracker, Regions.Count(), // 4 - 6
+                    chBt // 7
+                    );
+
             }
             catch(Exception e)
             {

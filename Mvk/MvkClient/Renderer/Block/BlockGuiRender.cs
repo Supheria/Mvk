@@ -103,7 +103,7 @@ namespace MvkClient.Renderer.Block
                 animationFrame = cFace.animationFrame,
                 animationPause = cFace.animationPause,
                 yawUV = cBox.RotateYawUV,
-                cullFace = true
+                //cullFace = true
             };
 
             if (cBox.Translate.x != 0 || cBox.Translate.y != 0 || cBox.Translate.z != 0)

@@ -3,6 +3,7 @@ using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
+using MvkServer.World.Biome;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
 using MvkServer.World.Chunk.Light;
@@ -946,6 +947,7 @@ namespace MvkServer.World
             if (!IsAreaLoaded(minX, minY, minZ, maxX, maxY, maxZ)) return liquid;
 
             BlockPos blockPos = new BlockPos();
+            BlockBase block;
             EnumMaterial material;
             for (int x = minX; x < maxX; x++)
             {
@@ -956,27 +958,22 @@ namespace MvkServer.World
                         blockPos.X = x;
                         blockPos.Y = y;
                         blockPos.Z = z;
-                        material = GetBlockState(blockPos).GetBlock().Material;
-                        if (material == EnumMaterial.Water) liquid.Water();
+                        block = GetBlockState(blockPos).GetBlock();
+                        material = block.Material;
+                        if (material == EnumMaterial.Water)
+                        {
+                            liquid.Water(block.ModifyAcceleration(this, blockPos, liquid.GetVecWater()));
+                        }
                         else if (material == EnumMaterial.Lava) liquid.Lava();
-                        else if (material == EnumMaterial.Oil) liquid.Oil();
+                        else if (material == EnumMaterial.Oil)
+                        {
+                            liquid.Oil(block.ModifyAcceleration(this, blockPos, liquid.GetVecOil()));
+                        }
                     }
                 }
             }
+            liquid.VecSpeed();
             return liquid;
-
-                // Толчки воды
-                //if (var11.lengthVector() > 0.0D && entity.isPushedByWater())
-                //{
-                //    var11 = var11.normalize();
-                //    double var20 = 0.014D;
-                //    entity.motionX += var11.xCoord * var20;
-                //    entity.motionY += var11.yCoord * var20;
-                //    entity.motionZ += var11.zCoord * var20;
-                //}
-
-                
-            
         }
 
         /// <summary>
@@ -1036,6 +1033,18 @@ namespace MvkServer.World
             BlockState blockState = GetBlockState(blockPos);
             BlockBase block = blockState.GetBlock();
             return block.IsNotTransparent() && block.FullBlock;
+        }
+
+        /// <summary>
+        /// Получить биом по позиции облка
+        /// </summary>
+        public EnumBiome GetBiome(BlockPos blockPos)
+        {
+            ChunkBase chunk = GetChunk(blockPos);
+            if (chunk == null) return EnumBiome.Plain;
+            int bx = blockPos.X & 15;
+            int bz = blockPos.Z & 15;
+            return chunk.biome[bx << 4 | bz];
         }
 
         public virtual void DebugString(string logMessage, params object[] args) { }

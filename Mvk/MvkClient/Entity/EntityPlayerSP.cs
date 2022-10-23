@@ -585,13 +585,25 @@ namespace MvkClient.Entity
 
                 // Определяем где глаза
                 vec3 posCam = Position + PositionCamera;
-                BlockBase block = World.GetBlockState(new BlockPos(posCam)).GetBlock();
+                BlockPos blockPos = new BlockPos(posCam);
+                BlockState blockState = World.GetBlockState(blockPos);
+                BlockBase block = blockState.GetBlock();
                 switch (block.Material)
                 {
                     case EnumMaterial.Lava: WhereEyesEff = WhereEyes.Lava; break;
                     case EnumMaterial.Oil: WhereEyesEff = WhereEyes.Oil; break;
                     case EnumMaterial.Water: WhereEyesEff = WhereEyes.Water; break;
                     default: WhereEyesEff = WhereEyes.Air; break;
+                }
+
+                if (WhereEyesEff != WhereEyes.Air)
+                {
+                    if (block.EBlock == EnumBlock.WaterFlowing || block.EBlock == EnumBlock.OilFlowing || block.EBlock == EnumBlock.LavaFlowing)
+                    {
+                        float h = blockState.met / 15f;
+                        float h2 = blockPos.Y + h;
+                        if (posCam.y >= h2) WhereEyesEff = WhereEyes.Air;
+                    }
                 }
             }
         }
