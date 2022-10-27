@@ -96,6 +96,11 @@ namespace MvkServer.World.Block
                 case EnumBlock.Terracotta: return new BlockTerracotta();
                 case EnumBlock.Basalt: return new BlockBasalt();
                 case EnumBlock.Obsidian: return new BlockObsidian();
+                case EnumBlock.ElWire: return new BlockElWire();
+                case EnumBlock.ElLampOn: return new BlockElLampOn();
+                case EnumBlock.ElLampOff: return new BlockElLampOff();
+                case EnumBlock.ElBattery: return new BlockElBattery();
+                case EnumBlock.ElSwitch: return new BlockElSwitch();
             }
 
             return new BlockAir(true);
@@ -130,7 +135,7 @@ namespace MvkServer.World.Block
                 25, 26, 27, 28, 29, 40, 41, 42, 43, 44,
                 30, 31, 32, 33, 34, 45, 46, 47, 48, 49,
                 35, 36, 37, 38, 39, 50, 51, 52, 53, 54,
-                55, 56 //1, 7, 8, 9
+                55, 56, 57, 59, 60, 61 //1, 7, 8, 9
             };
         }
 

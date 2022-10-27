@@ -236,7 +236,28 @@
         /// <summary>
         /// Обсидиан
         /// </summary>
-        Obsidian = 56
+        Obsidian = 56,
+        /// <summary>
+        /// Электричество Провод
+        /// </summary>
+        ElWire = 57,
+        /// <summary>
+        /// Электричество Лампа включена
+        /// </summary>
+        ElLampOn = 58,
+        /// <summary>
+        /// Электричество Лампа выключена
+        /// </summary>
+        ElLampOff = 59,
+        /// <summary>
+        /// Электричество Батарея
+        /// </summary>
+        ElBattery = 60,
+        /// <summary>
+        /// Электричество Выключатель
+        /// </summary>
+        ElSwitch = 61
+
     }
 
     /// <summary>
@@ -244,6 +265,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 56;
+        public const int COUNT = 61;
     }
 }

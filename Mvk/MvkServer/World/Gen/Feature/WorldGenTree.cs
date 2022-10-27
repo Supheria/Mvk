@@ -140,7 +140,7 @@ namespace MvkServer.World.Gen.Feature
             if (GenerateCache(world, rand, blockPos))
             {
                 BlockState blockState = world.GetBlockState(blockPos);
-                blockState.GetBlock().Destroy(world, blockPos, blockState);
+                world.SetBlockToAir(blockPos);
                 int i;
                 int count = blockCaches.Count;
                 BlockPos pos;

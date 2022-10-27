@@ -4,13 +4,14 @@ using MvkServer.Util;
 namespace MvkServer.Network.Packets.Client
 {
     /// <summary>
-    /// Отправляем на сервер установку блока
+    /// Отправляем на сервер установку блока или клик
     /// </summary>
     public struct PacketC08PlayerBlockPlacement : IPacket
     {
         private BlockPos blockPos;
         private Pole side;
         private vec3 facing;
+        private bool activated;
 
         /// <summary>
         /// Позиция блока где устанавливаем блок
@@ -25,12 +26,17 @@ namespace MvkServer.Network.Packets.Client
         /// С какой стороны устанавливаем блок
         /// </summary>
         public Pole GetSide() => side;
+        /// <summary>
+        /// Действие на блок правой клавишей мыши, клик
+        /// </summary>
+        public bool GetActivated() => activated;
 
-        public PacketC08PlayerBlockPlacement(BlockPos blockPos, Pole side, vec3 facing)
+        public PacketC08PlayerBlockPlacement(BlockPos blockPos, Pole side, vec3 facing, bool activated)
         {
             this.blockPos = blockPos;
             this.side = side;
             this.facing = facing;
+            this.activated = activated;
         }
 
         public void ReadPacket(StreamBase stream)
@@ -38,6 +44,7 @@ namespace MvkServer.Network.Packets.Client
             blockPos = new BlockPos(stream.ReadInt(), stream.ReadInt(), stream.ReadInt());
             side = (Pole)stream.ReadByte();
             facing = new vec3(stream.ReadByte() / 16f, stream.ReadByte() / 16f, stream.ReadByte() / 16f);
+            activated = stream.ReadBool();
         }
 
         public void WritePacket(StreamBase stream)
@@ -49,6 +56,7 @@ namespace MvkServer.Network.Packets.Client
             stream.WriteByte((byte)(facing.x * 16f));
             stream.WriteByte((byte)(facing.y * 16f));
             stream.WriteByte((byte)(facing.z * 16f));
+            stream.WriteBool(activated);
         }
     }
 }

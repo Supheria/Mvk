@@ -341,7 +341,7 @@ namespace MvkServer.World.Block.List
             if (!block.IsAir && block.Material != material)
             {
                 block.DropBlockAsItem(world, blockPos, blockState, 0);
-                block.Destroy(world, blockPos, blockState, true);
+                world.SetBlockToAir(blockPos, 30);
 
                 // Затухание огня
                 if (block.EBlock == EnumBlock.Fire)

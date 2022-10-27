@@ -54,11 +54,10 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Разрушить блок
+        /// Действие блока после его удаления
         /// </summary>
-        public override void Destroy(WorldBase worldIn, BlockPos blockPos, BlockState state, bool sound, bool particles)
+        public override void OnBreakBlock(WorldBase worldIn, BlockPos blockPos, BlockState state)
         {
-            base.Destroy(worldIn, blockPos, state, sound, particles);
             int met = state.met;
             if (met == 0 || met == 6)
             {
@@ -87,7 +86,7 @@ namespace MvkServer.World.Block.List
                     {
                         block = blockState.GetBlock();
                         block.DropBlockAsItem(worldIn, bPos, blockState, 0);
-                        block.Destroy(worldIn, bPos, blockState);
+                        worldIn.SetBlockToAir(bPos);
                     }
                     for (x = bx - size; x <= bx + size; ++x)
                     {
@@ -109,7 +108,7 @@ namespace MvkServer.World.Block.List
                                     {
                                         block = blockState.GetBlock();
                                         block.DropBlockAsItem(worldIn, bPos, blockState, 0);
-                                        block.Destroy(worldIn, bPos, blockState);
+                                        worldIn.SetBlockToAir(bPos);
                                     }
                                 }
                             }

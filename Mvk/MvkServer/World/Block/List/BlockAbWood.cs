@@ -63,17 +63,14 @@ namespace MvkServer.World.Block.List
         public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met];
 
         /// <summary>
-        /// Установить блок
+        /// Действие перед размещеннием блока, для определения метданных
         /// </summary>
-        /// <param name="side">Сторона на какой ставим блок</param>
-        /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
-        public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
+        public override BlockState OnBlockPlaced(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
         {
             int met = metUp;
             if (side == Pole.East || side == Pole.West) met = 1 + metUp;
             else if (side == Pole.South || side == Pole.North) met = 2 + metUp;
-
-            return base.Put(worldIn, blockPos, new BlockState(state.id, (ushort)met, state.lightBlock, state.lightSky), side, facing);
+            return state.NewMet((ushort)met);
         }
 
         /// <summary>

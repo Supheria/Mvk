@@ -305,16 +305,11 @@ namespace MvkServer.World.Block.List
         //}
 
         /// <summary>
-        /// Установить блок
+        /// Действие перед размещеннием блока, для определения метданных
         /// </summary>
-        /// <param name="side">Сторона на какой ставим блок</param>
-        /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
-        public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
+        public override BlockState OnBlockPlaced(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
         {
-            return base.Put(worldIn, blockPos,
-                new BlockState(state.id, (ushort)(side == Pole.Up ? 1 : 0), state.lightBlock, state.lightSky),
-                side, facing);
+            return state.NewMet((ushort)(side == Pole.Up ? 1 : 0));
         }
-
     }
 }

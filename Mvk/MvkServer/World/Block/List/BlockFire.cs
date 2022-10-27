@@ -86,17 +86,11 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Установить блок
+        /// Действие перед размещеннием блока, для определения метданных
         /// </summary>
-        /// <param name="side">Сторона на какой ставим блок</param>
-        /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
-        public override bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
+        public override BlockState OnBlockPlaced(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
         {
-            if (CanBlockStay(worldIn, blockPos))
-            {
-                return worldIn.SetBlockState(blockPos, state.NewMet(MetUpdate(worldIn, blockPos, 0)), 15);
-            }
-            return false;
+            return state.NewMet(MetUpdate(worldIn, blockPos, 0));
         }
 
         public override void OnBlockAdded(WorldBase worldIn, BlockPos blockPos, BlockState state)
@@ -117,7 +111,7 @@ namespace MvkServer.World.Block.List
             }
             else
             {
-                Destroy(worldIn, blockPos, state);
+                worldIn.SetBlockToAir(blockPos);
             }
         }
 
@@ -447,7 +441,7 @@ namespace MvkServer.World.Block.List
             int age = blockState.met & 0xF;
             if (age == 15)
             {
-                Destroy(world, blockPos, blockState);
+                world.SetBlockToAir(blockPos);
             }
             else
             {
@@ -536,7 +530,7 @@ namespace MvkServer.World.Block.List
                 BlockBase blockUp = blockStateUp.GetBlock();
                 if (blockUp.Material == EnumMaterial.Sapling)
                 {
-                    Destroy(world, blockPosUp, blockStateUp);
+                    world.SetBlockToAir(blockPosUp);
                     if (CanBlockStay(world, blockPosUp))
                     {
                         if (world.SetBlockState(blockPosUp, new BlockState(EnumBlock.Fire).NewMet(MetUpdate(world, blockPosUp, 0)), 15))
@@ -553,7 +547,7 @@ namespace MvkServer.World.Block.List
                 int burn = block.BurnOdds;
                 if (burn == 100 || random.Next(1000) < burn)
                 {
-                    Destroy(world, blockPos, blockState);
+                    world.SetBlockToAir(blockPos);
                     if (CanBlockStay(world, blockPos))
                     {
                         if (world.SetBlockState(blockPos, new BlockState(EnumBlock.Fire).NewMet(MetUpdate(world, blockPos, 0)), 15))

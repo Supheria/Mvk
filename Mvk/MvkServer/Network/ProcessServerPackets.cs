@@ -5,6 +5,7 @@ using MvkServer.Inventory;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
+using MvkServer.World.Block;
 using System.Net.Sockets;
 
 namespace MvkServer.Network
@@ -226,7 +227,8 @@ namespace MvkServer.Network
                 {
                     // Начато разрушение
                     entityPlayer.TheItemInWorldManager.DestroyStart(packet.GetBlockPos());
-                } else
+                }
+                else
                 {
                     // Отмена разрушения
                     entityPlayer.TheItemInWorldManager.DestroyAbout();
@@ -244,7 +246,18 @@ namespace MvkServer.Network
             
             if (entityPlayer != null)
             {
-                entityPlayer.TheItemInWorldManager.Put(packet.GetBlockPos(), packet.GetSide(), packet.GetFacing(), entityPlayer.Inventory.CurrentItem);
+                if (packet.GetActivated())
+                {
+                    // Действие блока, клик правой клавишей мыши
+                    BlockPos blockPos = packet.GetBlockPos();
+                    BlockState blockState = ServerMain.World.GetBlockState(blockPos);
+                    blockState.GetBlock().OnBlockActivated(ServerMain.World, blockPos, blockState, packet.GetSide(), packet.GetFacing());
+                }
+                else
+                {
+                    // установка блока
+                    entityPlayer.TheItemInWorldManager.Put(packet.GetBlockPos(), packet.GetSide(), packet.GetFacing(), entityPlayer.Inventory.CurrentItem);
+                }
                 entityPlayer.MarkPlayerActive();
             }
         }

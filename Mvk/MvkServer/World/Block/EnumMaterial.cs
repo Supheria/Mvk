@@ -62,6 +62,10 @@
         /// </summary>
         GlassPane,
         /// <summary>
+        /// Электричество
+        /// </summary>
+        Electricity,
+        /// <summary>
         /// Отладочный блок
         /// </summary>
         Debug

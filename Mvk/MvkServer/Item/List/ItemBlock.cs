@@ -35,12 +35,13 @@ namespace MvkServer.Item.List
         {
             if (CanPlaceBlockOnSide(stack, playerIn, worldIn, blockPos, side, facing))
             {
-                //if (worldIn.IsRemote) return true;
-                BlockState blockStateNew = new BlockState(Block.EBlock);
-                BlockBase blockNew = blockStateNew.GetBlock();
-                bool result = blockNew.Put(worldIn, blockPos, blockStateNew, side, facing);
-                if (result) worldIn.PlaySound(playerIn, blockNew.SamplePut(worldIn), blockPos.ToVec3(), 1f, 1f);
-                return result;
+                if (Block.CanBlockStay(worldIn, blockPos))
+                {
+                    BlockState blockState = Block.OnBlockPlaced(worldIn, blockPos, new BlockState(Block.EBlock), side, facing);
+                    bool result = worldIn.SetBlockState(blockPos, blockState, 15);
+                    if (result) worldIn.PlaySound(playerIn, Block.SamplePut(worldIn), blockPos.ToVec3(), 1f, 1f);
+                    return result;
+                }
             }
             return false;
         }
@@ -73,6 +74,12 @@ namespace MvkServer.Item.List
                 isCheckCollision = axisBlock != null && !playerIn.BoundingBox.IntersectsWith(axisBlock)
                     && worldIn.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityLiving, axisBlock, playerIn.Id).Count == 0;
             }
+
+            //if (isCheckCollision)
+            //{
+            //    return Block.CanBlockStay(worldIn, blockPos);
+            //}
+            
             return isCheckCollision;
         }
     }

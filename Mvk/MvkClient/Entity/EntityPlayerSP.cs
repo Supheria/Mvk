@@ -836,27 +836,40 @@ namespace MvkClient.Entity
 
         private void PutBlockStart(MovingObjectPosition moving, bool start)
         {
-            ItemStack itemStack = Inventory.GetCurrentItem();
-            if (itemStack != null)
+            bool click = false;
+            if (start && moving.IsBlock() && !IsSneaking())
             {
-                if (itemStack.Item is ItemBlock itemBlock && moving.IsBlock())
+                // клик по блоку
+                click = moving.Block.GetBlock().OnBlockActivated(World, moving.BlockPosition, moving.Block, moving.Side, moving.Facing);
+                if (click)
                 {
-                    // В стаке блок, и по лучу можем устанавливать блок
-                    BlockPos blockPos = new BlockPos(moving.GetPut(itemBlock.Block));
-                    if (itemBlock.CanPlaceBlockOnSide(itemStack, this, World, blockPos, moving.Side, moving.Facing))
-                    {
-                        ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(blockPos, moving.Side, moving.Facing));
-                        itemInWorldManager.Put(blockPos, moving.Side, moving.Facing, Inventory.CurrentItem);
-                        itemInWorldManager.PutPause(start);
-                        blankShot = true;
-                    }
-                    else
-                    {
-                        itemInWorldManager.PutAbout();
-                    }
-                    handAction = ActionHand.Right;
+                    ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(moving.BlockPosition, moving.Side, moving.Facing, true));
                 }
-                // Тут будут другие действия на предмет, к примеру покушать
+            }
+            if (!click)
+            {
+                ItemStack itemStack = Inventory.GetCurrentItem();
+                if (itemStack != null)
+                {
+                    if (itemStack.Item is ItemBlock itemBlock && moving.IsBlock())
+                    {
+                        // В стаке блок, и по лучу можем устанавливать блок
+                        BlockPos blockPos = new BlockPos(moving.GetPut(itemBlock.Block));
+                        if (itemBlock.CanPlaceBlockOnSide(itemStack, this, World, blockPos, moving.Side, moving.Facing))
+                        {
+                            ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(blockPos, moving.Side, moving.Facing, false));
+                            itemInWorldManager.Put(blockPos, moving.Side, moving.Facing, Inventory.CurrentItem);
+                            itemInWorldManager.PutPause(start);
+                            blankShot = true;
+                        }
+                        else
+                        {
+                            itemInWorldManager.PutAbout();
+                        }
+                        handAction = ActionHand.Right;
+                    }
+                    // Тут будут другие действия на предмет, к примеру покушать
+                }
             }
         }
 

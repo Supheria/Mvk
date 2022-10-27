@@ -135,11 +135,11 @@ namespace MvkServer.Management
                 {
                     block.DropBlockAsItemWithChance(world, blockPos, blockState, 1.0f, 0);
                 }
-                block.Destroy(worldServer, blockPos, blockState, true, true);
+                worldServer.SetBlockToAir(blockPos, 31);
             }
             else
             {
-                block.Destroy(world, blockPos, blockState);
+                world.SetBlockToAir(blockPos);
             }
             pause = entityPlayer.GetArmSwingAnimationEnd();
         }

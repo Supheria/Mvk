@@ -4,10 +4,8 @@ using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.Item.List;
-using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
 using MvkServer.Util;
-using System;
 
 namespace MvkServer.World.Block
 {
@@ -368,37 +366,25 @@ namespace MvkServer.World.Block
         public virtual int QuantityDroppedWithBonus(int fortune, Rand random) => QuantityDropped(random);
 
         /// <summary>
-        /// Установить блок
+        /// Действие перед размещеннием блока, для определения метданных
         /// </summary>
-        /// <param name="side">Сторона на какой ставим блок</param>
-        /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
-        public virtual bool Put(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
-        {
-            if (CanBlockStay(worldIn, blockPos)) return worldIn.SetBlockState(blockPos, state, 15);
-            return false;
-        }
+        public virtual BlockState OnBlockPlaced(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing) 
+            => state.NewMet(0);
 
         /// <summary>
         /// Действие блока после его установки
         /// </summary>
         public virtual void OnBlockAdded(WorldBase worldIn, BlockPos blockPos, BlockState state) { }
 
+        /// <summary>
+        /// Действие блока после его удаления
+        /// </summary>
+        public virtual void OnBreakBlock(WorldBase worldIn, BlockPos blockPos, BlockState state) { }
 
         /// <summary>
-        /// Разрушить блок
+        /// Активация блока, клик правой клавишей мыши по блоку, true - был клик, false - нет такой возможности
         /// </summary>
-        /// <param name="sound">звуковой эффект разрушения</param>
-        /// <param name="particles">Частички старого блока</param>
-        public virtual void Destroy(WorldBase worldIn, BlockPos blockPos, BlockState state, bool sound = false, bool particles = false)
-        {
-            worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), particles ? 15 : 14);
-            if (sound && !worldIn.IsRemote && worldIn is WorldServer worldServer)
-            {
-                vec3 pos = blockPos.ToVec3();
-                worldServer.Tracker.SendToAllEntityDistance(pos, 32f,
-                    new PacketS29SoundEffect(SampleBreak(worldServer), pos, 1f, SampleBreakPitch(worldServer.Rnd)));
-            }
-        }
+        public virtual bool OnBlockActivated(WorldBase worldIn, BlockPos pos, BlockState state, Pole side, vec3 facing) => false;
 
         /// <summary> 
         /// Проверка установи блока, можно ли его установить тут
@@ -471,37 +457,5 @@ namespace MvkServer.World.Block
         /// Строка
         /// </summary>
         public override string ToString() => EBlock.ToString();
-
-        /// <summary>
-        /// Флаги рендера блока
-        /// </summary>
-        [Flags]
-        public enum EnumRenderType
-        {
-            /// <summary>
-            /// Все стороны принудительно, пример: трава, стекло, вода, лава
-            /// </summary>
-            AllSideForcibly = 1,
-            /// <summary>
-            /// Сторону рисуем с двух сторон, пример: вода, лава
-            /// </summary>
-            BackSide = 2,
-            /// <summary>
-            /// Обрабатывается блок эффектом АmbientOcclusion
-            /// </summary>
-            АmbientOcclusion = 4,
-            /// <summary>
-            /// Нет бокового затемнения, пример: трава, цветы
-            /// </summary>
-            NoSideDimming = 8,
-            /// <summary>
-            /// Может ли быть тень сущности на блоке, только для целых блоков
-            /// </summary>
-            Shadow = 16,
-            /// <summary>
-            /// Не однотипные блоки, пример: трава, цветы, кактус
-            /// </summary>
-            BlocksNotSame = 32
-        }
     }
 }

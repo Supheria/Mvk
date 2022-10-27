@@ -2,6 +2,7 @@
 using MvkServer.Entity.Item;
 using MvkServer.Glm;
 using MvkServer.NBT;
+using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 using MvkServer.World.Biome;
 using MvkServer.World.Block;
@@ -684,7 +685,8 @@ namespace MvkServer.World.Chunk
         /// <param name="blockState">данные нового блока</param>
         /// <param name="isModify">Пометка надо сохранение чанка</param>
         /// <param name="isModifyRender">Пометка надо обновить рендер чанка</param>
-        public BlockState SetBlockState(BlockPos blockPos, BlockState blockState, bool isModify, bool isModifyRender)
+        /// <param name="isSound">Звуковое сопровождение сломанного блока</param>
+        public BlockState SetBlockState(BlockPos blockPos, BlockState blockState, bool isModify, bool isModifyRender, bool isSound)
         {
             int bx = blockPos.X & 15;
             int by = blockPos.Y;
@@ -724,12 +726,11 @@ namespace MvkServer.World.Chunk
                 // Отмена тик блока
                 RemoveBlockTick(bx, by, bz);
 
-                // проверка света
-                //if (World.IsRemote)
+                // Действие блока после его удаления
+                if (!World.IsRemote) blockOld.OnBreakBlock(World, blockPos, blockStateOld);
 
-                // bool replaceAir = (block.IsAir && !blockOld.IsAir) || (!block.IsAir && blockOld.IsAir);
                 bool differenceOpacity = block.LightOpacity != blockOld.LightOpacity;
-                if (/*replaceAir || */differenceOpacity || block.LightValue != blockOld.LightValue)
+                if (differenceOpacity || block.LightValue != blockOld.LightValue)
                 {
                     World.Light.ActionChunk(this);
                     World.Light.CheckLightFor(blockPos.X, blockPos.Y, blockPos.Z, differenceOpacity, isModify, isModifyRender);//, replaceAir);
@@ -748,7 +749,6 @@ namespace MvkServer.World.Chunk
 
                 if (World.IsRemote)
                 {
-                    //World.DebugString(Light.debugStr);
                     World.DebugString(World.Light.ToDebugString());
                 }
             }
@@ -762,12 +762,16 @@ namespace MvkServer.World.Chunk
                 block.OnBlockAdded(World, blockPos, blockState);
             }
 
-            //MarkBlockForUpdate(blockPos);
-
             if (storage.countBlock == 0 || (storage.data[index]) != (ushort)block.EBlock) return new BlockState();
 
+            // Звуковое сопровождение сломанного блока
+            if (isSound && !World.IsRemote && World is WorldServer worldServer)
+            {
+                vec3 pos = blockPos.ToVec3();
+                worldServer.Tracker.SendToAllEntityDistance(pos, 32f,
+                    new PacketS29SoundEffect(blockOld.SampleBreak(worldServer), pos, 1f, blockOld.SampleBreakPitch(worldServer.Rnd)));
+            }
 
-            
 
             //if (heightMapUp)
             //{

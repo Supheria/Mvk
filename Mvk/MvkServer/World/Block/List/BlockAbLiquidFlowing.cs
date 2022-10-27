@@ -49,7 +49,7 @@ namespace MvkServer.World.Block.List
                 if (met <= 0)
                 {
                     // высохла
-                    world.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 14);
+                    world.SetBlockToAir(blockPos);
                 }
                 else
                 {

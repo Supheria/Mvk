@@ -584,16 +584,18 @@ namespace MvkServer.World
         }
 
         /// <summary>
-        /// Задать блок неба, с флагом: уведомление соседей, modifyRender, modifySave
+        /// Задать блок неба, с флагом по умолчанию 14 (уведомление соседей, modifyRender, modifySave)
         /// </summary>
-        //public bool SetBlockToAir(BlockPos blockPos) => SetBlockState(blockPos, new BlockState(EnumBlock.Air), 14);
+        /// <param name="blockPos">позици блока</param>
+        /// <param name="flag">флаг, 1 частички старого блока, 2 уведомление соседей, 4 modifyRender, 8 modifySave, 16 sound break</param>
+        public bool SetBlockToAir(BlockPos blockPos, int flag = 14) => SetBlockState(blockPos, new BlockState(EnumBlock.Air), flag);
 
         /// <summary>
         /// Сменить блок
         /// </summary>
         /// <param name="blockPos">позици блока</param>
         /// <param name="blockState">данные блока</param>
-        /// <param name="flag">флаг, 1 частички старого блока, 2 уведомление соседей, 4 modifyRender, 8 modifySave</param>
+        /// <param name="flag">флаг, 1 частички старого блока, 2 уведомление соседей, 4 modifyRender, 8 modifySave, 16 sound break</param>
         /// <returns>true смена была</returns>
         public virtual bool SetBlockState(BlockPos blockPos, BlockState blockState, int flag)
         {
@@ -602,7 +604,7 @@ namespace MvkServer.World
             ChunkBase chunk = ChunkPr.GetChunk(blockPos.GetPositionChunk());
             if (chunk == null) return false;
 
-            BlockState blockStateTrue = chunk.SetBlockState(blockPos, blockState, (flag & 8) != 0, (flag & 4) != 0);
+            BlockState blockStateTrue = chunk.SetBlockState(blockPos, blockState, (flag & 8) != 0, (flag & 4) != 0, (flag & 16) != 0);
             if (blockStateTrue.IsEmpty()) return false;
 
             if (!IsRemote)

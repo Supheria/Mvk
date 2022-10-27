@@ -30,7 +30,7 @@ namespace MvkServer.World.Block.List
             faces = new Face[]
             {
                 new Face(57).SetAnimation(32, 8),
-                new Face(56).SetAnimation(32, 16)
+                new Face(56).SetAnimation(64, 2)
             };
             InitBoxs();
         }

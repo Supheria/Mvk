@@ -52,7 +52,7 @@ namespace MvkServer.Network.Packets.Server
                     blockPos.X = chx + (xz & 0xF);
                     blockPos.Y = blocks[i].y;
                     blockPos.Z = chz + (xz >> 4);
-                    chunk.SetBlockState(blockPos, blocks[i].blockState, false, true);
+                    chunk.SetBlockState(blockPos, blocks[i].blockState, false, true, true);
                 }
             }
         }
