@@ -17,7 +17,7 @@ namespace MvkServer.Management
         /// <summary>
         /// Количество блоков отправляемые за так изменённые в чанке
         /// </summary>
-        private const int COUNT_MULTY_BLOCKS = 1024;
+        private const int COUNT_MULTY_BLOCKS = 4096;
         /// <summary>
         /// Позиция текущего чанка
         /// </summary>

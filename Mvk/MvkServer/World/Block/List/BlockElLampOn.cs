@@ -28,5 +28,21 @@ namespace MvkServer.World.Block.List
             DischargeTick(world, blockPos);
             world.SetBlockTick(blockPos, tickRate);
         }
+
+        /// <summary>
+        /// Блок отключен от электроэнергии
+        /// </summary>
+        public override void UnitDisconnectedFromElectricity(WorldBase world, BlockPos blockPos)
+        {
+            world.SetBlockState(blockPos, new BlockState(EnumBlock.ElLampOff), 12);
+        }
+        /// <summary>
+        /// Имеется ли у блока подключение к электроэнергии
+        /// </summary>
+        public override bool IsUnitConnectedToElectricity() => true;
+        /// <summary>
+        /// Имеется ли у блока разрядка к электроэнергии
+        /// </summary>
+        public override bool IsUnitDischargeToElectricity() => true;
     }
 }

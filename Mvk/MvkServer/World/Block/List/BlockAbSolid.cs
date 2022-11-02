@@ -11,6 +11,7 @@ namespace MvkServer.World.Block.List
         {
             Material = EnumMaterial.Solid;
             Particle = numberTexture;
+            Resistance = 10f;
             InitBoxs(numberTexture, false, color);
         }
 

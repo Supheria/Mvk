@@ -1,4 +1,5 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
@@ -14,5 +15,17 @@ namespace MvkServer.World.Block.List
         {
             InitBoxs(387, false, new vec3(1));
         }
+
+        /// <summary>
+        /// Блок подключен к электроэнергии
+        /// </summary>
+        public override void UnitConnectedToElectricity(WorldBase world, BlockPos blockPos)
+        {
+            world.SetBlockState(blockPos, new BlockState(EnumBlock.ElLampOn), 12);
+        }
+        /// <summary>
+        /// Имеется ли у блока подключение к электроэнергии
+        /// </summary>
+        public override bool IsUnitConnectedToElectricity() => true;
     }
 }

@@ -64,9 +64,14 @@ namespace MvkServer.World.Block
         /// </summary>
         public bool Shadow { get; protected set; } = true;
         /// <summary>
-        /// Устойчивость блоков к взрывам. (для будущего)
+        /// Устойчивость блоков к взрывам.
+        /// 10 камень, 5 дерево, руда, 0.6 стекло, 0.5 земля, песок, 0.2 листва, 0.0 трава, саженцы 
         /// </summary>
         public float Resistance { get; protected set; } = 0;
+        /// <summary>
+        /// Может ли этот блок выпасть от взрыва, защита чтоб взрываемый блок не выпадал
+        /// </summary>
+        public bool CanDropFromExplosion { get; protected set; } = true;
         /// <summary>
         /// Включить в статистику. (для будущего)
         /// </summary>
@@ -452,6 +457,23 @@ namespace MvkServer.World.Block
         /// Изменить ускорение на блоке
         /// </summary>
         public virtual vec3 ModifyAcceleration(WorldBase worldIn, BlockPos blockPos, vec3 motion) => motion;
+
+        /// <summary>
+        /// Блок подключен к электроэнергии
+        /// </summary>
+        public virtual void UnitConnectedToElectricity(WorldBase world, BlockPos blockPos) { }
+        /// <summary>
+        /// Блок отключен от электроэнергии
+        /// </summary>
+        public virtual void UnitDisconnectedFromElectricity(WorldBase world, BlockPos blockPos) { }
+        /// <summary>
+        /// Имеется ли у блока подключение к электроэнергии
+        /// </summary>
+        public virtual bool IsUnitConnectedToElectricity() => false;
+        /// <summary>
+        /// Имеется ли у блока разрядка к электроэнергии
+        /// </summary>
+        public virtual bool IsUnitDischargeToElectricity() => false;
 
         /// <summary>
         /// Строка

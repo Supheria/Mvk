@@ -112,10 +112,15 @@ namespace MvkServer.Util
         /// <summary>
         /// Создать файл c ошибкой краша
         /// </summary>
-        public static void Crach(Exception e)
+        public static void Crach(Exception e, string logMessage = "", params object[] args)
         {
             Logger logger = new Logger("", "Crach");
-            logger.Error("{0}: {1}\r\n------\r\n{2}", e.Source, e.Message, e.StackTrace);
+            string prefix = "";
+            if (logMessage != "")
+            {
+                prefix = string.Format(logMessage, args) + "\r\n";
+            }
+            logger.Error(prefix + "{0}: {1}\r\n------\r\n{2}", e.Source, e.Message, e.StackTrace);
             logger.Close();
         }
     }

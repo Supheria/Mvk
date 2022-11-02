@@ -109,7 +109,7 @@ namespace MvkServer.World.Block.List
                 if (powerBegin == -1)
                 {
                     // Блок энергии не использует мощность, и значит не передаёт её, по этому игнорируем
-                    if (blockState.GetBlock().Material == EnumMaterial.Electricity)
+                    if (blockState.GetBlock().IsUnitConnectedToElectricity())
                     {
                         // Делаем доп проверку на включение
                         powerBiside = GetLevelBesideMax(world, blockPos);
@@ -126,6 +126,19 @@ namespace MvkServer.World.Block.List
                 if (powerBiside == -1)
                 {
                     // Блоков энергии рядом нет
+                    if (powerBegin == 16)
+                    {
+                        // Делаем дополнительную проверку на активацию
+                        BlockPos blockPosBiside;
+                        for (int i = 0; i < 6; i++)
+                        {
+                            blockPosBiside = blockPos.Offset(i);
+                            if (world.GetBlockState(blockPosBiside).GetBlock().IsUnitConnectedToElectricity())
+                            {
+                                PowerOn(world, blockPosBiside);
+                            }
+                        }
+                    }
                     return;
                 }
 
@@ -294,7 +307,7 @@ namespace MvkServer.World.Block.List
             {
                 for (int i = 0; i < listOff.Count; i++)
                 {
-                    PowerOff(world, listOff[i]);
+                    world.GetBlockState(listOff[i]).GetBlock().UnitDisconnectedFromElectricity(world, listOff[i]);
                 }
             }
             // Включаем, массив сформирован в Stronger
@@ -371,7 +384,7 @@ namespace MvkServer.World.Block.List
                                 }
                                 else if (!isIgnorePowerOn && powerBiside == -1)
                                 {
-                                    if (blockState.GetBlock().Material == EnumMaterial.Electricity)
+                                    if (blockState.GetBlock().IsUnitConnectedToElectricity())
                                     {
                                         listPowerOn.Add(blockPosBeside);
                                     }
@@ -439,7 +452,7 @@ namespace MvkServer.World.Block.List
                                 }
                                 else if (!isIgnorePowerOff && powerBiside == -1)
                                 {
-                                    if (blockState.GetBlock().Material == EnumMaterial.Electricity)
+                                    if (blockState.GetBlock().IsUnitConnectedToElectricity())
                                     {
                                         listPowerOff.Add(blockPosBeside);
                                     }
@@ -508,12 +521,14 @@ namespace MvkServer.World.Block.List
         /// </summary>
         private void PowerOn(WorldBase world, BlockPos blockPos)
         {
-            BlockState blockState = world.GetBlockState(blockPos);
-            EnumBlock enumBlock = blockState.GetEBlock();
-            if (enumBlock == EnumBlock.ElLampOff)
+            BlockBase block = world.GetBlockState(blockPos).GetBlock();
+            if (block.IsUnitConnectedToElectricity())
             {
-                world.SetBlockState(blockPos, new BlockState(EnumBlock.ElLampOn), 12);
-                Discharge(world, blockPos);
+                if (block.IsUnitDischargeToElectricity())
+                {
+                    Discharge(world, blockPos);
+                }
+                block.UnitConnectedToElectricity(world, blockPos);
             }
         }
 
@@ -522,34 +537,20 @@ namespace MvkServer.World.Block.List
         /// </summary>
         private void PowerOnTick(WorldBase world, BlockPos blockPos)
         {
-            BlockState blockState = world.GetBlockState(blockPos);
-            EnumBlock enumBlock = blockState.GetEBlock();
-            if (enumBlock == EnumBlock.ElLampOn)
+            BlockBase block = world.GetBlockState(blockPos).GetBlock();
+            if (block.IsUnitConnectedToElectricity())
             {
                 int power = GetLevelBesideMax(world, blockPos);
                 if (power < 1)
                 {
-                    // Рядом нет мощности, сразу отключаем лампу
-                    world.SetBlockState(blockPos, new BlockState(EnumBlock.ElLampOff), 12);
+                    // Рядом нет мощности, отключаем
+                    block.UnitDisconnectedFromElectricity(world, blockPos);
                 }
-                else
+                else if(block.IsUnitDischargeToElectricity())
                 {
                     // Рядом есть источник, ищем источник и понижаем
                     Discharge(world, blockPos);
                 }
-            }
-        }
-
-        /// <summary>
-        /// Отключть от источника
-        /// </summary>
-        private void PowerOff(WorldBase world, BlockPos blockPos)
-        {
-            BlockState blockState = world.GetBlockState(blockPos);
-            EnumBlock enumBlock = blockState.GetEBlock();
-            if (enumBlock == EnumBlock.ElLampOn)
-            {
-                world.SetBlockState(blockPos, new BlockState(EnumBlock.ElLampOff), 12);
             }
         }
 

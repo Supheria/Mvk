@@ -113,6 +113,10 @@
     <None Include="Resources\DigWood2.ogg" />
     <None Include="Resources\DigWood3.ogg" />
     <None Include="Resources\DigWood4.ogg" />
+    <None Include="Resources\Explode1.ogg" />
+    <None Include="Resources\Explode2.ogg" />
+    <None Include="Resources\Explode3.ogg" />
+    <None Include="Resources\Explode4.ogg" />
     <None Include="Resources\Fire.ogg" />
     <None Include="Resources\FireFizz.ogg" />
     <None Include="Resources\LiquidLava.ogg" />

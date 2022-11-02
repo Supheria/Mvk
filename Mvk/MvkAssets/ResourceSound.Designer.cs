@@ -323,6 +323,46 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] Explode1 {
+            get {
+                object obj = ResourceManager.GetObject("Explode1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] Explode2 {
+            get {
+                object obj = ResourceManager.GetObject("Explode2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] Explode3 {
+            get {
+                object obj = ResourceManager.GetObject("Explode3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] Explode4 {
+            get {
+                object obj = ResourceManager.GetObject("Explode4", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] Fire {
             get {
                 object obj = ResourceManager.GetObject("Fire", resourceCulture);

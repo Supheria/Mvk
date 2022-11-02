@@ -15,6 +15,7 @@ namespace MvkServer.World.Block.List
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGravel1, AssetsSample.DigGravel2, AssetsSample.DigGravel3, AssetsSample.DigGravel4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGravel1, AssetsSample.StepGravel2, AssetsSample.StepGravel3, AssetsSample.StepGravel4 };
             Particle = numberTexture;
+            Resistance = .5f;
             InitBoxs(numberTexture, false, color);
         }
 

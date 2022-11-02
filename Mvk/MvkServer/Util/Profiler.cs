@@ -30,6 +30,7 @@ namespace MvkServer.Util
         {
             if (profilingEnabled)
             {
+                profilingEnabled = false;
                 long time = stopwatch.ElapsedTicks / MvkStatic.TimerFrequency;
 
                 if (time > 100) // больше 100 мс

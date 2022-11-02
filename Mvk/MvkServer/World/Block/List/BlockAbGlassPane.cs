@@ -32,6 +32,7 @@ namespace MvkServer.World.Block.List
             UseNeighborBrightness = true;
             Particle = numberTextureSide;
             LightOpacity = 2;
+            Resistance = .6f;
             Material = EnumMaterial.GlassPane;
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
             InitBoxs();

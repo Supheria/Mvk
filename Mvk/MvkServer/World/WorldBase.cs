@@ -82,6 +82,10 @@ namespace MvkServer.World
         /// создавая очень плоский ряд значений, плохо подходящих для выбора случайных блоков в поле 16x128x16.
         /// </summary>
         protected int updateLCG;
+        /// <summary>
+        /// Объект взрыва
+        /// </summary>
+        protected Explosion explosion;
 
         protected WorldBase()
         {
@@ -90,6 +94,7 @@ namespace MvkServer.World
             Rnd = new Rand();
             Light = new WorldLight(this);
             updateLCG = new Rand().Next();
+            explosion = new Explosion(this);
         }
 
         public Profiler TheProfiler() => profiler;
@@ -1048,6 +1053,14 @@ namespace MvkServer.World
             int bz = blockPos.Z & 15;
             return chunk.biome[bx << 4 | bz];
         }
+
+        /// <summary>
+        /// Создать взрыв
+        /// </summary>
+        /// <param name="pos">позиция эпицентра</param>
+        /// <param name="strength">сила</param>
+        /// <param name="distance">дистанция</param>
+        public virtual void CreateExplosion(vec3 pos, float strength, float distance) { }
 
         public virtual void DebugString(string logMessage, params object[] args) { }
     }

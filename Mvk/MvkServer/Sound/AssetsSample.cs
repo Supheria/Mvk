@@ -7,6 +7,9 @@
     {
         Click,
 
+        DamageFallBig,
+        DamageFallSmall,
+
         DigGlass1,
         DigGlass2,
         DigGlass3,
@@ -31,11 +34,13 @@
         DigWood3,
         DigWood4,
 
+        Explode1,
+        Explode2,
+        Explode3,
+        Explode4,
+
         Fire,
         FireFizz,
-
-        DamageFallBig,
-        DamageFallSmall,
 
         LiquidSplash1,
         LiquidSplash2,

@@ -21,6 +21,7 @@ namespace MvkServer.World.Block.List
         public BlockElBattery() : base(392)
         {
             IsAddMet = true;
+            Resistance = 50;
             InitBoxs();
         }
 

@@ -49,6 +49,7 @@ namespace MvkServer.World.Block.List
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigWood1, AssetsSample.DigWood2, AssetsSample.DigWood3, AssetsSample.DigWood4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepWood1, AssetsSample.StepWood2, AssetsSample.StepWood3, AssetsSample.StepWood4 };
             Particle = numberTextureButt;
+            Resistance = 5.0f;
             InitBoxs();
         }
 

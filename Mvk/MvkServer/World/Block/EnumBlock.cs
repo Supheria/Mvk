@@ -256,8 +256,15 @@
         /// <summary>
         /// Электричество Выключатель
         /// </summary>
-        ElSwitch = 61
-
+        ElSwitch = 61,
+        /// <summary>
+        /// TNT
+        /// </summary>
+        Tnt = 62,
+        /// <summary>
+        /// TNT с часами
+        /// </summary>
+        TntClock = 63
     }
 
     /// <summary>
@@ -265,6 +272,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 61;
+        public const int COUNT = 63;
     }
 }

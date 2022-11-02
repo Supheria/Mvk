@@ -18,6 +18,7 @@ namespace MvkServer.World.Block.List
             UseNeighborBrightness = true;
             Particle = numberTexture;
             LightOpacity = 2;
+            Resistance = .6f;
             Material = EnumMaterial.Glass;
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
             InitBoxs(numberTexture, true, color);

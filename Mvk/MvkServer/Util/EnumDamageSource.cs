@@ -38,6 +38,10 @@
         /// </summary>
         Cactus,
         /// <summary>
+        /// Источник взрыва
+        /// </summary>
+        ExplosionSource,
+        /// <summary>
         /// Моб
         /// </summary>
         Mob,

@@ -92,6 +92,7 @@ namespace MvkClient.Network
                 case 0x22: Handle22MultiBlockChange((PacketS22MultiBlockChange)packet); break;
                 case 0x23: Handle23BlockChange((PacketS23BlockChange)packet); break;
                 case 0x25: Handle25BlockBreakAnim((PacketS25BlockBreakAnim)packet); break;
+                case 0x27: Handle27Explosion((PacketS27Explosion)packet); break;
                 case 0x29: Handle29SoundEffect((PacketS29SoundEffect)packet); break;
                 case 0x2A: Handle29Particles((PacketS2AParticles)packet); break;
                 case 0x2F: Handle2FSetSlot((PacketS2FSetSlot)packet); break;
@@ -429,6 +430,11 @@ namespace MvkClient.Network
         private void Handle25BlockBreakAnim(PacketS25BlockBreakAnim packet)
         {
             ClientMain.World.SendBlockBreakProgress(packet.GetBreakerId(), packet.GetBlockPos(), packet.GetProgress());
+        }
+
+        private void Handle27Explosion(PacketS27Explosion packet)
+        {
+            ClientMain.Player.MotionPush = packet.motion;
         }
 
         private void Handle29SoundEffect(PacketS29SoundEffect packet)

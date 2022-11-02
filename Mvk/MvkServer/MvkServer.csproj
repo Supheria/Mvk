@@ -90,6 +90,7 @@
     <Compile Include="Network\Packets\Server\PacketS22MultiBlockChange.cs" />
     <Compile Include="Network\Packets\Server\PacketS2AParticles.cs" />
     <Compile Include="Network\Packets\Server\PacketS29SoundEffect.cs" />
+    <Compile Include="Network\Packets\Server\PacketS27Explosion.cs" />
     <Compile Include="Network\Packets\Server\PacketS2FSetSlot.cs" />
     <Compile Include="Network\Packets\Server\PacketS04EntityEquipment.cs" />
     <Compile Include="Network\Packets\Server\PacketS07Respawn.cs" />
@@ -197,6 +198,8 @@
     <Compile Include="World\Block\List\BlockOilFlowing.cs" />
     <Compile Include="World\Block\List\BlockBasalt.cs" />
     <Compile Include="World\Block\List\BlockObsidian.cs" />
+    <Compile Include="World\Block\List\BlockTntClock.cs" />
+    <Compile Include="World\Block\List\BlockTnt.cs" />
     <Compile Include="World\Block\List\BlockTerracotta.cs" />
     <Compile Include="World\Block\List\BlockFlowerClover.cs" />
     <Compile Include="World\Block\List\BlockAbGlass.cs" />
@@ -279,6 +282,7 @@
     <Compile Include="World\Chunk\ChunkHeir.cs" />
     <Compile Include="World\Chunk\ChunkMap.cs" />
     <Compile Include="World\Chunk\ChunkPrimer.cs" />
+    <Compile Include="World\Explosion.cs" />
     <Compile Include="World\Gen\BiomeDecorator.cs" />
     <Compile Include="World\Gen\ChunkProviderGenerateDebug.cs" />
     <Compile Include="World\Gen\ChunkProviderGenerate.cs" />

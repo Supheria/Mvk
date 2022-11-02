@@ -22,6 +22,7 @@ namespace MvkServer.World.Block.List
             Combustibility = true;
             IgniteOddsSunbathing = 30;
             BurnOdds = 60;
+            Resistance = .2f;
             InitBoxs();
         }
 

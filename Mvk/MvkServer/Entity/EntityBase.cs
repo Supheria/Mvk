@@ -56,6 +56,10 @@ namespace MvkServer.Entity
         /// </summary>
         public vec3 Motion { get; protected set; }
         /// <summary>
+        /// Движение из-за смещения
+        /// </summary>
+        public vec3 MotionPush { get; set; } = new vec3(0);
+        /// <summary>
         /// На земле
         /// </summary>
         public bool OnGround { get; protected set; } = true;
@@ -157,6 +161,11 @@ namespace MvkServer.Entity
         /// Получить название для рендеринга
         /// </summary>
         public virtual string GetName() => "";
+
+        /// <summary>
+        /// Заменить смещение сущьности
+        /// </summary>
+        public void SetMotion(vec3 motion) => Motion = motion;
 
         /// <summary>
         /// Возвращает true, если эта вещь названа
@@ -789,6 +798,11 @@ namespace MvkServer.Entity
                 lightSky / 16f + .03125f
             );
         }
+
+        /// <summary>
+        /// Высота глаз
+        /// </summary>
+        public virtual float GetEyeHeight() => Height * .85f;
 
         public virtual void WriteEntityToNBT(TagCompound nbt)
         {

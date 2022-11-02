@@ -110,10 +110,10 @@ namespace MvkClient.Renderer.Entity
             float width = entity.Width;
 
             bool isLook = false;
-            if (entity is EntityLiving)
+            if (entity is EntityLiving entityLiving)
             {
-                look += ((EntityLiving)entity).GetLookFrame(timeIndex);
-                eye += ((EntityLiving)entity).GetEyeHeight();
+                look += entityLiving.GetLookFrame(timeIndex);
+                eye += entity.GetEyeHeight();
                 isLook = true;
             }
 

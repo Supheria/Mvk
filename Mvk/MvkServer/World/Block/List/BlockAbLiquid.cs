@@ -46,6 +46,7 @@ namespace MvkServer.World.Block.List
             Shadow = false;
             IsReplaceable = true;
             IsParticle = false;
+            Resistance = 100f;
         }
 
         /// <summary>

@@ -26,6 +26,7 @@ namespace MvkServer.World.Block.List
             Combustibility = true;
             IgniteOddsSunbathing = 60;
             BurnOdds = 100;
+            Resistance = 0f;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             InitBoxs();
         }

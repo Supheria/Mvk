@@ -12,6 +12,7 @@ namespace MvkServer.World.Block.List
             Material = EnumMaterial.Ore;
             Color = color;
             Particle = numberTexture;
+            Resistance = 5.0f;
             InitBoxs();
         }
 

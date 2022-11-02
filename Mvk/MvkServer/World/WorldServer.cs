@@ -8,6 +8,7 @@ using MvkServer.Util;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
 using System;
+using System.Collections.Generic;
 
 namespace MvkServer.World
 {
@@ -360,6 +361,25 @@ namespace MvkServer.World
         public override void SpawnParticle(EnumParticle particle, int count, vec3 pos, vec3 offset, float motion,  params int[] items)
         {
             Tracker.SendToAllEntityDistance(pos, 32f, new PacketS2AParticles(particle, count, pos, offset, motion, items));
+        }
+
+        /// <summary>
+        /// Создать взрыв
+        /// </summary>
+        /// <param name="pos">позиция эпицентра</param>
+        /// <param name="strength">сила</param>
+        /// <param name="distance">дистанция</param>
+        public override void CreateExplosion(vec3 pos, float strength, float distance)
+        {
+            explosion.SetExplosion(pos, strength, distance);
+            profiler.StartSection("Explosion");
+            explosion.DoExplosion();
+            profiler.EndSection();
+
+            foreach (KeyValuePair<EntityPlayer, vec3> entity in explosion.MotionPlayer)
+            {
+                ((EntityPlayerServer)entity.Key).SendPacket(new PacketS27Explosion(pos, strength, distance, entity.Value));
+            }
         }
 
         /// <summary>

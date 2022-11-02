@@ -12,6 +12,7 @@
         {
             Particle = 1;
             Material = EnumMaterial.Bedrock;
+            Resistance = 6000000;
             InitBoxs(1);
         }
 

@@ -10,6 +10,9 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Блок Обсидиан 
         /// </summary>
-        public BlockObsidian() : base(12, new vec3(.6f)) { }
+        public BlockObsidian() : base(12, new vec3(.6f))
+        {
+            Resistance = 20; // 2000 minecraft
+        }
     }
 }

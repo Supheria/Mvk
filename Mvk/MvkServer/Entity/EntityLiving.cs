@@ -30,10 +30,10 @@ namespace MvkServer.Entity
         /// Скорость движения. Влияет на то, где в данный момент находятся ноги и руки при качании. 
         /// </summary>
         public float LimbSwingAmount { get; protected set; } = 0;
-        /// <summary>
-        /// Движение из-за смещения
-        /// </summary>
-        public vec3 MotionPush { get; set; } = new vec3(0);
+        ///// <summary>
+        ///// Движение из-за смещения
+        ///// </summary>
+        //public vec3 MotionPush { get; set; } = new vec3(0);
         /// <summary>
         /// Прыгаем
         /// </summary>
@@ -944,11 +944,6 @@ namespace MvkServer.Entity
         public virtual float GetEyeHeightFrame() => GetEyeHeight();
 
         #endregion
-
-        /// <summary>
-        /// Высота глаз
-        /// </summary>
-        public virtual float GetEyeHeight() => Height * 0.85f;
 
         /// <summary>
         /// Расчёт амплитуды конечностей, при движении
