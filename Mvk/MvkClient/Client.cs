@@ -10,6 +10,7 @@ using MvkClient.Util;
 using MvkClient.World;
 using MvkServer;
 using MvkServer.Glm;
+using MvkServer.Item;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Util;
@@ -122,6 +123,7 @@ namespace MvkClient
             glm.Initialized();
             MvkStatic.Initialized();
             Blocks.Initialized();
+            Items.Initialized();
             Screen = new GuiScreen(this);
             Screen.Changed += Screen_Changed;
             packets = new ProcessClientPackets(this);

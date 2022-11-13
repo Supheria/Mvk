@@ -27,7 +27,7 @@ namespace MvkClient.Gui
         /// <summary>
         /// Координата мыши
         /// </summary>
-        public vec2i MouseCoord { get; private set; }
+        public vec2i MouseCoord { get; protected set; }
         /// <summary>
         /// Основной клиент
         /// </summary>
@@ -36,6 +36,7 @@ namespace MvkClient.Gui
         /// Является ли окно контейнером во время игры
         /// </summary>
         public bool IsConteiner { get; protected set; } = false;
+        
         /// <summary>
         /// Откуда зашёл
         /// </summary>
@@ -56,6 +57,10 @@ namespace MvkClient.Gui
         /// Графический лист
         /// </summary>
         protected uint dList;
+        /// <summary>
+        /// Строка подсказки
+        /// </summary>
+        private string toolTip = "";
 
         protected Screen() => sizeInterface = Setting.SizeInterface;
         public Screen(Client client) : this() => ClientMain = client;
@@ -123,7 +128,13 @@ namespace MvkClient.Gui
             DrawAdd();
         }
 
-        protected virtual void DrawAdd() { }
+        protected virtual void DrawAdd()
+        {
+            if (toolTip != "")
+            {
+                DrawHoveringText(MouseCoord.x, MouseCoord.y);
+            }
+        }
 
         /// <summary>
         /// Рендер листа
@@ -242,8 +253,12 @@ namespace MvkClient.Gui
         {
             MouseCoord = new vec2i(x, y);
             bool isRender = false;
+            toolTip = "";
+            string toolTipCache = "";
             foreach (Control control in Controls)
             {
+                toolTipCache = control.GetToolTip();
+                if (toolTipCache != "") toolTip = toolTipCache;
                 if (control.Visible && control.Enabled) control.MouseMove(x, y);
                 if (control.IsRender) isRender = true;
             }
@@ -254,7 +269,7 @@ namespace MvkClient.Gui
         /// <summary>
         /// Нажатие клавиши мышки
         /// </summary>
-        public void MouseDown(MouseButton button, int x, int y) => MouseUpDown(button, x, y, true);
+        public virtual void MouseDown(MouseButton button, int x, int y) => MouseUpDown(button, x, y, true);
         /// <summary>
         /// Отпущена клавиша мышки
         /// </summary>
@@ -309,5 +324,46 @@ namespace MvkClient.Gui
         protected void DrawTexturedModalRect(int x, int y, int textureX, int textureY, int width, int height)
             => GLRender.Rectangle(x, y, x + width, y + height, textureX * .001953125f, textureY * .001953125f,
                 (textureX + width) * .001953125f, (textureY + height) * .001953125f);
+
+        #region ToolTip
+
+        /// <summary>
+        /// Нарисовать всплывающий текст
+        /// </summary>
+        protected void DrawHoveringText(int x, int y)
+        {
+            string[] stringSeparators = new string[] { "\r\n" };
+            string[] strs = toolTip.Split(stringSeparators, StringSplitOptions.None);
+            int h = 0;
+            int w = 0;
+            int wMax = 0;
+            foreach (string str in strs)
+            {
+                w = FontRenderer.WidthString(str, FontSize.Font12);
+                if (w > wMax) wMax = w;
+                h += FontAdvance.VertAdvance[(int)FontSize.Font12] + 4;
+            }
+            h += 4;
+            w = wMax + 10;
+            vec4 colorBorder = new vec4(.89f, .78f, .66f, 1f);
+            GLRender.PushMatrix();
+            GLRender.Texture2DDisable();
+            GLRender.Translate(x - 16, y + 32, 0);
+            GLRender.Scale(sizeInterface, sizeInterface, 1);
+            GLRender.Rectangle(1, 0, w, 1, colorBorder);
+            GLRender.Rectangle(1, h, w, h + 1, colorBorder);
+            GLRender.Rectangle(0, 1, 1, h, colorBorder);
+            GLRender.Rectangle(w, 1, w + 1, h, colorBorder);
+            GLRender.Rectangle(1, 1, w, h, new vec4(.31f, .26f, .21f, .9f));
+            GLRender.Texture2DEnable();
+            GLWindow.Texture.BindTexture(AssetsTexture.Font12);
+            vec4 colorB = new vec4(0.2f, 0.2f, 0.2f, 1f);
+            vec4 color = new vec4(1.0f, 1.0f, 1.0f, 1f);
+            FontRenderer.RenderText(7, 7, colorB, toolTip, FontSize.Font12);
+            FontRenderer.RenderText(6, 6, color, toolTip, FontSize.Font12);
+            GLRender.PopMatrix();
+        }
+
+        #endregion
     }
 }

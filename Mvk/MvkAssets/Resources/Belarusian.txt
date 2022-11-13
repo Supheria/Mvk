@@ -34,5 +34,6 @@ gui.net:Адкрыць сетку
 gui.net.on:Сетка адкрыта
 gui.game.over:Вы памерлі!
 gui.respawn:Адрадзіцца
-world.player.duplicate:Гулец з такім імем ужо ў гульні!
 gui.conteiner.inventory:Інвентар
+
+world.player.duplicate:Гулец з такім імем ужо ў гульні!

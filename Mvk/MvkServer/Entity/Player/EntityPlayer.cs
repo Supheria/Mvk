@@ -66,21 +66,21 @@ namespace MvkServer.Entity.Player
             // TODO::2022-03-29 Временно предметы при старте у игрока
             if (!world.IsRemote)
             {
-                Inventory.SetInventorySlotContents(0, new ItemStack(Blocks.GetBlockCache(EnumBlock.Water), 64));
-                Inventory.SetInventorySlotContents(1, new ItemStack(Blocks.GetBlockCache(EnumBlock.PlanksOak), 64));
+                //Inventory.SetInventorySlotContents(0, new ItemStack(Blocks.GetBlockCache(EnumBlock.Water), 64));
+                //Inventory.SetInventorySlotContents(1, new ItemStack(Blocks.GetBlockCache(EnumBlock.PlanksOak), 64));
 
-                Inventory.SetInventorySlotContents(2, new ItemStack(Blocks.GetBlockCache(EnumBlock.SaplingOak), 16));
+                //Inventory.SetInventorySlotContents(2, new ItemStack(Blocks.GetBlockCache(EnumBlock.SaplingOak), 16));
                 //Inventory.SetInventorySlotContents(3, new ItemStack(Blocks.GetBlockCache(EnumBlock.SaplingFruit), 16));
                 //Inventory.SetInventorySlotContents(4, new ItemStack(Blocks.GetBlockCache(EnumBlock.SaplingOak), 16));
                 //Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.SaplingPalm), 16));
                 //Inventory.SetInventorySlotContents(6, new ItemStack(Blocks.GetBlockCache(EnumBlock.SaplingSpruce), 16));
-                Inventory.SetInventorySlotContents(3, new ItemStack(Blocks.GetBlockCache(EnumBlock.LogOak), 64));
-                Inventory.SetInventorySlotContents(4, new ItemStack(Blocks.GetBlockCache(EnumBlock.Turf), 64));
-                //Inventory.SetInventorySlotContents(4, new ItemStack(Blocks.GetBlockCache(EnumBlock.Glass), 16));
-                Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.LeavesOak), 16));
-                //Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.Debug), 16));
-                Inventory.SetInventorySlotContents(6, new ItemStack(Blocks.GetBlockCache(EnumBlock.Brol), 64));
-                Inventory.SetInventorySlotContents(7, new ItemStack(Blocks.GetBlockCache(EnumBlock.Fire), 64));
+                //Inventory.SetInventorySlotContents(3, new ItemStack(Blocks.GetBlockCache(EnumBlock.LogOak), 64));
+                //Inventory.SetInventorySlotContents(4, new ItemStack(Blocks.GetBlockCache(EnumBlock.Turf), 64));
+                ////Inventory.SetInventorySlotContents(4, new ItemStack(Blocks.GetBlockCache(EnumBlock.Glass), 16));
+                //Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.LeavesOak), 16));
+                ////Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.Debug), 16));
+                //Inventory.SetInventorySlotContents(6, new ItemStack(Blocks.GetBlockCache(EnumBlock.Brol), 64));
+                //Inventory.SetInventorySlotContents(7, new ItemStack(Blocks.GetBlockCache(EnumBlock.Fire), 64));
 
                 // Inventory.SetInventorySlotContents(5, new ItemStack(Blocks.GetBlockCache(EnumBlock.Sand), 16));
                 //  Inventory.SetInventorySlotContents(7, new ItemStack(Blocks.GetBlockCache(EnumBlock.Cactus), 16));

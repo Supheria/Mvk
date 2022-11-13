@@ -358,7 +358,7 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
         /// </summary>
-        public virtual ItemBase GetItemDropped(BlockState state, Rand rand, int fortune) => new ItemBlock(state.GetBlock());// this);
+        public virtual ItemBase GetItemDropped(BlockState state, Rand rand, int fortune) => Items.GetItemCache(state.id);
 
         /// <summary>
         /// Возвращает количество предметов, которые выпадают при разрушении блока.

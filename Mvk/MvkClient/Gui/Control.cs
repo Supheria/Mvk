@@ -52,6 +52,7 @@ namespace MvkClient.Gui
         /// Текст
         /// </summary>
         public string Text { get; protected set; }
+
         /// <summary>
         /// Когда мышь находится на элементе
         /// </summary>
@@ -64,6 +65,7 @@ namespace MvkClient.Gui
         /// Размер интерфеса
         /// </summary>
         protected int sizeInterface;
+        
 
         protected Screen screen;
         protected static OpenGL gl;
@@ -161,6 +163,11 @@ namespace MvkClient.Gui
             }
             return x;
         }
+
+        /// <summary>
+        /// Вернуть подсказку у контрола
+        /// </summary>
+        public virtual string GetToolTip() => "";
 
         /// <summary>
         /// Событие клика по кнопке

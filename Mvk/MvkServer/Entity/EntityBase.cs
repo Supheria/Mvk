@@ -809,6 +809,17 @@ namespace MvkServer.Entity
             nbt.SetTag("Pos", new TagList(new float[] { Position.x, Position.y, Position.z }));
         }
 
+        public bool WriteEntityToNBToptional(TagCompound nbt)
+        {
+            if (!IsDead && Type != EnumEntities.None && Type != EnumEntities.Player)
+            {
+                nbt.SetByte("Id", (byte)Type);
+                WriteEntityToNBT(nbt);
+                return true;
+            }
+            return false;
+        }
+
         public virtual void ReadEntityFromNBT(TagCompound nbt)
         {
             TagList pos = nbt.GetTagList("Pos", 5);

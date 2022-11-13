@@ -514,6 +514,9 @@ namespace MvkServer.World.Block.List
             }
         }
 
+        /// <summary>
+        /// Сгорел
+        /// </summary>
         private void Burned(WorldBase world, BlockPos blockPos, Rand random)
         {
             BlockState blockState = world.GetBlockState(blockPos);

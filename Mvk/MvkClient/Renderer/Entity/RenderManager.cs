@@ -33,8 +33,10 @@ namespace MvkClient.Renderer.Entity
         /// Смещение камеры для всего мира и всех элементов
         /// </summary>
         public vec3 CameraOffset { get; private set; }
-
-        public RenderItem Item { get; private set; }
+        /// <summary>
+        /// Рендер всех придметов
+        /// </summary>
+        public RenderItems Item { get; private set; }
 
         /// <summary>
         /// Перечень рендер объектов сущьностей
@@ -47,7 +49,7 @@ namespace MvkClient.Renderer.Entity
         {
             World = world;
             ClientMain = world.ClientMain;
-            Item = new RenderItem();
+            Item = new RenderItems();
             entities.Add(EnumEntities.Player, new RenderPlayer(this, new ModelPlayer()));
             entities.Add(EnumEntities.PlayerHand, new RenderHead(this, new ModelPlayerHand()));
             entities.Add(EnumEntities.Chicken, new RenderChicken(this, new ModelChicken()));

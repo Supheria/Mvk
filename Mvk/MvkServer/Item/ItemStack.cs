@@ -1,6 +1,7 @@
 ﻿using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Item.List;
+using MvkServer.NBT;
 using MvkServer.Network;
 using MvkServer.Util;
 using MvkServer.World;
@@ -29,7 +30,7 @@ namespace MvkServer.Item
         public ItemStack(BlockBase block) : this(block, 1, 0) { }
         public ItemStack(BlockBase block, int amount) : this(block, amount, 0) { }
         public ItemStack(BlockBase block, int amount, int itemDamage) 
-            : this(new ItemBlock(block), amount, itemDamage) { }
+            : this(Items.GetItemCache((int)block.EBlock), amount, itemDamage) { }
 
         public ItemStack(ItemBase item) : this(item, 1, 0) { }
         public ItemStack(ItemBase item, int amount) : this(item, amount, 0) { }
@@ -43,15 +44,7 @@ namespace MvkServer.Item
 
         public ItemStack(int id, int amount, int itemDamage)
         {
-            // HACK:: доделать id item
-            if (id > 0 && id < 4096) // Block
-            {
-                Item = new ItemBlock(Blocks.GetBlockCache(id));
-            }
-            //else
-            //{
-            //    Item = new ItemBase();
-            //}
+            Item = Items.GetItemCache(id);
             Amount = amount;
             ItemDamage = itemDamage;
             if (ItemDamage < 0) ItemDamage = 0;
@@ -183,6 +176,31 @@ namespace MvkServer.Item
                 int amount = stream.ReadByte();
                 int itemDamage = stream.ReadShort();
                 return new ItemStack(ItemBase.GetItemById(id), amount, itemDamage);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Записать стак в NBT
+        /// </summary>
+        public TagCompound WriteToNBT(TagCompound nbt)
+        {
+            nbt.SetShort("Id", (short)ItemBase.GetIdFromItem(Item));
+            nbt.SetByte("Amount", (byte)Amount);
+            nbt.SetShort("Damage", (short)ItemDamage);
+            return nbt;
+        }
+
+
+        /// <summary>
+        /// Прочесть стак с NBT
+        /// </summary>
+        public static ItemStack ReadFromNBT(TagCompound nbt)
+        {
+            int id = nbt.GetShort("Id");
+            if (id >= 0)
+            {
+                return new ItemStack(ItemBase.GetItemById(id), nbt.GetByte("Amount"), nbt.GetShort("Damage"));
             }
             return null;
         }

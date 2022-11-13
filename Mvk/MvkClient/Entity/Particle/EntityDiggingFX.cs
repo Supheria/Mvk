@@ -34,7 +34,7 @@ namespace MvkClient.Entity.Particle
             int v = block.Particle / 64;
 
             textureUV = new vec2i(u, v); // В зависимости от блока надо будет вытянуть положение
-            Texture = AssetsTexture.Atlas;
+            Texture = AssetsTexture.AtlasBlocks;
             // (0..12) в пикселах, и в смещении (0..0.01171875) (12 / (16 * 64))
             textureJitterUV = new vec2i(rand.Next(13), rand.Next(13));
         }

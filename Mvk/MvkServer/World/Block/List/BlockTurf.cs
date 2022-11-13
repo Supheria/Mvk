@@ -1,4 +1,5 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Item;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -115,5 +116,11 @@ namespace MvkServer.World.Block.List
                 }
             }
         }
+
+        /// <summary>
+        /// Получите предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        public override ItemBase GetItemDropped(BlockState state, Rand rand, int fortune)
+            => Items.GetItemCache(EnumItem.PieceDirt);
     }
 }

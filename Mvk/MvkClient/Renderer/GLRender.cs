@@ -72,6 +72,73 @@ namespace MvkClient.Renderer
             gl.End();
         }
 
+        #region Side
+
+        public static void SideTop(float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            Begin(OpenGL.GL_TRIANGLE_STRIP);
+            Vertex(x1, y2, z1);
+            Vertex(x1, y2, z2);
+            Vertex(x2, y2, z1);
+            Vertex(x2, y2, z2);
+            End();
+        }
+        public static void SideBottom(float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            Begin(OpenGL.GL_TRIANGLE_STRIP);
+            Vertex(x1, y1, z2);
+            Vertex(x1, y1, z1);
+            Vertex(x2, y1, z2);
+            Vertex(x2, y1, z1);
+            End();
+        }
+        public static void SideLeft(float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            Begin(OpenGL.GL_TRIANGLE_STRIP);
+            Vertex(x2, y1, z2);
+            Vertex(x2, y1, z1);
+            Vertex(x2, y2, z2);
+            Vertex(x2, y2, z1);
+            End();
+        }
+        public static void SideRight(float x1, float y1, float z1, float x2, float y2, float z2)
+        {
+            Begin(OpenGL.GL_TRIANGLE_STRIP);
+            Vertex(x1, y1, z1);
+            Vertex(x1, y1, z2);
+            Vertex(x1, y2, z1);
+            Vertex(x1, y2, z2);
+            End();
+        }
+        public static void SideFront(float x1, float y1, float z1, float x2, float y2, float z2, float u1, float v1, float u2, float v2)
+        {
+            Begin(OpenGL.GL_TRIANGLE_STRIP);
+            TexCoord(u1, v2);
+            Vertex(x1, y2, z1);
+            TexCoord(u2, v2);
+            Vertex(x2, y2, z1);
+            TexCoord(u1, v1);
+            Vertex(x1, y1, z1);
+            TexCoord(u2, v1);
+            Vertex(x2, y1, z1);
+            End();
+        }
+        public static void SideBack(float x1, float y1, float z1, float x2, float y2, float z2, float u1, float v1, float u2, float v2)
+        {
+            Begin(OpenGL.GL_TRIANGLE_STRIP);
+            TexCoord(u1, v2);
+            Vertex(x1, y2, z2);
+            TexCoord(u1, v1);
+            Vertex(x1, y1, z2);
+            TexCoord(u2, v2);
+            Vertex(x2, y2, z2);
+            TexCoord(u2, v1);
+            Vertex(x2, y1, z2);
+            End();
+        }
+
+        #endregion
+
         /// <summary>
         /// Добавить вершину с текстурой 3D
         /// </summary>

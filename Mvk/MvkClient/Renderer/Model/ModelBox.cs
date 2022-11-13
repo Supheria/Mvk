@@ -46,17 +46,18 @@ namespace MvkClient.Renderer.Model
                 x = x0;
             }
 
-            vec3[] p = new vec3[8];
-
-            p[0] = new vec3(x, y, z);
-            p[1] = new vec3(xm, y, z);
-            p[2] = new vec3(xm, ym, z);
-            p[3] = new vec3(x, ym, z);
-            p[4] = new vec3(x, y, zm);
-            p[5] = new vec3(xm, y, zm);
-            p[6] = new vec3(xm, ym, zm);
-            p[7] = new vec3(x, ym, zm);
-
+            vec3[] p = new vec3[]
+            {
+                new vec3(x, y, z),
+                new vec3(xm, y, z),
+                new vec3(xm, ym, z),
+                new vec3(x, ym, z),
+                new vec3(x, y, zm),
+                new vec3(xm, y, zm),
+                new vec3(xm, ym, zm),
+                new vec3(x, ym, zm)
+            };
+                
             Quads[0] = new TexturedQuad(new vec3[]
             { p[5], p[1], p[2], p[6] }, u + d + w, v + d, u + d + w + d, v + d + h, textureSize);
             Quads[1] = new TexturedQuad(new vec3[]

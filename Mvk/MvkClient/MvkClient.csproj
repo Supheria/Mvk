@@ -122,11 +122,12 @@
     <Compile Include="Renderer\EffectRenderer.cs" />
     <Compile Include="Renderer\Entity\Layers\ILayerRenderer.cs" />
     <Compile Include="Renderer\Entity\Layers\LayerHeldItem.cs" />
+    <Compile Include="Renderer\Entity\RenderItem.cs" />
     <Compile Include="Renderer\Entity\RenderEntityBase.cs" />
-    <Compile Include="Renderer\Entity\RenderEntityBlock.cs" />
+    <Compile Include="Renderer\Entity\RenderBlock.cs" />
     <Compile Include="Renderer\Entity\RenderEntityItem.cs" />
     <Compile Include="Renderer\Entity\RendererLivingEntity.cs" />
-    <Compile Include="Renderer\Entity\RenderItem.cs" />
+    <Compile Include="Renderer\Entity\RenderItems.cs" />
     <Compile Include="Renderer\Entity\RenderManager.cs" />
     <Compile Include="Renderer\Entity\RenderChicken.cs" />
     <Compile Include="Renderer\Entity\RenderHead.cs" />
@@ -139,6 +140,7 @@
     <Compile Include="Renderer\Model\ModelRender.cs" />
     <Compile Include="Renderer\Model\TexturedQuad.cs" />
     <Compile Include="Renderer\Model\TextureVertex.cs" />
+    <Compile Include="Renderer\RenderItemGui.cs" />
     <Compile Include="Renderer\RenderBlockGui.cs" />
     <Compile Include="Renderer\RenderChunkCursor.cs" />
     <Compile Include="Renderer\RenderDL.cs" />

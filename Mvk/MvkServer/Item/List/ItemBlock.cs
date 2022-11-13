@@ -17,10 +17,11 @@ namespace MvkServer.Item.List
         public ItemBlock(BlockBase block)
         {
             Block = block;
+            EItem = EnumItem.Block;
             UpId();
         }
 
-        public override string GetName() => "block." + Block.EBlock.ToString();
+        public override string GetName() => "block." + Block.EBlock;
 
         /// <summary>
         ///  Вызывается, когда блок щелкают правой кнопкой мыши с этим элементом

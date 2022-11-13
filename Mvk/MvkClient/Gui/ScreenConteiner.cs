@@ -1,4 +1,5 @@
 ﻿using MvkAssets;
+using MvkClient.Actions;
 using MvkClient.Renderer;
 using MvkClient.Renderer.Font;
 using MvkClient.Setitings;
@@ -62,8 +63,8 @@ namespace MvkClient.Gui
             int c = 0;
             for (int i = 0; i < pageCount; i++)
             {
-                button[i] = new ButtonSlot(c < Blocks.blocksInventory.Length 
-                    ? new Slot(c + 100, ItemBase.GetItemById(Blocks.blocksInventory[c++]))
+                button[i] = new ButtonSlot(c < Items.inventory.Length 
+                    ? new Slot(c + 100, ItemBase.GetItemById(Items.inventory[c++]))
                     : new Slot(99)
                     );
                 button[i].Click += ButtonSlotClick;
@@ -142,6 +143,34 @@ namespace MvkClient.Gui
         }
 
         /// <summary>
+        /// Нажатие клавиши мышки
+        /// </summary>
+        public override void MouseDown(MouseButton button, int x, int y)
+        {
+            bool b = IsOutsideWindow(x, y);
+            if (theSlot.Item != null && b)
+            {
+                // TODO::2022-11-12 выбрасывание вещей, тут надо сделать где-то обновление инвентаря, если изменился в момент открытого окна
+                // если есть в руке блок, вылетает на ружу
+                ClientMain.TrancivePacket(new PacketC10CreativeInventoryAction(-1, new ItemStack(theSlot.Item, theSlot.Amount)));
+                theSlot.Clear();
+                icon.SetSlot(theSlot);
+            }
+            base.MouseDown(button, x, y);
+        }
+
+        /// <summary>
+        /// За пределы окна, для выбрасывания предмета, только по горизонтали
+        /// </summary>
+        private bool IsOutsideWindow(int x, int y)
+        {
+            x -= Width / 2;
+            y -= Height / 2;
+            // По контуру добавляем +8 
+            return x < -264 * sizeInterface || x > 264 * sizeInterface;
+        }
+
+        /// <summary>
         /// Генерацыя фону
         /// </summary>
         protected override void Render()
@@ -176,6 +205,7 @@ namespace MvkClient.Gui
 
         protected override void DrawAdd()
         {
+            base.DrawAdd();
             // Иконка
             GLRender.PushMatrix();
             GLRender.Translate(icon.Position.x, icon.Position.y, 0);
@@ -192,10 +222,10 @@ namespace MvkClient.Gui
 
             for (int i = 0; i < pageCount; i++)
             {
-                if (c < Blocks.blocksInventory.Length)
+                if (c < Items.inventory.Length)
                 {
                     button[i].GetSlot().SetIndex(c + 100);
-                    button[i].GetSlot().Set(ItemBase.GetItemById(Blocks.blocksInventory[c++]));
+                    button[i].GetSlot().Set(ItemBase.GetItemById(Items.inventory[c++]));
                 }
                 else
                 {
@@ -208,12 +238,12 @@ namespace MvkClient.Gui
 
         private void PageUpdate()
         {
-            int max = Blocks.blocksInventory.Length;
+            int max = Items.inventory.Length;
             
             labelPage.SetText((page / pageCount + 1).ToString() + " / " + (max / pageCount + 1).ToString());
             if (page <= 0) buttonBack.Enabled = false;
             else buttonBack.Enabled = true;
-            if (Blocks.blocksInventory.Length > page + pageCount) buttonNext.Enabled = true;
+            if (Items.inventory.Length > page + pageCount) buttonNext.Enabled = true;
             else buttonNext.Enabled = false;
         }
 

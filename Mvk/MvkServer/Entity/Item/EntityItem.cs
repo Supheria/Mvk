@@ -1,6 +1,7 @@
 ﻿using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.NBT;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
@@ -379,6 +380,31 @@ namespace MvkServer.Entity.Item
         }
 
         #endregion
+
+        public override void WriteEntityToNBT(TagCompound nbt)
+        {
+            base.WriteEntityToNBT(nbt);
+            nbt.SetShort("Age", (short)Age);
+            nbt.SetShort("Health", (short)health);
+            ItemStack itemStack = GetEntityItemStack();
+            if (itemStack != null)
+            {
+                nbt.SetTag("Item", itemStack.WriteToNBT(new TagCompound()));
+            }
+        }
+
+        public override void ReadEntityFromNBT(TagCompound nbt)
+        {
+            base.ReadEntityFromNBT(nbt);
+            Age = nbt.GetShort("Age");
+            health = nbt.GetShort("Health");
+            TagCompound tag = nbt.GetCompoundTag("Item");
+            SetEntityItemStack(ItemStack.ReadFromNBT(tag));
+            if (GetEntityItemStack() == null)
+            {
+                SetDead();
+            }
+        }
 
         public override string ToString()
         {

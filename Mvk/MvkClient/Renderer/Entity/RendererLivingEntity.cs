@@ -126,6 +126,7 @@ namespace MvkClient.Renderer.Entity
         /// </summary>
         protected void LayerRenders(EntityLiving entity, float limbSwing, float limbSwingAmount, float timeIndex, float ageInTicks, float headYaw, float headPitch, float scale)
         {
+            GLRender.CullEnable();
             foreach (ILayerRenderer layer in layers)
             {
                 layer.DoRenderLayer(entity, limbSwing, limbSwingAmount, timeIndex, ageInTicks, headYaw, headPitch, scale);

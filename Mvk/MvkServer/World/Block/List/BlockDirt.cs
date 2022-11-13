@@ -1,4 +1,6 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Item;
+using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
@@ -16,5 +18,11 @@ namespace MvkServer.World.Block.List
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
         public override int Hardness(BlockState state) => 5;
+
+        /// <summary>
+        /// Получите предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        public override ItemBase GetItemDropped(BlockState state, Rand rand, int fortune)
+            => Items.GetItemCache(EnumItem.PieceDirt);
     }
 }

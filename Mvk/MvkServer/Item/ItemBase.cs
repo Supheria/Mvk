@@ -3,7 +3,6 @@ using MvkServer.Glm;
 using MvkServer.Item.List;
 using MvkServer.Util;
 using MvkServer.World;
-using MvkServer.World.Block;
 
 namespace MvkServer.Item
 {
@@ -16,11 +15,18 @@ namespace MvkServer.Item
         /// Максимальное количество однотипный вещей в одной ячейке
         /// </summary>
         public int MaxStackSize { get; protected set; } = 64;
-
         /// <summary>
         /// id предмета
         /// </summary>
         public int Id { get; private set; }
+        /// <summary>
+        /// Тип
+        /// </summary>
+        public EnumItem EItem { get; protected set; }
+        /// <summary>
+        /// Номер текстуры
+        /// </summary>
+        public int NumberTexture { get; protected set; } = 0;
 
         /// <summary>
         /// Обновить id
@@ -32,7 +38,7 @@ namespace MvkServer.Item
             //ItemStack stack, World worldIn, Entity entityIn, int itemSlot, boolean isSelected
         }
 
-        public virtual string GetName() => "base";
+        public virtual string GetName() => "item." + EItem;
 
         /// <summary>
         /// Копия предмет
@@ -42,16 +48,7 @@ namespace MvkServer.Item
         /// <summary>
         /// По id сгенерировать объект предмета
         /// </summary>
-        public static ItemBase GetItemById(int id)
-        {
-            // HACK:: доделать id item
-            if (id > 0 && id < 4096) // Block
-            {
-                return new ItemBlock(Blocks.GetBlockCache(id));
-            }
-            // остальное предметы, пока их нет
-            return null;
-        }
+        public static ItemBase GetItemById(int id) => Items.GetItemCache(id);
 
         /// <summary>
         /// По предмету сгенерировать id
@@ -60,17 +57,16 @@ namespace MvkServer.Item
         {
             if (itemIn == null) return 0;
 
-            if (itemIn is ItemBlock itemBlock)
+            if (itemIn.EItem == EnumItem.Block && itemIn is ItemBlock itemBlock)
             {
                 return (int)itemBlock.Block.EBlock;
             }
-            // остальное предметы, пока их нет
-            return 0;
+            // Остальное предметы
+            return (int)itemIn.EItem + 4096;
         }
 
-
         /// <summary>
-        ///  Вызывается, когда блок щелкают правой кнопкой мыши с этим элементом
+        /// Вызывается, когда блок щелкают правой кнопкой мыши с этим элементом
         /// </summary>
         /// <param name="stack"></param>
         /// <param name="playerIn"></param>

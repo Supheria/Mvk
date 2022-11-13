@@ -54,6 +54,11 @@ namespace MvkServer.Entity
             RotationYawHeadPrev = RotationYawHead = RotationYaw;
         }
 
+        /// <summary>
+        /// Получить вектор направления куда смотрит сущность
+        /// </summary>
+        public vec3 GetLook() => GetRay(RotationYawHead, RotationPitch);
+
         #region Frame
 
         /// <summary>

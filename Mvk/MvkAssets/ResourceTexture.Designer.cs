@@ -63,9 +63,19 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap Atlas {
+        internal static System.Drawing.Bitmap AtlasBlocks {
             get {
-                object obj = ResourceManager.GetObject("Atlas", resourceCulture);
+                object obj = ResourceManager.GetObject("AtlasBlocks", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap AtlasItems {
+            get {
+                object obj = ResourceManager.GetObject("AtlasItems", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

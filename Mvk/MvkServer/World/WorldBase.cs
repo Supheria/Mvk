@@ -122,7 +122,7 @@ namespace MvkServer.World
             LoadedEntityList.AddRange(entityCollection);
             for (int i = 0; i < entityCollection.Count; i++)
             {
-                OnEntityAdded((EntityLiving)entityCollection.GetAt(i));
+                OnEntityAdded(entityCollection.GetAt(i));
             }
         }
 

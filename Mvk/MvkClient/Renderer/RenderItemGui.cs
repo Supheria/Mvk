@@ -1,48 +1,48 @@
 ﻿using MvkAssets;
-using MvkClient.Renderer.Block;
-using MvkServer.World.Block;
+using MvkServer.Item;
 
 namespace MvkClient.Renderer
 {
     /// <summary>
-    /// Рендер блока для GUI
+    /// Рендер предмета для GUI
     /// </summary>
-    public class RenderBlockGui : RenderDL
+    public class RenderItemGui : RenderDL
     {
         /// <summary>
-        /// Тип блока
+        /// Тип предмета
         /// </summary>
-        private readonly EnumBlock enumBlock;
+        private readonly EnumItem enumItem;
 
-        public RenderBlockGui(EnumBlock enumBlock) => this.enumBlock = enumBlock;
+        public RenderItemGui(EnumItem enumItem) => this.enumItem = enumItem;
 
         public void Render(int x, int y, float scale)
         {
             GLRender.PushMatrix();
             GLRender.Translate(x, y, 0);
-            GLRender.Rotate(-20, 1, 0, 0);
-            GLRender.Rotate(-45, 0, 1, 0);
-            GLRender.Scale(scale, -scale, scale);
             Render();
             GLRender.PopMatrix();
         }
 
         protected override void DoRender()
         {
-            if (enumBlock == EnumBlock.Air)
+            if (enumItem == EnumItem.Block)
             {
                 IsHidden = true;
                 return;
             }
-            BlockGuiRender render = new BlockGuiRender(Blocks.GetBlockCache(enumBlock));
+            ItemBase item = Items.GetItemCache(enumItem);
+            if (item == null) return;
+
+            float u = (item.NumberTexture % 32) * .03125f;
+            float v = item.NumberTexture / 32 * .03125f;
 
             GLRender.Texture2DEnable();
-            TextureStruct ts = GLWindow.Texture.GetData(AssetsTexture.AtlasBlocks);
+            TextureStruct ts = GLWindow.Texture.GetData(AssetsTexture.AtlasItems);
             GLWindow.Texture.BindTexture(ts.GetKey());
             GLRender.PushMatrix();
             {
                 GLRender.DepthDisable();
-                render.RenderVBOtoDL();
+                GLRender.Rectangle(-16, -16, 16, 16, u, v, u + .03125f, v + .03125f);
                 GLRender.DepthEnable();
             }
             GLRender.PopMatrix();

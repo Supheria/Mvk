@@ -1,6 +1,7 @@
 ﻿using MvkServer.Entity;
 using MvkServer.Entity.Item;
 using MvkServer.Glm;
+using MvkServer.Item;
 using MvkServer.Item.List;
 using System.Collections;
 
@@ -28,14 +29,16 @@ namespace MvkServer.Network.Packets.Server
             id = entity.Id;
             pos = entity.Position;
             list = entity.MetaData.GetAllWatched();
-            if (entity.GetEntityItemStack().Item is ItemBlock itemBlock)
+            ItemBase item = entity.GetEntityItemStack().Item;
+            if (item.EItem == EnumItem.Block && item is ItemBlock itemBlock)
             {
                 isBlock = true;
                 itemId = (ushort)itemBlock.Block.EBlock;
-            } else
+            }
+            else
             {
                 isBlock = false;
-                itemId = 0;
+                itemId = (ushort)(item.EItem + 4096);
             }
         }
 

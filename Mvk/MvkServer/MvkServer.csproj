@@ -50,8 +50,12 @@
     <Compile Include="Inventory\IInventory.cs" />
     <Compile Include="Inventory\InventoryPlayer.cs" />
     <Compile Include="Inventory\Slot.cs" />
+    <Compile Include="Item\EnumItem.cs" />
     <Compile Include="Item\ItemBase.cs" />
+    <Compile Include="Item\Items.cs" />
     <Compile Include="Item\ItemStack.cs" />
+    <Compile Include="Item\List\ItemPieceDirt.cs" />
+    <Compile Include="Item\List\ItemApple.cs" />
     <Compile Include="Item\List\ItemBlock.cs" />
     <Compile Include="Management\ItemInWorldManager.cs" />
     <Compile Include="Management\PlayerInstance.cs" />

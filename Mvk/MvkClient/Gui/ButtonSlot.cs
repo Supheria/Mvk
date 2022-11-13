@@ -6,6 +6,7 @@ using MvkServer.Glm;
 using MvkServer.Inventory;
 using MvkServer.Item;
 using MvkServer.Item.List;
+using MvkServer.World.Block;
 using SharpGL;
 using System;
 
@@ -68,19 +69,28 @@ namespace MvkClient.Gui
             float v1 = Enabled ? enter ? .390625f : .1953125f : 0;
             GLRender.Rectangle(0, 0, Width, Height, v1, .8046875f, v1 + .1953125f, 1);
 
-            if (!slot.Empty() && slot.Item is ItemBlock itemBlock)
+            if (!slot.Empty())
             {
-                screen.ClientMain.World.WorldRender.GetBlockGui(itemBlock.Block.EBlock).Render(25, 25, 26);
-            }
+                if (slot.Item.EItem == EnumItem.Block && slot.Item is ItemBlock itemBlock)
+                {
+                    // Прорисовка блока
+                    screen.ClientMain.World.WorldRender.GetBlockGui(itemBlock.Block.EBlock).Render(25, 25, 26);
+                }
+                else
+                {
+                    // Прорисовка предмета
+                    screen.ClientMain.World.WorldRender.GetItemGui(slot.Item.EItem).Render(25, 25, 26);
+                }
 
-            if (slot.Amount > 1)
-            {
-                GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
-                Text = slot.Amount.ToString();
-                int x = GetXAlight(Text, 12) + 6;
-                if (Enabled) FontRenderer.RenderString(x + 2, 35, new vec4(.1f, .1f, .1f, 1f), Text, size);
-                vec4 color = Enabled ? enter ? new vec4(1f, 1f, .5f, 1f) : new vec4(1f) : new vec4(.5f, .5f, .5f, 1f);
-                FontRenderer.RenderString(x, 34, color, Text, size);
+                if (slot.Amount > 1)
+                {
+                    GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
+                    Text = slot.Amount.ToString();
+                    int x = GetXAlight(Text, 12) + 6;
+                    if (Enabled) FontRenderer.RenderString(x + 2, 35, new vec4(.1f, .1f, .1f, 1f), Text, size);
+                    vec4 color = Enabled ? enter ? new vec4(1f, 1f, .5f, 1f) : new vec4(1f) : new vec4(.5f, .5f, .5f, 1f);
+                    FontRenderer.RenderString(x, 34, color, Text, size);
+                }
             }
         }
 
@@ -99,6 +109,18 @@ namespace MvkClient.Gui
         }
 
         /// <summary>
+        /// Вернуть подсказку у контрола
+        /// </summary>
+        public override string GetToolTip()
+        {
+            if (enter && slot != null && slot.Item != null)
+            {
+                return Language.T(slot.Item.GetName());
+            }
+            return "";
+        }
+
+        /// <summary>
         /// Событие клика правой клавишей мыши по кнопке
         /// </summary>
         public event EventHandler ClickRight;
@@ -108,7 +130,6 @@ namespace MvkClient.Gui
         {
             if (slot == null) return "null";
             return string.Format("id:{0} a:{1} i:{2}", slot.Index, slot.Amount, slot.Item == null ? "null" : slot.Item.Id.ToString());
-
         }
 
     }

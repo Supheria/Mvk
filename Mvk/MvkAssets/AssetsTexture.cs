@@ -26,7 +26,11 @@
         /// <summary>
         /// Атлас блоков
         /// </summary>
-        Atlas,
+        AtlasBlocks,
+        /// <summary>
+        /// Атлас предметов
+        /// </summary>
+        AtlasItems,
         /// <summary>
         /// Фон в меню
         /// </summary>

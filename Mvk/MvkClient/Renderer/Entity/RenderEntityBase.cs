@@ -213,7 +213,7 @@ namespace MvkClient.Renderer.Entity
             float v2 = v1 + .015625f;
 
             GLRender.Texture2DEnable();
-            GLWindow.Texture.BindTexture(AssetsTexture.Atlas);
+            GLWindow.Texture.BindTexture(AssetsTexture.AtlasBlocks);
 
             while (h > 0)
             {

@@ -270,14 +270,23 @@ namespace MvkClient.Gui
 
                 // Прорисовка предмета в стаке если есть
                 ItemStack itemStack = ClientMain.Player.Inventory.GetStackInSlot(i);
-                if (itemStack != null && itemStack.Item is ItemBlock itemBlock)
+                if (itemStack != null)
                 {
                     int w1 = w0 + size / 2;
                     int h1 = h + size / 2;
-                    ClientMain.World.WorldRender.GetBlockGui(itemBlock.Block.EBlock).Render(w1, h1, scale);
-                    GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(fontSize));
+                    if (itemStack.Item.EItem == EnumItem.Block && itemStack.Item is ItemBlock itemBlock)
+                    {
+                        // Прорисовка блока
+                        ClientMain.World.WorldRender.GetBlockGui(itemBlock.Block.EBlock).Render(w1, h1, scale);
+                    }
+                    else
+                    {
+                        // Прорисовка предмета
+                        ClientMain.World.WorldRender.GetItemGui(itemStack.Item.EItem).Render(w1, h1, scale);
+                    }
                     if (itemStack.Amount > 1)
                     {
+                        GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(fontSize));
                         string str = itemStack.Amount.ToString();
                         int ws = FontRenderer.WidthString(str, fontSize);
                         FontRenderer.RenderString(w1 + 21 - ws, h1 + 10, new vec4(0, 0, 0, 1), str, fontSize);
@@ -352,7 +361,7 @@ namespace MvkClient.Gui
 
             GLRender.PushMatrix();
             GLRender.Texture2DEnable();
-            GLWindow.Texture.BindTexture(AssetsTexture.Atlas);
+            GLWindow.Texture.BindTexture(AssetsTexture.AtlasBlocks);
             GLRender.Color(1, 1, 1, .3f);
             GLRender.Rectangle(0, 0, Width, Height, u1, v1, u2, v2);
             GLRender.PopMatrix();

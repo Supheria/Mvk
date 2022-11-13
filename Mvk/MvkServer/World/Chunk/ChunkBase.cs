@@ -1126,6 +1126,9 @@ namespace MvkServer.World.Chunk
 
         #region NBT
 
+        /// <summary>
+        /// Сохранить чанк
+        /// </summary>
         public void WriteChunkToNBT(TagCompound nbt)
         {
             uint time = World.GetTotalWorldTime();
@@ -1169,16 +1172,33 @@ namespace MvkServer.World.Chunk
 
             // проверяю есть ли сущность, если есть то true;
             hasEntities = false;
+            int count;
+            TagList tagListEntities = new TagList();
             for (int yc = 0; yc < COUNT_HEIGHT; yc++)
             {
-                if (ListEntities[yc].Count > 0)
+                count = ListEntities[yc].Count;
+                if (count > 0)
                 {
-                    hasEntities = true;
-                    break;
+                    for (int i = 0; i < count; i++)
+                    {
+                        TagCompound tagCompound = new TagCompound();
+                        if (ListEntities[yc].GetAt(i).WriteEntityToNBToptional(tagCompound))
+                        {
+                            hasEntities = true;
+                            tagListEntities.AppendTag(tagCompound);
+                        }
+                    }
                 }
+            }
+            if (tagListEntities.TagCount() > 0)
+            {
+                nbt.SetTag("Entities", tagListEntities);
             }
         }
 
+        /// <summary>
+        /// Прочесть чанка
+        /// </summary>
         public void ReadChunkFromNBT(TagCompound nbt)
         {
             uint time = World.GetTotalWorldTime();
@@ -1235,9 +1255,26 @@ namespace MvkServer.World.Chunk
                 }
             }
 
-            // TODO::2022-09-11:hasEntities; Слава Украине!
-            // Проверяем сущность, если есть то //hasEntities = true;
             // Скорее всего будет добавление сущности AddEntity, а там hasEntities = true;
+            TagList tagListEntities = nbt.GetTagList("Entities", 10);
+            count = tagListEntities.TagCount();
+            if (tagListEntities.GetTagType() == 10)
+            {
+                hasEntities = true;
+                for (int i = 0; i < count; i++)
+                {
+                    TagCompound tagCompound = tagListEntities.Get(i) as TagCompound;
+                    EnumEntities enumEntities = (EnumEntities)tagCompound.GetByte("Id");
+                    // TODO::2022-11-10 После загрузки спавн сущностей временно, надо через отдельный объект
+                    if (enumEntities == EnumEntities.Item)
+                    {
+                        EntityItem entityItem = new EntityItem(World);
+                        entityItem.ReadEntityFromNBT(tagCompound);
+                        entityItem.SetDefaultPickupDelay();
+                        World.SpawnEntityInWorld(entityItem);
+                    }
+                }
+            }
             return;
         }
 

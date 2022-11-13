@@ -1,6 +1,7 @@
 ﻿using MvkAssets;
 using MvkClient.Renderer.Font;
 using MvkClient.Util;
+using MvkServer.Glm;
 using SharpGL;
 using System.Collections.Generic;
 
@@ -12,9 +13,16 @@ namespace MvkClient.Renderer
     public class TextureMap
     {
         /// <summary>
+        /// Буфер атласа предметов
+        /// </summary>
+        public BufferedImage BufferAtlasItem { get; private set; }
+
+        /// <summary>
         /// Массив текстур uint
         /// </summary>
         private Dictionary<AssetsTexture, TextureStruct> items = new Dictionary<AssetsTexture, TextureStruct>();
+
+        
 
         /// <summary>
         /// Первая инициализация текстур
@@ -39,6 +47,10 @@ namespace MvkClient.Renderer
         public void InitializeKey(BufferedImage buffered)
         {
             SetTexture(buffered);// new BufferedImage(Assets.GetBitmap(key)));
+            if (buffered.Key == AssetsTexture.AtlasItems)
+            {
+                BufferAtlasItem = buffered;
+            }
         }
 
         /// <summary>
@@ -112,7 +124,7 @@ namespace MvkClient.Renderer
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, texture[0]);
             gl.PixelStore(OpenGL.GL_UNPACK_ALIGNMENT, 1);
 
-            if (image.Images.Length == 0 && image.Key != AssetsTexture.Atlas)
+            if (image.Images.Length == 0 && image.Key != AssetsTexture.AtlasBlocks)
             {
                 gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, OpenGL.GL_RGBA, image.Width, image.Height,
                     0, OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE, image.Buffer);

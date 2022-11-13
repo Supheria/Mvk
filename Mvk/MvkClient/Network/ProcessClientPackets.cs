@@ -256,11 +256,7 @@ namespace MvkClient.Network
         /// </summary>
         private void Handle0ESpawnItem(PacketS0ESpawnItem packet)
         {
-            ItemBase item = null;
-            if (packet.IsBlock())
-            {
-                item = new ItemBlock(Blocks.GetBlockCache((EnumBlock)packet.GetItemId()));
-            }
+            ItemBase item = Items.GetItemCache(packet.GetItemId());
 
             if (item != null)
             {

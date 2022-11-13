@@ -1,4 +1,5 @@
 ﻿using MvkServer.Entity;
+using MvkServer.Entity.Item;
 using MvkServer.Entity.Player;
 using MvkServer.Glm;
 using MvkServer.Inventory;
@@ -325,9 +326,25 @@ namespace MvkServer.Network
             EntityPlayerServer entityPlayer = ServerMain.World.Players.GetPlayerSocket(socket);
             if (entityPlayer != null)
             {
-                //packet.GetSlotId();
-                entityPlayer.Inventory.SetInventorySlotContents(packet.GetSlotId(), packet.GetStack().Item == null ? null : packet.GetStack());
-                entityPlayer.Inventory.SendSlot(packet.GetSlotId());
+                if (packet.GetSlotId() == -1)
+                {
+                    // Drop
+                    // TODO:: Drop Item вынести в метот у сущности игрока или чуть выше, для мобов
+                    vec3 pos = entityPlayer.Position;
+                    pos.y += entityPlayer.GetEyeHeight() / 2f;
+                    vec3 motion = entityPlayer.GetLook();
+                    motion.y = (ServerMain.World.Rnd.NextFloat() - ServerMain.World.Rnd.NextFloat()) * .1f;
+                    motion = motion.normalize();
+                    EntityItem entityItem = new EntityItem(ServerMain.World, pos + motion * 1.3f, packet.GetStack());
+                    entityItem.SetDefaultPickupDelay();
+                    entityItem.SetMotion(motion * .3f);
+                    ServerMain.World.SpawnEntityInWorld(entityItem);
+                }
+                else
+                {
+                    entityPlayer.Inventory.SetInventorySlotContents(packet.GetSlotId(), packet.GetStack().Item == null ? null : packet.GetStack());
+                    entityPlayer.Inventory.SendSlot(packet.GetSlotId());
+                }
             }
 
             // ServerMain.World.Players.ClientSetting(socket, packet);

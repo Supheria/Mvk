@@ -3,6 +3,7 @@ using MvkClient.Renderer;
 using MvkClient.Renderer.Font;
 using MvkServer.Glm;
 using MvkServer.Inventory;
+using MvkServer.Item;
 using MvkServer.Item.List;
 using SharpGL;
 
@@ -51,18 +52,27 @@ namespace MvkClient.Gui
             float v1 = Enabled ? enter ? .390625f : .1953125f : 0;
             GLRender.Rectangle(0, 0, Width, Height, v1, .8046875f, v1 + .1953125f, 1);
 
-            if (!slot.Empty() && slot.Item is ItemBlock itemBlock)
+            if (!slot.Empty())
             {
-                screen.ClientMain.World.WorldRender.GetBlockGui(itemBlock.Block.EBlock).Render(0, 0, 26);
-            }
-            if (slot.Amount > 1)
-            {
-                GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
-                Text = slot.Amount.ToString();
-                int x = GetXAlight(Text, 12) + 6;
-                if (Enabled) FontRenderer.RenderString(x + 2, 10, new vec4(.1f, .1f, .1f, 1f), Text, size);
-                vec4 color = Enabled ? enter ? new vec4(1f, 1f, .5f, 1f) : new vec4(1f) : new vec4(.5f, .5f, .5f, 1f);
-                FontRenderer.RenderString(x, 9, color, Text, size);
+                if (slot.Item.EItem == EnumItem.Block && slot.Item is ItemBlock itemBlock)
+                {
+                    // Прорисовка блока
+                    screen.ClientMain.World.WorldRender.GetBlockGui(itemBlock.Block.EBlock).Render(0, 0, 26);
+                }
+                else
+                {
+                    // Прорисовка предмета
+                    screen.ClientMain.World.WorldRender.GetItemGui(slot.Item.EItem).Render(0, 0, 26);
+                }
+                if (slot.Amount > 1)
+                {
+                    GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
+                    Text = slot.Amount.ToString();
+                    int x = GetXAlight(Text, 12) + 6;
+                    if (Enabled) FontRenderer.RenderString(x + 2, 10, new vec4(.1f, .1f, .1f, 1f), Text, size);
+                    vec4 color = Enabled ? enter ? new vec4(1f, 1f, .5f, 1f) : new vec4(1f) : new vec4(.5f, .5f, .5f, 1f);
+                    FontRenderer.RenderString(x, 9, color, Text, size);
+                }
             }
             GLRender.ListEnd();
             GLRender.ListDelete(dList);

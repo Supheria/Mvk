@@ -12,21 +12,16 @@ namespace MvkClient.Renderer.Entity
     /// </summary>
     public class RenderEntityItem : RenderEntityBase
     {
-        private readonly RenderItem item;
+        private readonly RenderItems item;
         private Rand rand;
-        //private int begin;
 
-        public RenderEntityItem(RenderManager renderManager, RenderItem item) : base(renderManager)
+        public RenderEntityItem(RenderManager renderManager, RenderItems item) : base(renderManager)
         {
             this.item = item;
             shadowSize = .15f;
             shadowOpaque = .75f;
-            //begin = renderManager.World.Rand.Next(360);
         }
 
-       // float fff;
-
-        //List<float> list = new List<float>();
         public override void DoRender(EntityBase entity, vec3 offset, float timeIndex)
         {
             if (entity is EntityItem entityItem)
@@ -42,23 +37,14 @@ namespace MvkClient.Renderer.Entity
                 GLRender.LightmapTextureCoords(entity.GetBrightnessForRender());
                 GLRender.TextureLightmapEnable();
                 GLRender.Texture2DEnable();
-                TextureStruct ts = GLWindow.Texture.GetData(AssetsTexture.Atlas);
-                GLWindow.Texture.BindTexture(ts.GetKey());
 
                 GLRender.PushMatrix();
                 {
                     GLRender.Translate(offsetPos.x, offsetPos.y, offsetPos.z);
-
                     float ageInTicks = renderManager.World.ClientMain.TickCounter + timeIndex + begin;
-                                                                                              // float yaw = glm.cos(ageInTicks * .025f) * glm.pi ;// * .025f;
                     float yaw = ageInTicks * 2f;
                     float height = glm.cos(glm.radians(yaw)) * .16f + .5f;
-                    //  list.Add(glm.degrees(yaw));
-                    //fff++;
-                    //if (fff > 180) fff = -180f;
-                    //GLRender.Rotate(fff, 0, 1, 0);
                     GLRender.Rotate(yaw, 0, 1, 0);
-                    // GLRender.Rotate(glm.degrees(yaw), 0, 1, 0);
                     for (int i = 0; i < count; i++)
                     {
                         GLRender.PushMatrix();
@@ -67,10 +53,8 @@ namespace MvkClient.Renderer.Entity
                             float y = (rand.NextFloat() * 2f - 1f) * .15f;
                             float z = (rand.NextFloat() * 2f - 1f) * .15f;
 
-                            // GLRender.Translate(offsetPos.x + x, offsetPos.y + y + height, offsetPos.z + z);
                             GLRender.Translate(x, y + height, z);
-                            GLRender.Scale(.5f);
-                            
+                            if (stack.Item.EItem == EnumItem.Block) GLRender.Scale(.5f);
                             item.Render(stack);
                         }
                         GLRender.PopMatrix();
@@ -79,8 +63,6 @@ namespace MvkClient.Renderer.Entity
                 GLRender.PopMatrix();
                 base.DoRender(entity, offset, timeIndex);
             }
-            
-            
         }
 
         /// <summary>

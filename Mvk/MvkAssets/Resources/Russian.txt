@@ -34,5 +34,69 @@ gui.net:Открыть сеть
 gui.net.on:Сеть открыта
 gui.game.over:Вы умерли!
 gui.respawn:Возродиться
-world.player.duplicate:Игрок с таким именем уже в игре!
 gui.conteiner.inventory:Инвентарь
+
+world.player.duplicate:Игрок с таким именем уже в игре!
+
+block.Debug:Отладочный блок
+block.Bedrock:Коренная порода
+block.Stone:Камень
+block.Cobblestone:Булыжник
+block.Limestone:Известняк
+block.Granite:Гранит
+block.Sandstone:Песчаник
+block.Dirt:Земля
+block.Turf:Дёрн
+block.Sand:Песок
+block.Gravel:Гравий
+block.Clay:Глина
+block.Water:Вода
+block.Lava:Лава
+block.Oil:Нефть
+block.Fire:Огонь
+block.LogOak:Бревно дуба
+block.LogBirch:Бревно берёзы
+block.LogSpruce:Бревно ели
+block.LogFruit:Бревно яблони
+block.LogPalm:Бревно пальмы
+block.PlanksOak:Доски дуба
+block.PlanksBirch:Доски берёзы
+block.PlanksSpruce:Доски ели
+block.PlanksFruit:Доски яблони
+block.PlanksPalm:Доски пальмы
+block.LeavesOak:Листва дуба
+block.LeavesBirch:Листва берёзы
+block.LeavesSpruce:Листва ели
+block.LeavesFruit:Листва яблони
+block.LeavesPalm:Листва пальмы
+block.SaplingOak:Саженец дуба
+block.SaplingBirch:Саженец берёзы
+block.SaplingSpruce:Саженец ели
+block.SaplingFruit:Саженец яблони
+block.SaplingPalm:Саженец пальмы
+block.Cactus:Кактус
+block.OreCoal:Угольная руда
+block.OreIron:Железная руда
+block.OreGold:Золотая руда
+block.Brol:Брол
+block.TallGrass:Блок высокой травы
+block.FlowerDandelion:Цветок одуванчик
+block.FlowerClover:Цветок клевер белый
+block.Glass:Стекло прозрачное
+block.GlassWhite:Стекло белое
+block.GlassRed:Стекло красное
+block.GlassPane:Стеклянная панель прозрачная
+block.GlassPaneWhite:Стеклянная панель белая
+block.GlassPaneRed:Стеклянная панель красная
+block.Terracotta:Керамика
+block.Basalt:Базальт
+block.Obsidian:Обсидиан
+block.ElWire:Провод электрический
+block.ElLampOff:Электрическая лампа
+block.ElBattery:Батарея электрическая
+block.ElSwitch:Выключатель электрический
+block.Tnt:TNT
+block.TntClock:TNT с часовы детонатором
+
+item.Apple:Яблоко
+item.PieceDirt:Земляной кусочек

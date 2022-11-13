@@ -8,6 +8,7 @@ using MvkClient.World;
 using MvkServer;
 using MvkServer.Entity;
 using MvkServer.Glm;
+using MvkServer.Item;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
@@ -75,6 +76,10 @@ namespace MvkClient.Renderer
         /// Карта всех блоков для GUI
         /// </summary>
         private readonly Dictionary<EnumBlock, RenderBlockGui> mapBlocksGui = new Dictionary<EnumBlock, RenderBlockGui>();
+        /// <summary>
+        /// Карта всех предметов для GUI
+        /// </summary>
+        private readonly Dictionary<EnumItem, RenderItemGui> mapItemsGui = new Dictionary<EnumItem, RenderItemGui>();
 
         /// <summary>
         /// Угол солнца
@@ -134,12 +139,19 @@ namespace MvkClient.Renderer
             {
                 EnumBlock enumBlock = (EnumBlock)i;
                 RenderBlockGui renderBlock = new RenderBlockGui(enumBlock);
-                mapBlocksGui.Add(enumBlock, renderBlock);//, 32f));
+                mapBlocksGui.Add(enumBlock, renderBlock);
                 renderBlock.Render();
-                //listBlocksGui[i] = new RenderBlockGui((EnumBlock)i, 64f);
             }
+            for (int i = 1; i <= ItemsCount.COUNT; i++)
+            {
+                EnumItem enumItem = (EnumItem)i;
+                RenderItemGui renderItem = new RenderItemGui(enumItem);
+                mapItemsGui.Add(enumItem, renderItem);
+                renderItem.Render();
+            }
+
             // Отладочный блок
-          //  mapBlocksGui.Add(EnumBlock.Debug, new RenderBlockGui(EnumBlock.Debug));
+            //  mapBlocksGui.Add(EnumBlock.Debug, new RenderBlockGui(EnumBlock.Debug));
 
             // создаём DL звёзд
             RenderStar();
@@ -466,7 +478,7 @@ namespace MvkClient.Renderer
 
             int atlas = shader.GetUniformLocation(GLWindow.gl, "atlas");
             int lightMap = shader.GetUniformLocation(GLWindow.gl, "light_map");
-            GLWindow.Texture.BindTexture(AssetsTexture.Atlas);
+            GLWindow.Texture.BindTexture(AssetsTexture.AtlasBlocks);
             GLWindow.gl.Uniform1(atlas, 0);
             GLRender.TextureLightmapEnable();
             GLWindow.gl.Uniform1(lightMap, 1);
@@ -806,6 +818,11 @@ namespace MvkClient.Renderer
         public RenderBlockGui GetBlockGui(EnumBlock enumBlock) => mapBlocksGui[enumBlock];
 
         /// <summary>
+        /// Получить рендовый объект предмета для GUI
+        /// </summary>
+        public RenderItemGui GetItemGui(EnumItem enumItem) => mapItemsGui[enumItem];
+
+        /// <summary>
         /// Рендер и прорисовка курсора выбранного блока по AABB
         /// DisplayList
         /// </summary>
@@ -890,6 +907,6 @@ namespace MvkClient.Renderer
         //    shader.Unbind(GLWindow.gl);
         //}
 
-        
+
     }
 }
