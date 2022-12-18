@@ -19,8 +19,12 @@
         /// </summary>
         Chicken = 3,
         /// <summary>
-        /// Вещь
+        /// Предмет
         /// </summary>
-        Item = 4
+        Item = 4,
+        /// <summary>
+        /// Предмет кусочек
+        /// </summary>
+        Piece = 5,
     }
 }

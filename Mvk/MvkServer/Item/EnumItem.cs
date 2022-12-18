@@ -112,7 +112,17 @@
         /// <summary>
         /// Земляной кусочек
         /// </summary>
-        PieceDirt = 26
+        PieceDirt = 26,
+        /// <summary>
+        /// Каменный кусочек
+        /// </summary>
+        PieceStone = 27,
+        /// <summary>
+        /// Спавн курицы
+        /// </summary>
+        SpawnChicken = 28,
+        ExplosivesMin = 29,
+        ExplosivesMax = 30
 
     }
 
@@ -121,6 +131,6 @@
     /// </summary>
     public class ItemsCount
     {
-        public const int COUNT = 26;
+        public const int COUNT = 30;
     }
 }

@@ -31,10 +31,10 @@ namespace MvkServer.World.Block
             this.lightBlock = lightBlock;
             this.lightSky = lightSky;
         }
-        public BlockState(EnumBlock eBlock)
+        public BlockState(EnumBlock eBlock, ushort met = 0)
         {
             id = (ushort)eBlock;
-            met = 0;
+            this.met = met;
             lightBlock = 0;
             lightSky = 0;
         }
@@ -58,6 +58,10 @@ namespace MvkServer.World.Block
         /// Получить тип блок
         /// </summary>
         public EnumBlock GetEBlock() => (EnumBlock)id;
+        /// <summary>
+        /// Блок воздуха
+        /// </summary>
+        public bool IsAir() => id == 0;
 
         /// <summary>
         /// Получить кэш блока

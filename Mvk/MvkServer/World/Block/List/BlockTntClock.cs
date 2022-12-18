@@ -13,7 +13,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockTntClock() : base()
         {
-            strength = 6f;
+            power = 6f;
             distance = 1f;
         }
 

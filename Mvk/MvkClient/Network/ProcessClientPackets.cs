@@ -1,16 +1,12 @@
 ﻿using MvkClient.Entity;
 using MvkClient.Setitings;
 using MvkServer.Entity;
-using MvkServer.Entity.Item;
-using MvkServer.Entity.Mob;
-using MvkServer.Item;
-using MvkServer.Item.List;
+using MvkServer.Entity.List;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
 using MvkServer.Util;
-using MvkServer.World.Block;
 using System.Collections;
 using System.Threading.Tasks;
 
@@ -40,8 +36,9 @@ namespace MvkClient.Network
         protected override void ReceivePacketClient(IPacket packet, int light)
         {
             Debug.Traffic += light;
-            Task.Factory.StartNew(() =>
-            {
+            // TODO::2022-11-30 проверить без пакета по сети, желательно на плохой связи
+            //Task.Factory.StartNew(() =>
+            //{
                 byte id = GetId(packet);
                 if (id == 0xF0)
                 {
@@ -65,7 +62,7 @@ namespace MvkClient.Network
                         packets.Add(packet);
                     }
                 }
-            });
+            //});
         }
 
         private void UpdateReceivePacketClient(IPacket packet)
@@ -75,13 +72,13 @@ namespace MvkClient.Network
                 case 0x01: Handle01KeepAlive((PacketS01KeepAlive)packet); break;
                 case 0x03: Handle03TimeUpdate((PacketS03TimeUpdate)packet); break;
                 case 0x04: Handle04EntityEquipment((PacketS04EntityEquipment)packet); break;
-                case 0x06: Handle06UpdateHealth((PacketS06UpdateHealth)packet); break;
+                //case 0x06: Handle06UpdateHealth((PacketS06UpdateHealth)packet); break;
                 case 0x07: Handle07Respawn((PacketS07Respawn)packet); break;
                 case 0x08: Handle08PlayerPosLook((PacketS08PlayerPosLook)packet); break;
                 case 0x0B: Handle0BAnimation((PacketS0BAnimation)packet); break;
                 case 0x0C: Handle0CSpawnPlayer((PacketS0CSpawnPlayer)packet); break;
                 case 0x0D: Handle0DCollectItem((PacketS0DCollectItem)packet); break;
-                case 0x0E: Handle0ESpawnItem((PacketS0ESpawnItem)packet); break;
+                //case 0x0E: Handle0ESpawnItem((PacketS0ESpawnItem)packet); break;
                 case 0x0F: Handle0FSpawnMob((PacketS0FSpawnMob)packet); break;
                 case 0x12: Handle12EntityVelocity((PacketS12EntityVelocity)packet); break;
                 case 0x13: Handle13DestroyEntities((PacketS13DestroyEntities)packet); break;
@@ -132,7 +129,7 @@ namespace MvkClient.Network
         /// </summary>
         private void Handle02JoinGame(PacketS02JoinGame packet)
         {
-            ClientMain.Player.SetDataPlayer(packet.GetId(), packet.GetUuid(), packet.IsCreativeMode(), ToNikname());
+            ClientMain.Player.SetDataPlayer(packet.GetId(), packet.GetUuid(), packet.IsCreativeMode(), ClientMain.ToNikname());
             ClientMain.GameModeBegin();
             // отправляем настройки
             ClientMain.TrancivePacket(new PacketC15ClientSetting(Setting.OverviewChunk));
@@ -166,11 +163,11 @@ namespace MvkClient.Network
         /// <summary>
         /// Пакет пораметров здоровья игрока
         /// </summary>
-        private void Handle06UpdateHealth(PacketS06UpdateHealth packet)
-        {
-            ClientMain.Player.SetHealth(packet.GetHealth());
-            ClientMain.Player.PerformHurtAnimation();
-        }
+        //private void Handle06UpdateHealth(PacketS06UpdateHealth packet)
+        //{
+        //    ClientMain.Player.SetHealth(packet.GetHealth());
+        //    ClientMain.Player.PerformHurtAnimation();
+        //}
 
         /// <summary>
         /// Пакет перезапуска игрока
@@ -202,6 +199,7 @@ namespace MvkClient.Network
                     case PacketS0BAnimation.EnumAnimation.SwingItem: entity.SwingItem(); break;
                     case PacketS0BAnimation.EnumAnimation.Hurt: entity.PerformHurtAnimation(); break;
                     case PacketS0BAnimation.EnumAnimation.Fall: entity.ParticleFall(10); break;
+                    case PacketS0BAnimation.EnumAnimation.Recovery: entity.PerformRecoveryAnimation(); break;
                 }
             }
         }
@@ -252,68 +250,22 @@ namespace MvkClient.Network
         }
 
         /// <summary>
-        /// Пакет спавна вещи
-        /// </summary>
-        private void Handle0ESpawnItem(PacketS0ESpawnItem packet)
-        {
-            ItemBase item = Items.GetItemCache(packet.GetItemId());
-
-            if (item != null)
-            {
-                ItemStack stack = new ItemStack(item);
-                EntityItem entity = new EntityItem(ClientMain.World, packet.GetPos(), stack);
-                entity.SetEntityId(packet.GetEntityId());
-                entity.SetPosSpawn(packet.GetPos());
-                ArrayList list = packet.GetList();
-                if (list != null && list.Count > 0)
-                {
-                    entity.MetaData.UpdateWatchedObjectsFromList(list);
-                }
-                ClientMain.World.AddEntityToWorld(entity.Id, entity);
-            }
-            //ItemStack stack = new ItemStack(ClientMain.World.GetBlock(new vec3i(packet.GetPos())));
-            //EntityItem entity = new EntityItem(ClientMain.World, );
-            //entity.SetEntityId(packet.GetEntityId());
-            //entity.SetPosSpawn(packet.GetPos());
-            //ClientMain.World.AddEntityToWorld(entity.Id, entity);
-        }
-
-        /// <summary>
         /// Пакет спавна мобов
         /// </summary>
         private void Handle0FSpawnMob(PacketS0FSpawnMob packet)
         {
-            if (packet.GetEnum() == EnumEntities.Chicken)
+            EntityBase entity = Entities.CreateEntityByEnum(ClientMain.World, packet.GetEnum());
+            entity.SetEntityId(packet.GetId());
+            if (entity is EntityLiving entityLiving)
             {
-                EntityChicken entity = new EntityChicken(ClientMain.World);
-                entity.SetEntityId(packet.GetId());
-                entity.SetPosLook(packet.GetPos(), packet.GetYaw(), packet.GetPitch());
-                ArrayList list = packet.GetList();
-                if (list != null && list.Count > 0)
-                {
-                    entity.MetaData.UpdateWatchedObjectsFromList(list);
-                }
-                //entity.Test();
-                ClientMain.World.AddEntityToWorld(entity.Id, entity);
+                entityLiving.SetPosLook(packet.GetPos(), packet.GetYaw(), packet.GetPitch());
             }
-            //else if (packet.GetEnum() == EnumEntities.Item)
-            //{
-            //    ItemStack stack = new ItemStack(ClientMain.World.GetBlock(new vec3i(packet.GetPos())));
-            //    EntityItem entity = new EntityItem(ClientMain.World);
-            //    entity.SetEntityId(packet.GetId());
-            //    entity.SetPosSpawn(packet.GetPos());
-            //    ClientMain.World.AddEntityToWorld(entity.Id, entity);
-            //}
-            //entity.FlagSpawn = true;
-            
-        
-            //ClientMain.World.SpawnEntityInWorld(entity);
-
-            //EntityChicken entityChicken = new EntityChicken(ClientMain.World);
-            //entityChicken.SetEntityId(101);
-            //entityChicken.SetPosition(packet.GetPos() + new vec3(3, 0, 0));
-            //ClientMain.World.SpawnEntityInWorld(entityChicken);
-            //entity.FlagSpawn = false;
+            ArrayList list = packet.GetList();
+            if (list != null && list.Count > 0)
+            {
+                entity.MetaData.UpdateWatchedObjectsFromList(list);
+            }
+            ClientMain.World.AddEntityToWorld(entity.Id, entity);
         }
 
         
@@ -355,6 +307,10 @@ namespace MvkClient.Network
                 else if (entity is EntityItem entityItem)
                 {
                     entityItem.SetMotionServer(packet.GetPos(), packet.OnGround());
+                }
+                else if (entity is EntityThrowable entityThrowable)
+                {
+                    entityThrowable.SetMotionServer(packet.GetPos(), packet.OnGround());
                 }
             }
         }
@@ -478,23 +434,24 @@ namespace MvkClient.Network
         /// </summary>
         private void HandleF0Connection(PacketSF0Connection packet)
         {
-            if (packet.IsConnect())
+            if (packet.IsBegin())
+            {
+                ClientMain.BeginWorldConnect();
+            }
+            else if (packet.IsConnect())
             {
                 // connect
-                ClientMain.TrancivePacket(new PacketC02LoginStart(ToNikname()));
+                ClientMain.TrancivePacket(new PacketC02LoginStart(ClientMain.ToNikname(), true));
             }
             else
             {
                 // disconnect с причиной
                 ClientMain.ExitingWorld(packet.GetCause());
             }
+            
         }
 
-        /// <summary>
-        /// Для дебага, ник в сети с пометкой
-        /// </summary>
-        private string ToNikname() 
-            => Setting.Nickname + (!MvkServer.MvkGlobal.IS_DEBUG_NICKNAME || ClientMain.IsServerLocalRun() ? "" : "-Net");
+        
         /// <summary>
         /// Дисконект игрока
         /// </summary>

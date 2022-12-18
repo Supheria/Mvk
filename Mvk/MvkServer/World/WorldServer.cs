@@ -1,5 +1,5 @@
 ﻿using MvkServer.Entity;
-using MvkServer.Entity.Player;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Management;
 using MvkServer.Network.Packets.Server;
@@ -314,31 +314,6 @@ namespace MvkServer.World
         public override void SendBlockBreakProgress(int breakerId, BlockPos pos, int progress) 
             => Players.SendBlockBreakProgress(breakerId, pos, progress);
 
-
-        /// <summary>
-        /// Отправить изменение по здоровью
-        /// </summary>
-        public void ResponseHealth(EntityLiving entity)
-        {
-            if (entity is EntityPlayerServer entityPlayerServer)
-            {
-                entityPlayerServer.SendPacket(new PacketS06UpdateHealth(entity.Health));
-            }
-
-            if (entity.Health > 0)
-            {
-                // Анимация урона
-                Tracker.SendToAllTrackingEntity(entity, new PacketS0BAnimation(entity.Id,
-                    PacketS0BAnimation.EnumAnimation.Hurt));
-            }
-            else
-            {
-                // Начала смерти
-                Tracker.SendToAllTrackingEntity(entity, new PacketS19EntityStatus(entity.Id,
-                    PacketS19EntityStatus.EnumStatus.Die));
-            }
-        }
-
         /// <summary>
         /// Проиграть звуковой эффект, глобальная координата
         /// </summary>
@@ -352,7 +327,10 @@ namespace MvkServer.World
         /// </summary>
         public override void PlaySound(AssetsSample key, vec3 pos, float volume, float pitch)
         {
-            Tracker.SendToAllEntityDistance(pos, 32, new PacketS29SoundEffect(key, pos, volume, pitch));
+            if (key != AssetsSample.None)
+            {
+                Tracker.SendToAllEntityDistance(pos, 48, new PacketS29SoundEffect(key, pos, volume, pitch));
+            }
         }
 
         /// <summary>

@@ -1,9 +1,7 @@
 ﻿using MvkServer.Entity;
-using MvkServer.Entity.Item;
-using MvkServer.Entity.Player;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Item;
-using MvkServer.Item.List;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -203,7 +201,7 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs(int numberTexture, bool isColor, vec3 color)
+        protected virtual void InitBoxs(int numberTexture, bool isColor, vec3 color)
             => boxes = new Box[][] { new Box[] { new Box(numberTexture, isColor, color) } };
 
         /// <summary>
@@ -389,7 +387,7 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Активация блока, клик правой клавишей мыши по блоку, true - был клик, false - нет такой возможности
         /// </summary>
-        public virtual bool OnBlockActivated(WorldBase worldIn, BlockPos pos, BlockState state, Pole side, vec3 facing) => false;
+        public virtual bool OnBlockActivated(WorldBase worldIn, EntityPlayer entityPlayer, BlockPos pos, BlockState state, Pole side, vec3 facing) => false;
 
         /// <summary> 
         /// Проверка установи блока, можно ли его установить тут
@@ -412,6 +410,10 @@ namespace MvkServer.World.Block
         /// Тон сэмпла сломанного блока,
         /// </summary>
         public virtual float SampleBreakPitch(Rand random) => 1f;
+        /// <summary>
+        /// Проиграть звук поломки
+        /// </summary>
+        public void PlaySoundBreak(WorldBase worldIn, BlockPos blockPos) => worldIn.PlaySound(SampleBreak(worldIn), blockPos.ToVec3(), 1f, SampleBreakPitch(worldIn.Rnd));
 
         /// <summary>
         /// Есть ли звуковой эффект шага
@@ -443,6 +445,16 @@ namespace MvkServer.World.Block
         /// Флаг отличия, для рендера прорисовки однотипных материалов, пример листва чёрная контачит с листвой прозрачной
         /// </summary>
         public virtual bool FlagDifference(int met) => true;
+
+        /// <summary>
+        /// Разрушается ли блок от жидкости
+        /// </summary>
+        public virtual bool IsLiquidDestruction() => false;
+
+        /// <summary>
+        /// Является ли блок проходимым, т.е. можно ли ходить по нему
+        /// </summary>
+        public virtual bool IsPassable() => true;
 
         /// <summary>
         /// Смена соседнего блока

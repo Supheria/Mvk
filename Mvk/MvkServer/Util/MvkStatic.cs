@@ -11,13 +11,15 @@ namespace MvkServer.Util
     public class MvkStatic
     {
         /**
-         *      0;-1
-         *       N
-         *       |
-         * W ----+---- E
-         * -1;0  |    1;0
-         *       S
-         *      0;1
+         *      (North)
+         *        0;-1
+         *         N
+         * (West)  |   (East)
+         *   W ----+---- E 
+         * -1;0    |    1;0
+         *         S
+         *        0;1
+         *      (South)
          **/
 
 

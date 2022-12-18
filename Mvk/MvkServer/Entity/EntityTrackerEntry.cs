@@ -1,11 +1,7 @@
-﻿using MvkServer.Entity.Item;
-using MvkServer.Entity.Player;
+﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
-using MvkServer.Inventory;
-using MvkServer.Item;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Server;
-using MvkServer.Util;
 using MvkServer.World;
 
 namespace MvkServer.Entity
@@ -228,6 +224,10 @@ namespace MvkServer.Entity
                     SendPacketPlayers(new PacketS14EntityMotion(entityItem));
                 }
             }
+            else if (TrackedEntity is EntityThrowable entityThrowable)
+            {
+                SendPacketPlayers(new PacketS14EntityMotion(entityThrowable));
+            }
 
             if (TrackedEntity.MetaData.IsChanged) //UpdateCounter % UpdateFrequency == 0)
             {
@@ -388,15 +388,10 @@ namespace MvkServer.Entity
         /// </summary>
         private IPacket PacketSpawn()
         {
-            if (TrackedEntity is EntityPlayerServer entityPlayerServer)
+            if (TrackedEntity.Type == EnumEntities.Player && TrackedEntity is EntityPlayerServer entityPlayerServer)
             {
                 return new PacketS0CSpawnPlayer(entityPlayerServer);
             }
-            else if (TrackedEntity is EntityItem entityItem)
-            {
-                return new PacketS0ESpawnItem(entityItem);
-            }
-            //if (TrackedEntity is EntityPlayerServer)
             else
             {
                 return new PacketS0FSpawnMob(TrackedEntity);

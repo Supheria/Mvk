@@ -53,7 +53,7 @@ namespace MvkServer.World.Block.List
             BlockState blockStateUp = world.GetBlockState(blockPos.OffsetUp());
             if (blockStateUp.GetBlock().IsAir)
             {
-                world.SpawnParticle(Entity.EnumParticle.Digging, 3,
+                world.SpawnParticle(Entity.EnumParticle.BlockPart, 3,
                 new vec3(blockPos.X + .5f, blockPos.Y + 1.0625f, blockPos.Z + .5f),
                 new vec3(1, .125f, 1), 0, (int)EBlock);
             }

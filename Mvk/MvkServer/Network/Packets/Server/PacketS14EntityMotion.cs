@@ -24,9 +24,15 @@ namespace MvkServer.Network.Packets.Server
         {
             id = entity.Id;
             pos = entity.Position;
-            yaw = entity is EntityLivingHead entityLivingHead ? entityLivingHead.RotationYawHead
-                : entity is EntityLook entityLook ? entityLook.RotationYaw : 0;
-            pitch = entity is EntityLiving entityLiving ? entityLiving.RotationPitch : 0;
+            if (entity is EntityLiving entityLiving)
+            {
+                yaw = entityLiving.RotationYawHead;
+                pitch = entityLiving.RotationPitch;
+            }
+            else
+            {
+                yaw = pitch = 0;
+            }
             onGround = entity.OnGround;
         }
 

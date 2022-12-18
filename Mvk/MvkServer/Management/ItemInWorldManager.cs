@@ -1,7 +1,6 @@
-﻿using MvkServer.Entity.Player;
+﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Item;
-using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
@@ -149,16 +148,12 @@ namespace MvkServer.Management
         /// </summary>
         public void Put(BlockPos blockPos, Pole side, vec3 facing, int slot)
         {
-            BlockBase block = world.GetBlockState(blockPos).GetBlock();
-            if (block.IsReplaceable)
-            {
-                IsDestroyingBlock = true;
-                BlockPosDestroy = blockPos;
-                this.facing = facing;
-                this.side = side;
-                slotPut = slot;
-                status = Status.Put;
-            }
+            IsDestroyingBlock = true;
+            BlockPosDestroy = blockPos;
+            this.facing = facing;
+            this.side = side;
+            slotPut = slot;
+            status = Status.Put;
         }
 
         /// <summary>
@@ -229,26 +224,13 @@ namespace MvkServer.Management
                     }
                     else if (durabilityRemainingOnBlock == (int)Status.Put)
                     {
-                        // Ставим блок
-                        BlockState blockState = world.GetBlockState(BlockPosDestroy);
-                        ItemStack itemStack = entityPlayer.Inventory.GetStackInSlot(slotPut);
-                        if (itemStack != null
-                            && itemStack.ItemUse(entityPlayer, world, BlockPosDestroy, side, facing))
+                        // Действие правой клавишей, ставим блок
+                        if (!world.IsRemote)
                         {
-                            if (world is WorldServer worldServer && entityPlayer is EntityPlayerServer entityPlayerServer)
+                            ItemStack itemStack = entityPlayer.Inventory.GetStackInSlot(slotPut);
+                            if (itemStack != null && itemStack.ItemUse(entityPlayer, world, BlockPosDestroy, side, facing))
                             {
-                                BlockBase block = blockState.GetBlock();
-                                // установлен
-                                if (!entityPlayer.IsCreativeMode)
-                                {
-                                    block.DropBlockAsItem(world, BlockPosDestroy, blockState, 0);
-                                    entityPlayer.Inventory.DecrStackSize(slotPut, 1);
-                                }
-                            }
-                            else
-                            {
-                                // Для клиентской
-                                statusUpdate = StatusAnimation.Animation;
+                                entityPlayer.Inventory.SendSetSlotPlayer();
                             }
                         }
                     }

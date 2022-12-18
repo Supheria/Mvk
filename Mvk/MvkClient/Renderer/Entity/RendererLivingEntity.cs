@@ -43,7 +43,7 @@ namespace MvkClient.Renderer.Entity
                 GLRender.CullDisable();
                 vec3 color = new vec3(1f);
                     
-                if (entityLiving.DamageTime > 0)
+                if (entityLiving.IsHurtAnimation && entityLiving.DamageTime > 0)
                 {
                     float dt = Mth.Sqrt((entityLiving.DamageTime + timeIndex - 1f) / 5f * 1.6f);
                     if (dt > 1f) dt = 1f;

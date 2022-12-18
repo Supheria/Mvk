@@ -64,5 +64,7 @@ namespace MvkAssets
         }
 
         public static Bitmap AtlasBlocks => ResourceTexture.AtlasBlocks;
+        public static Bitmap AtlasItems => ResourceTexture.AtlasItems;
+        
     }
 }

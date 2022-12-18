@@ -32,6 +32,11 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
+        /// Разрушается ли блок от жидкости
+        /// </summary>
+        public override bool IsLiquidDestruction() => true;
+
+        /// <summary>
         /// Смена соседнего блока
         /// </summary>
         public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
@@ -110,5 +115,10 @@ namespace MvkServer.World.Block.List
         /// Генерация дерева
         /// </summary>
         protected virtual void GenefateTree(WorldBase world, Rand rand, BlockPos blockPos) { }
+
+        /// <summary>
+        /// Является ли блок проходимым, т.е. можно ли ходить по нему
+        /// </summary>
+        public override bool IsPassable() => false;
     }
 }

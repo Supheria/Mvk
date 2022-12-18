@@ -46,9 +46,13 @@
         /// </summary>
         Leaves,
         /// <summary>
-        /// Саженец, трава, цветы, кактус
+        /// Саженец, трава, цветы
         /// </summary>
         Sapling,
+        /// <summary>
+        /// Какутус
+        /// </summary>
+        Cactus,
         /// <summary>
         /// Руда
         /// </summary>
@@ -65,6 +69,18 @@
         /// Электричество
         /// </summary>
         Electricity,
+        /// <summary>
+        /// Дверь
+        /// </summary>
+        Door,
+        /// <summary>
+        /// Люк
+        /// </summary>
+        Trapdoor,
+        /// <summary>
+        /// Кусочек, типа камня
+        /// </summary>
+        Piece,
         /// <summary>
         /// Отладочный блок
         /// </summary>

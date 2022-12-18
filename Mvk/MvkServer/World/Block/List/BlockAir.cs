@@ -13,6 +13,7 @@ namespace MvkServer.World.Block.List
         /// <param name="collidable">Выбрать может ли блок сталкиваться</param>
         public BlockAir(bool collidable = false)
         {
+            FullBlock = false;
             IsAir = true;
             IsAction = false;
             IsCollidable = collidable;
@@ -27,5 +28,10 @@ namespace MvkServer.World.Block.List
         /// Спавн предмета при разрушении этого блока
         /// </summary>
         public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
+
+        /// <summary>
+        /// Является ли блок проходимым, т.е. можно ли ходить по нему
+        /// </summary>
+        public override bool IsPassable() => false;
     }
 }

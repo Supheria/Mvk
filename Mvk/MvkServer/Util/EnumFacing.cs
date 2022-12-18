@@ -133,25 +133,25 @@ namespace MvkServer.Util
         /// <summary>
         /// Получите облицовку, соответствующую заданному углу (0-360). Угол 0 - SOUTH, угол 90 - WEST.
         /// </summary>
-        /// <param name="angle">угол в градусах</param>
+        /// <param name="angle">угол в радианах</param>
         public static Pole FromAngle(float angle)
         {
-            if (angle >= -45f && angle <= 45f) return Pole.North;
-            else if (angle > 45f && angle < 135f) return Pole.East;
-            else if (angle < -45f && angle > -135f) return Pole.West;
+            if (angle >= -glm.pi45 && angle <= glm.pi45) return Pole.North;
+            else if (angle > glm.pi45 && angle < glm.pi135) return Pole.East;
+            else if (angle < -glm.pi45 && angle > -glm.pi135) return Pole.West;
             return Pole.South;
         }
 
         /// <summary>
         /// Проверить левее ли от тикущего полюса
         /// </summary>
-        /// <param name="angle">угол в градусах</param>
+        /// <param name="angle">угол в радианах</param>
         public static bool IsFromAngleLeft(float angle, Pole pole)
         {
-            if (pole == Pole.North) return angle > 0;
-            if (pole == Pole.West) return angle > 90f;
-            if (pole == Pole.South) return angle < 0;
-            if (pole == Pole.East) return angle > -90f;
+            if (pole == Pole.North) return angle < 0;
+            if (pole == Pole.South) return angle > 0;
+            if (pole == Pole.East) return angle < glm.pi90;
+            if (pole == Pole.West) return angle < -glm.pi90;
             return true;
         }
 

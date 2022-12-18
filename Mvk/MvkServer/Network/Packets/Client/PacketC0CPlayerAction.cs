@@ -16,6 +16,11 @@
             this.action = action;
             this.param = param;
         }
+        public PacketC0CPlayerAction(EnumAction action)
+        {
+            this.action = action;
+            param = 0;
+        }
 
         public void ReadPacket(StreamBase stream)
         {
@@ -42,7 +47,11 @@
             /// <summary>
             /// Падение
             /// </summary>
-            Fall = 1
+            Fall = 1,
+            /// <summary>
+            /// Прекратили действие предмета
+            /// </summary>
+            StopUsingItem = 2
         }
     }
 }

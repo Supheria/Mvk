@@ -8,7 +8,7 @@ namespace MvkServer.World.Block.List
     /// </summary>
     public class BlockTnt : BlockAbElectricity
     {
-        protected float strength = .5f;
+        protected float power = .5f;
         protected float distance = 3f;
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         protected void Explosion(WorldBase world, BlockPos blockPos)
         {
-            float strength = this.strength;
+            float power = this.power;
             float distance = this.distance;
             world.SetBlockToAir(blockPos);
             for (int x = -1; x <= 1; x++)
@@ -134,13 +134,13 @@ namespace MvkServer.World.Block.List
 
                         if (world.GetBlockState(blockPos.Offset(x, y, z)).GetEBlock() == EnumBlock.Tnt)
                         {
-                            strength = (strength + 1) * .97f;
+                            power = (power + 1) * .97f;
                             distance = (distance + 1) * .95f;
                         }
                     }
                 }
             }
-            world.CreateExplosion(blockPos.ToVec3() + .5f, strength, distance);
+            world.CreateExplosion(blockPos.ToVec3() + .5f, power, distance);
         }
     }
 }

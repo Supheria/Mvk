@@ -856,7 +856,6 @@ namespace MvkServer.World.Chunk.Light
             }
             else
             {
-                // TODO::2022-09-24 переизбыток трафика при горении огня!!! Передаётся целый псевдо чанк, когда можно попробовать передовать блоки
                 World.MarkBlockRangeForRenderUpdate(axisX0, axisY0, axisZ0, axisX1, axisY1, axisZ1);
             }
         }

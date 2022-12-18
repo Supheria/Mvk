@@ -7,7 +7,6 @@ using MvkServer.Glm;
 using MvkServer.Inventory;
 using MvkServer.Item;
 using MvkServer.Network.Packets.Client;
-using MvkServer.World.Block;
 using SharpGL;
 using System;
 
@@ -46,6 +45,7 @@ namespace MvkClient.Gui
 
         public ScreenConteiner(Client client) : base(client)
         {
+            IsFpsMin = false;
             icon = new CursorIcon();
             theSlot = new Slot();
             button = new ButtonSlot[pageCount];
@@ -79,6 +79,30 @@ namespace MvkClient.Gui
                 buttonInv[i].Click += ButtonInvSlotClick;
                 buttonInv[i].ClickRight += ButtonInvSlotClickRight;
             }
+            client.Player.Inventory.Changed += InventoryChanged;
+        }
+
+        private void InventoryChanged(object sender, SlotEventArgs e)
+        {
+            int slot = e.IndexSlot;
+            if (slot >= 0 && slot < 8)
+            {
+                ItemStack itemStack = ClientMain.Player.Inventory.GetStackInSlot(slot);
+                buttonInv[slot].SetSlot(itemStack != null
+                    ? new Slot(slot, itemStack.Item, itemStack.Amount)
+                    : new Slot(slot));
+            }
+            else
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    ItemStack itemStack = ClientMain.Player.Inventory.GetStackInSlot(i);
+                    buttonInv[i].SetSlot(itemStack != null
+                        ? new Slot(i, itemStack.Item, itemStack.Amount)
+                        : new Slot(i));
+                }
+            }
+            isRender = true;
         }
 
         protected override void Init()
@@ -150,8 +174,6 @@ namespace MvkClient.Gui
             bool b = IsOutsideWindow(x, y);
             if (theSlot.Item != null && b)
             {
-                // TODO::2022-11-12 выбрасывание вещей, тут надо сделать где-то обновление инвентаря, если изменился в момент открытого окна
-                // если есть в руке блок, вылетает на ружу
                 ClientMain.TrancivePacket(new PacketC10CreativeInventoryAction(-1, new ItemStack(theSlot.Item, theSlot.Amount)));
                 theSlot.Clear();
                 icon.SetSlot(theSlot);
@@ -160,24 +182,35 @@ namespace MvkClient.Gui
         }
 
         /// <summary>
+        /// Вращение колёсика мыши
+        /// </summary>
+        /// <param name="delta">смещение</param>
+        public override void MouseWheel(int delta, int x, int y)
+        {
+            bool next = delta > 0;
+            if ((next && Items.inventory.Length > page + pageCount - 1)
+                || (!next && page > 0))
+            {
+                ButtonBackNextClick(next);
+            }
+        }
+
+        /// <summary>
         /// За пределы окна, для выбрасывания предмета, только по горизонтали
         /// </summary>
         private bool IsOutsideWindow(int x, int y)
         {
             x -= Width / 2;
-            y -= Height / 2;
-            // По контуру добавляем +8 
-            return x < -264 * sizeInterface || x > 264 * sizeInterface;
+            y -= Height / 2 - 36;
+            return x < -256 * sizeInterface || x > 256 * sizeInterface
+                || y < -177 * sizeInterface || y > 177 * sizeInterface;
         }
 
         /// <summary>
-        /// Генерацыя фону
+        /// Окно
         /// </summary>
-        protected override void Render()
+        protected override void RenderWindow()
         {
-            // Фон
-            RenderBackground();
-
             GLRender.PushMatrix();
             vec4 colBg = new vec4(1f, 1f, 1f, 1f);
             vec4 colPr = new vec4(.13f, .44f, .91f, 1f);
@@ -198,9 +231,6 @@ namespace MvkClient.Gui
             FontRenderer.RenderString(-244, -167, new vec4(1f), text, FontSize.Font12);
 
             GLRender.PopMatrix();
-
-            // Контролы
-            RenderControls();
         }
 
         protected override void DrawAdd()

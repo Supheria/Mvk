@@ -4,6 +4,7 @@ using MvkClient.Renderer.Entity;
 using MvkClient.World;
 using MvkServer.Entity;
 using MvkServer.Glm;
+using MvkServer.Item;
 using MvkServer.Util;
 using MvkServer.World.Block;
 
@@ -51,10 +52,12 @@ namespace MvkClient.Renderer
             switch (particle)
             {
                 case EnumParticle.Test: AddEffect(new EntityTestFX(World, pos, motion)); break;
-                case EnumParticle.Digging: AddEffect(new EntityDiggingFX(World, pos, motion, (EnumBlock)items[0])); break;
+                case EnumParticle.BlockPart: AddEffect(new EntityPartFX(World, pos, motion, (EnumBlock)items[0])); break;
                 case EnumParticle.Smoke: AddEffect(new EntitySmokeFX(World, pos, motion, items[0])); break;
                 case EnumParticle.Suspend: AddEffect(new EntitySuspendFX(World, pos, motion)); break;
                 case EnumParticle.Bubble: AddEffect(new EntityBubbleFX(World, pos, motion)); break;
+                case EnumParticle.ItemPart: AddEffect(new EntityPartFX(World, pos, motion, (EnumItem)items[0])); break;
+                case EnumParticle.Flame: AddEffect(new EntityFlameFX(World, pos, motion)); break;
             }
         }
 
@@ -106,6 +109,7 @@ namespace MvkClient.Renderer
         /// </summary>
         public void Render(float timeIndex)
         {
+            GLRender.CullDisable();
             GLRender.TextureLightmapEnable();
             lock (locker)
             {

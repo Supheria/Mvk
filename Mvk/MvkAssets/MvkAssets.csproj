@@ -81,6 +81,20 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Bow.ogg" />
+    <None Include="Resources\Break.ogg" />
+    <None Include="Resources\BucketEmptyLava1.ogg" />
+    <None Include="Resources\BucketEmptyLava2.ogg" />
+    <None Include="Resources\BucketEmptyLava3.ogg" />
+    <None Include="Resources\BucketEmptyWater1.ogg" />
+    <None Include="Resources\BucketEmptyWater2.ogg" />
+    <None Include="Resources\BucketEmptyWater3.ogg" />
+    <None Include="Resources\BucketFillLava1.ogg" />
+    <None Include="Resources\BucketFillLava2.ogg" />
+    <None Include="Resources\BucketFillLava3.ogg" />
+    <None Include="Resources\BucketFillWater1.ogg" />
+    <None Include="Resources\BucketFillWater2.ogg" />
+    <None Include="Resources\BucketFillWater3.ogg" />
     <None Include="Resources\Click.ogg" />
   </ItemGroup>
   <ItemGroup>
@@ -88,8 +102,18 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\DamageDrown1.ogg" />
+    <None Include="Resources\DamageDrown2.ogg" />
+    <None Include="Resources\DamageDrown3.ogg" />
+    <None Include="Resources\DamageDrown4.ogg" />
     <None Include="Resources\DamageFallBig.ogg" />
     <None Include="Resources\DamageFallSmall.ogg" />
+    <None Include="Resources\DamageFireHurt1.ogg" />
+    <None Include="Resources\DamageFireHurt2.ogg" />
+    <None Include="Resources\DamageFireHurt3.ogg" />
+    <None Include="Resources\DamageHit1.ogg" />
+    <None Include="Resources\DamageHit2.ogg" />
+    <None Include="Resources\DamageHit3.ogg" />
     <None Include="Resources\DigGlass1.ogg" />
     <None Include="Resources\DigGlass2.ogg" />
     <None Include="Resources\DigGlass3.ogg" />
@@ -113,12 +137,19 @@
     <None Include="Resources\DigWood2.ogg" />
     <None Include="Resources\DigWood3.ogg" />
     <None Include="Resources\DigWood4.ogg" />
+    <None Include="Resources\DoorClose.ogg" />
+    <None Include="Resources\DoorOpen.ogg" />
+    <None Include="Resources\Drink.ogg" />
+    <None Include="Resources\Eat1.ogg" />
+    <None Include="Resources\Eat2.ogg" />
+    <None Include="Resources\Eat3.ogg" />
     <None Include="Resources\Explode1.ogg" />
     <None Include="Resources\Explode2.ogg" />
     <None Include="Resources\Explode3.ogg" />
     <None Include="Resources\Explode4.ogg" />
     <None Include="Resources\Fire.ogg" />
     <None Include="Resources\FireFizz.ogg" />
+    <None Include="Resources\FireIgnite.ogg" />
     <None Include="Resources\LiquidLava.ogg" />
     <None Include="Resources\LiquidLavaPop.ogg" />
     <None Include="Resources\LiquidSplash1.ogg" />

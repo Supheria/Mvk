@@ -54,6 +54,7 @@ namespace MvkClient.Renderer.Entity
             entities.Add(EnumEntities.PlayerHand, new RenderHead(this, new ModelPlayerHand()));
             entities.Add(EnumEntities.Chicken, new RenderChicken(this, new ModelChicken()));
             entities.Add(EnumEntities.Item, new RenderEntityItem(this, Item));
+            entities.Add(EnumEntities.Piece, new RenderEntityItem(this, Item));
 
         }
 

@@ -264,7 +264,35 @@
         /// <summary>
         /// TNT с часами
         /// </summary>
-        TntClock = 63
+        TntClock = 63,
+        /// <summary>
+        /// Дверь дубовая
+        /// </summary>
+        DoorOak = 64,
+        /// <summary>
+        /// Дверь берёзовая
+        /// </summary>
+        DoorBirch = 65,
+        /// <summary>
+        /// Дверь еловая
+        /// </summary>
+        DoorSpruce = 66,
+        /// <summary>
+        /// Дверь плодовая
+        /// </summary>
+        DoorFruit = 67,
+        /// <summary>
+        /// Дверь из пальмы
+        /// </summary>
+        DoorPalm = 68,
+        /// <summary>
+        /// Дверь железная
+        /// </summary>
+        DoorIron = 69,
+        /// <summary>
+        /// Маленький камень
+        /// </summary>
+        SmallStone = 70
     }
 
     /// <summary>
@@ -272,6 +300,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 63;
+        public const int COUNT = 70;
     }
 }

@@ -22,11 +22,11 @@ namespace MvkServer.World.Block.List
          * 
          * age = met & 0xF
          * pole = met >> 4
-         * South = pole & 1 != 0
-         * East = pole & 2 != 0
-         * North = pole & 4 != 0
-         * West = pole & 8 != 0
-         * Up = pole & 16 != 0
+         *  South = pole & 1 != 0
+         *  East = pole & 2 != 0
+         *  North = pole & 4 != 0
+         *  West = pole & 8 != 0
+         *  Up = pole & 16 != 0
          * met = pole << 4 | age & 0xF
          */
 
@@ -63,6 +63,11 @@ namespace MvkServer.World.Block.List
         /// Не однотипные блоки, пример: трава, цветы, кактус
         /// </summary>
         public override bool BlocksNotSame(int met) => true;
+
+        /// <summary>
+        /// Является ли блок проходимым, т.е. можно ли ходить по нему
+        /// </summary>
+        public override bool IsPassable() => false;
 
         /// <summary>
         /// Спавн предмета при разрушении этого блока

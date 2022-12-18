@@ -1,6 +1,4 @@
-﻿using MvkServer.Entity;
-using MvkServer.Glm;
-using MvkServer.Sound;
+﻿using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Biome;
 
@@ -23,8 +21,6 @@ namespace MvkServer.World.Block.List
             BiomeColor = true;
             LightOpacity = 0;
             Material = EnumMaterial.Water;
-            samplesBreak = new AssetsSample[] { AssetsSample.LiquidSplash1, AssetsSample.LiquidSplash2 };
-            samplesStep = new AssetsSample[] { AssetsSample.LiquidSwim1, AssetsSample.LiquidSwim2, AssetsSample.LiquidSwim3, AssetsSample.LiquidSwim4 };
             faces = new Face[]
             {
                 new Face(63, true).SetAnimation(32, 2),

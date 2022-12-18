@@ -169,6 +169,83 @@ namespace MvkServer.Util
         }
 
         /// <summary>
+        /// Рассчитать точку пересечения в AABB и отрезка, в виде вектора от pos1 до pos2
+        /// </summary>
+        public MovingObjectPosition CalculateIntercept(vec3 pos1, vec3 pos2)
+        {
+            vec3 posX1 = glm.GetIntermediateWithXValue(pos1, pos2, Min.x);
+            vec3 posX2 = glm.GetIntermediateWithXValue(pos1, pos2, Max.x);
+            vec3 posY1 = glm.GetIntermediateWithYValue(pos1, pos2, Min.y);
+            vec3 posY2 = glm.GetIntermediateWithYValue(pos1, pos2, Max.y);
+            vec3 posZ1 = glm.GetIntermediateWithZValue(pos1, pos2, Min.z);
+            vec3 posZ2 = glm.GetIntermediateWithZValue(pos1, pos2, Max.z);
+
+            if (!IsVecInYZ(posX1)) posX1 = new vec3(0);
+            if (!IsVecInYZ(posX2)) posX2 = new vec3(0);
+            if (!IsVecInXZ(posY1)) posY1 = new vec3(0);
+            if (!IsVecInXZ(posY2)) posY2 = new vec3(0);
+            if (!IsVecInXY(posZ1)) posZ1 = new vec3(0);
+            if (!IsVecInXY(posZ2)) posZ2 = new vec3(0);
+
+            vec3 vecResult = posX1;
+
+            if (!posX2.IsZero() && (vecResult.IsZero() || glm.SquareDistanceTo(pos1, posX2) < glm.SquareDistanceTo(pos1, vecResult)))
+            {
+                vecResult = posX2;
+            }
+
+            if (!posY1.IsZero() && (vecResult.IsZero() || glm.SquareDistanceTo(pos1, posY1) < glm.SquareDistanceTo(pos1, vecResult)))
+            {
+                vecResult = posY1;
+            }
+
+            if (!posY2.IsZero() && (vecResult.IsZero() || glm.SquareDistanceTo(pos1, posY2) < glm.SquareDistanceTo(pos1, vecResult)))
+            {
+                vecResult = posY2;
+            }
+
+            if (!posZ1.IsZero() && (vecResult.IsZero() || glm.SquareDistanceTo(pos1, posZ1) < glm.SquareDistanceTo(pos1, vecResult)))
+            {
+                vecResult = posZ1;
+            }
+
+            if (!posZ2.IsZero() && (vecResult.IsZero() || glm.SquareDistanceTo(pos1, posZ2) < glm.SquareDistanceTo(pos1, vecResult)))
+            {
+                vecResult = posZ2;
+            }
+
+            if (vecResult.IsZero()) return null;
+
+            Pole side;
+            if (vecResult == posX1) side = Pole.West;
+            else if (vecResult == posX2) side = Pole.East;
+            else if (vecResult == posY1) side = Pole.Down;
+            else if (vecResult == posY2) side = Pole.Up;
+            else if (vecResult == posZ1) side = Pole.North;
+            else side = Pole.South;
+
+            return new MovingObjectPosition(vecResult, side);
+        }
+
+        /// <summary>
+        /// Проверяет, находится ли указанный вектор в пределах размеров YZ ограничивающей рамки
+        /// </summary>
+        private bool IsVecInYZ(vec3 vec) 
+            => vec.IsZero() ? false : vec.y >= Min.y && vec.y <= Max.y && vec.z >= Min.z && vec.z <= Max.z;
+
+        /// <summary>
+        /// Проверяет, находится ли указанный вектор в пределах размеров XZ ограничивающей рамки
+        /// </summary>
+        private bool IsVecInXZ(vec3 vec)
+            => vec.IsZero() ? false : vec.x >= Min.x && vec.x <= Max.x && vec.z >= Min.z && vec.z <= Max.z;
+
+        /// <summary>
+        /// Проверяет, находится ли указанный вектор в пределах размеров XY ограничивающей рамки
+        /// </summary>
+        private bool IsVecInXY(vec3 vec)
+            => vec.IsZero() ? false : vec.x >= Min.x && vec.x <= Max.x && vec.y >= Min.y && vec.y <= Max.y;
+
+        /// <summary>
         /// Возвращает, пересекается ли данная ограничивающая рамка с этой
         /// </summary>
         public bool IntersectsWith(AxisAlignedBB other) => other.Max.x > Min.x && other.Min.x < Max.x 

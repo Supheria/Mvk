@@ -3,6 +3,8 @@ using MvkClient.Setitings;
 using MvkClient.Util;
 using MvkServer.Sound;
 using System;
+using System.Drawing;
+using System.IO;
 
 namespace MvkClient
 {
@@ -47,19 +49,26 @@ namespace MvkClient
                 // Загрузка семплов
                 foreach (AssetsSample key in Enum.GetValues(typeof(AssetsSample)))
                 {
+                    if (key == AssetsSample.None) continue;
                     client.Sample.InitializeSample(key);
                     OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStep));
                 }
 
-                // Atlas
-                BufferedImage buffered = new BufferedImage(AssetsTexture.AtlasBlocks, Assets.AtlasBlocks, true);
-                OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture, buffered));
+                // AtlasBlocks
+                Bitmap bitmapAtlasBlocks = File.Exists("AtlasBlocks.png") ? new Bitmap("AtlasBlocks.png") : Assets.AtlasBlocks;
+                OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture, 
+                    new BufferedImage(AssetsTexture.AtlasBlocks, bitmapAtlasBlocks, true)));
+
+                // AtlasItems
+                Bitmap bitmapAtlasItems = File.Exists("AtlasItems.png") ? new Bitmap("AtlasItems.png") : Assets.AtlasItems;
+                OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture, 
+                    new BufferedImage(AssetsTexture.AtlasItems, bitmapAtlasItems, true)));
 
                 int i = 0;
                 foreach (AssetsTexture key in Enum.GetValues(typeof(AssetsTexture)))
                 {
                     i++;
-                    if (i < 6) continue;
+                    if (i < 7) continue;
                     OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture, new BufferedImage(key, Assets.GetBitmap(key))));
                 }
                 //System.Threading.Thread.Sleep(2000); // Тест пауза чтоб увидеть загрузчик

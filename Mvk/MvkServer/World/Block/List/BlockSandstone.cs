@@ -6,29 +6,23 @@ namespace MvkServer.World.Block.List
     /// <summary>
     /// Блок Песчаник
     /// </summary>
-    public class BlockSandstone : BlockBase
+    public class BlockSandstone : BlockUniSolid
     {
         /// <summary>
         /// Блок Песчаник
         /// </summary>
-        public BlockSandstone()
-        {
-            Particle = 7;
-            Material = EnumMaterial.Solid;
-            InitBoxs();
-        }
-
-        /// <summary>
-        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
-        /// </summary>
-        public override int Hardness(BlockState state) => 15;
+        public BlockSandstone() : base(7, new vec3(.95f, .91f, .73f), 15) { }
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        private void InitBoxs()
+        protected override void InitBoxs(int numberTexture, bool isColor, vec3 color) => InitBoxs(color);
+
+        /// <summary>
+        /// Инициализация коробок
+        /// </summary>
+        private void InitBoxs(vec3 color)
         {
-            vec3 color = new vec3(.95f, .91f, .73f);
             boxes = new Box[][] { new Box[] {
                 new Box()
                 {

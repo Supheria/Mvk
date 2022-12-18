@@ -94,9 +94,18 @@ namespace MvkClient.Renderer.Model
 
              //BoxArmRight.RotateAngleY = -.524f;
 
-            // Удар рукой
-            if (SwingProgress > 0)
+            if (entity.IsEating())
             {
+                // Кушает
+                boxBody.RotateAngleY = .168f;
+                BoxArmRight.RotateAngleX -= 1.2f;
+                BoxArmRight.RotateAngleY -= .64f;
+                BoxArmRight.RotateAngleZ += .5f;
+                BoxArmRight.RotateAngleX += glm.sin(ageInTicks * 0.9f) * 0.1f;
+            }
+            else if (SwingProgress > 0)
+            {
+                // Удар рукой
                 float swingProgress = SwingProgress;
                 float sp = swingProgress;
                 boxBody.RotateAngleY = glm.sin(Mth.Sqrt(sp) * glm.pi360) * .2f;

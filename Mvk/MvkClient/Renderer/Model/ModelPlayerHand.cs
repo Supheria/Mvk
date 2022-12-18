@@ -25,7 +25,15 @@ namespace MvkClient.Renderer.Model
             BoxArmRight.RotationPointZ = 0;
             BoxArmRight.RotateAngleX = glm.pi270;
 
-            if (SwingProgress > 0)
+            if (entity.IsEating())
+            {
+                // Принимает пищу
+                BoxArmRight.RotateAngleX -= .673f;
+                BoxArmRight.RotationPointX = -4; 
+                BoxArmRight.RotationPointY = -4;
+                BoxArmRight.RotationPointX += glm.cos(ageInTicks * 0.9f) * 0.3f + 0.3f;
+            }
+            else if (SwingProgress > 0)
             {
                 // Удар правой руки
                 //float inv = 1.0f - SwingProgress;

@@ -24,7 +24,7 @@ namespace MvkServer.World.Block.List
             AllSideForcibly = true;
             АmbientOcclusion = false;
             UseNeighborBrightness = true;
-            Material = EnumMaterial.Sapling;
+            Material = EnumMaterial.Cactus;
             Shadow = false;
             LightOpacity = 0;
             Particle = 193;
@@ -32,6 +32,11 @@ namespace MvkServer.World.Block.List
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };
             InitBoxs();
         }
+
+        /// <summary>
+        /// Разрушается ли блок от жидкости
+        /// </summary>
+        public override bool IsLiquidDestruction() => true;
 
         /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)

@@ -36,6 +36,10 @@ namespace MvkClient.Gui
         /// Является ли окно контейнером во время игры
         /// </summary>
         public bool IsConteiner { get; protected set; } = false;
+        /// <summary>
+        /// Для меню фпс 20, в игре обычный игровой
+        /// </summary>
+        public bool IsFpsMin { get; protected set; } = true;
         
         /// <summary>
         /// Откуда зашёл
@@ -57,6 +61,10 @@ namespace MvkClient.Gui
         /// Графический лист
         /// </summary>
         protected uint dList;
+        /// <summary>
+        /// флаг, для принудительного рендера
+        /// </summary>
+        protected bool isRender = false;
         /// <summary>
         /// Строка подсказки
         /// </summary>
@@ -112,6 +120,11 @@ namespace MvkClient.Gui
         /// </summary>
         public void Draw()
         {
+            if (isRender)
+            {
+                isRender = false;
+                RenderList();
+            }
             foreach (Control control in Controls)
             {
                 if (control.GetType() == typeof(TextBox))
@@ -171,6 +184,12 @@ namespace MvkClient.Gui
                 GLRender.PopMatrix();
             }
         }
+
+        /// <summary>
+        /// Окно
+        /// </summary>
+        protected virtual void RenderWindow() { }
+
         /// <summary>
         /// Фон
         /// </summary>
@@ -242,6 +261,8 @@ namespace MvkClient.Gui
         {
             // Фон
             RenderBackground();
+            // Окно если оно есть
+            RenderWindow();
             // Контролы
             RenderControls();
         }
@@ -286,6 +307,12 @@ namespace MvkClient.Gui
                 }
             }
         }
+
+        /// <summary>
+        /// Вращение колёсика мыши
+        /// </summary>
+        /// <param name="delta">смещение</param>
+        public virtual void MouseWheel(int delta, int x, int y) { }
 
         /// <summary>
         /// Нажата клавиша в char формате

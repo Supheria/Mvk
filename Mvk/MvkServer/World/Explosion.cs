@@ -1,5 +1,5 @@
 ﻿using MvkServer.Entity;
-using MvkServer.Entity.Player;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
@@ -246,13 +246,13 @@ namespace MvkServer.World
                 }
 
                 // Собираем список сущностей для взаимодействия со взрывом
-                MapListEntity listEntity = world.GetEntitiesWithinAABB(Chunk.ChunkBase.EnumEntityClassAABB.All,
+                List<EntityBase> listEntity = world.GetEntitiesWithinAABB(Chunk.ChunkBase.EnumEntityClassAABB.All,
                     new AxisAlignedBB(pos - distance, pos + distance), -1);
 
                 EntityBase entity;
                 for (int i = 0; i < listEntity.Count; i++)
                 {
-                    entity = listEntity.GetAt(i);
+                    entity = listEntity[i];
                     vec3 epos = entity.Position;
                     epos.y += entity.GetEyeHeight();
 

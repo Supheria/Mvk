@@ -1,4 +1,5 @@
-﻿using MvkServer.Glm;
+﻿using MvkServer.Entity.List;
+using MvkServer.Glm;
 using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
@@ -50,7 +51,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Активация блока, клик правой клавишей мыши по блоку, true - был клик, false - нет такой возможности
         /// </summary>
-        public override bool OnBlockActivated(WorldBase worldIn, BlockPos pos, BlockState state, Pole side, vec3 facing)
+        public override bool OnBlockActivated(WorldBase worldIn, EntityPlayer entityPlayer, BlockPos pos, BlockState state, Pole side, vec3 facing)
         {
             int power = state.met & 0xF;
            // if (power > 0)

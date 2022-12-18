@@ -1,5 +1,5 @@
 ﻿using MvkServer.Entity;
-using MvkServer.Entity.Player;
+using MvkServer.Entity.List;
 using MvkServer.NBT;
 using MvkServer.Util;
 using System;

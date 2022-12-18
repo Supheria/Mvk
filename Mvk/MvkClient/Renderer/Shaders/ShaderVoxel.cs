@@ -18,10 +18,8 @@ out float fog_factor;
 out vec3 fog_color;
 out vec2 a_light;
 
-uniform mat4 projection;
-uniform mat4 lookat;
+uniform mat4 view;
 uniform float takt;
-//uniform float sky;
 uniform float overview;
 uniform vec3 colorfog;
 uniform vec3 pos;
@@ -61,7 +59,7 @@ void main()
     }
     vec3 v_color = vec3(r, g, b);
     vec3 pos2 = pos + v_position;
-    gl_Position = projection * lookat * vec4(pos2, 1.0);
+    gl_Position = view * vec4(pos2, 1.0);
     a_color = vec4(v_color, 1.0);
 }";
         protected override string _FragmentShaderSource { get; } = @"#version 330 core

@@ -1,5 +1,4 @@
-﻿using MvkServer.Entity.Item;
-using MvkServer.Entity.Player;
+﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Network;
 using MvkServer.World;
@@ -50,7 +49,7 @@ namespace MvkServer.Entity
             }
             else if (entity is EntityItem)
             {
-                AddEntityToTracker(entity, 32, 20, true); // item
+                AddEntityToTracker(entity, 64, 20, true); // item
             }
             else
             {

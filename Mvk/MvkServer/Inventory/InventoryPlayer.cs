@@ -1,4 +1,4 @@
-﻿using MvkServer.Entity.Player;
+﻿using MvkServer.Entity.List;
 using MvkServer.Item;
 using MvkServer.NBT;
 using MvkServer.Network.Packets.Server;
@@ -20,6 +20,11 @@ namespace MvkServer.Inventory
         /// Количество ячеек для брони
         /// </summary>
         public const int COUNT_ARMOR = 4;
+        /// <summary>
+        /// Самый максимальный размер. Даже если значение ItemBase.MaxStackSize будет больше,
+        /// обрежет по INVENTORY_STACK_LIMIT
+        /// </summary>
+        public const int INVENTORY_STACK_LIMIT = 255;
         /// <summary>
         /// Выбранный слот правой руки
         /// </summary>
@@ -78,7 +83,11 @@ namespace MvkServer.Inventory
         /// <summary>
         /// Задать в правую руку стак
         /// </summary>
-        public void SetCurrentItem(ItemStack stack) => mainInventory[CurrentItem] = stack;
+        public void SetCurrentItem(ItemStack stack)
+        {
+            mainInventory[CurrentItem] = stack;
+            OnChanged(CurrentItem);
+        }
 
         /// <summary>
         /// Получить стак брони
@@ -136,6 +145,7 @@ namespace MvkServer.Inventory
             else
             {
                 mainInventory[slotIn] = stack;
+                OnChanged(slotIn);
             }
         }
 
@@ -214,6 +224,21 @@ namespace MvkServer.Inventory
         }
 
         /// <summary>
+        /// Отправить изменение размера выфбранного слота игроку
+        /// </summary>
+        public bool SendSetSlotPlayer()
+        {
+            bool b = false;
+            if (mainInventory[CurrentItem] != null && mainInventory[CurrentItem].Amount == 0)
+            {
+                mainInventory[CurrentItem] = null;
+                b = true;
+            }
+            SendSetSlotPlayer(CurrentItem);
+            return b;
+        }
+
+        /// <summary>
         /// Отправить изменение размера слота игроку
         /// </summary>
         private void SendSetSlotPlayer(int slot)
@@ -221,6 +246,7 @@ namespace MvkServer.Inventory
             if (Player is EntityPlayerServer entityPlayerServer)
             {
                 entityPlayerServer.SendPacket(new PacketS2FSetSlot(slot, mainInventory[slot]));
+                OnChanged(slot);
             }
         }
 
@@ -256,9 +282,9 @@ namespace MvkServer.Inventory
                     amount2 = mainInventory[slot].GetMaxStackSize() - mainInventory[slot].Amount;
                 }
 
-                if (amount2 > GetInventoryStackLimit() - mainInventory[slot].Amount)
+                if (amount2 > INVENTORY_STACK_LIMIT - mainInventory[slot].Amount)
                 {
-                    amount2 = GetInventoryStackLimit() - mainInventory[slot].Amount;
+                    amount2 = INVENTORY_STACK_LIMIT - mainInventory[slot].Amount;
                 }
 
                 if (amount2 == 0)
@@ -285,7 +311,7 @@ namespace MvkServer.Inventory
             {
                 if (mainInventory[i] != null && mainInventory[i].Item.Id == itemStack.Item.Id 
                     && mainInventory[i].IsStackable() && mainInventory[i].Amount < mainInventory[i].GetMaxStackSize() 
-                    && mainInventory[i].Amount < GetInventoryStackLimit() 
+                    && mainInventory[i].Amount < INVENTORY_STACK_LIMIT
                     && mainInventory[i].ItemDamage == itemStack.ItemDamage 
                     && ItemStack.AreItemsEqual(mainInventory[i], itemStack))
                 {
@@ -295,12 +321,7 @@ namespace MvkServer.Inventory
             return -1;
         }
 
-        /// <summary>
-        /// Самый максимальный размер. Зачем он я не знаю, если этот лимит есть в ItemBase,
-        /// но я не трезвый, лень соображать. Это оправдания
-        /// Но думаю если в ItemBase будет лимит 120 то стак сформируется по GetInventoryStackLimit тогда.
-        /// </summary>
-        public int GetInventoryStackLimit() => 64;
+        
 
         /// <summary>
         /// Удаляет из слота инвентаря (первый аргумент) до указанного количества (второй аргумент) предметов и возвращает их в новый стек.
@@ -415,6 +436,7 @@ namespace MvkServer.Inventory
             {
                 armorInventory[i] = null;
             }
+            OnChanged(-1);
         }
 
         public void WriteToNBT(TagList nbt)
@@ -458,5 +480,15 @@ namespace MvkServer.Inventory
                 }
             }
         }
+
+        #region Event
+
+        /// <summary>
+        /// Событие изменён рабочий инвентарь (8 предметов)
+        /// </summary>
+        public event SlotEventHandler Changed;
+        private void OnChanged(int indexSlot) => Changed?.Invoke(this, new SlotEventArgs(indexSlot));
+
+        #endregion
     }
 }

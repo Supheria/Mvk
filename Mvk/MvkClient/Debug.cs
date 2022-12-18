@@ -45,7 +45,7 @@ namespace MvkClient
         /// <summary>
         /// Воксели подставить матрицу ortho
         /// </summary>
-        public static bool IsDrawOrto = false;
+        public static byte IsDrawOrto = 0;
         /// <summary>
         /// Количество мешей
         /// </summary>

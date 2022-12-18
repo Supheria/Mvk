@@ -1,7 +1,6 @@
 ﻿using MvkServer.Entity;
-using MvkServer.Entity.Player;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
-using MvkServer.Sound;
 using MvkServer.Util;
 using MvkServer.World.Biome;
 using MvkServer.World.Block;
@@ -341,7 +340,7 @@ namespace MvkServer.World
         {
             if (block != null && block.IsParticle)
             {
-                SpawnParticle(EnumParticle.Digging, count,
+                SpawnParticle(EnumParticle.BlockPart, count,
                     new vec3(blockPos.X + .5f, blockPos.Y + .625f, blockPos.Z + .5f), 
                     new vec3(1f, .75f, 1f), 0, (int)block.EBlock);
             }
@@ -459,7 +458,8 @@ namespace MvkServer.World
         /// <param name="a">точка от куда идёт лучь</param>
         /// <param name="dir">вектор луча</param>
         /// <param name="maxDist">максимальная дистания</param>
-        public MovingObjectPosition RayCastBlock(vec3 a, vec3 dir, float maxDist, bool collidable)
+        /// <param name="collidable">сталкивающийся</param>
+        public MovingObjectPosition RayCastBlock(vec3 a, vec3 dir, float maxDist, bool collidable, bool isLiquid = false)
         {
             float px = a.x;
             float py = a.y;
@@ -496,12 +496,18 @@ namespace MvkServer.World
 
             int steppedIndex = -1;
 
+            bool liquid = false;
+            BlockPos blockPosLiquid = new BlockPos();
+            EnumBlock enumBlockLiquid = EnumBlock.None;
+
+            EnumBlock enumBlock;
             BlockPos blockPos = new BlockPos();
             BlockState blockState;
             BlockBase block;
-            Pole side = Pole.All;
+            Pole side = Pole.Up;
             vec3i norm;
             vec3 end;
+            MovingObjectPosition moving = new MovingObjectPosition();
 
             while (t <= maxDist)
             {
@@ -510,6 +516,16 @@ namespace MvkServer.World
                 blockPos.Z = iz;
                 blockState = GetBlockState(blockPos);
                 block = blockState.GetBlock();
+                enumBlock = blockState.GetEBlock();
+
+                if (isLiquid && !liquid && (enumBlock == EnumBlock.Water || enumBlock == EnumBlock.Lava || enumBlock == EnumBlock.Oil))
+                {
+                    liquid = true;
+                    blockPosLiquid.X = blockPos.X;
+                    blockPosLiquid.Y = blockPos.Y;
+                    blockPosLiquid.Z = blockPos.Z;
+                    enumBlockLiquid = enumBlock;
+                }
 
                 if ((!collidable || (collidable && block.IsCollidable)) && block.CollisionRayTrace(blockPos, blockState.met, a, dir, maxDist))
                 {
@@ -533,8 +549,8 @@ namespace MvkServer.World
                         side = sidez;
                         norm.z = -stepz;
                     }
-
-                    return new MovingObjectPosition(blockState, blockPos, side, blockPos.ToVec3() - end, norm, end);
+                    moving = new MovingObjectPosition(blockState, blockPos, side, blockPos.ToVec3() - end, norm, end);
+                    break;
                 }
                 if (txMax < tyMax)
                 {
@@ -571,7 +587,12 @@ namespace MvkServer.World
                     }
                 }
             }
-            return new MovingObjectPosition();
+           
+            if (isLiquid) 
+            {
+                moving.SetLiquid(enumBlockLiquid, blockPosLiquid);
+            }
+            return moving;
         }
 
         /// <summary>
@@ -683,6 +704,14 @@ namespace MvkServer.World
             NotifyBlockOfStateChange(pos.OffsetUp(), block);
             NotifyBlockOfStateChange(pos.OffsetNorth(), block);
             NotifyBlockOfStateChange(pos.OffsetSouth(), block);
+            if (block.IsAir)
+            {
+                // Для дверей диагональ
+                NotifyBlockOfStateChange(pos.Offset(1, 0, 1), block);
+                NotifyBlockOfStateChange(pos.Offset(-1, 0, 1), block);
+                NotifyBlockOfStateChange(pos.Offset(1, 0, -1), block);
+                NotifyBlockOfStateChange(pos.Offset(-1, 0, -1), block);
+            }
         }
 
         /// <summary>
@@ -736,9 +765,9 @@ namespace MvkServer.World
         /// <summary>
         /// Возвращает все объекты указанного типа класса, которые пересекаются с AABB кроме переданного в него
         /// </summary>
-        public MapListEntity GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB type, AxisAlignedBB aabb, int entityId)
+        public List<EntityBase> GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB type, AxisAlignedBB aabb, int entityId)
         {
-            MapListEntity list = new MapListEntity();
+            List<EntityBase> list = new List<EntityBase>();
             int minX = Mth.Floor((aabb.Min.x - 2f) / 16f);
             int maxX = Mth.Floor((aabb.Max.x + 2f) / 16f);
             int minZ = Mth.Floor((aabb.Min.z - 2f) / 16f);
@@ -758,6 +787,82 @@ namespace MvkServer.World
 
             return list;
         }
+
+        /// <summary>
+        /// Возвращает все объекты указанного типа класса, которые пересекаются с AABB кроме переданного в него
+        /// </summary>
+        public List<EntityBase> GetEntitiesWithinAABB(EnumEntities type, AxisAlignedBB aabb, int entityId)
+        {
+            List<EntityBase> list = new List<EntityBase>();
+            int minX = Mth.Floor((aabb.Min.x - 2f) / 16f);
+            int maxX = Mth.Floor((aabb.Max.x + 2f) / 16f);
+            int minZ = Mth.Floor((aabb.Min.z - 2f) / 16f);
+            int maxZ = Mth.Floor((aabb.Max.z + 2f) / 16f);
+
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int z = minZ; z <= maxZ; z++)
+                {
+                    ChunkBase chunk = GetChunk(new vec2i(x, z));
+                    if (chunk != null)
+                    {
+                        chunk.GetEntitiesAABB(entityId, aabb, list, type);
+                    }
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Найти ближайшую сужность которые пересекают AABB
+        /// </summary>
+        public EntityBase FindNearestEntityWithinAABB(ChunkBase.EnumEntityClassAABB type, AxisAlignedBB aabb, EntityLiving entityLiving)
+        {
+            List<EntityBase> list = GetEntitiesWithinAABB(type, aabb, entityLiving.Id);
+            EntityBase entityResult = null;
+            float distanceMin = float.MaxValue;
+            for (int i = 0; i < list.Count; i++)
+            {
+                EntityBase entity = list[i];
+                float distance = entityLiving.GetDistanceSqToEntity(entity);
+                if (distance < distanceMin)
+                {
+                    distanceMin = distance;
+                    entityResult = entity;
+                }
+            }
+            return entityResult;
+        }
+
+        /// <summary>
+        /// Получает ближайшего игрока к точке в пределах указанного расстояния 
+        /// (расстояние можно установить меньше 0, чтобы не ограничивать расстояние)
+        /// </summary>
+        public EntityPlayer GetClosesPlayer(float x, float y, float z, float distance)
+        {
+            EntityPlayer entityResult = null;
+            float distanceMin = -1f;
+            for (int i = 0; i < PlayerEntities.Count; i++)
+            {
+                EntityPlayer entity = PlayerEntities.GetAt(i) as EntityPlayer;
+                float distanceCache = entity.GetDistanceSq(x, y, z);
+                if ((distance < 0 || distanceCache < distance * distance) 
+                    && (distanceMin == -1f || distanceMin > distanceCache))
+                {
+                    distanceMin = distance;
+                    entityResult = entity;
+                }
+            }
+            return entityResult;
+        }
+
+        /// <summary>
+        /// Получает ближайшего игрока к объекту в пределах указанного расстояния 
+        /// (если расстояние меньше 0, то игнорируется).
+        /// </summary>
+        public EntityPlayer GetClosestPlayerToEntity(EntityBase entity, float distance)
+            => GetClosesPlayer(entity.Position.x, entity.Position.y, entity.Position.z, distance);
 
         /// <summary>
         /// Получить список блоков которые входят в рамку и пересекаются по коллизии
@@ -896,6 +1001,11 @@ namespace MvkServer.World
             return false;
         }
 
+        /// <summary>
+        /// Видит ли данный блок небо
+        /// </summary>
+        public bool IsAgainstSky(BlockPos blockPos) => GetChunk(blockPos).Light.IsAgainstSky(blockPos.X, blockPos.Y, blockPos.Z);
+
 
         //public BlockPos GetHorizon(BlockPos pos)
         //{
@@ -937,7 +1047,7 @@ namespace MvkServer.World
         //}
 
         /// <summary>
-        /// Проверка нахождения в жидкости в рамке AABB
+        /// Проверка нахождения в жидкости и огне в рамке AABB
         /// </summary>
         public Liquid BeingInLiquid(AxisAlignedBB aabb)
         {
@@ -976,6 +1086,7 @@ namespace MvkServer.World
                         {
                             liquid.Oil(block.ModifyAcceleration(this, blockPos, liquid.GetVecOil()));
                         }
+                        else if (material == EnumMaterial.Fire) liquid.Fire();
                     }
                 }
             }
@@ -1023,16 +1134,6 @@ namespace MvkServer.World
         }
 
         /// <summary>
-        /// Проиграть звуковой эффект
-        /// </summary>
-        public virtual void PlaySound(EntityLiving entity, AssetsSample key, vec3 pos, float volume, float pitch) { }
-
-        /// <summary>
-        /// Проиграть звуковой эффект только для клиента
-        /// </summary>
-        public virtual void PlaySound(AssetsSample key, vec3 pos, float volume, float pitch) { }
-
-        /// <summary>
         /// Блок имеет твердую непрозрачную поверхность
         /// </summary>
         public bool DoesBlockHaveSolidTopSurface(BlockPos blockPos)
@@ -1058,9 +1159,9 @@ namespace MvkServer.World
         /// Создать взрыв
         /// </summary>
         /// <param name="pos">позиция эпицентра</param>
-        /// <param name="strength">сила</param>
+        /// <param name="power">сила</param>
         /// <param name="distance">дистанция</param>
-        public virtual void CreateExplosion(vec3 pos, float strength, float distance) { }
+        public virtual void CreateExplosion(vec3 pos, float power, float distance) { }
 
         public virtual void DebugString(string logMessage, params object[] args) { }
     }

@@ -11,7 +11,10 @@ namespace MvkServer.Network.Packets.Client
         private BlockPos blockPos;
         private Pole side;
         private vec3 facing;
-        private bool activated;
+        /// <summary>
+        /// Flag: 0 - PutBlock, 1 - BlockActivated, 2 - UseItemRightClick
+        /// </summary>
+        private byte flag;
 
         /// <summary>
         /// Позиция блока где устанавливаем блок
@@ -27,36 +30,69 @@ namespace MvkServer.Network.Packets.Client
         /// </summary>
         public Pole GetSide() => side;
         /// <summary>
-        /// Действие на блок правой клавишей мыши, клик
+        /// Flag: 0 - PutBlock, 1 - BlockActivated, 2 - UseItemRightClick
         /// </summary>
-        public bool GetActivated() => activated;
+        public byte GetFlag() => flag;
 
-        public PacketC08PlayerBlockPlacement(BlockPos blockPos, Pole side, vec3 facing, bool activated)
+        public PacketC08PlayerBlockPlacement(BlockPos blockPos, Pole side, vec3 facing)
         {
             this.blockPos = blockPos;
             this.side = side;
             this.facing = facing;
-            this.activated = activated;
+            flag = 0;
+        }
+        /// <summary>
+        /// Отправляем на сервер правй клик. Flag: 0 - PutBlock, 1 - BlockActivated, 2 - UseItemRightClick
+        /// </summary>
+        public PacketC08PlayerBlockPlacement(BlockPos blockPos)
+        {
+            this.blockPos = blockPos;
+            side = Pole.All;
+            facing = new vec3(0);
+            flag = 1;
+        }
+
+        /// <summary>
+        /// Отправляем на сервер правй клик. Flag: 0 - PutBlock, 1 - BlockActivated, 2 - UseItemRightClick
+        /// </summary>
+        public PacketC08PlayerBlockPlacement(byte flag)
+        {
+            blockPos = new BlockPos();
+            side = Pole.All;
+            facing = new vec3(0);
+            this.flag = flag;
         }
 
         public void ReadPacket(StreamBase stream)
         {
-            blockPos = new BlockPos(stream.ReadInt(), stream.ReadInt(), stream.ReadInt());
-            side = (Pole)stream.ReadByte();
-            facing = new vec3(stream.ReadByte() / 16f, stream.ReadByte() / 16f, stream.ReadByte() / 16f);
-            activated = stream.ReadBool();
+            flag = stream.ReadByte();
+            if (flag < 2)
+            {
+                blockPos = new BlockPos(stream.ReadInt(), stream.ReadInt(), stream.ReadInt());
+            }
+            if (flag == 0)
+            {
+                side = (Pole)stream.ReadByte();
+                facing = new vec3(stream.ReadByte() / 16f, stream.ReadByte() / 16f, stream.ReadByte() / 16f);
+            }
         }
 
         public void WritePacket(StreamBase stream)
         {
-            stream.WriteInt(blockPos.X);
-            stream.WriteInt(blockPos.Y);
-            stream.WriteInt(blockPos.Z);
-            stream.WriteByte((byte)side);
-            stream.WriteByte((byte)(facing.x * 16f));
-            stream.WriteByte((byte)(facing.y * 16f));
-            stream.WriteByte((byte)(facing.z * 16f));
-            stream.WriteBool(activated);
+            stream.WriteByte(flag);
+            if (flag < 2)
+            {
+                stream.WriteInt(blockPos.X);
+                stream.WriteInt(blockPos.Y);
+                stream.WriteInt(blockPos.Z);
+            }
+            if (flag == 0)
+            {
+                stream.WriteByte((byte)side);
+                stream.WriteByte((byte)(facing.x * 16f));
+                stream.WriteByte((byte)(facing.y * 16f));
+                stream.WriteByte((byte)(facing.z * 16f));
+            }
         }
     }
 }

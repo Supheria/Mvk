@@ -118,14 +118,86 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="Bow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Bow.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Break" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Break.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketEmptyLava1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketEmptyLava1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketEmptyLava2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketEmptyLava2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketEmptyLava3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketEmptyLava3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketEmptyWater1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketEmptyWater1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketEmptyWater2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketEmptyWater2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketEmptyWater3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketEmptyWater3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketFillLava1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketFillLava1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketFillLava2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketFillLava2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketFillLava3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketFillLava3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketFillWater1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketFillWater1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketFillWater2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketFillWater2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="BucketFillWater3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\BucketFillWater3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Click" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\Click.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageDrown1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageDrown1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageDrown2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageDrown2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageDrown3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageDrown3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageDrown4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageDrown4.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="DamageFallBig" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\DamageFallBig.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="DamageFallSmall" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\DamageFallSmall.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageFireHurt1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageFireHurt1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageFireHurt2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageFireHurt2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageFireHurt3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageFireHurt3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageHit1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageHit1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageHit2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageHit2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DamageHit3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DamageHit3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="DigGlass1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\DigGlass1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -196,6 +268,24 @@
   <data name="DigWood4" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\DigWood4.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="DoorClose" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DoorClose.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DoorOpen" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\DoorOpen.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Drink" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Drink.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Eat1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Eat1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Eat2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Eat2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Eat3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\Eat3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="Explode1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\Explode1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -213,6 +303,9 @@
   </data>
   <data name="FireFizz" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\FireFizz.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="FireIgnite" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\FireIgnite.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="LiquidLava" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\LiquidLava.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

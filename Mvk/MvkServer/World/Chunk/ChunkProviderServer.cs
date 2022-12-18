@@ -209,7 +209,23 @@ namespace MvkServer.World.Chunk
             }
         }
 
+        /// <summary>
+        /// Загрузка или генерация чанка, с пополнением его в карту чанков
+        /// </summary>
+        /// <param name="pos">Позиция чанка</param>
+        public void LoadGenAdd(vec2i pos)
+        {
+            ChunkBase chunk = new ChunkBase(world, pos);
+            chunkMapping.Set(chunk);
+            LoadOrGen(chunk);
+            chunk.OnChunkLoad();
+        }
+
         public int LoadGenRequestCount => listLoadGenRequest.CountForward;
+
+        /// <summary>
+        /// Добавить запрос для отдельного потока, который будет загружать или генерировать чанк
+        /// </summary>
         public void LoadGenRequestAdd(vec2i pos)
         {
             ChunkBase chunk = new ChunkBase(world, pos);
@@ -233,7 +249,7 @@ namespace MvkServer.World.Chunk
         }
 
         /// <summary>
-        /// Загрузить загруженные или сгенерированные чанки в другово потока
+        /// Загрузить загруженные или сгенерированные чанки из другово потока
         /// </summary>
         public void LoadGenRequest()
         {

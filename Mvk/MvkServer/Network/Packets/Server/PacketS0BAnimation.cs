@@ -42,7 +42,11 @@
             /// <summary>
             /// Анимация падения
             /// </summary>
-            Fall = 3
+            Fall = 3,
+            /// <summary>
+            /// Выздоровления
+            /// </summary>
+            Recovery = 4
         }
     }
 }

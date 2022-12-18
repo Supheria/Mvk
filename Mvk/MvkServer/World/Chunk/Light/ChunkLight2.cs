@@ -43,8 +43,9 @@ namespace MvkServer.World.Chunk.Light
         /// Может ли видеть небо
         /// </summary>
         /// <param name="pos">глобальная координата мира</param>
-        //public bool IsAgainstSky(BlockPos pos) => pos.Y >= heightMap[(pos.Z & 15) << 4 | (pos.X & 15)];
         public bool IsAgainstSky(int x, int y, int z) => y >= heightMap[(z & 15) << 4 | (x & 15)];
+        //public bool IsAgainstSky(BlockPos pos) => pos.Y >= heightMap[(pos.Z & 15) << 4 | (pos.X & 15)];
+
 
         #region HeightMap
 

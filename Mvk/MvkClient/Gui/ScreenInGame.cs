@@ -121,7 +121,7 @@ namespace MvkClient.Gui
         private void DrawStat()
         {
             int armor = 9; // параметр брони 0 - 16
-            int health = Mth.Ceiling(ClientMain.Player.Health); // хп 0 - 16
+            int health = Mth.Ceiling(ClientMain.Player.GetHealth()); // хп 0 - 16
             int endurance = 16; // выносливось 0 - 16
             int food = 16; // параметр голода 0 - 16
             int air = ClientMain.Player.GetAir();
@@ -292,6 +292,15 @@ namespace MvkClient.Gui
                         FontRenderer.RenderString(w1 + 21 - ws, h1 + 10, new vec4(0, 0, 0, 1), str, fontSize);
                         FontRenderer.RenderString(w1 + 20 - ws, h1 + 9, new vec4(1), str, fontSize);
                     }
+                    if (itemStack.ItemDamage > 0)
+                    {
+                       // fontSize = FontSize.Font8;
+                        GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(fontSize));
+                        string str = itemStack.ItemDamage.ToString();
+                        //int ws = FontRenderer.WidthString(str, fontSize);
+                        FontRenderer.RenderString(w0 + 7, h1 + 10, new vec4(0, 0, 0, 1), str, fontSize);
+                        FontRenderer.RenderString(w0 + 6, h1 + 9, new vec4(1), str, fontSize);
+                    }
                 }
             }
         }
@@ -337,7 +346,7 @@ namespace MvkClient.Gui
         /// </summary>
         private void DrawEffDamage(float damageTime, float timeIndex)
         {
-            if (ClientMain.Player.DamageTime > 0 && ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
+            if (ClientMain.Player.IsHurtAnimation && ClientMain.Player.DamageTime > 0 && ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
             {
                 float dt = Mth.Sqrt((damageTime + timeIndex - 1f) / 5f * 1.6f);
                 if (dt > 1f) dt = 1f; 

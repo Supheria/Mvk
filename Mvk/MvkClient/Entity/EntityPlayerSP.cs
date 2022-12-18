@@ -6,7 +6,6 @@ using MvkServer;
 using MvkServer.Entity;
 using MvkServer.Glm;
 using MvkServer.Item;
-using MvkServer.Item.List;
 using MvkServer.Management;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Util;
@@ -39,6 +38,10 @@ namespace MvkClient.Entity
         /// массив матрицы расположения камеры в пространстве
         /// </summary>
         public float[] LookAt { get; private set; }
+        /// <summary>
+        /// Матрица просмотра Projection * LookAt
+        /// </summary>
+        public float[] View { get; private set; }
         /// <summary>
         /// Вектор луча
         /// </summary>
@@ -167,6 +170,7 @@ namespace MvkClient.Entity
             Eye = new SmoothFrame(GetEyeHeight());
             itemInWorldManager = new ItemInWorldManager(world, this);
             MovingObject = new MovingObjectPosition();
+            Movement = new MovementInputFromOptions(world.ClientMain.KeyBind);
         }
 
         /// <summary>
@@ -241,7 +245,7 @@ namespace MvkClient.Entity
         #endregion
 
         /// <summary>
-        /// Надо ли обрабатывать LivingUpdate, для мобов на сервере, и игроки у себя
+        /// Надо ли обрабатывать LivingUpdate, для мобов на сервере, и игроки у себя локально
         /// </summary>
         protected override bool IsLivingUpdate() => true;
 
@@ -255,7 +259,7 @@ namespace MvkClient.Entity
             Fov.Update();
             LastTickPos = PositionPrev = Position;
             RotationPitchPrev = RotationPitch;
-            RotationYawPrev = RotationYaw;
+            RotationYawBodyPrev = RotationYawBody;
             RotationYawHeadPrev = RotationYawHead;
 
             // счётчик паузы для анимации удара
@@ -272,6 +276,8 @@ namespace MvkClient.Entity
             {
                 leftClickPauseCounter = 0;
             }
+
+            UpdateItemInUse();
 
             if (!AtackUpdate())
             {
@@ -312,28 +318,8 @@ namespace MvkClient.Entity
             SyncCurrentPlayItem();
 
             // Скрыть прорисовку себя если вид с глаз
-            Type = Health > 0 && ViewCamera == EnumViewCamera.Eye ? EnumEntities.PlayerHand : EnumEntities.Player;
+            Type = GetHealth() > 0 && ViewCamera == EnumViewCamera.Eye ? EnumEntities.PlayerHand : EnumEntities.Player;
             //Type = EnumEntities.PlayerHand;
-        }
-
-        /// <summary>
-        /// Скорость перемещения
-        /// </summary>
-        protected override float GetAIMoveSpeed(float strafe, float forward)
-        {
-            bool isSneaking = IsSneaking();
-            float speed = Mth.Max(Speed.Strafe * Mth.Abs(strafe), Speed.Forward * Mth.Abs(forward));
-            if (IsSprinting() && forward < 0 && !isSneaking)
-            {
-                // Бег 
-                speed *= Speed.Sprinting;
-            }
-            else if (!IsFlying && (forward != 0 || strafe != 0) && isSneaking)
-            {
-                // Крадёмся
-                speed *= Speed.Sneaking;
-            }
-            return speed;
         }
 
         /// <summary>
@@ -346,16 +332,9 @@ namespace MvkClient.Entity
                 if (!entityAtack.IsDead)
                 {
                     SwingItem();
-
                     vec3 pos = entityAtack.Position + new vec3(.5f);
-
                     World.SpawnParticle(EnumParticle.Test, 5, pos, new vec3(1), 0);
-
-                    //for (int i = 0; i < 5; i++)
-                    //{
-                    //    ClientWorld.SpawnParticle(EnumParticle.Test, pos + new vec3((rand.Next(16) - 8) / 16f, (rand.Next(12) - 6) / 16f, (rand.Next(16) - 8) / 16f), new vec3(0));
-                    //}
-                    ClientWorld.ClientMain.TrancivePacket(new PacketC03UseEntity(entityAtack.Id, entityAtack.Position - Position));
+                    ClientWorld.ClientMain.TrancivePacket(new PacketC03UseEntity(entityAtack.Id, (entityAtack.Position - Position).normalize()));
                     entityAtack = null;
                     return true;
                 }
@@ -416,7 +395,7 @@ namespace MvkClient.Entity
         /// <returns>True - разные значения, надо InitFrustumCulling</returns>
         public bool RotationEquals()
         {
-            if (RotationPitchLast != RotationPitch || RotationYawLast != RotationYawHead || RotationYaw != RotationYawPrev)
+            if (RotationPitchLast != RotationPitch || RotationYawLast != RotationYawHead || RotationYawBody != RotationYawBodyPrev)
             {
                 SetRotationHead(RotationYawLast, RotationPitchLast);
                 return true;
@@ -467,16 +446,22 @@ namespace MvkClient.Entity
                     );
                 }
                 Debug.BlockFocus = string.Format(
-                    "Block:{0} {1} L:{2}\r\n{3}\r\n{4}, {5}\r\n",
+                    "Block:{0} {1}{6} L:{2}\r\n{3}\r\n{4}, {5}\r\n",
                     MovingObject.BlockPosition,
                     MovingObject.Block,
                     s1,
                     strUp,
                     chunk.Light.GetHeight(pos.x, pos.z),
-                    chunk.GetDebugAllSegment()
+                    chunk.GetDebugAllSegment(),
+                    MovingObject.IsLiquid ? string.Format(" {0} {1}", MovingObject.EBlockLiquid, MovingObject.BlockLiquidPosition) : ""
                 );
                 //Debug.DStr = "";
-            } else
+            }
+            else if (MovingObject.IsLiquid)
+            {
+                Debug.BlockFocus = string.Format("Liquid:{0} {1}", MovingObject.EBlockLiquid, MovingObject.BlockLiquidPosition);
+            }
+            else
             {
                // Debug.DStr = moving.ToString();
                 Debug.BlockFocus = "";
@@ -499,8 +484,14 @@ namespace MvkClient.Entity
         /// <summary>
         /// Обновить матрицу камеры
         /// </summary>
-        public bool UpLookAt(float timeIndex)
+        public bool UpView(float timeIndex)
         {
+            int ort = Debug.IsDrawOrto * 2;
+            mat4 projection = Debug.IsDrawOrto > 0
+                ? glm.ortho(-GLWindow.WindowWidth / ort, GLWindow.WindowWidth / ort, -GLWindow.WindowHeight / ort, GLWindow.WindowHeight / ort, -250, 500)
+                : glm.perspective(Fov.ValueFrame, (float)GLWindow.WindowWidth / (float)GLWindow.WindowHeight, 0.001f, CamersDistance());
+            Projection = projection.to_array();
+
             vec3 pos = new vec3(0, GetEyeHeightFrame(), 0);
             vec3 front = GetLookFrame(timeIndex).normalize();
             vec3 up = new vec3(0, 1, 0);
@@ -534,26 +525,18 @@ namespace MvkClient.Entity
                 limb = glm.cos(LimbSwing * 0.6662f) * limbS;
                 pos += up * limb;
             }
-            float[] lookAt = glm.lookAt(pos, pos + front, up).to_array();
+            mat4 look = glm.lookAt(pos, pos + front, up);
+            View = (projection * look).to_array();
+            float[] lookAt = look.to_array();
             if (!Mth.EqualsArrayFloat(lookAt, LookAt, 0.00001f))
             {
                 PositionCamera = pos;
                 LookAt = lookAt;
                 RayLook = front;
                 lookAtDL = new vec3[] { pos, pos + front, up };
-                //UpMatrixProjection();
                 return true;
             }
             return false;
-        }
-
-        /// <summary>
-        /// Обновить перспективу камеры
-        /// </summary>
-        public override void UpProjection()
-        {
-            Projection = glm.perspective(Fov.ValueFrame, (float)GLWindow.WindowWidth / (float)GLWindow.WindowHeight, 0.001f, CamersDistance()).to_array();
-            //UpMatrixProjection();
         }
 
         /// <summary>
@@ -578,7 +561,7 @@ namespace MvkClient.Entity
             ClientWorld.RenderEntityManager.SetCamera(positionFrame, yawHeadFrame, pitchFrame);
 
             // Изменяем матрицу глаз игрока
-            if (UpLookAt(timeIndex) || IsFrustumCulling)
+            if (UpView(timeIndex) || IsFrustumCulling)
             {
                 // Если имеется вращение камеры или было перемещение, то запускаем расчёт FrustumCulling
                 InitFrustumCulling();
@@ -737,35 +720,48 @@ namespace MvkClient.Entity
             float maxDis = MvkGlobal.RAY_CAST_DISTANCE;
             vec3 pos = GetPositionFrame();
             pos.y += GetEyeHeightFrame();
+            // нормализованный вектор луча
             vec3 dir = RayLook;
-            vec3 offset = ClientWorld.RenderEntityManager.CameraOffset;
-            MovingObjectPosition movingObjectBlock = World.RayCastBlock(pos, dir, maxDis, false);
+            // вектор луча с дистанцией
+            vec3 vecRay = dir * maxDis;
+            // Луч на поиск блока
+            MovingObjectPosition moving = World.RayCastBlock(pos, dir, maxDis, false);
 
-            MapListEntity listEntity = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityLiving, BoundingBox.AddCoordBias(dir * maxDis), Id);
-            float entityDis = movingObjectBlock.IsBlock() ? glm.distance(pos, movingObjectBlock.RayHit) : maxDis;
-            EntityBase pointedEntity = null;
-            float step = .5f;
-
-            while(listEntity.Count > 0)
+            // Рамка луча для поиска сущностей, т.е. от позиции до дистанции куда смотрим
+            AxisAlignedBB axis = BoundingBox.AddCoordBias(vecRay);
+            // Собираем все сущности которые могут соприкосатся с рамкой обзора
+            List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityLiving, axis, Id);
+            MovingObjectPosition moving2 = null;
+            EntityBase entityHit = null;
+            EntityBase entity;
+            float distance = 0;
+            for (int i = 0; i < list.Count; i++)
             {
-                EntityBase entity = listEntity.FirstRemove();
-
+                entity = list[i];
+                // Проверка может ли сущность быть в проверке
                 if (entity.CanBeCollidedWith())
                 {
+                    // Дополнительная обработка рамки, с целью проверить точное косание сущности
                     float size = entity.GetCollisionBorderSize();
-                    AxisAlignedBB aabb = entity.BoundingBox.Expand(new vec3(size));
-                    for (float addStep = 0; addStep <= entityDis; addStep += step)
+                    moving2 = entity.BoundingBox.Expand(new vec3(size)).CalculateIntercept(pos, pos + vecRay);
+                    if (moving2 != null)
                     {
-                        if (aabb.IsVecInside(pos + dir * addStep))
+                        // Если косание сущности было фиксируем, и фиксируем на иближайшее к позиции прошлого такта
+                        float f = glm.distance(pos, moving2.RayHit);
+                        if (f < distance || distance == 0)
                         {
-                            pointedEntity = entity;
-                            entityDis = addStep;
-                            break;
+                            entityHit = entity;
+                            distance = f;
                         }
                     }
                 }
             }
-            return pointedEntity != null ? new MovingObjectPosition(pointedEntity) : movingObjectBlock;
+            if (entityHit != null)
+            {
+                // Помечаем что было поподание по сущности
+                moving = new MovingObjectPosition(entityHit);
+            }
+            return moving;
         }
 
         /// <summary>
@@ -802,7 +798,7 @@ namespace MvkClient.Entity
             else if (handAction == ActionHand.Right && itemInWorldManager.NotPauseUpdate)
             {
                 // устанавливаем блок
-                PutBlockStart(moving, false);
+                HandActionRightStart(moving, false);
             }
         }
 
@@ -826,24 +822,38 @@ namespace MvkClient.Entity
         }
 
         /// <summary>
-        /// Действие правй рукой, ставим блок
+        /// Остановить юз предмета
         /// </summary>
-        public void HandActionTwo()
+        public void OnStoppedUsingItem()
         {
-            MovingObjectPosition moving = RayCast();
-            PutBlockStart(moving, true);
+            StopUsingItem();
+            ClientWorld.ClientMain.TrancivePacket(new PacketC0CPlayerAction(PacketC0CPlayerAction.EnumAction.StopUsingItem));
         }
 
-        private void PutBlockStart(MovingObjectPosition moving, bool start)
+        /// <summary>
+        /// Действия правой клавишей мыши, ставим блок
+        /// </summary>
+        public void HandActionRight()
+        {
+            MovingObjectPosition moving = RayCast();
+            HandActionRightStart(moving, true);
+        }
+
+        /// <summary>
+        /// Начало действия правой клавишей мыши
+        /// </summary>
+        /// <param name="moving">объект луча</param>
+        /// <param name="start">true - только нажали, false - повторное нажатие если не отпускали клавишу</param>
+        private void HandActionRightStart(MovingObjectPosition moving, bool start)
         {
             bool click = false;
             if (start && moving.IsBlock() && !IsSneaking())
             {
                 // клик по блоку
-                click = moving.Block.GetBlock().OnBlockActivated(World, moving.BlockPosition, moving.Block, moving.Side, moving.Facing);
+                click = moving.Block.GetBlock().OnBlockActivated(World, this, moving.BlockPosition, moving.Block, moving.Side, moving.Facing);
                 if (click)
                 {
-                    ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(moving.BlockPosition, moving.Side, moving.Facing, true));
+                    ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(moving.BlockPosition));
                 }
             }
             if (!click)
@@ -851,24 +861,27 @@ namespace MvkClient.Entity
                 ItemStack itemStack = Inventory.GetCurrentItem();
                 if (itemStack != null)
                 {
-                    if (itemStack.Item is ItemBlock itemBlock && moving.IsBlock())
+                    // В стаке блок, и по лучу можем устанавливать блок
+                    if (itemStack.ItemUse(this, World, moving.BlockPosition, moving.Side, moving.Facing))
                     {
-                        // В стаке блок, и по лучу можем устанавливать блок
-                        BlockPos blockPos = new BlockPos(moving.GetPut(itemBlock.Block));
-                        if (itemBlock.CanPlaceBlockOnSide(itemStack, this, World, blockPos, moving.Side, moving.Facing))
-                        {
-                            ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(blockPos, moving.Side, moving.Facing, false));
-                            itemInWorldManager.Put(blockPos, moving.Side, moving.Facing, Inventory.CurrentItem);
-                            itemInWorldManager.PutPause(start);
-                            blankShot = true;
-                        }
-                        else
-                        {
-                            itemInWorldManager.PutAbout();
-                        }
-                        handAction = ActionHand.Right;
+                        ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(moving.BlockPosition, moving.Side, moving.Facing));
+                        itemInWorldManager.Put(moving.BlockPosition, moving.Side, moving.Facing, Inventory.CurrentItem);
+                        itemInWorldManager.PutPause(start);
+                        blankShot = true;
                     }
-                    // Тут будут другие действия на предмет, к примеру покушать
+                    else
+                    {
+                        itemInWorldManager.PutAbout();
+                        // Использовать элемент правой кнопкой мыши
+                        ItemStack itemStackNew = itemStack.UseItemRightClick(World, this);
+                        EnumItemAction itemAction = itemStack.GetItemUseAction();
+                        if (!itemStack.Equals(itemStackNew) || itemAction == EnumItemAction.Drink || itemAction == EnumItemAction.Eat || itemAction == EnumItemAction.Throw)
+                        {
+                            itemInWorldManager.PutPause(true);
+                            ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(2));
+                        }
+                    }
+                    handAction = ActionHand.Right;
                 }
             }
         }
@@ -918,11 +931,12 @@ namespace MvkClient.Entity
         }
 
         /// <summary>
-        /// Нет нажатий
+        /// Нет управления
         /// </summary>
-        public override void InputNone()
+        public override void MovementNone()
         {
-            base.InputNone();
+            base.MovementNone();
+            ((WorldClient)World).ClientMain.KeyBind.InputNone();
             UndoHandAction();
         }
 
@@ -951,7 +965,7 @@ namespace MvkClient.Entity
         public override void SetPosLook(vec3 pos, float yaw, float pitch)
         {
             base.SetPosLook(pos, yaw, pitch);
-            RotationYawLast = RotationYaw;
+            RotationYawLast = RotationYawBody;
             RotationPitchLast = RotationPitch;
         }
 

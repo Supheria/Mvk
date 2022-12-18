@@ -1,6 +1,5 @@
 ﻿using MvkServer.Entity;
 using MvkServer.Glm;
-using MvkServer.Item;
 using System.Collections;
 
 namespace MvkServer.Network.Packets.Server
@@ -16,8 +15,8 @@ namespace MvkServer.Network.Packets.Server
         private float yaw;
         private float yawHead;
         private float pitch;
-        //private ItemStack[] stacks;
         private ArrayList list;
+        private bool isLiving;
 
         public ushort GetId() => id;
         public EnumEntities GetEnum() => type;
@@ -25,7 +24,6 @@ namespace MvkServer.Network.Packets.Server
         public float GetYaw() => yaw;
         public float GetYawHead() => yawHead;
         public float GetPitch() => pitch;
-        //public ItemStack[] GetStacks() => stacks;
         public ArrayList GetList() => list;
 
         public PacketS0FSpawnMob(EntityBase entity)
@@ -33,25 +31,20 @@ namespace MvkServer.Network.Packets.Server
             id = entity.Id;
             type = entity.Type;
             pos = entity.Position;
-            if (entity is EntityLivingHead entityLH)
+            if (entity is EntityLiving entityLiving)
             {
-                yawHead = entityLH.RotationYawHead;
-                yaw = entityLH.RotationYaw;
-                pitch = entityLH.RotationPitch;
+                isLiving = true;
+                yawHead = entityLiving.RotationYawHead;
+                yaw = entityLiving.RotationYawBody;
+                pitch = entityLiving.RotationPitch;
             }
             else
             {
+                isLiving = false;
                 yawHead = 0;
                 yaw = 0;
                 pitch = 0;
             }
-            //if (entity is EntityLiving entityLiving)
-            //{
-            //    stacks = entityLiving.Inventory.GetCurrentItemAndArmor();
-            //} else
-            //{
-            //    stacks = new ItemStack[0];
-            //}
             list = entity.MetaData.GetAllWatched();
         }
 
@@ -60,9 +53,13 @@ namespace MvkServer.Network.Packets.Server
             id = stream.ReadUShort();
             type = (EnumEntities)stream.ReadUShort();
             pos = new vec3(stream.ReadFloat(), stream.ReadFloat(), stream.ReadFloat());
-            yawHead = stream.ReadFloat();
-            yaw = stream.ReadFloat();
-            pitch = stream.ReadFloat();
+            isLiving = stream.ReadBool();
+            if (isLiving)
+            {
+                yawHead = stream.ReadFloat();
+                yaw = stream.ReadFloat();
+                pitch = stream.ReadFloat();
+            }
             list = DataWatcher.ReadWatchedListFromPacketBuffer(stream);
         }
 
@@ -73,9 +70,13 @@ namespace MvkServer.Network.Packets.Server
             stream.WriteFloat(pos.x);
             stream.WriteFloat(pos.y);
             stream.WriteFloat(pos.z);
-            stream.WriteFloat(yawHead);
-            stream.WriteFloat(yaw);
-            stream.WriteFloat(pitch);
+            stream.WriteBool(isLiving);
+            if (isLiving)
+            {
+                stream.WriteFloat(yawHead);
+                stream.WriteFloat(yaw);
+                stream.WriteFloat(pitch);
+            }
             DataWatcher.WriteWatchedListToPacketBuffer(list, stream);
         }
     }

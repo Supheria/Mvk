@@ -10,9 +10,9 @@
         /// </summary>
         Test,
         /// <summary>
-        /// Частицы когда стучим по блоку и его ломаем
+        /// Кусочек блока, когда стучим по блоку, ломаем, бегаем, прыгаем
         /// </summary>
-        Digging,
+        BlockPart,
         /// <summary>
         /// Дым
         /// </summary>
@@ -24,6 +24,14 @@
         /// <summary>
         /// Пузырь
         /// </summary>
-        Bubble
+        Bubble,
+        /// <summary>
+        /// Кусочек предмета
+        /// </summary>
+        ItemPart,
+        /// <summary>
+        /// Пламе
+        /// </summary>
+        Flame
     }
 }

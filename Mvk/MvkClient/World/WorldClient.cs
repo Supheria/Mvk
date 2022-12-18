@@ -293,7 +293,7 @@ namespace MvkClient.World
             }
             else if(button == MouseButton.Right)
             {
-                ClientMain.Player.HandActionTwo();
+                ClientMain.Player.HandActionRight();
             }
         }
 
@@ -303,6 +303,10 @@ namespace MvkClient.World
         public void MouseUp(MouseButton button)
         {
             ClientMain.Player.UndoHandAction();
+            if (button == MouseButton.Right)
+            {
+                ClientMain.Player.OnStoppedUsingItem();
+            }
         }
 
         /// <summary>
@@ -663,9 +667,14 @@ namespace MvkClient.World
         /// </summary>
         public override void PlaySound(AssetsSample key, vec3 pos, float volume, float pitch)
         {
-            pos -= ClientMain.Player.Position;
-            pos = pos.rotateYaw(ClientMain.Player.RotationYawHead);
-            ClientMain.Sample.PlaySound(key, pos, volume, pitch);
+            if (key != AssetsSample.None)
+            {
+                pos -= ClientMain.Player.Position;
+                pos = pos.rotateYaw(ClientMain.Player.RotationYawHead);
+                // Слышимость в 4 раза лучше
+                pos *= .25f;
+                ClientMain.Sample.PlaySound(key, pos, volume, pitch);
+            }
         }
 
         /// <summary>

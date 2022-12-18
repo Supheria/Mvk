@@ -28,6 +28,11 @@ namespace MvkServer.Util
         public static int Round(float d) => (int)Math.Round(d);
 
         /// <summary>
+        /// Проверка нуля до 5 знаков
+        /// </summary>
+        public static bool IsZero(float f) => f < .00001f && f > -.00001f;
+
+        /// <summary>
         /// Квадратный корень
         /// </summary>
         public static float Sqrt(float d) => (float)Math.Sqrt(d);

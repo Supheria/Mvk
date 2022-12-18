@@ -38,8 +38,8 @@
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NVorbis, Version=0.10.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\NVorbis.0.10.4\lib\net45\NVorbis.dll</HintPath>
+    <Reference Include="NVorbis, Version=0.10.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\NVorbis.0.10.5\lib\net45\NVorbis.dll</HintPath>
     </Reference>
     <Reference Include="SharpGL, Version=3.1.1.0, Culture=neutral, PublicKeyToken=27fc851303210b27, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpGL.3.1.1\lib\net45\SharpGL.dll</HintPath>
@@ -60,6 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\KeyBinding.cs" />
     <Compile Include="Actions\Keyboard.cs" />
     <Compile Include="Actions\MouseButton.cs" />
     <Compile Include="Audio\Al.cs" />
@@ -74,11 +75,12 @@
     <Compile Include="Entity\EntityPlayerMP.cs" />
     <Compile Include="Entity\EntityPlayerSP.cs" />
     <Compile Include="Entity\EnumViewCamera.cs" />
+    <Compile Include="Entity\Particle\EntityFlameFX.cs" />
     <Compile Include="Entity\Particle\EntitySuspendFX.cs" />
     <Compile Include="Entity\Particle\EntitySmokeFX.cs" />
     <Compile Include="Entity\Particle\EntityBubbleFX.cs" />
     <Compile Include="Entity\Particle\EntityTestFX.cs" />
-    <Compile Include="Entity\Particle\EntityDiggingFX.cs" />
+    <Compile Include="Entity\Particle\EntityPartFX.cs" />
     <Compile Include="Entity\Particle\EntityFX.cs" />
     <Compile Include="Gui\ButtonSlot.cs" />
     <Compile Include="Gui\ButtonBox.cs" />
@@ -164,12 +166,12 @@
     <Compile Include="Util\BufferedImage.cs" />
     <Compile Include="Gui\ScreenEvent.cs" />
     <Compile Include="Util\BufferData.cs" />
-    <Compile Include="Util\ByteBuffer.cs" />
     <Compile Include="Util\CursorEvent.cs" />
     <Compile Include="Util\CursorExtensions.cs" />
     <Compile Include="Util\DestroyBlockProgress.cs" />
     <Compile Include="Util\Frustum.cs" />
     <Compile Include="Util\FrustumStruct.cs" />
+    <Compile Include="Util\MovementInputFromOptions.cs" />
     <Compile Include="Util\ObjectKeyEvent.cs" />
     <Compile Include="Util\Ticker.cs" />
     <Compile Include="World\ChunkProviderClient.cs" />

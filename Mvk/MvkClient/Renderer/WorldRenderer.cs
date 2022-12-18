@@ -178,9 +178,8 @@ namespace MvkClient.Renderer
             {
                 ChunkRenderQueue renderQueue;
                 int count, i;
-                //bool empty = true;
 
-                while (renderLoopRunning)
+                while (renderLoopRunning && World != null)
                 {
                     renderQueues.Step();
                     count = renderQueues.CountBackward;
@@ -216,11 +215,7 @@ namespace MvkClient.Renderer
             // Обновить кадр основного игрока, камера и прочее
             ClientMain.Player.UpdateFrame(timeIndex);
 
-            if (ClientMain.Player.Projection == null) ClientMain.Player.UpProjection();
-            if (ClientMain.Player.LookAt == null) ClientMain.Player.UpLookAt(timeIndex);
-
-            // Обновить кадр основного игрока, камера и прочее
-            //ClientMain.Player.UpdateFrame(timeIndex);
+            if (ClientMain.Player.View == null) ClientMain.Player.UpView(timeIndex);
 
             // Матрица камеры
             ClientMain.Player.MatrixProjection(0);
@@ -236,9 +231,9 @@ namespace MvkClient.Renderer
             // Сущности DisplayList
             DrawEntities(chunks, timeIndex);
 
+            GLRender.TextureLightmapDisable();
             // Рендер и прорисовка курсора выбранного блока по AABB
             renderBlockCursor.Render(ClientMain.Player.MovingObject);
-            
             // Курсор чанка
             renderChunkCursor.Render(ClientMain.World.RenderEntityManager.CameraOffset);
 
@@ -265,8 +260,6 @@ namespace MvkClient.Renderer
 
             // GUI во время игры без доп окон, так же эффекты
             ScreenGame.Draw(timeIndex);
-
-            
 
             // Чистка сетки чанков при необходимости
             World.ChunkPrClient.RemoteMeshChunks();
@@ -441,12 +434,7 @@ namespace MvkClient.Renderer
         {
             ShaderVoxel shader = GLWindow.Shaders.ShVoxel;
             shader.Bind(GLWindow.gl);
-            shader.SetUniformMatrix4(GLWindow.gl, "projection",
-                Debug.IsDrawOrto 
-                ? glm.ortho(-ScreenGame.Width / 4, ScreenGame.Width / 4, -ScreenGame.Height / 4, ScreenGame.Height / 4, -50, 500).to_array()
-                : ClientMain.Player.Projection
-            );
-            shader.SetUniformMatrix4(GLWindow.gl, "lookat", ClientMain.Player.LookAt);
+            shader.SetUniformMatrix4(GLWindow.gl, "view", ClientMain.Player.View);
             shader.SetUniform1(GLWindow.gl, "takt", ClientMain.TickCounter); // & 31
             
             float overview;
@@ -454,7 +442,7 @@ namespace MvkClient.Renderer
 
             if (ClientMain.Player.WhereEyesEff == EntityPlayerSP.WhereEyes.Air)
             {
-                overview = Debug.IsDrawOrto ? 10000 : ClientMain.Player.OverviewChunk * 16f;
+                overview = Debug.IsDrawOrto > 0 ? 10000 : ClientMain.Player.OverviewChunk * 16f;
                 cfog = colorFog;
             }
             else if (ClientMain.Player.WhereEyesEff == EntityPlayerSP.WhereEyes.Water)

@@ -1,4 +1,4 @@
-﻿using MvkServer.Entity.Player;
+﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Server;
@@ -19,6 +19,10 @@ namespace MvkServer
         /// Объект лога
         /// </summary>
         public Logger Log { get; protected set; }
+        /// <summary>
+        /// Дополнительный поток для генерации и загрузки мира
+        /// </summary>
+        public bool IsAddLoopGen { get; private set; } = false;
         /// <summary>
         /// Указывает, запущен сервер или нет. Установите значение false, чтобы инициировать завершение работы. 
         /// </summary>
@@ -101,6 +105,7 @@ namespace MvkServer
         /// Обзор чанков при старте, отталкиваемся от основного клиентак
         /// </summary>
         private int overviewChunk;
+        
 
         /// <summary>
         /// Инициализация
@@ -226,7 +231,17 @@ namespace MvkServer
         /// <summary>
         /// Запрос остановки сервера
         /// </summary>
-        public void ServerStop() => threadGenLoop = false; // Сначала останавливаем поток генерации
+        public void ServerStop()
+        {
+            if (IsAddLoopGen)
+            {
+                threadGenLoop = false; // Сначала останавливаем поток генерации
+            }
+            else
+            {
+                serverRunning = false;
+            }
+        }
 
         /// <summary>
         /// Метод должен работать в отдельном потоке
@@ -305,11 +320,13 @@ namespace MvkServer
 
         protected void StartServerLoop()
         {
-            threadGenLoop = true;
             serverRunning = true;
             // Запускаем постоянный поток генерации мира
-            Thread myThread = new Thread(ServerGenLoop);
-            myThread.Start();
+            if (IsAddLoopGen)
+            {
+                Thread myThread = new Thread(ServerGenLoop);
+                myThread.Start();
+            }
 
             EntityPlayerServer entityPlayer = World.Players.GetEntityPlayerMain();
             vec2i pos = entityPlayer != null ? entityPlayer.GetChunkPos() : new vec2i(0, 0);
@@ -473,7 +490,7 @@ namespace MvkServer
                 threadGenLoop = true;
                 Log.Log("server.threadGenLoop.run");
 
-                while (threadGenLoop)
+                while (threadGenLoop && serverRunning)
                 {
                     // Тут генерация чанков
                     World.ChunkPrServ.LoadGenRequest();

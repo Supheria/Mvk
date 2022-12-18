@@ -1,6 +1,5 @@
 ﻿using MvkServer.Entity;
 using MvkServer.Glm;
-using MvkServer.World;
 using MvkServer.World.Block;
 
 namespace MvkServer.Util
@@ -23,6 +22,18 @@ namespace MvkServer.Util
         /// </summary>
         public BlockPos BlockPosition { get; private set; }
         /// <summary>
+        /// Объект данных житкого блока
+        /// </summary>
+        public EnumBlock EBlockLiquid { get; private set; }
+        /// <summary>
+        /// Позиция житкого блока
+        /// </summary>
+        public BlockPos BlockLiquidPosition { get; private set; }
+        /// <summary>
+        /// Имеется ли попадание по жидкому блоку
+        /// </summary>
+        public bool IsLiquid { get; private set; } = false;
+        /// <summary>
         /// Нормаль попадания по блоку
         /// </summary>
         public vec3i Norm { get; private set; }
@@ -36,9 +47,9 @@ namespace MvkServer.Util
         /// </summary>
         public vec3 Facing { get; private set; }
         /// <summary>
-        /// Сторона блока куда смотрит луч
+        /// Сторона блока куда смотрит луч, нельзя по умолчанию All, надо строго из 6 сторон
         /// </summary>
-        public Pole Side { get; protected set; } = Pole.All;
+        public Pole Side { get; protected set; } = Pole.Up;
 
         protected MovingObjectType type = MovingObjectType.None;
 
@@ -68,6 +79,18 @@ namespace MvkServer.Util
         }
 
         /// <summary>
+        /// Проверка вектора, с какой стороны попали, точка попадания
+        /// </summary>
+        /// <param name="vec">точка попадания</param>
+        /// <param name="side">с какой стороны попали</param>
+        public MovingObjectPosition(vec3 vec, Pole side)
+        {
+            type = MovingObjectType.Block;
+            RayHit = vec;
+            Side = side;
+        }
+
+        /// <summary>
         /// Попадаем в сущность
         /// </summary>
         /// <param name="entity">сущьность</param>
@@ -82,17 +105,16 @@ namespace MvkServer.Util
 
         public bool IsEntity() => type == MovingObjectType.Entity;
 
+        public bool IsCollision() => type != MovingObjectType.None;
+
         /// <summary>
-        /// Координата на какой надо ставить блок
+        /// Задать попадание по жидкому блоку
         /// </summary>
-        public vec3i GetPut(BlockBase blockNew)
+        public void SetLiquid(EnumBlock enumBlock, BlockPos blockPos)
         {
-            BlockBase blockOld = Block.GetBlock();
-            if (blockOld.IsReplaceable && blockOld.EBlock != blockNew.EBlock)
-            { 
-                return BlockPosition.ToVec3i();
-            }
-            return BlockPosition.ToVec3i() + Norm;
+            IsLiquid = true;
+            EBlockLiquid = enumBlock;
+            BlockLiquidPosition = blockPos;
         }
 
         /// <summary>
@@ -110,10 +132,10 @@ namespace MvkServer.Util
             string str = "";
             if (type == MovingObjectType.Entity)
             {
-                float h = Entity is EntityLiving ? ((EntityLiving)Entity).Health : 0; 
+                float h = Entity is EntityLiving ? ((EntityLiving)Entity).GetHealth() : 0; 
                 str = Entity.GetName() + " " + h + " " + Entity.Position;
             }
-            return string.Format("{0} {3} {1} {2}", type, Side, Facing, str);
+            return string.Format("{0} {3} {1} {2} {4}", type, Side, Facing, str, IsLiquid ? EBlockLiquid.ToString() : "");
         }
     }
 }

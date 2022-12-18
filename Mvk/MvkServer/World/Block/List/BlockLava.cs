@@ -27,8 +27,8 @@ namespace MvkServer.World.Block.List
             LightValue = 15;
             Material = EnumMaterial.Lava;
             samplesStep = new AssetsSample[0];
-            //samplesBreak = new AssetsSample[] { AssetsSample.LiquidSplash1, AssetsSample.LiquidSplash2 };
-            //samplesStep = new AssetsSample[] { AssetsSample.LiquidSwim1, AssetsSample.LiquidSwim2, AssetsSample.LiquidSwim3, AssetsSample.LiquidSwim4 };
+            samplesBreak = new AssetsSample[] { AssetsSample.BucketEmptyLava1, AssetsSample.BucketEmptyLava2, AssetsSample.BucketEmptyLava3 };
+            samplesPut = new AssetsSample[] { AssetsSample.BucketFillLava1, AssetsSample.BucketFillLava2, AssetsSample.BucketFillLava3 };
             faces = new Face[]
             {
                 new Face(60).SetAnimation(32, 4),

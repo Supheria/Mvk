@@ -1,8 +1,9 @@
-﻿using MvkServer.Entity.Player;
+﻿using MvkServer.Entity;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
-using MvkServer.Item.List;
 using MvkServer.NBT;
 using MvkServer.Network;
+using MvkServer.Sound;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
@@ -68,6 +69,10 @@ namespace MvkServer.Item
         /// </summary>
         public void AddAmount(int amount) => Amount += amount;
         /// <summary>
+        /// Уменьшить количество на amount
+        /// </summary>
+        public void ReduceAmount(int amount) => Amount -= amount;
+        /// <summary>
         /// Задать новое количество
         /// </summary>
         public void SetAmount(int amount) => Amount = amount;
@@ -113,20 +118,53 @@ namespace MvkServer.Item
         /// </summary>
         public bool IsItemStackDamageable()
         {
-            return false;/// Item == null ? false : Item.GetMaxDamage() <= 0 ? false : !this.hasTagCompound() || !this.getTagCompound().getBoolean("Unbreakable"));
+            return Item == null ? false : Item.MaxDamage > 0;// ? false : !this.hasTagCompound() || !this.getTagCompound().getBoolean("Unbreakable"));
+        }
+
+        /// <summary>
+        /// Попытки повредить ItemStack с количеством повреждений amount. 
+        /// Если у ItemStack есть зачарование Unbreaking, есть шанс, 
+        /// что каждое очко урона будет нейтрализовано. Возвращает true, 
+        /// если получает больше урона, чем getMaxDamage(). Возвращает false 
+        /// в противном случае, или если ItemStack не может быть поврежден, 
+        /// или если все точки повреждения сведены на нет.
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <param name="rand"></param>
+        /// <returns></returns>
+        public bool AttemptDamageItem(int amount)//, Rand rand)
+        {
+            if (!IsItemStackDamageable())
+            {
+                return false;
+            }
+            else
+            {
+                ItemDamage += amount;
+                return ItemDamage >= Item.MaxDamage;
+            }
+        }
+
+        public void DamageItem(int amount, EntityLiving entity, BlockPos blockPos)
+        {
+            if (entity is EntityPlayer entityPlayer && !entityPlayer.IsCreativeMode)
+            {
+                if (AttemptDamageItem(amount))
+                {
+                    ItemDamage = 0;
+                    Zero();
+                    // Сломался предмет
+                    entity.World.PlaySound(entity, AssetsSample.Break, blockPos.ToVec3() + .5f, 1f, entity.World.Rnd.NextFloat() * .4f + .8f);
+                }
+            }
         }
 
         /// <summary>
         /// Действие игрока на этот стак, нажимая правую клавишу мыши
         /// </summary>
-        /// <param name="playerIn"></param>
-        /// <param name="worldIn"></param>
-        /// <param name="pos"></param>
-        /// <param name="side"></param>
-        /// <param name="facing"></param>
         public bool ItemUse(EntityPlayer playerIn, WorldBase worldIn, BlockPos pos, Pole side, vec3 facing)
         {
-            bool b = Item.ItemUse(this, playerIn, worldIn, pos, side, facing);
+            bool b = Item.OnItemUse(this, playerIn, worldIn, pos, side, facing);
             if (b)
             {
                 // статистика
@@ -138,6 +176,11 @@ namespace MvkServer.Item
         }
 
         /// <summary>
+        /// Использовать элемент правой кнопкой мыши
+        /// </summary>
+        public ItemStack UseItemRightClick(WorldBase worldIn, EntityPlayer playerIn) => Item.OnItemRightClick(this, worldIn, playerIn);
+
+        /// <summary>
         /// Возвращает максимальный размер стека
         /// </summary>
         public int GetMaxStackSize() => Item.MaxStackSize;
@@ -146,6 +189,30 @@ namespace MvkServer.Item
         /// Возвращает true, если стак может содержать 2 или более единиц элемента.
         /// </summary>
         public bool IsStackable() => GetMaxStackSize() > 1 && (!IsItemStackDamageable() || !IsItemDamaged());
+
+        /// <summary>
+        /// Получить максимальную продолжительность использования предмета
+        /// </summary>
+        public int GetMaxItemUseDuration() => Item.GetMaxItemUseDuration(this);
+
+        /// <summary>
+        /// Вызывается, когда игрок отпускает кнопку мыши использования предмета.
+        /// </summary>
+        /// <param name="timeLeft">Количество тактов, оставшихся до завершения использования</param>
+        public void OnPlayerStoppedUsing(WorldBase worldIn, EntityPlayer playerIn, int timeLeft)
+            => Item.OnPlayerStoppedUsing(this, worldIn, playerIn, timeLeft);
+
+        /// <summary>
+        /// Вызывается, когда количество используемых элементов достигает 0, например. пункт еда съедена.
+        /// Верните новый ItemStack. Аргументы: мир, сущность
+        /// </summary>
+        public ItemStack OnItemUseFinish(WorldBase worldIn, EntityPlayer playerIn)
+            => Item.OnItemUseFinish(this, worldIn, playerIn);
+
+        /// <summary>
+        /// Вернуть тип действия предмета
+        /// </summary>
+        public EnumItemAction GetItemUseAction() => Item != null && Amount > 0 ? Item.GetItemUseAction(this) : EnumItemAction.None;
 
         /// <summary>
         /// Записать стак в буффер пакета

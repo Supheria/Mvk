@@ -1,6 +1,5 @@
-﻿using MvkAssets;
-using MvkServer.Entity;
-using MvkServer.Entity.Item;
+﻿using MvkServer.Entity;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.Util;
@@ -24,15 +23,29 @@ namespace MvkClient.Renderer.Entity
 
         public override void DoRender(EntityBase entity, vec3 offset, float timeIndex)
         {
+            ItemStack stack = null;
+            int count = 1;
+            bool render = false;
+            if (entity is EntityThrowable entityThrowable)
+            {
+                render = true;
+                //stack = new ItemStack(Items.GetItemCache(entityThrowable.GetEnumItem()));
+                stack = entityThrowable.GetEntityItemStack();
+            }
             if (entity is EntityItem entityItem)
             {
-                ItemStack stack = entityItem.GetEntityItemStack();
+                render = true;
+                stack = entityItem.GetEntityItemStack();
+                count = CountItem(stack);
+            }
+            if (render)
+            {
+
                 vec3 pos = entity.GetPositionFrame(timeIndex);
                 vec3 offsetPos = pos - offset;
                 rand = new Rand(entity.Id);
                 int begin = rand.Next(360);
                 rand = new Rand(187);
-                int count = CountItem(stack);
 
                 GLRender.LightmapTextureCoords(entity.GetBrightnessForRender());
                 GLRender.TextureLightmapEnable();

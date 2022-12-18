@@ -1,4 +1,4 @@
-﻿using MvkServer.Entity.Player;
+﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.NBT;
 using MvkServer.Util;
@@ -128,6 +128,15 @@ namespace MvkServer.Entity
         /// Неуязвимость при уроне в тиках огня, лавы, кактуса и подобного
         /// </summary>
         protected byte invulnerable = 0;
+        /// <summary>
+        /// Стартавая неуязвимость при уроне в тиках огня, лавы, кактуса и подобного
+        /// </summary>
+        protected byte isInvulnerableBegin = 0;
+        /// <summary>
+        /// Должна ли эта сущность НЕ исчезать,
+        /// true - не исчезнет
+        /// </summary>
+        protected bool persistenceRequired;
         /// <summary>
         /// Находится ли этот объект в настоящее время в воде
         /// </summary>
@@ -281,8 +290,7 @@ namespace MvkServer.Entity
         /// </summary>
         protected void DealFireDamage(int amount)
         {
-            AttackEntityFrom(EnumDamageSource.InFire, amount);
-            SetFire(160);
+            if (AttackEntityFrom(EnumDamageSource.InFire, amount)) SetFire(160);
         }
 
         /// <summary>
@@ -290,8 +298,7 @@ namespace MvkServer.Entity
         /// </summary>
         protected void SetOnFireFromLava()
         {
-            AttackEntityFrom(EnumDamageSource.Lava, 4f);
-            SetFire(300);
+            if (AttackEntityFrom(EnumDamageSource.Lava, 4f)) SetFire(300);
         }
 
         /// <summary>
@@ -299,7 +306,15 @@ namespace MvkServer.Entity
         /// </summary>
         /// <param name="amount">сила урона</param>
         /// <returns>true - урон был нанесён</returns>
-        public virtual bool AttackEntityFrom(EnumDamageSource source, float amount, string name = "")
+        public bool AttackEntityFrom(EnumDamageSource source, float amount) 
+            => AttackEntityFrom(source, amount, new vec3(0));
+
+        /// <summary>
+        /// Сущности наносит урон только на сервере
+        /// </summary>
+        /// <param name="amount">сила урона</param>
+        /// <returns>true - урон был нанесён</returns>
+        public virtual bool AttackEntityFrom(EnumDamageSource source, float amount, vec3 motion, EntityLiving entityAttacks = null)
         {
             if (IsImmuneToAll() && source != EnumDamageSource.OutOfWorld) return false;
             if (IsImmuneToFall() && source == EnumDamageSource.Fall) return false;
@@ -352,7 +367,7 @@ namespace MvkServer.Entity
             }
 
             // Защита от падения с края блока если сидишь и являешься игроком
-            if (OnGround && this is EntityPlayer entityPlayer && entityPlayer.Input.HasFlag(EnumInput.Down))
+            if (OnGround && this is EntityPlayer entityPlayer && entityPlayer.Movement.Sneak)
             {
                 // Уменьшаем размер рамки для погрешности флоат, Fix 2022-02-01 замечена бага, иногда падаешь! По Х на 50000
                 AxisAlignedBB boundingBoxS = boundingBox.Expand(new vec3(-.01f, 0, -.01f));
@@ -623,7 +638,7 @@ namespace MvkServer.Entity
         /// </summary>
         protected void HandleLiquidMovement()
         {
-            AxisAlignedBB axis = BoundingBox.Expand(new vec3(-.10001f, -.40001f, -.10001f));
+            AxisAlignedBB axis = BoundingBox.Expand(new vec3(-.20001f, -.40001f, -.20001f)); // xz было 0.10001
 
             Liquid liquid = World.BeingInLiquid(axis);
             // Проверка в воде
@@ -669,6 +684,17 @@ namespace MvkServer.Entity
                     Motion = Motion + liquid.GetVec();
                 }
             }
+            // Проверка в огне
+            if (liquid.IsFire())
+            {
+                // прикосновение с огнём
+                DealFireDamage(1);
+            }
+            else if (!inLava)
+            {
+                // Активировать стартувую неуязвимость
+                isInvulnerableBegin = 2;
+            }
         }
 
         /// <summary>
@@ -691,7 +717,6 @@ namespace MvkServer.Entity
             BlockPos blockPos = new BlockPos();
             BlockState blockState;
             BlockBase block;
-            bool isFire = false;
             for (int x = minX; x < maxX; x++)
             {
                 for (int y = minY; y < maxY; y++)
@@ -704,15 +729,8 @@ namespace MvkServer.Entity
                         blockState = World.GetBlockState(blockPos);
                         block = blockState.GetBlock();
                         block.OnEntityCollidedWithBlock(World, blockPos, blockState, this);
-                        if (!isFire && block.EBlock == EnumBlock.Fire) isFire = true;
                     }
                 }
-            }
-
-            if (isFire)
-            {
-                // прикосновение с огнём
-                DealFireDamage(1);
             }
         }
 
@@ -732,6 +750,7 @@ namespace MvkServer.Entity
                 if (fire % 20 == 0)
                 {
                     AttackEntityFrom(EnumDamageSource.OnFire, 1);
+                    World.PlaySound(World.SampleSoundDamageFireHurt(), Position, 1, (rand.NextFloat() - rand.NextFloat()) * .2f + 1f);
                 }
                 return true;
             }
@@ -804,14 +823,40 @@ namespace MvkServer.Entity
         /// </summary>
         public virtual float GetEyeHeight() => Height * .85f;
 
+        /// <summary>
+        /// Возвращает квадрат расстояния до объекта
+        /// </summary>
+        public float GetDistanceSqToEntity(EntityBase entityIn)
+        {
+            float x = Position.x - entityIn.Position.x;
+            float y = Position.y - entityIn.Position.y;
+            float z = Position.z - entityIn.Position.z;
+            return x * x + y * y + z * z;
+        }
+
+        /// <summary>
+        /// Возвращает квадрат расстояния до координат
+        /// </summary>
+        public float GetDistanceSq(float x, float y, float z)
+        {
+            float vx = Position.x - x;
+            float vy = Position.y - y;
+            float vz = Position.z - z;
+            return vx * vx + vy * vy + vz * vz;
+        }
+
         public virtual void WriteEntityToNBT(TagCompound nbt)
         {
             nbt.SetTag("Pos", new TagList(new float[] { Position.x, Position.y, Position.z }));
         }
 
-        public bool WriteEntityToNBToptional(TagCompound nbt)
+        /// <summary>
+        /// Либо запишите эту сущность в указанный тег NBT и верните true, либо верните false, ничего не делая.
+        /// Если это возвращает false объект не сохраняется на диске.
+        /// </summary>
+        public virtual bool WriteEntityToNBToptional(TagCompound nbt)
         {
-            if (!IsDead && Type != EnumEntities.None && Type != EnumEntities.Player)
+            if (!IsDead && Type != EnumEntities.None && persistenceRequired)
             {
                 nbt.SetByte("Id", (byte)Type);
                 WriteEntityToNBT(nbt);
@@ -823,7 +868,9 @@ namespace MvkServer.Entity
         public virtual void ReadEntityFromNBT(TagCompound nbt)
         {
             TagList pos = nbt.GetTagList("Pos", 5);
-            LastTickPos = PositionPrev = Position = new vec3(pos.GetFloat(0), pos.GetFloat(1), pos.GetFloat(2));
+            LastTickPos = PositionPrev = Position = new vec3(pos.GetFloat(0), pos.GetFloat(1) + .1f, pos.GetFloat(2));
         }
+
+        public override string ToString() => string.Format("{0}-{1} XYZ {2}", Id, Type, Position);
     }
 }

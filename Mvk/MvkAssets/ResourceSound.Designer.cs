@@ -63,9 +63,189 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] Bow {
+            get {
+                object obj = ResourceManager.GetObject("Bow", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] Break {
+            get {
+                object obj = ResourceManager.GetObject("Break", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketEmptyLava1 {
+            get {
+                object obj = ResourceManager.GetObject("BucketEmptyLava1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketEmptyLava2 {
+            get {
+                object obj = ResourceManager.GetObject("BucketEmptyLava2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketEmptyLava3 {
+            get {
+                object obj = ResourceManager.GetObject("BucketEmptyLava3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketEmptyWater1 {
+            get {
+                object obj = ResourceManager.GetObject("BucketEmptyWater1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketEmptyWater2 {
+            get {
+                object obj = ResourceManager.GetObject("BucketEmptyWater2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketEmptyWater3 {
+            get {
+                object obj = ResourceManager.GetObject("BucketEmptyWater3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketFillLava1 {
+            get {
+                object obj = ResourceManager.GetObject("BucketFillLava1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketFillLava2 {
+            get {
+                object obj = ResourceManager.GetObject("BucketFillLava2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketFillLava3 {
+            get {
+                object obj = ResourceManager.GetObject("BucketFillLava3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketFillWater1 {
+            get {
+                object obj = ResourceManager.GetObject("BucketFillWater1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketFillWater2 {
+            get {
+                object obj = ResourceManager.GetObject("BucketFillWater2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] BucketFillWater3 {
+            get {
+                object obj = ResourceManager.GetObject("BucketFillWater3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] Click {
             get {
                 object obj = ResourceManager.GetObject("Click", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageDrown1 {
+            get {
+                object obj = ResourceManager.GetObject("DamageDrown1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageDrown2 {
+            get {
+                object obj = ResourceManager.GetObject("DamageDrown2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageDrown3 {
+            get {
+                object obj = ResourceManager.GetObject("DamageDrown3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageDrown4 {
+            get {
+                object obj = ResourceManager.GetObject("DamageDrown4", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -86,6 +266,66 @@ namespace MvkAssets {
         internal static byte[] DamageFallSmall {
             get {
                 object obj = ResourceManager.GetObject("DamageFallSmall", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageFireHurt1 {
+            get {
+                object obj = ResourceManager.GetObject("DamageFireHurt1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageFireHurt2 {
+            get {
+                object obj = ResourceManager.GetObject("DamageFireHurt2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageFireHurt3 {
+            get {
+                object obj = ResourceManager.GetObject("DamageFireHurt3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageHit1 {
+            get {
+                object obj = ResourceManager.GetObject("DamageHit1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageHit2 {
+            get {
+                object obj = ResourceManager.GetObject("DamageHit2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DamageHit3 {
+            get {
+                object obj = ResourceManager.GetObject("DamageHit3", resourceCulture);
                 return ((byte[])(obj));
             }
         }
@@ -323,6 +563,66 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] DoorClose {
+            get {
+                object obj = ResourceManager.GetObject("DoorClose", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] DoorOpen {
+            get {
+                object obj = ResourceManager.GetObject("DoorOpen", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] Drink {
+            get {
+                object obj = ResourceManager.GetObject("Drink", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] Eat1 {
+            get {
+                object obj = ResourceManager.GetObject("Eat1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] Eat2 {
+            get {
+                object obj = ResourceManager.GetObject("Eat2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] Eat3 {
+            get {
+                object obj = ResourceManager.GetObject("Eat3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] Explode1 {
             get {
                 object obj = ResourceManager.GetObject("Explode1", resourceCulture);
@@ -376,6 +676,16 @@ namespace MvkAssets {
         internal static byte[] FireFizz {
             get {
                 object obj = ResourceManager.GetObject("FireFizz", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] FireIgnite {
+            get {
+                object obj = ResourceManager.GetObject("FireIgnite", resourceCulture);
                 return ((byte[])(obj));
             }
         }

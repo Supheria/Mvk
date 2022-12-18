@@ -42,6 +42,10 @@
         /// </summary>
         ExplosionSource,
         /// <summary>
+        /// Кусочек
+        /// </summary>
+        Piece,
+        /// <summary>
         /// Моб
         /// </summary>
         Mob,

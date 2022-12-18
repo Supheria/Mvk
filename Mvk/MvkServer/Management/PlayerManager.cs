@@ -1,6 +1,5 @@
 ﻿using MvkServer.Entity;
-using MvkServer.Entity.Mob;
-using MvkServer.Entity.Player;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.NBT;
 using MvkServer.Network;
@@ -136,7 +135,7 @@ namespace MvkServer.Management
             //entityPlayer.FlagSpawn = false;
 
             // TODO::отладка 5 кур
-            
+
             //for (int i = 0; i < 3; i++)
             //{
             //    EntityChicken entityChicken = new EntityChicken(World);
@@ -307,32 +306,42 @@ namespace MvkServer.Management
         }
 
         /// <summary>
-        /// Проверка запуска игрока
+        /// Проверяем на дублирование игрока, если такой-же есть ошибка и возращаем false
         /// </summary>
-        public void LoginStart(EntityPlayerServer entityPlayer)
+        public bool CheckPlayer(EntityPlayerServer entityPlayer)
         {
             if (CheckPlayerAdd(entityPlayer))
             {
-                // Проверка игрока с повторным именем прошла
-                if (entityPlayer.SocketClient == null)
-                {
-                    // основной игрок, запуск сервера!!!
-                    PlayerAdd(entityPlayer);
-                    entityPlayer.FlagBeginSpawn = true;
-                    // После того как загрузиться запуститься метод LoginStart() для запуска пакета PacketS12Success
-                    World.ServerMain.StartServer();
-                    
-                } else
-                {
-                    // Для тактового запуска игрока
-                    playerStartList.Add(entityPlayer);
-                }
-
-            } else
+                entityPlayer.SendPacket(new PacketSF0Connection(true));
+                return true;
+            }
+            else
             {
                 World.ServerMain.Log.Log("server.player.entry.duplicate {0} [{1}]", entityPlayer.GetName(), entityPlayer.UUID);
                 // Игрок с таким именем в игре!
                 entityPlayer.SendPacket(new PacketSF0Connection("world.player.duplicate"));
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Запуска игрока
+        /// </summary>
+        public void LoginStart(EntityPlayerServer entityPlayer)
+        {
+            // Проверка игрока с повторным именем прошла
+            if (entityPlayer.SocketClient == null)
+            {
+                // основной игрок, запуск сервера!!!
+                PlayerAdd(entityPlayer);
+                entityPlayer.FlagBeginSpawn = true;
+                // После того как загрузиться запуститься метод LoginStart() для запуска пакета PacketS12Success
+                World.ServerMain.StartServer();
+                    
+            } else
+            {
+                // Для тактового запуска игрока
+                playerStartList.Add(entityPlayer);
             }
         }
 
@@ -356,7 +365,6 @@ namespace MvkServer.Management
         {
             player.SendPacket(new PacketS02JoinGame(player.Id, player.UUID, player.IsCreativeMode));
             player.SendPacket(new PacketS08PlayerPosLook(player.Position, player.RotationYawHead, player.RotationPitch));
-            player.SendPacket(new PacketS06UpdateHealth(player.Health));
             player.SendPacket(new PacketS03TimeUpdate(World.ServerMain.TickCounter));
             player.SendUpdateInventory();
         }
@@ -667,9 +675,13 @@ namespace MvkServer.Management
         /// </summary>
         public void UpdatePlayerInstances()
         {
-            profiler.StartSection("LoadGenResponse");
-            World.ChunkPrServ.LoadGenResponse();
-            profiler.EndStartSection("LoadingChunks");
+            if (World.ServerMain.IsAddLoopGen)
+            {
+                profiler.StartSection("LoadGenResponse");
+                World.ChunkPrServ.LoadGenResponse();
+                profiler.EndSection();
+            }
+            profiler.StartSection("LoadingChunks");
             try
             {
                 for (int i = 0; i < players.Count; i++)
@@ -677,20 +689,27 @@ namespace MvkServer.Management
                     EntityPlayerServer player = players[i];
                     // Количество чанков для загрузки или генерации за такт, было 5
                     //int load = MvkGlobal.COUNT_CHUNK_LOAD_OR_GEN_TPS;
+                    int number = 0;
                     // Всего проверки чанков за такт
                     int all = 100;
                     //World.ChunkPrServ.LoadGenRequestCount
 
                     while (player.LoadingChunks.Count > 0 
-                        && World.ChunkPrServ.LoadGenRequestCount < MvkGlobal.COUNT_CHUNK_LOAD_OR_GEN_TPS && all > 0)
+                        && number < MvkGlobal.COUNT_CHUNK_LOAD_OR_GEN_TPS && all > 0)
                     {
                         vec2i posCh = player.LoadingChunks.FirstRemove();
                         if (!World.ChunkPrServ.IsChunkLoaded(posCh))
                         {
-
-                            World.ChunkPrServ.LoadGenRequestAdd(posCh);
-                            //World.ChunkPrServ.LoadChunk(posCh);
-                            //load--;
+                            if (World.ServerMain.IsAddLoopGen)
+                            {
+                                World.ChunkPrServ.LoadGenRequestAdd(posCh);
+                                number = World.ChunkPrServ.LoadGenRequestCount;
+                            }
+                            else
+                            {
+                                World.ChunkPrServ.LoadGenAdd(posCh);
+                                number++;
+                            }
                         }
                         all--;
                     }
@@ -882,7 +901,7 @@ namespace MvkServer.Management
                 for (int i = 0; i < players.Count; i++)
                 {
                     EntityPlayerServer entity = players[i];
-                    strPlayers += entity.GetName() + " [p" + entity.Ping + "|" + (entity.IsDead ? "Dead" : ("h" + entity.Health)) + (entity.IsSprinting() ? "S" : "-") + "]";
+                    strPlayers += entity.GetName() + " [p" + entity.Ping + "|" + (entity.IsDead ? "Dead" : ("h" + entity.GetHealth())) + (entity.IsSprinting() ? "S" : "-") + "]";
                 }
             }
             return strPlayers;

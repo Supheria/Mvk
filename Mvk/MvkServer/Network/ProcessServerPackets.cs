@@ -1,8 +1,8 @@
 ﻿using MvkServer.Entity;
-using MvkServer.Entity.Item;
-using MvkServer.Entity.Player;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Inventory;
+using MvkServer.Item;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
@@ -131,9 +131,16 @@ namespace MvkServer.Network
         /// </summary>
         private void Handle02LoginStart(Socket socket, PacketC02LoginStart packet)
         {
+            EntityPlayerServer entityPlayer = new EntityPlayerServer(ServerMain, socket, packet.GetName(), ServerMain.World);
 
-            //ServerMain.test = new EntityPlayerServer(ServerMain, socket, packet.GetName(), ServerMain.World);
-            ServerMain.World.Players.LoginStart(new EntityPlayerServer(ServerMain, socket, packet.GetName(), ServerMain.World));
+            if (packet.IsCheckDuplicate())
+            {
+                ServerMain.World.Players.CheckPlayer(entityPlayer);
+            }
+            else
+            {
+                ServerMain.World.Players.LoginStart(entityPlayer);
+            }
         }
 
         /// <summary>
@@ -141,27 +148,20 @@ namespace MvkServer.Network
         /// </summary>
         private void Handle03UseEntity(Socket socket, PacketC03UseEntity packet)
         {
+            // сущность которая производит действие
+            EntityPlayerServer entityPlayer = ServerMain.World.Players.GetPlayerSocket(socket);
+            /// сущность на которую произвели действие
             EntityLiving entity = (EntityLiving)ServerMain.World.LoadedEntityList.Get(packet.GetId());
-            //EntityPlayerServer entity = ServerMain.World.Players.GetPlayer(packet.GetId());
 
-            if (entity != null)
+            if (entityPlayer != null && entity != null)
             {
                 // Урон
                 if (packet.GetAction() == PacketC03UseEntity.EnumAction.Attack)
                 {
                     float damage = 1f;
-                    entity.AttackEntityFrom(EnumDamageSource.Player, damage, "");
-                    //entity.SetHealth(entity.Health - damage);
-                    vec3 vec = packet.GetVec() * .5f;
-                    vec.y = .84f;
-                    if (entity is EntityPlayerServer)
-                    {
-                        ((EntityPlayerServer)entity).SendPacket(new PacketS12EntityVelocity(entity.Id, vec));
-                    } else
-                    {
-                        entity.MotionPush = vec;
-                    }
-                    ServerMain.World.ResponseHealth(entity);
+                    vec3 vec = packet.GetVec() * .9f;
+                    vec.y *= .2f;
+                    entity.AttackEntityFrom(EnumDamageSource.Player, damage, vec, entityPlayer);
                 }
             }
         }
@@ -247,17 +247,24 @@ namespace MvkServer.Network
             
             if (entityPlayer != null)
             {
-                if (packet.GetActivated())
-                {
-                    // Действие блока, клик правой клавишей мыши
-                    BlockPos blockPos = packet.GetBlockPos();
-                    BlockState blockState = ServerMain.World.GetBlockState(blockPos);
-                    blockState.GetBlock().OnBlockActivated(ServerMain.World, blockPos, blockState, packet.GetSide(), packet.GetFacing());
-                }
-                else
+                byte flag = packet.GetFlag();
+                if (flag == 0)
                 {
                     // установка блока
                     entityPlayer.TheItemInWorldManager.Put(packet.GetBlockPos(), packet.GetSide(), packet.GetFacing(), entityPlayer.Inventory.CurrentItem);
+                }
+                else if(flag == 1)
+                {
+                    // Действие на блок, клик правой клавишей мыши
+                    BlockPos blockPos = packet.GetBlockPos();
+                    BlockState blockState = ServerMain.World.GetBlockState(blockPos);
+                    blockState.GetBlock().OnBlockActivated(ServerMain.World, entityPlayer, blockPos, blockState, packet.GetSide(), packet.GetFacing());
+                }
+                else if (flag == 2)
+                {
+                    // Действие предмета в руке, клик правой клавишей мыши
+                    ItemStack itemStack = entityPlayer.Inventory.GetCurrentItem();
+                    itemStack.UseItemRightClick(ServerMain.World, entityPlayer);
                 }
                 entityPlayer.MarkPlayerActive();
             }
@@ -304,17 +311,25 @@ namespace MvkServer.Network
         private void Handle0CPlayerAction(Socket socket, PacketC0CPlayerAction packet)
         {
             EntityPlayerServer entityPlayer = ServerMain.World.Players.GetPlayerSocket(socket);
-            if (entityPlayer != null && packet.GetAction() == PacketC0CPlayerAction.EnumAction.Fall)
+            if (entityPlayer != null)
             {
-                // Падение с высоты
-                if (packet.GetParam() > 5)
+                PacketC0CPlayerAction.EnumAction action = packet.GetAction();
+                if (action == PacketC0CPlayerAction.EnumAction.Fall)
                 {
-                    float damage = packet.GetParam() - 5;
-                    entityPlayer.AttackEntityFrom(EnumDamageSource.Fall, damage);
-                    ServerMain.World.ResponseHealth(entityPlayer);
-                    ServerMain.World.Tracker.SendToAllTrackingEntity(entityPlayer, new PacketS0BAnimation(entityPlayer.Id, PacketS0BAnimation.EnumAnimation.Fall));
+                    // Падение с высоты
+                    if (packet.GetParam() > 5)
+                    {
+                        float damage = packet.GetParam() - 5;
+                        entityPlayer.AttackEntityFrom(EnumDamageSource.Fall, damage);
+                        ServerMain.World.Tracker.SendToAllTrackingEntity(entityPlayer, new PacketS0BAnimation(entityPlayer.Id, PacketS0BAnimation.EnumAnimation.Fall));
+                    }
+                    entityPlayer.MarkPlayerActive();
                 }
-                entityPlayer.MarkPlayerActive();
+                else if (action == PacketC0CPlayerAction.EnumAction.StopUsingItem)
+                {
+                    // Прекратили действие предмета
+                    entityPlayer.StopUsingItem();
+                }
             }
         }
 
@@ -329,16 +344,7 @@ namespace MvkServer.Network
                 if (packet.GetSlotId() == -1)
                 {
                     // Drop
-                    // TODO:: Drop Item вынести в метот у сущности игрока или чуть выше, для мобов
-                    vec3 pos = entityPlayer.Position;
-                    pos.y += entityPlayer.GetEyeHeight() / 2f;
-                    vec3 motion = entityPlayer.GetLook();
-                    motion.y = (ServerMain.World.Rnd.NextFloat() - ServerMain.World.Rnd.NextFloat()) * .1f;
-                    motion = motion.normalize();
-                    EntityItem entityItem = new EntityItem(ServerMain.World, pos + motion * 1.3f, packet.GetStack());
-                    entityItem.SetDefaultPickupDelay();
-                    entityItem.SetMotion(motion * .3f);
-                    ServerMain.World.SpawnEntityInWorld(entityItem);
+                    entityPlayer.DropItem(packet.GetStack(), true);
                 }
                 else
                 {

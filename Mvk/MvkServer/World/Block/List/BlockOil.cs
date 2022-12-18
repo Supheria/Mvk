@@ -27,6 +27,8 @@ namespace MvkServer.World.Block.List
             LightOpacity = 1;
             Material = EnumMaterial.Oil;
             samplesStep = new AssetsSample[0];
+            samplesBreak = new AssetsSample[] { AssetsSample.BucketEmptyLava1, AssetsSample.BucketEmptyLava2, AssetsSample.BucketEmptyLava3 };
+            samplesPut = new AssetsSample[] { AssetsSample.BucketFillLava1, AssetsSample.BucketFillLava2, AssetsSample.BucketFillLava3 };
             faces = new Face[]
             {
                 new Face(57).SetAnimation(32, 8),

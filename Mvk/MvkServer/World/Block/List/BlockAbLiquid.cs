@@ -173,7 +173,7 @@ namespace MvkServer.World.Block.List
                 if (material == EnumMaterial.Lava && random.Next(100) == 0)
                 {
                     vec3 pos = new vec3(blockPos.X + random.NextFloat(), blockPos.Y + 1, blockPos.Z + random.NextFloat());
-                    world.SpawnParticle(EnumParticle.Digging, 3, pos, new vec3(.25f, 1, .25f), 1, (int)EnumBlock.Lava);
+                    world.SpawnParticle(EnumParticle.BlockPart, 3, pos, new vec3(.25f, 1, .25f), 1, (int)EnumBlock.Lava);
                     world.PlaySound(AssetsSample.LiquidLavaPop, pos, .2f + random.NextFloat() * .2f, .9f + random.NextFloat() * .15f);
                 }
                 if (random.Next(200) == 0)
@@ -307,7 +307,7 @@ namespace MvkServer.World.Block.List
         {
             BlockBase block = state.GetBlock();
             EnumMaterial eMaterial = block.Material;
-            return block.IsAir || eMaterial == EnumMaterial.Sapling || IsFire(eMaterial)
+            return block.IsAir || block.IsLiquidDestruction() || IsFire(eMaterial)
                 || block.Material == material
                 // Взаимодействие лавы с водой и нефтью
                 || (material == EnumMaterial.Lava && (block.Material == EnumMaterial.Oil || block.Material == EnumMaterial.Water))
@@ -327,7 +327,7 @@ namespace MvkServer.World.Block.List
         {
             BlockBase block = world.GetBlockState(pos).GetBlock();
             EnumMaterial eMaterial = block.Material;
-            return block.IsAir || block.Material == EnumMaterial.Sapling || IsFire(eMaterial)
+            return block.IsAir || block.IsLiquidDestruction() || IsFire(eMaterial)
                 || block.EBlock == eBlockFlowing;
         }
 
@@ -443,7 +443,7 @@ namespace MvkServer.World.Block.List
             BlockBase block = blockState.GetBlock();
             if (block.IsAir) return 0;
             EnumMaterial eMaterial = block.Material;
-            return (eMaterial == EnumMaterial.Sapling
+            return (block.IsLiquidDestruction()
                 || eMaterial == EnumMaterial.Fire
                 || eMaterial == EnumMaterial.Water
                 || eMaterial == EnumMaterial.Lava
@@ -498,6 +498,11 @@ namespace MvkServer.World.Block.List
                 }
             }
         }
+
+        /// <summary>
+        /// Является ли блок проходимым, т.е. можно ли ходить по нему
+        /// </summary>
+        public override bool IsPassable() => false;
 
     }
 }

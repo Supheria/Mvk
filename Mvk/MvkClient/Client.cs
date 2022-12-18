@@ -54,6 +54,10 @@ namespace MvkClient
         /// </summary>
         public EntityPlayerSP Player { get; private set; }
         /// <summary>
+        /// Какие управляемые клавиши зажаты
+        /// </summary>
+        public KeyBinding KeyBind { get; private set; } = new KeyBinding();
+        /// <summary>
         /// Пинг к серверу
         /// </summary>
         public int Ping { get; private set; } = -1;
@@ -106,6 +110,14 @@ namespace MvkClient
         /// Режим 3д управление мышки
         /// </summary>
         private bool isMouseGamePlay = true;
+        /// <summary>
+        /// Запущен ли мир
+        /// </summary>
+        private bool isWorldRun = false;
+        /// <summary>
+        /// Имеется ли соединение с серверным миром
+        /// </summary>
+        private bool isConnectServerWorld = false;
 
         #region EventsWindow
 
@@ -299,7 +311,7 @@ namespace MvkClient
                 if (isMouseGamePlay) firstMouse = true;
                 CursorShow(!action);
             }
-            if (Player != null && !action) Player.InputNone();
+            if (Player != null && !action) Player.MovementNone();
         }
 
         /// <summary>
@@ -380,6 +392,7 @@ namespace MvkClient
                 if (delta > 0) Player.Inventory.SlotLess();
                 else if (delta < 0) Player.Inventory.SlotMore();
             }
+            Screen.MouseWheel(delta, x, y);
         }
 
         #endregion
@@ -463,6 +476,12 @@ namespace MvkClient
                 Debug.Traffic = 0;
                 World = new WorldClient(this);
                 EffectRender = new EffectRenderer(World);
+                isWorldRun = true;
+                if (isConnectServerWorld)
+                {
+                    // Запуск
+                    TrancivePacket(new PacketC02LoginStart(ToNikname(), false));
+                }
             }
             catch (Exception ex)
             {
@@ -471,6 +490,22 @@ namespace MvkClient
             //Debug.Crach("Test BeginWorld {0}", World);
             //World.GuiGameOver += World_GuiGameOver;
         }
+
+        public void BeginWorldConnect()
+        {
+            isConnectServerWorld = true;
+            if (isWorldRun)
+            {
+                // Запуск
+                TrancivePacket(new PacketC02LoginStart(ToNikname(), false));
+            }
+        }
+
+        /// <summary>
+        /// Для дебага, ник в сети с пометкой
+        /// </summary>
+        public string ToNikname()
+            => Setting.Nickname + (!MvkGlobal.IS_DEBUG_NICKNAME || IsServerLocalRun() ? "" : "-Net");
 
         private void World_GuiGameOver(object sender, EventArgs e)
         {
@@ -518,6 +553,8 @@ namespace MvkClient
             World.StopWorldDelete();
             EffectRender = null;
             World = null;
+            isWorldRun = false;
+            isConnectServerWorld = false;
             packets.Clear();
         }
 

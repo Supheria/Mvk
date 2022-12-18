@@ -1,28 +1,26 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Sound;
+using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
     /// <summary>
     /// Блок Песок
     /// </summary>
-    public class BlockSand : BlockBase
+    public class BlockSand : BlockUniLoose
     {
         /// <summary>
         /// Блок Песок
         /// </summary>
-        public BlockSand()
+        public BlockSand() : base(68, new vec3(.95f, .91f, .73f))
         {
-            Material = EnumMaterial.Loose;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigSand1, AssetsSample.DigSand2, AssetsSample.DigSand3, AssetsSample.DigSand4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepSand1, AssetsSample.StepSand2, AssetsSample.StepSand3, AssetsSample.StepSand4 };
-            Particle = 68;
-            InitBoxs(68, false, new vec3(.95f, .91f, .73f));
         }
 
         /// <summary>
-        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// Тон сэмпла сломанного блока
         /// </summary>
-        public override int Hardness(BlockState state) => 5;
+        public override float SampleBreakPitch(Rand random) => 1f;
     }
 }

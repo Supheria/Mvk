@@ -1,5 +1,5 @@
 ﻿using MvkServer.Entity;
-using MvkServer.Entity.Item;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.NBT;
 using MvkServer.Network.Packets.Server;
@@ -931,7 +931,34 @@ namespace MvkServer.World.Chunk
         /// <param name="entityId">входящяя сущность</param>
         /// <param name="aabb">рамка</param>
         /// <param name="list">список</param>
-        public void GetEntitiesAABB(int entityId, AxisAlignedBB aabb, MapListEntity list, EnumEntityClassAABB type)
+        public void GetEntitiesAABB(int entityId, AxisAlignedBB aabb, List<EntityBase> list, EnumEntities type)
+        {
+            int minY = Mth.Floor((aabb.Min.y - 2f) / 16f);
+            int maxY = Mth.Floor((aabb.Max.y + 2f) / 16f);
+            minY = Mth.Clamp(minY, 0, ListEntities.Length - 1);
+            maxY = Mth.Clamp(maxY, 0, ListEntities.Length - 1);
+
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int i = 0; i < ListEntities[y].Count; i++)
+                {
+                    EntityBase entity = ListEntities[y].GetAt(i);
+                    if (entity != null && entity.Id != entityId && entity.Type == type
+                        && entity.BoundingBox.IntersectsWith(aabb))
+                    {
+                        list.Add(entity);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Получить список всех сущностей попадающих в рамку кроме входящей сущности
+        /// </summary>
+        /// <param name="entityId">входящяя сущность</param>
+        /// <param name="aabb">рамка</param>
+        /// <param name="list">список</param>
+        public void GetEntitiesAABB(int entityId, AxisAlignedBB aabb, List<EntityBase> list, EnumEntityClassAABB type)
         {
             int minY = Mth.Floor((aabb.Min.y - 2f) / 16f);
             int maxY = Mth.Floor((aabb.Max.y + 2f) / 16f);
@@ -947,6 +974,7 @@ namespace MvkServer.World.Chunk
                         && (type == EnumEntityClassAABB.All
                             || (type == EnumEntityClassAABB.EntityItem && entity is EntityItem)
                             || (type == EnumEntityClassAABB.EntityLiving && entity is EntityLiving)
+                            || (type == EnumEntityClassAABB.EntityPlayer && entity is EntityPlayer)
                             )
                         && entity.BoundingBox.IntersectsWith(aabb))
                     {
@@ -969,7 +997,11 @@ namespace MvkServer.World.Chunk
             /// <summary>
             /// Наследники мобов и игроков
             /// </summary>
-            EntityLiving
+            EntityLiving,
+            /// <summary>
+            /// Только игроки
+            /// </summary>
+            EntityPlayer,
         }
 
 
@@ -1265,14 +1297,9 @@ namespace MvkServer.World.Chunk
                 {
                     TagCompound tagCompound = tagListEntities.Get(i) as TagCompound;
                     EnumEntities enumEntities = (EnumEntities)tagCompound.GetByte("Id");
-                    // TODO::2022-11-10 После загрузки спавн сущностей временно, надо через отдельный объект
-                    if (enumEntities == EnumEntities.Item)
-                    {
-                        EntityItem entityItem = new EntityItem(World);
-                        entityItem.ReadEntityFromNBT(tagCompound);
-                        entityItem.SetDefaultPickupDelay();
-                        World.SpawnEntityInWorld(entityItem);
-                    }
+                    EntityBase entity = Entities.CreateEntityByEnum(World, enumEntities);
+                    entity.ReadEntityFromNBT(tagCompound);
+                    World.SpawnEntityInWorld(entity);
                 }
             }
             return;

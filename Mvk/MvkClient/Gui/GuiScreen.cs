@@ -93,6 +93,15 @@ namespace MvkClient.Gui
         }
 
         /// <summary>
+        /// Вращение колёсика мыши
+        /// </summary>
+        /// <param name="delta">смещение</param>
+        public void MouseWheel(int delta, int x, int y)
+        {
+            if (screen != null) screen.MouseWheel(delta, x, y);
+        }
+
+        /// <summary>
         /// Нажата клавиша в char формате
         /// </summary>
         public void KeyPress(char key)
@@ -106,9 +115,8 @@ namespace MvkClient.Gui
         public void Exchange(Screen screenNew)
         {
             if (screen != null) screen.Delete();
-            // TODO::Активация 20 fps в меню
-            ClientMain.SetWishFps(20);
-            if (ClientMain.World != null) ClientMain.Player.InputNone();
+            ClientMain.SetWishFps(screenNew.IsFpsMin ? 20 : Setting.Fps);
+            if (ClientMain.World != null) ClientMain.Player.MovementNone();
             screen = screenNew;
             screen.Finished += MenuScreen_Finished;
             screen.Initialize();

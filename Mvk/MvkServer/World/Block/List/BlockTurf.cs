@@ -15,6 +15,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockTurf()
         {
+            Resistance = .6f;
             Combustibility = true;
             IgniteOddsSunbathing = 5;
             NeedsRandomTick = true;
@@ -85,7 +86,7 @@ namespace MvkServer.World.Block.List
             BlockPos blockPosUp = blockPos.OffsetUp();
             BlockState blockStateUp = world.GetBlockState(blockPosUp);
             BlockBase blockUp = blockStateUp.GetBlock();
-            if (!(blockUp.IsAir || blockUp.Material == EnumMaterial.Sapling) || blockStateUp.lightSky < 7 || blockUp.LightOpacity > 2)
+            if (!(blockUp.IsAir || blockUp.Material == EnumMaterial.Sapling || blockUp.Material == EnumMaterial.Piece) || blockStateUp.lightSky < 7 || blockUp.LightOpacity > 2)
             {
                 // Засыхание дёрна
                 world.SetBlockState(blockPos, new BlockState(EnumBlock.Dirt), 14);

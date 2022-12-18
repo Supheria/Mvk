@@ -148,10 +148,9 @@ namespace MvkServer.Glm
             return new[] { x, y, z };
         }
 
-        public vec3 normalize()
-        {
-            return glm.normalize(this);
-        }
+        public vec3 normalize() => glm.normalize(this);
+
+        public bool IsZero() => x == 0 && y == 0 && z == 0;
 
         #region Comparision
 

@@ -123,8 +123,6 @@ namespace MvkClient.World
             {
                 if (!isNew)
                 {
-                    // TODO::2022-08-09 не помню зя чем это, но с этим чанк не выгружается
-                    //if (pos.x == 0 && pos.y == 0) return;
                     UnloadChunk(chunk);
                 }
             }
