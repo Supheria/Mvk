@@ -32,6 +32,10 @@ namespace MvkServer.Entity.AI
         /// Ускорение
         /// </summary>
         private bool updateSprinting = false;
+        /// <summary>
+        /// Обновить сесть
+        /// </summary>
+        private bool updateSneak = false;
 
         public EntityMoveHelper(EntityLiving entity)
         {
@@ -60,6 +64,8 @@ namespace MvkServer.Entity.AI
         public void SetJumping() => updateJump = true;
 
         public void SetSprinting() => updateSprinting = true;
+
+        public void SetSneak() => updateSneak = true;
 
         public void OnUpdateMove()
         {
@@ -98,6 +104,12 @@ namespace MvkServer.Entity.AI
             {
                 updateSprinting = false;
                 entity.Movement.SetAISprinting();
+                move = true;
+            }
+            if (updateSneak)
+            {
+                updateSneak = false;
+                entity.Movement.SetAISneak();
                 move = true;
             }
         }

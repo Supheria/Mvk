@@ -52,7 +52,7 @@ namespace MvkServer.Entity.List
         public void SetItem(EnumItem item)
         {
             MetaData.UpdateObject(10, (int)item);
-            MetaData.SetObjectWatched(10);
+            //MetaData.SetObjectWatched(10);
         }
 
         protected override void AddMetaData() => MetaData.AddByDataType(10, 2);

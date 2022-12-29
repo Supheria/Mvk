@@ -116,14 +116,14 @@ namespace MvkServer.World
         /// <summary>
         /// Загрузить коллекцию сущностей
         /// </summary>
-        public void LoadEntities(MapListEntity entityCollection)
-        {
-            LoadedEntityList.AddRange(entityCollection);
-            for (int i = 0; i < entityCollection.Count; i++)
-            {
-                OnEntityAdded(entityCollection.GetAt(i));
-            }
-        }
+        //public void LoadEntities(MapListEntity entityCollection)
+        //{ // не используется
+        //    LoadedEntityList.AddRange(entityCollection);
+        //    for (int i = 0; i < entityCollection.Count; i++)
+        //    {
+        //        OnEntityAdded(entityCollection.GetAt(i));
+        //    }
+        //}
 
         /// <summary>
         /// Выгрузить коллекцию сущностей
@@ -1162,6 +1162,8 @@ namespace MvkServer.World
         /// <param name="power">сила</param>
         /// <param name="distance">дистанция</param>
         public virtual void CreateExplosion(vec3 pos, float power, float distance) { }
+
+        
 
         public virtual void DebugString(string logMessage, params object[] args) { }
     }

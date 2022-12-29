@@ -500,9 +500,9 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Является ли блок проходимым, т.е. можно ли ходить по нему
+        /// Является ли блок проходимым, т.е. можно ли ходить через него
         /// </summary>
-        public override bool IsPassable() => false;
+        public override bool IsPassable(int met) => true;
 
     }
 }

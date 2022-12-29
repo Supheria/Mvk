@@ -1,4 +1,5 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Sound;
 using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
@@ -23,6 +24,7 @@ namespace MvkServer.World.Block.List
             IgniteOddsSunbathing = 30;
             BurnOdds = 60;
             Resistance = .2f;
+            samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             InitBoxs();
         }
 
@@ -89,8 +91,8 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Является ли блок проходимым, т.е. можно ли ходить по нему
+        /// Является ли блок проходимым, т.е. можно ли ходить через него
         /// </summary>
-        public override bool IsPassable() => false;
+        public override bool IsPassable(int met) => true;
     }
 }

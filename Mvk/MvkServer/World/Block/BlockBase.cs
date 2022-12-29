@@ -452,9 +452,14 @@ namespace MvkServer.World.Block
         public virtual bool IsLiquidDestruction() => false;
 
         /// <summary>
-        /// Является ли блок проходимым, т.е. можно ли ходить по нему
+        /// Является ли блок проходимым, т.е. можно ли ходить через него
         /// </summary>
-        public virtual bool IsPassable() => true;
+        public virtual bool IsPassable(int met) => false;
+
+        /// <summary>
+        /// Является ли блок проходимым на нём, т.е. можно ли ходить по нему
+        /// </summary>
+        public virtual bool IsPassableOnIt(int met) => !IsPassable(met);
 
         /// <summary>
         /// Смена соседнего блока

@@ -13,11 +13,31 @@ namespace MvkServer.Entity.List
     /// </summary>
     public class EntityChicken : EntityLiving
     {
+        /// <summary>
+        /// Время до следующего яйца
+        /// </summary>
+        private int timeUntilNextEgg;
+        /// <summary>
+        /// высиживаем яйцо
+        /// </summary>
+        private bool hatchingAnEgg = false;
+        /// <summary>
+        /// Сколько раз поела после высиживания яйца
+        /// </summary>
+        public int countEat = 0;
+
+        /// <summary>
+        /// Задача по поиску гнезда для того чтоб высесть яйцо
+        /// </summary>
+        private EntityAIFindNestEgg entityAIFindNest;
+
         public EntityChicken(WorldBase world) : base(world)
         {
             Type = EnumEntities.Chicken;
             StepHeight = 1.01f;
             samplesStep = new AssetsSample[] { AssetsSample.MobChickenStep1, AssetsSample.MobChickenStep2 };
+            samplesSay = new AssetsSample[] { AssetsSample.MobChickenSay1, AssetsSample.MobChickenSay2, AssetsSample.MobChickenSay3 };
+            samplesHurt = new AssetsSample[] { AssetsSample.MobChickenHurt1, AssetsSample.MobChickenHurt2 };
             Speed = .05f;
             //IsFlying = true;
             persistenceRequired = true;
@@ -25,15 +45,47 @@ namespace MvkServer.Entity.List
             {
                 tasks.AddTask(0, new EntityAISwimming(this));
                 tasks.AddTask(1, new EntityAIPanic(this, 1.6f));
+                tasks.AddTask(2, new EntityAIFindNestSleep(this)); 
                 //tasks.AddTask(2, new EntityAIFollowPlayer(this, 1.2f));
-                tasks.AddTask(3, new EntityAIFindGrassBlockEat(this));
-                tasks.AddTask(3, new EntityAIFindSaplingEat(this));
-                tasks.AddTask(4, new EntityAIFollowYour(this, 1.4f));
-                tasks.AddTask(5, new EntityAIWander(this, 1, .002f));
-                tasks.AddTask(6, new EntityAIWatchClosest(this, 10f));
-                tasks.AddTask(7, new EntityAILookIdle(this));
+                tasks.AddTask(3, new EntityAIFindSaplingEat(this, .004f));
+                tasks.AddTask(3, entityAIFindNest = new EntityAIFindNestEgg(this, 1.2f));
+                tasks.AddTask(4, new EntityAIFollowYour(this, .002f, 1.4f));
+                tasks.AddTask(4, new EntityAIWander(this, .002f));
+                tasks.AddTask(5, new EntityAIWatchClosest(this, 10f));
+                tasks.AddTask(6, new EntityAILookIdle(this));
             }
+            timeUntilNextEgg = World.Rnd.Next(6000) + 1000;
+            SetPosHomeNull();
         }
+
+        protected override void AddMetaData()
+        {
+            base.AddMetaData();
+            MetaData.AddByDataType(10, 0); // 1 знаем где гнездо, 0 незнаем где гнездо
+            MetaData.Add(11, new BlockPos(0, 0, 0)); // положение гнезда
+        }
+
+        public void SetPosHome(BlockPos blockPos)
+        {
+            MetaData.UpdateObject(10, (byte)1);
+            MetaData.UpdateObject(11, blockPos);
+        }
+
+        public void SetPosHomeNull()
+        {
+            MetaData.UpdateObject(10, (byte)0);
+            MetaData.UpdateObject(11, new BlockPos(0, 0, 0));
+        }
+
+        /// <summary>
+        /// Имеется ли у курицы дом
+        /// </summary>
+        public bool IsPosHome() => MetaData.GetWatchableObjectByte(10) == 1;
+
+        /// <summary>
+        /// Позиция дома
+        /// </summary>
+        public BlockPos GetPosHome() => MetaData.GetWatchableObjectBlockPos(11);
 
         /// <summary>
         /// Может дышать под водой
@@ -80,9 +132,6 @@ namespace MvkServer.Entity.List
         //    return base.AttackEntityFrom(source, amount, motion, name);
         //}
 
-        int iii = 0;
-        int iii2 = 0;
-        bool f = true;
         /// <summary>
         /// Вызывается для обновления позиции / логики объекта
         /// </summary>
@@ -95,36 +144,6 @@ namespace MvkServer.Entity.List
                 // При падении лапки двигаются в разы медленее
                 LimbSwingAmount *= 0.25f;
             }
-            /*
-            if (World is WorldServer)
-            {
-                iii--;
-                if (iii <= 0)
-                {
-                    SetRotationHead(RotationYawHead + glm.radians(rand.Next(180) - 90), RotationPitch);
-                    iii = rand.Next(200) + 50;
-                }
-                iii2--;
-                if (iii2 <= 0)
-                {
-                    Movement.SetAIMoveState(f, false, !f, false);
-
-                    //Input = f ? Util.EnumInput.Forward : Util.EnumInput.Down;
-                    f = !f;
-                    iii2 = rand.Next(200) + 100;
-                    if (f) iii2 += 200;
-                }
-                //InputAdd(Util.EnumInput.Down);
-                //ChunkBase chunk = World.GetChunk(GetChunkPos());
-                //if (chunk != null && chunk.CountEntity() > 1)
-                //{
-                //    Input = Util.EnumInput.Forward;
-                //}
-                //else
-                //{
-                //    Input = Util.EnumInput.None;
-                //}
-            }*/
         }
 
         protected override void LivingUpdate()
@@ -135,6 +154,57 @@ namespace MvkServer.Entity.List
                 // При падение, курица махая крыльями падает медленее
                 Motion = new vec3(Motion.x, Motion.y * .6f, Motion.z);
             }
+
+            if (!World.IsRemote)
+            {
+                if (!hatchingAnEgg)
+                {
+                    timeUntilNextEgg -= countEat;
+                    if (timeUntilNextEgg <= 0)
+                    {
+                        hatchingAnEgg = true;
+                        entityAIFindNest.run = true;
+                    }
+                }
+                else if (hatchingAnEgg && !entityAIFindNest.ContinueExecuting())
+                {
+                    timeUntilNextEgg = World.Rnd.Next(6000) + 6000;
+                    hatchingAnEgg = false;
+                }
+            }
+
+
+        }
+
+        public override void WriteEntityToNBT(TagCompound nbt)
+        {
+            base.WriteEntityToNBT(nbt);
+            bool home = IsPosHome();
+            if (home)
+            {
+                nbt.SetBool("Home", home);
+                BlockPos blockPos = GetPosHome();
+                nbt.SetInt("HomeX", blockPos.X);
+                nbt.SetInt("HomeY", blockPos.Y);
+                nbt.SetInt("HomeZ", blockPos.Z);
+            }
+            nbt.SetShort("Egg", (short)timeUntilNextEgg);
+        }
+
+        public override void ReadEntityFromNBT(TagCompound nbt)
+        {
+            base.ReadEntityFromNBT(nbt);
+            bool home = nbt.GetBool("Home");
+            if (home)
+            {
+                BlockPos blockPos = new BlockPos(nbt.GetInt("HomeX"), nbt.GetInt("HomeY"), nbt.GetInt("HomeZ"));
+                SetPosHome(blockPos);
+            }
+            else
+            {
+                SetPosHomeNull();
+            }
+            timeUntilNextEgg = nbt.GetShort("Egg");
         }
 
         //public override bool WriteEntityToNBToptional(TagCompound nbt) => false;

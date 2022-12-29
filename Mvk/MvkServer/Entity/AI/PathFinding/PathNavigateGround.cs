@@ -182,6 +182,7 @@ namespace MvkServer.Entity.AI.PathFinding
             int z0 = posZ - sizeZ / 2;
             float x2, z2;
             BlockPos blockPos;
+            BlockState blockState;
 
             BlockPos[] blocks = BlockPos.GetAllInBox(new vec3i(x0, posY, z0), new vec3i(x0 + sizeX - 1, posY + sizeY - 1, z0 + sizeZ - 1));
             for (int i = 0; i < blocks.Length; i++)
@@ -192,7 +193,8 @@ namespace MvkServer.Entity.AI.PathFinding
 
                 if (x2 * vecX + z2 * vecZ >= 0f)
                 {
-                    if (!world.GetBlockState(blockPos).GetBlock().IsPassable())
+                    blockState = world.GetBlockState(blockPos);
+                    if (!blockState.GetBlock().IsPassableOnIt(blockState.met))
                     {
                         return false;
                     }

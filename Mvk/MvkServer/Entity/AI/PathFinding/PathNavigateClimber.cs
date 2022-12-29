@@ -40,9 +40,13 @@ namespace MvkServer.Entity.AI.PathFinding
         /// <summary>
         /// Попробуйте найти и указать путь к EntityLiving. Возвращает true в случае успеха
         /// </summary>
-        public override bool TryMoveToEntityLiving(EntityLiving entity, float speed, bool allowPartialPath = true)
+        /// <param name="allowPartialPath">Разрешить частичный путь </param>
+        /// <param name="stopOnOverlap">Задать остановку при соприкосновении коллизии, true - соприкосновении коллизии, false - центр</param>
+        /// <param name="acceptanceRadius">Задать расстояние до точки, которое будет считаться выполненым, 0 - расчёта нет</param>
+        public override bool TryMoveToEntityLiving(EntityLiving entity, float speed, bool allowPartialPath = true, bool stopOnOverlap = false, float acceptanceRadius = 0f)
         {
-            pathFinder.SetStopOnOverlap(true);
+            //stopOnOverlap = true;
+            pathFinder.SetOptions(stopOnOverlap, acceptanceRadius);
             PathEntity path = GetPathToEntityLiving(entity);
             if (path != null)
             {

@@ -56,10 +56,6 @@ namespace MvkServer.Entity
         /// </summary>
         public vec3 Motion { get; protected set; }
         /// <summary>
-        /// Движение из-за смещения
-        /// </summary>
-        public vec3 MotionPush { get; set; } = new vec3(0);
-        /// <summary>
         /// На земле
         /// </summary>
         public bool OnGround { get; protected set; } = true;
@@ -198,17 +194,6 @@ namespace MvkServer.Entity
         /// Получить ограничительную рамку на выбранной позиции
         /// </summary>
         public AxisAlignedBB GetBoundingBox(vec3 pos) => new AxisAlignedBB(pos - new vec3(Width, 0, Width), pos + new vec3(Width, Height, Width));
-
-        /// <summary>
-        /// Получает квадрат расстояния до положения
-        /// </summary>
-        //public double GetDistanceSq(vec3 pos)
-        //{
-        //    float x = Position.x - pos.x;
-        //    float y = Position.y - pos.y;
-        //    float z = Position.z - pos.z;
-        //    return x * x + y * y + z * z;
-        //}
 
         /// <summary>
         /// Задать позицию

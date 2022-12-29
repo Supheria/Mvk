@@ -104,6 +104,7 @@ namespace MvkServer.World.Block
                 case EnumBlock.DoorPalm: return new BlockUniDoor(584, EnumItem.DoorPalm);
                 case EnumBlock.DoorIron: return new BlockUniDoor(586, EnumItem.DoorIron);
                 case EnumBlock.SmallStone: return new BlockUniPiece(2, EnumItem.PieceStone);
+                case EnumBlock.Nest: return new BlockNest();
             }
 
             return new BlockAir(true);

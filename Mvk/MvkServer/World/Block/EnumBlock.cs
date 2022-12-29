@@ -292,7 +292,11 @@
         /// <summary>
         /// Маленький камень
         /// </summary>
-        SmallStone = 70
+        SmallStone = 70,
+        /// <summary>
+        /// Гнездо
+        /// </summary>
+        Nest = 71
     }
 
     /// <summary>
@@ -300,6 +304,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 70;
+        public const int COUNT = 71;
     }
 }

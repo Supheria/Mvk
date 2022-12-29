@@ -36,22 +36,6 @@ namespace MvkClient.Entity
             IsCreativeMode = isCreativeMode;
         }
 
-        /// <summary>
-        /// Проверка толчка этой сущности основного игрока
-        /// </summary>
-        public void CheckPush()
-        {
-            vec3 posPrev = PositionPrev;
-            vec3 pos = Position;
-            AxisAlignedBB aabb = ClientMain.Player.BoundingBox.Clone();
-            // Толчёк происходит в момент когда прошлое положение было без колизи, а уже новое с колизией
-            if (!aabb.IntersectsWith(GetBoundingBox(posPrev)) && aabb.IntersectsWith(GetBoundingBox(pos)))
-            {
-                // Толчёк сущности entity по вектору
-                ClientMain.Player.MotionPush += pos - posPrev;
-            }
-        }
-
         public override string ToString()
         {
             return name + " " + base.ToString();

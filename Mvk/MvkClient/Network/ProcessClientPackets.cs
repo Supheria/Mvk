@@ -274,7 +274,7 @@ namespace MvkClient.Network
             EntityLiving entity = ClientMain.World.GetEntityLivingByID(packet.GetId());
             if (entity != null)
             {
-                entity.MotionPush = packet.GetMotion();
+                entity.AddVelocity(packet.GetMotion());
             }
         }
 
@@ -386,7 +386,7 @@ namespace MvkClient.Network
 
         private void Handle27Explosion(PacketS27Explosion packet)
         {
-            ClientMain.Player.MotionPush = packet.motion;
+            ClientMain.Player.AddVelocity(packet.motion);
         }
 
         private void Handle29SoundEffect(PacketS29SoundEffect packet)

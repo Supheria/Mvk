@@ -75,7 +75,7 @@ namespace MvkServer.Entity
             {
                 if (trackedEntities.ContainsId(entity.Id))
                 {
-                    World.Log.Log("EntityTracker: Сущность уже отслеживается!");
+                    World.Log.Log("EntityTracker: Сущность {0} уже отслеживается!", entity.Type);
                     return;
                 }
                 EntityTrackerEntry trackerEntry = new EntityTrackerEntry(entity, trackingRange, updateFrequency, sendVelocityUpdates);

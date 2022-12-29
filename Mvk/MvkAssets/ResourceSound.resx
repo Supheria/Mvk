@@ -334,8 +334,23 @@
   <data name="LiquidWater" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\LiquidWater.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="MobChickenHurt1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChickenHurt1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChickenHurt2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChickenHurt2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="MobChickenPlop" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\MobChickenPlop.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChickenSay1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChickenSay1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChickenSay2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChickenSay2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChickenSay3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChickenSay3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="MobChickenStep1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\MobChickenStep1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

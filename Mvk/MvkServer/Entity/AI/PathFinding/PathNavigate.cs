@@ -58,32 +58,6 @@ namespace MvkServer.Entity.AI.PathFinding
             pathFinder = GetPathFinder();
         }
 
-        #region Опции
-
-        /// <summary>
-        /// Задать расстояние до точки, которое будет считаться выполненым,
-        /// 0 - расчёта нет
-        /// </summary>
-        public void SetAcceptanceRadius(float acceptanceRadius) => pathFinder.SetAcceptanceRadius(acceptanceRadius);
-        /// <summary>
-        /// Получить расстояние до точки, которое будет считаться выполненым,
-        /// 0 - расчёта нет
-        /// </summary>
-        public float GetAcceptanceRadius() => pathFinder.GetAcceptanceRadius();
-
-        /// <summary>
-        /// Задать остановку при соприкосновении коллизии
-        /// true - соприкосновении коллизии, false - центр
-        /// </summary>
-        public void SetStopOnOverlap(bool stopOnOverlap) => pathFinder.SetStopOnOverlap(stopOnOverlap);
-        /// <summary>
-        /// Остановка при соприкосновении коллизии
-        /// true - соприкосновении коллизии, false - центр
-        /// </summary>
-        public bool GetStopOnOverlap() => pathFinder.GetStopOnOverlap();
-
-        #endregion
-
         /// <summary>
         /// Получить объект PathFinder
         /// </summary>
@@ -133,9 +107,11 @@ namespace MvkServer.Entity.AI.PathFinding
         /// Попробуйте найти и указать путь к XYZ. Возвращает true в случае успеха
         /// </summary>
         /// <param name="allowPartialPath">Разрешить частичный путь</param>
-        public bool TryMoveToXYZ(float x, float y, float z, float speed, bool allowPartialPath = true)
+        /// <param name="stopOnOverlap">Задать остановку при соприкосновении коллизии, true - соприкосновении коллизии, false - центр</param>
+        /// <param name="acceptanceRadius">Задать расстояние до точки, которое будет считаться выполненым, 0 - расчёта нет</param>
+        public bool TryMoveToXYZ(float x, float y, float z, float speed, bool allowPartialPath = true, bool stopOnOverlap = false, float acceptanceRadius = 0f)
         {
-            pathFinder.SetStopOnOverlap(false);
+            pathFinder.SetOptions(stopOnOverlap, acceptanceRadius);
             BlockPos blockPos = new BlockPos(x, y, z);
             PathEntity path = GetPathToXYZ(blockPos);
             // Проверка на доступ чтоб сущность могла дойти до конечной точки
@@ -147,9 +123,11 @@ namespace MvkServer.Entity.AI.PathFinding
         /// Попробуйте найти и указать путь к EntityLiving. Возвращает true в случае успеха
         /// </summary>
         /// <param name="allowPartialPath">Разрешить частичный путь </param>
-        public virtual bool TryMoveToEntityLiving(EntityLiving entity, float speed, bool allowPartialPath = true)
+        /// <param name="stopOnOverlap">Задать остановку при соприкосновении коллизии, true - соприкосновении коллизии, false - центр</param>
+        /// <param name="acceptanceRadius">Задать расстояние до точки, которое будет считаться выполненым, 0 - расчёта нет</param>
+        public virtual bool TryMoveToEntityLiving(EntityLiving entity, float speed, bool allowPartialPath = true, bool stopOnOverlap = false, float acceptanceRadius = 0f)
         {
-            pathFinder.SetStopOnOverlap(false);
+            pathFinder.SetOptions(stopOnOverlap, acceptanceRadius);
             PathEntity path = GetPathToEntityLiving(entity);
             // Проверка на доступ чтоб сущность могла дойти до конечной точки
             if (!allowPartialPath && path != null && !path.IsDestinationSame()) return false;
@@ -173,7 +151,7 @@ namespace MvkServer.Entity.AI.PathFinding
             }
 
             // Отладка, визуализация перемещения
-            //path.DebugPath(worldObj);
+            //path.DebugPath(world);
 
             RemoveSunnyPath();
 
@@ -195,6 +173,7 @@ namespace MvkServer.Entity.AI.PathFinding
 
         /// <summary>
         /// Устанавливает для активного PathEntity значение null
+        /// Нельзя очищать навигациию в ResetTask!!! Так-как новая задача по навигации может быть очищена прошлой задачей
         /// </summary>
         public void ClearPathEntity() => currentPath = null;
 

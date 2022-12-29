@@ -159,6 +159,11 @@
     <None Include="Resources\LiquidSwim3.ogg" />
     <None Include="Resources\LiquidSwim4.ogg" />
     <None Include="Resources\LiquidWater.ogg" />
+    <None Include="Resources\MobChickenHurt1.ogg" />
+    <None Include="Resources\MobChickenHurt2.ogg" />
+    <None Include="Resources\MobChickenSay1.ogg" />
+    <None Include="Resources\MobChickenSay2.ogg" />
+    <None Include="Resources\MobChickenSay3.ogg" />
     <None Include="Resources\MobChickenStep1.ogg" />
     <None Include="Resources\MobChickenStep2.ogg" />
     <None Include="Resources\StepGrass1.ogg" />

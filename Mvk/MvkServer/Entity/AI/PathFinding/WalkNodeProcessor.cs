@@ -10,10 +10,6 @@ namespace MvkServer.Entity.AI.PathFinding
     public class WalkNodeProcessor : NodeProcessor
     {
         /// <summary>
-        /// Может войти в двери
-        /// </summary>
-        public bool canEnterDoors;
-        /// <summary>
         /// Может плавать
         /// </summary>
         public bool canSwim = false;
@@ -88,7 +84,7 @@ namespace MvkServer.Entity.AI.PathFinding
             byte up = 0;
 
             // Проверяем состояние, можем ли мы залесть на один блок при необходимости
-            if (CheckBlocks(pointBegin.xCoord, pointBegin.yCoord + 1, pointBegin.zCoord) == 1)
+            if (!CheckBlocksCollision(pointBegin.xCoord, pointBegin.yCoord + 1, pointBegin.zCoord, true))
             {
                 up = 1;
             }
@@ -99,22 +95,20 @@ namespace MvkServer.Entity.AI.PathFinding
             PathPoint pointEast = GetSafePoint(entity, pointBegin.xCoord + 1, pointBegin.yCoord, pointBegin.zCoord, up);
             PathPoint pointNorth = GetSafePoint(entity, pointBegin.xCoord, pointBegin.yCoord, pointBegin.zCoord - 1, up);
 
-            if (pointSouth != null && !pointSouth.visited && pointSouth.DistanceTo(pointEnd) < distance)
-            {
-                points[index++] = pointSouth;
-            }
-            if (pointWest != null && !pointWest.visited && pointWest.DistanceTo(pointEnd) < distance)
-            {
-                points[index++] = pointWest;
-            }
-            if (pointEast != null && !pointEast.visited && pointEast.DistanceTo(pointEnd) < distance)
-            {
-                points[index++] = pointEast;
-            }
-            if (pointNorth != null && !pointNorth.visited && pointNorth.DistanceTo(pointEnd) < distance)
-            {
-                points[index++] = pointNorth;
-            }
+            PathPoint pointSouthWest = GetSafePoint(entity, pointBegin.xCoord - 1, pointBegin.yCoord, pointBegin.zCoord + 1, up);
+            PathPoint pointSouthEast = GetSafePoint(entity, pointBegin.xCoord + 1, pointBegin.yCoord, pointBegin.zCoord + 1, up);
+            PathPoint pointNorthWest = GetSafePoint(entity, pointBegin.xCoord - 1, pointBegin.yCoord, pointBegin.zCoord - 1, up);
+            PathPoint pointNorthEast = GetSafePoint(entity, pointBegin.xCoord + 1, pointBegin.yCoord, pointBegin.zCoord - 1, up);
+
+            if (pointSouth != null && !pointSouth.visited && pointSouth.DistanceTo(pointEnd) < distance) points[index++] = pointSouth;
+            if (pointWest != null && !pointWest.visited && pointWest.DistanceTo(pointEnd) < distance) points[index++] = pointWest;
+            if (pointEast != null && !pointEast.visited && pointEast.DistanceTo(pointEnd) < distance) points[index++] = pointEast;
+            if (pointNorth != null && !pointNorth.visited && pointNorth.DistanceTo(pointEnd) < distance) points[index++] = pointNorth;
+
+            if (pointSouthWest != null && !pointSouthWest.visited && pointSouthWest.DistanceTo(pointEnd) < distance) points[index++] = pointSouthWest;
+            if (pointSouthEast != null && !pointSouthEast.visited && pointSouthEast.DistanceTo(pointEnd) < distance) points[index++] = pointSouthEast;
+            if (pointNorthWest != null && !pointNorthWest.visited && pointNorthWest.DistanceTo(pointEnd) < distance) points[index++] = pointNorthWest;
+            if (pointNorthEast != null && !pointNorthEast.visited && pointNorthEast.DistanceTo(pointEnd) < distance) points[index++] = pointNorthEast;
 
             return index;
         }
@@ -126,15 +120,13 @@ namespace MvkServer.Entity.AI.PathFinding
         {
             PathPoint point = null;
             // Проверяем тикущее состояние
-            int key = CheckBlocks(x, y, z);
-
-            if (key == 1)
+            if (!CheckBlocksCollision(x, y, z, true))
             {
                 point = OpenPoint(x, y, z);
             }
 
             // Проверяем возможность запрыгнуть если есть возможность up == 1
-            if (point == null && up == 1 && CheckBlocks(x, y + up, z) == 1)
+            if (point == null && up == 1 && !CheckBlocksCollision(x, y + up, z, false))
             {
                 point = OpenPoint(x, y + up, z);
                 y += up;
@@ -151,9 +143,9 @@ namespace MvkServer.Entity.AI.PathFinding
                     // Проверяем что под ногами
                     i = CheckRowBlocks(x, y - 1, z);
 
-                    if ((avoidsWater && i == -1) || i == -2 || i == -3)
+                    if ((avoidsWater && i == -1) || i == -2)
                     {
-                        // Если вода, если избегаем воду
+                        // Если вода, если избегаем воду или любая опастность (лава, огонь, нефть)
                         return null;
                     }
 
@@ -183,13 +175,10 @@ namespace MvkServer.Entity.AI.PathFinding
 
         /// <summary>
         /// Проверьте блоки тела, для коллизии, возвращаем:
-        /// 1 -  можно перемещаться, 
-        /// 0 -  столкновении с любым сплошным блоком, !приоритет
-        /// -1 - столкновении с водой (если избегает воды), 
-        /// -2 - столкновении с лавой и огнём, 
-        /// -3 - столкновении с нефтью, 
+        /// true - столкновение, false - можно перемещаться
         /// </summary>
-        private int CheckBlocks(int posX, int posY, int posZ)
+        /// <param name="isCollision">true - чек по колизии, false - чек по IsPassable</param>
+        private bool CheckBlocksCollision(int posX, int posY, int posZ, bool isCollision)
         {
             BlockState blockState;
             BlockBase block;
@@ -207,49 +196,50 @@ namespace MvkServer.Entity.AI.PathFinding
                             block = blockState.GetBlock();
                             material = block.Material;
 
-                            if (block.IsPassable() 
-                                && ((material == EnumMaterial.Door && !canEnterDoors) 
-                                || (material != EnumMaterial.Door)))
+                            if ((isCollision && block.IsCollidable) || (!isCollision && !block.IsPassable(blockState.met))) 
                             {
                                 // столкновении с любым сплошным блоком и дверь если надо
-                                return 0;
+                                return true;
                             }
                             if (material == EnumMaterial.Water && avoidsWater)
                             {
                                 // столкновении с водой (если избегает воды)
-                                return -1;
+                                return true;
                             }
                             if (material == EnumMaterial.Lava || material == EnumMaterial.Fire)
                             {
                                 // столкновении с лавой или огнём
-                                return -2;
+                                return true;
                             }
                             if (material == EnumMaterial.Oil)
                             {
                                 // столкновении с нефтью
-                                return -3;
+                                return true;
                             }
                         }
                     }
                 }
             }
 
-            return 1;
+            return false;
         }
-
+        
         /// <summary>
         /// Проверьте блоки ряда снизу, чтоб можно было упасть, возвращаем:
-        /// 1 -  можно перемещаться, !приоритет
-        /// 0 -  столкновении с любым сплошным блоком, 
+        /// 1 -  нет столкновений для перемещения по блокам,
+        /// 0 -  столкновении с любым сплошным блоком, можно ходить, !приоритет 
         /// -1 - столкновении с водой (если избегает воды), 
-        /// -2 - столкновении с лавой и огнём, 
-        /// -3 - столкновении с нефтью, 
+        /// -2 - столкновении с лавой или огнём или нефтью
         /// </summary>
         private int CheckRowBlocks(int posX, int posY, int posZ)
         {
             BlockState blockState;
             BlockBase block;
             EnumMaterial material;
+            // имеется блок воды
+            bool isWater = false;
+            // имеется блок опастности, лавы, нефти или огня
+            bool isWarning = false;
 
             for (int x = posX; x < posX + sizeXZ; ++x)
             {
@@ -261,36 +251,28 @@ namespace MvkServer.Entity.AI.PathFinding
                         block = blockState.GetBlock();
                         material = block.Material;
 
-                        if (material == EnumMaterial.Water)
+                        if (material == EnumMaterial.Water && avoidsWater)
                         {
                             // столкновении с водой (если избегает воды)
-                            return avoidsWater ? -1 : 0;
+                            isWater = true;
                         }
-                        if (material == EnumMaterial.Lava || material == EnumMaterial.Fire)
+                        else if (material == EnumMaterial.Lava || material == EnumMaterial.Fire || material == EnumMaterial.Oil)
                         {
-                            // столкновении с лавой или огнём
-                            return -2;
+                            // столкновении с лавой или огнём или нефтью
+                            isWarning = true;
                         }
-                        if (material == EnumMaterial.Oil)
+                        else if (block.IsPassableOnIt(blockState.met))
                         {
-                            // столкновении с нефтью
-                            return -3;
+                            // Можно ходить
+                            return 0;
                         }
-                        if (!block.IsPassable())
-                        {
-                            // Нельзя ходить по блоку
-                            return 1;
-                        }
-                    }
-                    else
-                    {
-                        // столкновении нет, приоритет
-                        return 1;
                     }
                 }
             }
 
-            return 0;
+            if (isWarning) return -2;
+            if (isWater) return -1;
+            return 1;
         }
     }
 }

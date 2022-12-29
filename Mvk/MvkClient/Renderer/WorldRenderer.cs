@@ -44,7 +44,7 @@ namespace MvkClient.Renderer
         /// <summary>
         /// Буфер сплошных блоков кэш
         /// </summary>
-        public ArrayMvk<byte> bufferCache = new ArrayMvk<byte>(4032);
+        public ArrayMvk<byte> bufferCache = new ArrayMvk<byte>(6048);
         /// <summary>
         /// Буфер альфа блоков
         /// </summary>

@@ -783,9 +783,59 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] MobChickenHurt1 {
+            get {
+                object obj = ResourceManager.GetObject("MobChickenHurt1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChickenHurt2 {
+            get {
+                object obj = ResourceManager.GetObject("MobChickenHurt2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] MobChickenPlop {
             get {
                 object obj = ResourceManager.GetObject("MobChickenPlop", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChickenSay1 {
+            get {
+                object obj = ResourceManager.GetObject("MobChickenSay1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChickenSay2 {
+            get {
+                object obj = ResourceManager.GetObject("MobChickenSay2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChickenSay3 {
+            get {
+                object obj = ResourceManager.GetObject("MobChickenSay3", resourceCulture);
                 return ((byte[])(obj));
             }
         }

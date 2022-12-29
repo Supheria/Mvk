@@ -33,7 +33,7 @@
         /// <summary>
         /// Задача бродить
         /// </summary>
-        public EntityAIWander(EntityLiving entity, float speed = 1f, float probability = .008f)
+        public EntityAIWander(EntityLiving entity, float probability = .008f, float speed = 1f)
         {
             this.entity = entity;
             this.speed = speed;
@@ -94,16 +94,8 @@
         /// <summary>
         /// Выполните разовую задачу или начните выполнять непрерывную задачу
         /// </summary>
-        public override void StartExecuting()
-        {
-            //entity.GetNavigator().SetStopOnOverlap(true);
-            entity.GetNavigator().TryMoveToXYZ(xPosition, yPosition, zPosition, speed);
-        }
-
-        /// <summary>
-        /// Сбрасывает задачу
-        /// </summary>
-        public override void ResetTask() => entity.GetNavigator().ClearPathEntity();
+        public override void StartExecuting() 
+            => entity.GetNavigator().TryMoveToXYZ(xPosition, yPosition, zPosition, speed, true, true);
 
         /// <summary>
         /// Мгновенное выполнение

@@ -82,6 +82,10 @@
         /// </summary>
         Piece,
         /// <summary>
+        /// Интерьер
+        /// </summary>
+        Interior,
+        /// <summary>
         /// Отладочный блок
         /// </summary>
         Debug

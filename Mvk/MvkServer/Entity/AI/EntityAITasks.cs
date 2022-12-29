@@ -1,4 +1,5 @@
 ﻿using MvkServer.Util;
+using MvkServer.World;
 using System.Collections.Generic;
 
 namespace MvkServer.Entity.AI
@@ -21,11 +22,19 @@ namespace MvkServer.Entity.AI
         /// </summary>
         private int tickCount;
         /// <summary>
+        /// Объект мира
+        /// </summary>
+        private readonly WorldBase world;
+        /// <summary>
         /// Объект для лога
         /// </summary>
         private readonly Profiler profiler;
 
-        public EntityAITasks(Profiler profiler) => this.profiler = profiler;
+        public EntityAITasks(WorldBase world)
+        {
+            this.world = world;
+            this.profiler = world.profiler;
+        }
 
         /// <summary>
         /// Добавить задачу

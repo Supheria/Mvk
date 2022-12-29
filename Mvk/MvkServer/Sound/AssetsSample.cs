@@ -89,7 +89,12 @@
         LiquidLavaPop,
         LiquidWater,
 
+        MobChickenHurt1,
+        MobChickenHurt2,
         MobChickenPlop,
+        MobChickenSay1,
+        MobChickenSay2,
+        MobChickenSay3,
         MobChickenStep1,
         MobChickenStep2,
 

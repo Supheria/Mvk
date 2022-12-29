@@ -87,6 +87,8 @@ namespace MvkServer.World
         /// </summary>
         public override void Tick()
         {
+            CalculateInitialSkylight();
+
             profiler.StartSection("PlayersTick");
             Players.Update();
 
@@ -372,10 +374,10 @@ namespace MvkServer.World
                 ChunkBase chunk = GetChunk(entityPlayerServer.PositionChunk);
                 chBt = chunk.GetTickBlockCount();
                 string tracker = "";// Tracker.ToString(); 
-                return string.Format("R {6} Ch {0}-{2} EPl {1} E: {4}\r\n{3} {5}\r\nChBt: {7}",
+                return string.Format("R {6} Ch {0}-{2} EPl {1} E: {4}\r\n{3} {5}\r\nChBt: {7} Sky:{8}",
                     ChunkPr.Count, Players.PlayerCount, Players.CountPlayerInstances(), Players.ToStringDebug() // 0 - 3
                     , base.ToStringDebug(), tracker, Regions.Count(), // 4 - 6
-                    chBt // 7
+                    chBt, skylightSubtracted // 7 - 8
                     );
 
             }

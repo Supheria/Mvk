@@ -158,11 +158,6 @@ namespace MvkServer.World.Block.List
             if (met != state.met) worldIn.SetBlockStateMet(blockPos, met);
         }
 
-        /// <summary>
-        /// Является ли блок проходимым, т.е. можно ли ходить по нему
-        /// </summary>
-        public override bool IsPassable() => false;
-
         private ushort MetUpdate(WorldBase worldIn, BlockPos blockPos)
         {
             ushort pole = 0;

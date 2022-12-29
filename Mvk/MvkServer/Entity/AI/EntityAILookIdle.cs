@@ -17,7 +17,7 @@ namespace MvkServer.Entity.AI
         public EntityAILookIdle(EntityLiving entity)
         {
             this.entity = entity;
-            SetMutexBits(3);
+            SetMutexBits(2);
         }
 
         /// <summary>

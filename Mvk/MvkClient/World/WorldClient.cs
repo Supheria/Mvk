@@ -641,9 +641,6 @@ namespace MvkClient.World
         protected override void UpdateEntity(EntityBase entity)
         {
             entity.UpdateClient();
-            // Проверка толчка
-            if (entity is EntityPlayerClient entityPlayer) entityPlayer.CheckPush();
-
             base.UpdateEntity(entity);
         }
 

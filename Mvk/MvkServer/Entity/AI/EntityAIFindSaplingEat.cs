@@ -1,11 +1,12 @@
-﻿using MvkServer.Glm;
+﻿using MvkServer.Entity.List;
+using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Block;
 
 namespace MvkServer.Entity.AI
 {
     /// <summary>
-    /// Задача найти цветок или траву, подойти к нему и съесть
+    /// Задача найти цветок или траву с вероятностью 30% или 70% дёрн, подойти к нему и съесть
     /// </summary>
     public class EntityAIFindSaplingEat : EntityAIBase
     {
@@ -38,6 +39,10 @@ namespace MvkServer.Entity.AI
         /// Время в тиках на поедание блока
         /// </summary>
         private int timeEat;
+        /// <summary>
+        /// Ищем траву
+        /// </summary>
+        private bool isSapling = false;
 
         /// <summary>
         /// Частота вероятности сработки задачи
@@ -47,7 +52,7 @@ namespace MvkServer.Entity.AI
         /// <summary>
         /// Задача найти цветок или траву, подойти к нему и съесть
         /// </summary>
-        public EntityAIFindSaplingEat(EntityLiving entity, float speed = 1f, float probability = .004f)
+        public EntityAIFindSaplingEat(EntityLiving entity, float probability = .008f, float speed = 1f)
         {
             this.entity = entity;
             this.speed = speed;
@@ -62,6 +67,23 @@ namespace MvkServer.Entity.AI
         {
             if (entity.World.Rnd.NextFloat() >= probability) return false;
 
+            // Что ищем
+            isSapling = entity.World.Rnd.NextFloat() > .7f;
+
+            bool result = FoodSearch();
+            if (!result && isSapling)
+            {
+                isSapling = false;
+                return FoodSearch();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Поиск еды
+        /// </summary>
+        private bool FoodSearch()
+        {
             // Поиск
             int x0 = Mth.Floor(entity.Position.x);
             int y0 = Mth.Floor(entity.Position.y);
@@ -75,9 +97,10 @@ namespace MvkServer.Entity.AI
             }
 
             int x, y, z;
-            
+
+            int start = entity.World.Rnd.Next(4);
             // 149 это радиус 7 включительно
-            for (int i = 0; i < 149; i++)
+            for (int i = start; i < 149; i++)
             {
                 for (int y3 = 0; y3 < 3; y3++)
                 {
@@ -104,7 +127,8 @@ namespace MvkServer.Entity.AI
         /// Проверка нахождении нужного блока
         /// </summary>
         protected virtual bool Check(int x, int y, int z) 
-            => entity.World.GetBlockState(new BlockPos(x, y, z)).GetBlock().Material == EnumMaterial.Sapling;
+            => isSapling ? entity.World.GetBlockState(new BlockPos(x, y, z)).GetBlock().Material == EnumMaterial.Sapling
+                : entity.World.GetBlockState(new BlockPos(x, y - 1, z)).GetEBlock() == EnumBlock.Turf;
 
         /// <summary>
         /// Начинаем кушать
@@ -140,11 +164,32 @@ namespace MvkServer.Entity.AI
         /// <summary>
         /// Действие когда дошли до блока
         /// </summary>
-        protected virtual void Action(BlockPos blockPos)
+        private void Action(BlockPos blockPos)
         {
             if (entity.World.GetBlockState(blockPos).GetBlock().Material == EnumMaterial.Sapling)
             {
                 entity.World.SetBlockToAir(blockPos, 31);
+                Eat();
+            }
+            else if (!isSapling)
+            {
+                blockPos = blockPos.OffsetDown();
+                if (entity.World.GetBlockState(blockPos).GetEBlock() == EnumBlock.Turf)
+                {
+                    entity.World.SetBlockState(blockPos, new BlockState(EnumBlock.Dirt), 31);
+                    Eat();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Кушаем
+        /// </summary>
+        private void Eat()
+        {
+            if (entity is EntityChicken entityChicken && entityChicken.countEat < 10)
+            {
+                entityChicken.countEat++;
             }
         }
 
@@ -169,7 +214,6 @@ namespace MvkServer.Entity.AI
         /// </summary>
         public override void ResetTask()
         {
-            entity.GetNavigator().ClearPathEntity();
             actionMove = false;
             actionEat = false;
         }

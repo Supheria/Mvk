@@ -101,6 +101,16 @@ namespace MvkServer.World.Block.List
             => Items.GetItemCache(itemDoor);
 
         /// <summary>
+        /// Является ли блок проходимым, т.е. можно ли ходить через него
+        /// </summary>
+        public override bool IsPassable(int met) => (met & 1) != 0; // open
+
+        /// <summary>
+        /// Является ли блок проходимым на нём, т.е. можно ли ходить по нему
+        /// </summary>
+        public override bool IsPassableOnIt(int met) => false;
+
+        /// <summary>
         /// Передать список  ограничительных рамок блока
         /// </summary>
         public override AxisAlignedBB[] GetCollisionBoxesToList(BlockPos pos, int met)

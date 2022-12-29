@@ -148,7 +148,7 @@ namespace MvkClient.Renderer.Block
         /// </summary>
         public void RenderVBOtoDL()
         {
-            buffer = new ArrayMvk<byte>(4032);
+            buffer = new ArrayMvk<byte>(6048);
             RenderMeshBlock();
             byte[] buffer2 = buffer.ToArray();
 

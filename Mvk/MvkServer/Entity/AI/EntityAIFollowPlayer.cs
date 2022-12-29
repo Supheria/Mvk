@@ -65,30 +65,27 @@ namespace MvkServer.Entity.AI
         /// <summary>
         /// Выполните разовую задачу или начните выполнять непрерывную задачу
         /// </summary>
-        public override void StartExecuting()
-        {
-            //entity.GetNavigator().SetAcceptanceRadius(3);
-            if (entity.GetNavigator().TryMoveToEntityLiving(entityLiving, speed, true)) timeUp = 10;
-        }
+        public override void StartExecuting() => TryMoveToEntityLiving();
 
         /// <summary>
         /// Сбрасывает задачу
         /// </summary>
-        public override void ResetTask()
-        {
-            entityLiving = null;
-            entity.GetNavigator().ClearPathEntity();
-        }
+        public override void ResetTask() => entityLiving = null;
 
         /// <summary>
         /// Обновляет задачу
         /// </summary>
         public override void UpdateTask()
         {
-            if (--timeUp <= 0)
-            {
-                if (entity.GetNavigator().TryMoveToEntityLiving(entityLiving, speed, true)) timeUp = 10;
-            }
+            if (--timeUp <= 0) TryMoveToEntityLiving();
+        }
+
+        /// <summary>
+        /// Попробуйте найти и указать путь к EntityLiving. Если найдём, запустить таймер
+        /// </summary>
+        private void TryMoveToEntityLiving()
+        {
+            if (entity.GetNavigator().TryMoveToEntityLiving(entityLiving, speed, true, true)) timeUp = 10;
         }
     }
 }

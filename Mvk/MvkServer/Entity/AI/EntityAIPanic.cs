@@ -69,9 +69,5 @@
         /// </summary>
         public override void StartExecuting() => entity.GetNavigator().TryMoveToXYZ(xPosition, yPosition, zPosition, speed);
 
-        /// <summary>
-        /// Сбрасывает задачу
-        /// </summary>
-        public override void ResetTask() => entity.GetNavigator().ClearPathEntity();
     }
 }

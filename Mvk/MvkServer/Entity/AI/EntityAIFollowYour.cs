@@ -24,14 +24,24 @@ namespace MvkServer.Entity.AI
         /// Коэффицент скорости
         /// </summary>
         private readonly float speed;
+        /// <summary>
+        /// Частота вероятности сработки задачи
+        /// </summary>
+        private readonly float probability;
+        /// <summary>
+        /// Отдалённость, на которую идёт проверка группы
+        /// </summary>
+        private readonly int destination;
 
         /// <summary>
         /// Задача следовать за своими
         /// </summary>
-        public EntityAIFollowYour(EntityLiving entity, float speed = 1f)
+        public EntityAIFollowYour(EntityLiving entity, float probability = .008f, float speed = 1f, int destination = 12)
         {
             this.entity = entity;
             this.speed = speed;
+            this.probability = probability;
+            this.destination = destination;
             SetMutexBits(3);
         }
 
@@ -40,15 +50,25 @@ namespace MvkServer.Entity.AI
         /// </summary>
         public override bool ShouldExecute()
         {
-            if (entity.EntityAge > 100 || entity.World.Rnd.NextFloat() >= .008f)
+            if (entity.EntityAge > 100 || entity.World.Rnd.NextFloat() >= probability)
             {
                 return false;
             }
             List<EntityBase> list = entity.World.GetEntitiesWithinAABB(entity.Type,
-                entity.BoundingBox.Expand(new vec3(16, 8, 16)), -1);
+                entity.BoundingBox.Expand(new vec3(destination, 2, destination)), -1);
+
+            if (list.Count == 0)
+            {
+                list = entity.World.GetEntitiesWithinAABB(entity.Type,
+                entity.BoundingBox.Expand(new vec3(destination + 8, 4, destination + 8)), -1);
+                if (list.Count == 0)
+                {
+                    list = entity.World.GetEntitiesWithinAABB(entity.Type,
+                    entity.BoundingBox.Expand(new vec3(destination + 16, 8, destination + 16)), -1);
+                }
+            }
 
             int count = list.Count;
-
             if (count == 0) return false;
             
             vec3 pos = new vec3(0);
@@ -70,15 +90,8 @@ namespace MvkServer.Entity.AI
         /// <summary>
         /// Выполните разовую задачу или начните выполнять непрерывную задачу
         /// </summary>
-        public override void StartExecuting()
-        {
-            entity.GetNavigator().SetAcceptanceRadius(2f);
-            entity.GetNavigator().TryMoveToXYZ(xPosition, yPosition, zPosition, speed);
-        }
+        public override void StartExecuting() 
+            => entity.GetNavigator().TryMoveToXYZ(xPosition, yPosition, zPosition, speed, true, true, entity.World.Rnd.NextFloat() * 2f + 1f);
 
-        /// <summary>
-        /// Сбрасывает задачу
-        /// </summary>
-        public override void ResetTask() => entity.GetNavigator().ClearPathEntity();
     }
 }

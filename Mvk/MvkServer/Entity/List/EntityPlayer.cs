@@ -14,8 +14,6 @@ namespace MvkServer.Entity.List
     /// </summary>
     public abstract class EntityPlayer : EntityLiving
     {
-        private readonly AssetsSample[] samplesDamageHit = new AssetsSample[] { AssetsSample.DamageHit1, AssetsSample.DamageHit2, AssetsSample.DamageHit3 };
-
         /// <summary>
         /// Уникальный id
         /// </summary>
@@ -73,6 +71,7 @@ namespace MvkServer.Entity.List
             StepHeight = 1.2f;
             Inventory = new InventoryPlayer(this);
             previousEquipment = new ItemStack[InventoryPlayer.COUNT_ARMOR + 1];
+            samplesHurt = new AssetsSample[] { AssetsSample.DamageHit1, AssetsSample.DamageHit2, AssetsSample.DamageHit3 };
 
             // TODO::2022-03-29 Временно предметы при старте у игрока
             if (!world.IsRemote)
@@ -461,13 +460,10 @@ namespace MvkServer.Entity.List
             }
         }
 
-        public void PlaySound(AssetsSample key, float volume, float pitch) 
-            => World.PlaySound(this, key, Position, volume, pitch);
-
         /// <summary>
-        /// Возвращает звук, издаваемый этим мобом, когда он ранен
+        /// Возвращает звук, издаваемый этим мобом при смерти
         /// </summary>
-        protected override AssetsSample GetHurtSound() => samplesDamageHit[rand.Next(samplesDamageHit.Length)];
+        protected override AssetsSample GetDeathSound() => AssetsSample.None;
 
         /// <summary>
         /// Либо запишите эту сущность в указанный тег NBT и верните true, либо верните false, ничего не делая.

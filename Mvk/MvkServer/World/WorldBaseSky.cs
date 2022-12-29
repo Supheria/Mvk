@@ -20,10 +20,15 @@ namespace MvkServer.World
         /// Размер растяжки текстуры облака. Чем крупнее тем облако больше.
         /// </summary>
         public const float CLOUD_SIZE_TEXTURE = 8192f; //2048f;// 8192f;
-        /// <summary>
-        /// Размер пикселя текстуры облака = 1/CLOUD_SIZE_TEXTURE
-        /// </summary>
+                                                       /// <summary>
+                                                       /// Размер пикселя текстуры облака = 1/CLOUD_SIZE_TEXTURE
+                                                       /// </summary>
         //public const float CLOUD_PIXEL_TEXTURE = .0001220703125f;// .00048828125f;// .0001220703125f;
+
+        /// <summary>
+        /// Небесный свет ночь 0..3 в зависимости от фазы луны, день 15
+        /// </summary>
+        protected int skylightSubtracted;
 
         /// <summary>
         /// Получить яркость неба
@@ -139,6 +144,30 @@ namespace MvkServer.World
                 };
             }
             return new float[0];
+        }
+
+        /// <summary>
+        /// Проверяет, является ли сейчас дневное время, определяя по яркости неба
+        /// </summary>
+        public bool IsDayTime() => skylightSubtracted > 6;
+
+        /// <summary>
+        /// Рассчитать небесный свет ночь 0..3 в зависимости от фазы луны, день 15
+        /// </summary>
+        public void CalculateInitialSkylight()
+        {
+            float angle = CalculateCelestialAngle(1f);
+            float light = 1f - (glm.cos(angle * glm.pi360) * 2f + .5f);
+            light = Mth.Clamp(light, 0f, 1f);
+            light = light * (1f - MvkStatic.LightMoonPhase[GetMoonPhase()] * .3125f);
+            light = 1f - light;
+
+            int skylight = (int)(light * 15f);
+
+            if (skylight != skylightSubtracted)
+            {
+                skylightSubtracted = skylight;
+            }
         }
     }
 }

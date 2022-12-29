@@ -292,7 +292,7 @@ namespace MvkServer.Entity.List
         private void SetEntityItemStack(ItemStack itemStack)
         {
             MetaData.UpdateObject(10, itemStack);
-            MetaData.SetObjectWatched(10);
+            //MetaData.SetObjectWatched(10);
         }
 
         /// <summary>

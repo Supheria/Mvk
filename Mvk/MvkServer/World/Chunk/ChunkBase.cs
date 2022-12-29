@@ -257,13 +257,11 @@ namespace MvkServer.World.Chunk
         public void OnChunkLoad()
         {
             IsChunkPresent = true;
-            for (int y = 0; y < COUNT_HEIGHT; y++)
-            {
-                // Продумать загрузку чанка у сущности тип 
-                // ListEntities[y].GetAt(0).OnChunkLoad();
-
-                World.LoadEntities(ListEntities[y]);
-            }
+            // TODO::2022-12-27 понаблюдать, ошибка EntityTracker: Сущность уже отслеживается!
+            //for (int y = 0; y < COUNT_HEIGHT; y++)
+            //{
+            //   World.LoadEntities(ListEntities[y]);
+            //}
             if (!World.IsRemote && World is WorldServer worldServer)
             {
                 //Stopwatch stopwatch = new Stopwatch();

@@ -9,6 +9,8 @@ using MvkServer.Sound;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
+using MvkServer.World.Chunk;
+using System.Collections.Generic;
 
 namespace MvkServer.Entity
 {
@@ -183,14 +185,22 @@ namespace MvkServer.Entity
         /// Семплы хотьбы
         /// </summary>
         protected AssetsSample[] samplesStep = new AssetsSample[0];
+        /// <summary>
+        /// Семплы сказать
+        /// </summary>
+        protected AssetsSample[] samplesSay = new AssetsSample[0];
+        /// <summary>
+        /// Семплы повреждения
+        /// </summary>
+        protected AssetsSample[] samplesHurt = new AssetsSample[0];
 
         public EntityLiving(WorldBase world) : base(world)
         {
             Standing();
             if (IsLivingUpdate())
             {
-                tasks = new EntityAITasks(world.profiler);
-                targetTasks = new EntityAITasks(world.profiler);
+                tasks = new EntityAITasks(world);
+                targetTasks = new EntityAITasks(world);
                 lookHelper = new EntityLookHelper(this);
                 moveHelper = new EntityMoveHelper(this);
                 navigator = InitNavigate(World);
@@ -568,16 +578,6 @@ namespace MvkServer.Entity
                     IsHurtAnimation = false;
                 }
             }
-
-            // Если был толчёк, мы его дабавляем и обнуляем
-            if (!MotionPush.Equals(new vec3(0)))
-            {
-                vec3 motionPush = MotionPush;
-                MotionPush = new vec3(0);
-                // Защита от дабл прыжка, и если сущность летает, нет броска
-                if (Motion.y > 0 || IsFlying) motionPush.y = 0;
-                Motion += motionPush;
-            }
         }
 
         /// <summary>
@@ -703,7 +703,8 @@ namespace MvkServer.Entity
                     if (source != EnumDamageSource.OnFire && source != EnumDamageSource.Drown
                         && source != EnumDamageSource.Fall)
                     {
-                        World.PlaySound(GetHurtSound(), Position, 1, (rand.NextFloat() - rand.NextFloat()) * .2f + 1f);
+                        //PlaySoundHurt(1, (rand.NextFloat() - rand.NextFloat()) * .2f + 1f);
+                        World.PlaySound(SampleHurt(), Position, 1, (rand.NextFloat() - rand.NextFloat()) * .2f + 1f);
                     }
                 }
 
@@ -735,14 +736,9 @@ namespace MvkServer.Entity
         }
 
         /// <summary>
-        /// Возвращает звук, издаваемый этим мобом, когда он ранен
-        /// </summary>
-        protected virtual AssetsSample GetHurtSound() => AssetsSample.None;
-
-        /// <summary>
         /// Возвращает звук, издаваемый этим мобом при смерти
         /// </summary>
-        protected virtual AssetsSample GetDeathSound() => AssetsSample.None;
+        protected virtual AssetsSample GetDeathSound() => SampleHurt();
 
         /// <summary>
         /// Заставляет сущность исчезать, если требования выполнены
@@ -939,6 +935,9 @@ namespace MvkServer.Entity
             {
                 MoveWithHeading(strafe, forward, .04f);
             }
+
+            // Push
+            CollideWithNearbyEntities();
         }
 
         /// <summary>
@@ -1308,6 +1307,9 @@ namespace MvkServer.Entity
             }
         }
 
+        public void PlaySound(AssetsSample key, float volume, float pitch)
+            => World.PlaySound(this, key, Position, volume, pitch);
+
         /// <summary>
         /// Звуковой эффект шага
         /// </summary>
@@ -1376,15 +1378,52 @@ namespace MvkServer.Entity
             Extinguish();
         }
 
+        #region Sound Samples
+
         /// <summary>
         /// Есть ли звуковой эффект шага
         /// </summary>
         public virtual bool IsSampleStep(BlockBase blockDown) => samplesStep.Length > 0;
-
         /// <summary>
         /// Семпл хотьбы
         /// </summary>
         public virtual AssetsSample SampleStep(WorldBase worldIn, BlockBase blockDown) => samplesStep[worldIn.Rnd.Next(samplesStep.Length)];
+
+        /// <summary>
+        /// Есть ли звуковой эффект сказать
+        /// </summary>
+        protected bool IsSampleSay() => samplesSay.Length > 0;
+        /// <summary>
+        /// Семпл сказать
+        /// </summary>
+        protected AssetsSample SampleSay() => samplesSay[World.Rnd.Next(samplesSay.Length)];
+
+        /// <summary>
+        /// Есть ли звуковой эффект повреждения
+        /// </summary>
+        protected bool IsSampleHurt() => samplesHurt.Length > 0;
+        /// <summary>
+        /// Семпл повреждения
+        /// </summary>
+        protected AssetsSample SampleHurt() => samplesHurt[World.Rnd.Next(samplesHurt.Length)];
+
+        /// <summary>
+        /// Проиграть звук сказать
+        /// </summary>
+        public void PlaySoundSay(float volume = 1, float pitch = 1)
+        {
+            if (IsSampleSay()) PlaySound(SampleSay(), volume, pitch);
+        }
+
+        /// <summary>
+        /// Проиграть звук повреждения
+        /// </summary>
+        public void PlaySoundHurt(float volume = 1, float pitch = 1)
+        {
+            if (IsSampleHurt()) PlaySound(SampleHurt(), volume, pitch);
+        }
+
+        #endregion
 
         /// <summary>
         /// Скакой скоростью анимируется удар рукой, в тактах, менять можно от инструмента, чар и навыков
@@ -1874,6 +1913,78 @@ namespace MvkServer.Entity
             while (RotationPitch - RotationPitchPrev < -glm.pi) RotationPitchPrev -= glm.pi360;
             while (RotationPitch - RotationPitchPrev >= glm.pi) RotationPitchPrev += glm.pi360;
         }
+
+        /// <summary>
+        /// Возвращает true, если этот объект должен толкать и толкать другие объекты при столкновении
+        /// </summary>
+        public override bool CanBePushed() => true;
+
+        /// <summary>
+        /// Столкновение с ближайшими объектами
+        /// </summary>
+        protected virtual void CollideWithNearbyEntities()
+        {
+            List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityLiving,
+               BoundingBox.Expand(new vec3(.2f, 0, .2f)), Id);
+
+            if (list.Count > 0)
+            {
+                AxisAlignedBB aabb = BoundingBox.Clone();
+                for (int i = 0; i < list.Count; i++)
+                {
+                    EntityBase entity = list[i];
+                    if (entity.CanBePushed() && entity is EntityLiving entityLiving)
+                    {
+                        entityLiving.ApplyEntityCollision(this);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Применяет скорость к каждому из объектов, отталкивая их друг от друга.
+        /// </summary>
+        public void ApplyEntityCollision(EntityLiving entityIn)
+        {
+            //if (entityIn.riddenByEntity != this && entityIn.ridingEntity != this)
+            {
+                if (!entityIn.NoClip && !NoClip)
+                {
+                    float x = entityIn.Position.x - Position.x;
+                    float z = entityIn.Position.z - Position.z;
+                    float k = Mth.Max(Mth.Abs(x), Mth.Abs(z));
+
+                    if (k >= 0.00999999f)
+                    {
+                        k = Mth.Sqrt(k);
+                        x /= k;
+                        z /= k;
+                        float k2 = 1f / k;
+                        if (k2 > 1f) k2 = 1f;
+
+                        x *= k2;
+                        z *= k2;
+                        x *= .05f;
+                        z *= .05f;
+
+                        //if (this.riddenByEntity == null)
+                        {
+                            AddVelocity(new vec3(-x, 0, -z));
+                        }
+
+                        //if (entityIn.riddenByEntity == null)
+                        {
+                            entityIn.AddVelocity(new vec3(x, 0, z));
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Изменить вектор смещения
+        /// </summary>
+        public void AddVelocity(vec3 motion) => Motion += motion;
 
         public override void WriteEntityToNBT(TagCompound nbt)
         {

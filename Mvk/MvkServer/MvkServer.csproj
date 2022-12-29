@@ -34,7 +34,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entity\AI\EntityAIBase.cs" />
-    <Compile Include="Entity\AI\EntityAIFindGrassBlockEat.cs" />
+    <Compile Include="Entity\AI\EntityAIFindNestSleep.cs" />
+    <Compile Include="Entity\AI\EntityAIFindNestEgg.cs" />
     <Compile Include="Entity\AI\EntityAIFollowPlayer.cs" />
     <Compile Include="Entity\AI\EntityAIFollowYour.cs" />
     <Compile Include="Entity\AI\EntityAILookIdle.cs" />
@@ -219,6 +220,7 @@
     <Compile Include="World\Block\Face.cs" />
     <Compile Include="World\Block\Liquid.cs" />
     <Compile Include="World\Block\List\BlockAbElectricity.cs" />
+    <Compile Include="World\Block\List\BlockNest.cs" />
     <Compile Include="World\Block\List\BlockUniPiece.cs" />
     <Compile Include="World\Block\List\BlockUniGlassPane.cs" />
     <Compile Include="World\Block\List\BlockAbLiquidFlowing.cs" />

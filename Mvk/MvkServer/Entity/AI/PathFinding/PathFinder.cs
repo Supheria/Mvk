@@ -41,21 +41,20 @@ namespace MvkServer.Entity.AI.PathFinding
         #region Опции
 
         /// <summary>
-        /// Задать остановку при соприкосновении коллизии
-        /// true - соприкосновении коллизии, false - центр
+        /// Задать опции
         /// </summary>
-        public void SetStopOnOverlap(bool stopOnOverlap) => this.stopOnOverlap = stopOnOverlap;
+        /// <param name="stopOnOverlap">Задать остановку при соприкосновении коллизии, true - соприкосновении коллизии, false - центр</param>
+        /// <param name="acceptanceRadius">Задать расстояние до точки, которое будет считаться выполненым, 0 - расчёта нет</param>
+        public void SetOptions(bool stopOnOverlap, float acceptanceRadius)
+        {
+            this.stopOnOverlap = stopOnOverlap;
+            this.acceptanceRadius = acceptanceRadius;
+        }
         /// <summary>
         /// Остановка при соприкосновении коллизии
         /// true - соприкосновении коллизии, false - центр
         /// </summary>
         public bool GetStopOnOverlap() => stopOnOverlap;
-
-        /// <summary>
-        /// Задать расстояние до точки, которое будет считаться выполненым,
-        /// 0 - расчёта нет
-        /// </summary>
-        public void SetAcceptanceRadius(float acceptanceRadius) => this.acceptanceRadius = acceptanceRadius;
         /// <summary>
         /// Получить расстояние до точки, которое будет считаться выполненым,
         /// 0 - расчёта нет
