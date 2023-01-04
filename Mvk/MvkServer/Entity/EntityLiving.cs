@@ -163,6 +163,11 @@ namespace MvkServer.Entity
         protected EntityAITasks targetTasks;
 
         /// <summary>
+        /// Активная цель, которую система задач использует для отслеживания
+        /// </summary>
+        private EntityLiving attackTarget;
+
+        /// <summary>
         /// Последний атакующий
         /// </summary>
         private EntityLiving lastAttacker;
@@ -230,7 +235,7 @@ namespace MvkServer.Entity
 
         /// <summary>
         /// Включите или отключите флаг сущности
-        /// 0) горит; 1) крадется; 2) едет на чем-то; 3) бегает; 4) ест; 5) невидимый
+        /// 0) горит; 1) крадется; 2) едет на чем-то; 3) бегает; 4) ест; 5) невидимый; 6) спит
         /// </summary>
         /// <param name="flag">0) горит; 1) крадется; 2) едет на чем-то; 3) бегает; 4) ест; 5) невидимый</param>
         protected void SetFlag(int flag, bool set)
@@ -288,6 +293,16 @@ namespace MvkServer.Entity
         public void SetEating(bool eating) => SetFlag(4, eating);
 
         /// <summary>
+        /// Спит ли сущность
+        /// </summary>
+        public bool IsSleep() => GetFlag(6);
+
+        /// <summary>
+        /// Задать спит сущность
+        /// </summary>
+        public void SetSleep(bool sleep) => SetFlag(6, sleep);
+
+        /// <summary>
         /// Уровень здоровья
         /// </summary>
         public float GetHealth() => MetaData.GetWatchableObjectFloat(6);
@@ -338,6 +353,16 @@ namespace MvkServer.Entity
             lastAttacker = entity;
             lastAttackerTime = TicksExisted;
         }
+
+        /// <summary>
+        /// Получает активную цель, которую система задач использует для отслеживания
+        /// </summary>
+        public EntityLiving GetAttackTarget() => attackTarget;
+
+        /// <summary>
+        /// Устанавливает активную цель, которую система задач использует для отслеживания
+        /// </summary>
+        public void SetAttackTarget(EntityLiving entityLiving) => attackTarget = entityLiving;
 
         #endregion
 
@@ -658,14 +683,14 @@ namespace MvkServer.Entity
 
             bool result = true;
             bool isLavaOrFireOrCactus = source == EnumDamageSource.Lava || source == EnumDamageSource.InFire
-                || source == EnumDamageSource.Cactus;
+                || source == EnumDamageSource.Cactus || source == EnumDamageSource.CauseMobDamage;
             // иммунка на огонь и лаву в тиках
             if (isLavaOrFireOrCactus)
             {
                 if (invulnerable > 0) return false;
-                invulnerable = 10;
+                invulnerable = (byte)(source == EnumDamageSource.CauseMobDamage ? 10 : 5);
 
-                if (isInvulnerableBegin > 0 && source != EnumDamageSource.Cactus)
+                if (isInvulnerableBegin > 0 && source != EnumDamageSource.Cactus && source != EnumDamageSource.CauseMobDamage)
                 {
                     // При соприкосновении с огнём или лавой урон первый раз не будет наноситься, но все оповещения будут
                     amount = 0;

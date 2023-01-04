@@ -83,6 +83,16 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Chemoglot {
+            get {
+                object obj = ResourceManager.GetObject("Chemoglot", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Chicken {
             get {
                 object obj = ResourceManager.GetObject("Chicken", resourceCulture);
@@ -166,6 +176,16 @@ namespace MvkAssets {
         internal static System.Drawing.Bitmap OptionsBackground {
             get {
                 object obj = ResourceManager.GetObject("OptionsBackground", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Pakan {
+            get {
+                object obj = ResourceManager.GetObject("Pakan", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

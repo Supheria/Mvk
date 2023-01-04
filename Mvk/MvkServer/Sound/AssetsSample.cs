@@ -89,6 +89,14 @@
         LiquidLavaPop,
         LiquidWater,
 
+        MobChemoglotAttack1,
+        MobChemoglotAttack2,
+        MobChemoglotDeath,
+        MobChemoglotJump1,
+        MobChemoglotJump2,
+        MobChemoglotJump3,
+        MobChemoglotJump4,
+
         MobChickenHurt1,
         MobChickenHurt2,
         MobChickenPlop,
@@ -97,6 +105,14 @@
         MobChickenSay3,
         MobChickenStep1,
         MobChickenStep2,
+
+        MobPakanDamage1,
+        MobPakanDamage2,
+        MobPakanDeath,
+        MobPakanStep1,
+        MobPakanStep2,
+        MobPakanStep3,
+        MobPakanStep4,
 
         StepGrass1,
         StepGrass2,

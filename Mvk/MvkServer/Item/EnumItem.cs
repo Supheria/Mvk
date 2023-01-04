@@ -121,9 +121,30 @@
         /// Спавн курицы
         /// </summary>
         SpawnChicken = 28,
+        /// <summary>
+        /// Маленькая взрывчатка
+        /// </summary>
         ExplosivesMin = 29,
-        ExplosivesMax = 30
-
+        /// <summary>
+        /// Взрывчатка
+        /// </summary>
+        Explosives = 30,
+        /// <summary>
+        /// Большая взрывчатка
+        /// </summary>
+        ExplosivesMax = 31,
+        /// <summary>
+        /// Спавн чемоглота
+        /// </summary>
+        SpawnChemoglot = 32,
+        /// <summary>
+        /// Спавн пакана
+        /// </summary>
+        SpawnPakan = 33,
+        /// <summary>
+        /// Яйцо
+        /// </summary>
+        Egg = 34
     }
 
     /// <summary>
@@ -131,6 +152,6 @@
     /// </summary>
     public class ItemsCount
     {
-        public const int COUNT = 30;
+        public const int COUNT = 34;
     }
 }

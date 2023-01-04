@@ -274,7 +274,7 @@ namespace MvkServer.World
                         float kof = 1f - glm.distance(pos, epos) / distance;
                         if (kof > 0)
                         {
-                            entity.AttackEntityFrom(EnumDamageSource.ExplosionSource, strength * kof * 8f);
+                            entity.AttackEntityFrom(EnumDamageSource.ExplosionSource, strength * kof);// * 8f);
 
                             // Определяем смещение от взрыва 
                             vec3 motion = (epos - pos).normalize() * kof * 4f;

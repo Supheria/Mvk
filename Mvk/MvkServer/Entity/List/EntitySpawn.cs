@@ -34,14 +34,32 @@ namespace MvkServer.Entity.List
                     // Спавн
                     //for (int i = 0; i < 10; i++)
                     {
-                        EntityBase entity = Entities.CreateEntityByEnum(World, EnumEntities.Chicken);
-                        //pos.x += World.Rnd.NextFloat() - .5f;
-                        //pos.z += World.Rnd.NextFloat() - .5f;
-                        entity.SetPosition(pos);// moving.RayHit);
-                        World.SpawnEntityInWorld(entity);
+                        EnumEntities enumEntities = GetEnumEntities(eItem);
+                        if (enumEntities != EnumEntities.None)
+                        {
+                            EntityBase entity = Entities.CreateEntityByEnum(World, enumEntities);
+                            vec3 normal = new vec3(moving.Norm);
+                            pos += normal * entity.Width;
+                            //pos.x += World.Rnd.NextFloat() - .5f;
+                            //pos.z += World.Rnd.NextFloat() - .5f;
+                            entity.SetPosition(pos);// moving.RayHit);
+                            //entity.SetPosition(moving.RayHit);
+                            World.SpawnEntityInWorld(entity);
+                        }
                     }
                 }
             }
+        }
+
+        private EnumEntities GetEnumEntities(EnumItem item)
+        {
+            switch (item)
+            {
+                case EnumItem.SpawnChicken: return EnumEntities.Chicken;
+                case EnumItem.SpawnChemoglot: return EnumEntities.Chemoglot;
+                case EnumItem.SpawnPakan: return EnumEntities.Pakan;
+            }
+            return EnumEntities.None;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace MvkClient.Renderer.Entity
             // соотношение высоты 3.6, к цельной модели 2.0, 3.6/2.0 = 1.8
             scale = 1.8f;
             shadowSize = .5f;
-            AddLayer(new LayerHeldItem(model.BoxArmRight, renderManager.Item, false));
+            AddLayer(new LayerHeldItem(model.GetBoxArmRight(), renderManager.Item, false));
         }
 
 

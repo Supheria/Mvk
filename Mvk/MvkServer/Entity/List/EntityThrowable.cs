@@ -120,6 +120,7 @@ namespace MvkServer.Entity.List
                 List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityLiving, axis, -1);
                 MovingObjectPosition moving2 = null;
                 EntityBase entityHit = null;
+                vec3 rayHit = new vec3(0);
                 EntityBase entity;
                 float distance = 0;
                 for (int i = 0; i < list.Count; i++)
@@ -137,6 +138,7 @@ namespace MvkServer.Entity.List
                             if (f < distance || distance == 0)
                             {
                                 entityHit = entity;
+                                rayHit = moving2.RayHit;
                                 distance = f;
                             }
                         }
@@ -145,7 +147,7 @@ namespace MvkServer.Entity.List
                 if (entityHit != null)
                 {
                     // Помечаем что было поподание по сущности для OnImpact
-                    moving = new MovingObjectPosition(entityHit);
+                    moving = new MovingObjectPosition(entityHit, rayHit);
                 }
             }
 

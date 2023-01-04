@@ -35,7 +35,10 @@ namespace MvkServer.Entity.List
                         }
                         else if (moving.IsEntity())
                         {
+                            // TODO::2023-01-04 продумать определения попадания в сущности, конкретно где в AABB
+                            //pos = moving.RayHit;//.Entity.Position;
                             pos = moving.Entity.Position;
+                            pos.y += moving.Entity.GetEyeHeight();
                             b = true;
                         }
                         if (b) 

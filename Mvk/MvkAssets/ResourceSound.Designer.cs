@@ -783,6 +783,76 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] MobChemoglotAttack1 {
+            get {
+                object obj = ResourceManager.GetObject("MobChemoglotAttack1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChemoglotAttack2 {
+            get {
+                object obj = ResourceManager.GetObject("MobChemoglotAttack2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChemoglotDeath {
+            get {
+                object obj = ResourceManager.GetObject("MobChemoglotDeath", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChemoglotJump1 {
+            get {
+                object obj = ResourceManager.GetObject("MobChemoglotJump1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChemoglotJump2 {
+            get {
+                object obj = ResourceManager.GetObject("MobChemoglotJump2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChemoglotJump3 {
+            get {
+                object obj = ResourceManager.GetObject("MobChemoglotJump3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobChemoglotJump4 {
+            get {
+                object obj = ResourceManager.GetObject("MobChemoglotJump4", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] MobChickenHurt1 {
             get {
                 object obj = ResourceManager.GetObject("MobChickenHurt1", resourceCulture);
@@ -856,6 +926,76 @@ namespace MvkAssets {
         internal static byte[] MobChickenStep2 {
             get {
                 object obj = ResourceManager.GetObject("MobChickenStep2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobPakanDamage1 {
+            get {
+                object obj = ResourceManager.GetObject("MobPakanDamage1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobPakanDamage2 {
+            get {
+                object obj = ResourceManager.GetObject("MobPakanDamage2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobPakanDeath {
+            get {
+                object obj = ResourceManager.GetObject("MobPakanDeath", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobPakanStep1 {
+            get {
+                object obj = ResourceManager.GetObject("MobPakanStep1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobPakanStep2 {
+            get {
+                object obj = ResourceManager.GetObject("MobPakanStep2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobPakanStep3 {
+            get {
+                object obj = ResourceManager.GetObject("MobPakanStep3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobPakanStep4 {
+            get {
+                object obj = ResourceManager.GetObject("MobPakanStep4", resourceCulture);
                 return ((byte[])(obj));
             }
         }

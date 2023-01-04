@@ -298,7 +298,7 @@ namespace MvkServer.Entity.List
         /// <summary>
         /// Вызывается сущностью игрока при столкновении с сущностью 
         /// </summary>
-        public void OnCollideWithPlayer(EntityPlayer entityIn)
+        public override void OnCollideWithPlayer(EntityPlayer entityIn)
         {
             ItemStack var2 = GetEntityItemStack();
             int var3 = var2.Amount;

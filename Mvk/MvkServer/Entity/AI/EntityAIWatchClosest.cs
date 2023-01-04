@@ -17,14 +17,19 @@ namespace MvkServer.Entity.AI
         /// Это максимальное расстояние, на котором ИИ будет искать сущность
         /// </summary>
         private readonly float maxDistanceForPlayer;
+        /// <summary>
+        /// Частота вероятности сработки задачи
+        /// </summary>
+        private readonly float probability;
 
         /// <summary>
         /// Задача смотреть на ближайшего игрока
         /// </summary>
-        public EntityAIWatchClosest(EntityLiving entity, float distance)
+        public EntityAIWatchClosest(EntityLiving entity, float distance, float probability = .02f)
         {
             this.entity = entity;
             maxDistanceForPlayer = distance;
+            this.probability = probability;
             SetMutexBits(2);
         }
 
@@ -33,7 +38,7 @@ namespace MvkServer.Entity.AI
         /// </summary>
         public override bool ShouldExecute()
         {
-            if (entity.World.Rnd.NextFloat() >= .02f) // Шанс 2%
+            if (entity.World.Rnd.NextFloat() >= probability)
             {
                 return false;
             }

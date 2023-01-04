@@ -146,6 +146,10 @@ namespace MvkServer.Entity.AI
             }
             else if(actionSleep)
             {
+                if (!entity.IsSleep())
+                {
+                    entity.SetSleep(true);
+                }
                 entity.GetMoveHelper().SetSneak();
                 if (entity.World.IsDayTime() && entity.World.Rnd.NextFloat() < .3f) actionSleep = false;
             }
@@ -174,6 +178,7 @@ namespace MvkServer.Entity.AI
         {
             actionMove = false;
             actionSleep = false;
+            entity.SetSleep(false);
         }
     }
 }

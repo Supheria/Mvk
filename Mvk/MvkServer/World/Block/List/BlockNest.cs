@@ -81,7 +81,7 @@ namespace MvkServer.World.Block.List
                 int met = state.met - 1;
                 worldIn.SetBlockStateMet(pos, (ushort)met, true);
                 // Добавляем предмет яйца
-                ItemBase item = Items.GetItemCache(EnumItem.SpawnChicken);
+                ItemBase item = Items.GetItemCache(EnumItem.Egg);
                 ItemStack itemStack = new ItemStack(item);
                 // Пробуем взять в инвентарь
                 if (!entityPlayer.Inventory.AddItemStackToInventory(itemStack))

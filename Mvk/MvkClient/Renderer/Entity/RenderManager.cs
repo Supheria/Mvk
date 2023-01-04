@@ -43,8 +43,6 @@ namespace MvkClient.Renderer.Entity
         /// </summary>
         private Hashtable entities = new Hashtable();
 
-        
-
         public RenderManager(WorldClient world)
         {
             World = world;
@@ -55,7 +53,8 @@ namespace MvkClient.Renderer.Entity
             entities.Add(EnumEntities.Chicken, new RenderChicken(this, new ModelChicken()));
             entities.Add(EnumEntities.Item, new RenderEntityItem(this, Item));
             entities.Add(EnumEntities.Piece, new RenderEntityItem(this, Item));
-
+            entities.Add(EnumEntities.Chemoglot, new RenderChemoglot(this, new ModelChemoglot()));
+            entities.Add(EnumEntities.Pakan, new RenderPakan(this, new ModelPakan()));
         }
 
         /// <summary>

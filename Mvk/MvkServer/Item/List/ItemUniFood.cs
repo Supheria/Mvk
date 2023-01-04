@@ -7,16 +7,30 @@ namespace MvkServer.Item.List
     /// <summary>
     /// Предмет еда, или то что можно есть
     /// </summary>
-    public abstract class ItemAbFood : ItemBase
+    public class ItemUniFood : ItemBase
     {
+        /// <summary>
+        /// Количество сколько востановим сытости (сейчас хп)
+        /// </summary>
+        private readonly int amount;
+        /// <summary>
+        /// Продолжительность сколько тиков надо на еду
+        /// </summary>
+        private readonly int duration;
+
         /// <summary>
         /// Если это поле истинно, еду можно есть, даже если игроку не нужно есть
         /// </summary>
         protected bool alwaysEdible = true;
 
-        public ItemAbFood()
+        public ItemUniFood(EnumItem enumItem, int numberTexture, int amount = 1, int duration = 32, int maxStackSize = 16)
         {
-
+            EItem = enumItem;
+            NumberTexture = numberTexture;
+            this.amount = amount;
+            this.duration = duration;
+            MaxStackSize = maxStackSize;
+            UpId();
         }
 
         /// <summary>
@@ -49,7 +63,7 @@ namespace MvkServer.Item.List
         public override ItemStack OnItemUseFinish(ItemStack stack, WorldBase worldIn, EntityPlayer playerIn)
         {
             stack.ReduceAmount(1);
-            if (playerIn.HealthAdd(2))
+            if (playerIn.HealthAdd(amount))
             {
                 if (!worldIn.IsRemote && worldIn is WorldServer worldServer)
                 {

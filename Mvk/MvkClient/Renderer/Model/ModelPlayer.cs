@@ -6,39 +6,36 @@ namespace MvkClient.Renderer.Model
 {
     public class ModelPlayer : ModelBase
     {
-        public ModelRender BoxHead { get; protected set; }
-        protected ModelRender boxBody;
-        public ModelRender BoxArmRight { get; protected set; }
-        protected ModelRender boxArmLeft;
-        protected ModelRender boxLegRight;
-        protected ModelRender boxLegLeft;
+        private ModelRender boxHead;
+        private ModelRender boxBody;
+        private ModelRender boxArmRight;
+        private ModelRender boxArmLeft;
+        private ModelRender boxLegRight;
+        private ModelRender boxLegLeft;
 
         public ModelPlayer()
         {
-            float y = 0;
-            BoxHead = new ModelRender(this, 0, 0) { RotationPointY = y };
-            BoxHead.SetBox(-4, -8, -4, 8, 8, 8, 0);
-
-            boxBody = new ModelRender(this, 16, 16) { RotationPointY = y };
+            boxHead = new ModelRender(this, 0, 0);
+            boxHead.SetBox(-4, -8, -4, 8, 8, 8, 0);
+            boxBody = new ModelRender(this, 16, 16);
             boxBody.SetBox(-4, 0, -2, 8, 12, 4, 0);
-            BoxArmRight = new ModelRender(this, 40, 16);
-            BoxArmRight.SetBox(-3, -2, -2, 4, 12, 4, 0);
-            BoxArmRight.SetRotationPoint(-5, 2 + y, 0);
+            boxArmRight = new ModelRender(this, 40, 16);
+            boxArmRight.SetBox(-3, -2, -2, 4, 12, 4, 0);
+            boxArmRight.SetRotationPoint(-5, 2, 0);
             boxArmLeft = new ModelRender(this, 40, 16);
             boxArmLeft.Mirror();
             boxArmLeft.SetBox(-1, -2, -2, 4, 12, 4, 0);
-            boxArmLeft.SetRotationPoint(5, 2 + y, 0);
+            boxArmLeft.SetRotationPoint(5, 2, 0);
             boxLegRight = new ModelRender(this, 0, 16);
             boxLegRight.SetBox(-2, 0, -2, 4, 12, 4, 0);
-            boxLegRight.SetRotationPoint(-1.9f, 12 + y, 0);
+            boxLegRight.SetRotationPoint(-1.9f, 12, 0);
             boxLegLeft = new ModelRender(this, 0, 16);
             boxLegLeft.Mirror();
             boxLegLeft.SetBox(-2, 0, -2, 4, 12, 4, 0);
-            boxLegLeft.SetRotationPoint(1.9f, 12 + y, 0);
-
-            
-            
+            boxLegLeft.SetRotationPoint(1.9f, 12, 0);
         }
+
+        public ModelRender GetBoxArmRight() => boxArmRight;
 
         public override void Render(EntityLiving entity, float limbSwing, float limbSwingAmount, float ageInTicks, float headYaw, float headPitch, float scale)
         {
@@ -50,9 +47,9 @@ namespace MvkClient.Renderer.Model
                 GLRender.Translate(0, .2f, 0);//GLRender.Translate(0, .3f, 0);
             }
 
-            BoxHead.Render(scale);
+            boxHead.Render(scale);
             boxBody.Render(scale);
-            BoxArmRight.Render(scale);
+            boxArmRight.Render(scale);
             boxArmLeft.Render(scale);
             boxLegRight.Render(scale);
             boxLegLeft.Render(scale);
@@ -65,14 +62,14 @@ namespace MvkClient.Renderer.Model
             float limbSwingAmount, float ageInTicks, float headYaw, float headPitch, float scale)
         {
             boxBody.RotateAngleY = 0;
-            BoxHead.RotateAngleY = headYaw;
-            BoxHead.RotateAngleX = -headPitch;
+            boxHead.RotateAngleY = headYaw;
+            boxHead.RotateAngleX = -headPitch;
             boxLegRight.RotateAngleX = glm.cos(limbSwing * 0.6662f) * 1.4f * limbSwingAmount;
             boxLegLeft.RotateAngleX = glm.cos(limbSwing * 0.6662f + glm.pi) * 1.4f * limbSwingAmount;
-            BoxArmRight.RotateAngleX = boxLegLeft.RotateAngleX * 0.5f;
+            boxArmRight.RotateAngleX = boxLegLeft.RotateAngleX * 0.5f;
             boxArmLeft.RotateAngleX = boxLegRight.RotateAngleX * 0.5f;
-            BoxArmRight.RotateAngleY = 0.0f;
-            BoxArmRight.RotateAngleZ = 0.0f;
+            boxArmRight.RotateAngleY = 0.0f;
+            boxArmRight.RotateAngleZ = 0.0f;
             boxArmLeft.RotateAngleY = 0.0f;
             boxArmLeft.RotateAngleZ = 0.0f;
             
@@ -88,7 +85,7 @@ namespace MvkClient.Renderer.Model
             //}
 
             // В правой руке что-то
-            if (entity.GetHeldItem() != null) BoxArmRight.RotateAngleX = BoxArmRight.RotateAngleX * .5f - glm.pi / 10f; //* 3f;
+            if (entity.GetHeldItem() != null) boxArmRight.RotateAngleX = boxArmRight.RotateAngleX * .5f - glm.pi / 10f; //* 3f;
             // В левой руке что-то
            // boxArmLeft.RotateAngleX = boxArmLeft.RotateAngleX * .5f - glm.pi / 10f;
 
@@ -98,10 +95,10 @@ namespace MvkClient.Renderer.Model
             {
                 // Кушает
                 boxBody.RotateAngleY = .168f;
-                BoxArmRight.RotateAngleX -= 1.2f;
-                BoxArmRight.RotateAngleY -= .64f;
-                BoxArmRight.RotateAngleZ += .5f;
-                BoxArmRight.RotateAngleX += glm.sin(ageInTicks * 0.9f) * 0.1f;
+                boxArmRight.RotateAngleX -= 1.2f;
+                boxArmRight.RotateAngleY -= .64f;
+                boxArmRight.RotateAngleZ += .5f;
+                boxArmRight.RotateAngleX += glm.sin(ageInTicks * 0.9f) * 0.1f;
             }
             else if (SwingProgress > 0)
             {
@@ -109,7 +106,7 @@ namespace MvkClient.Renderer.Model
                 float swingProgress = SwingProgress;
                 float sp = swingProgress;
                 boxBody.RotateAngleY = glm.sin(Mth.Sqrt(sp) * glm.pi360) * .2f;
-                BoxArmRight.RotateAngleY += boxBody.RotateAngleY;
+                boxArmRight.RotateAngleY += boxBody.RotateAngleY;
                 boxArmLeft.RotateAngleY += boxBody.RotateAngleY;
                 boxArmLeft.RotateAngleX += boxBody.RotateAngleY;
                 sp = 1f - swingProgress;
@@ -117,29 +114,23 @@ namespace MvkClient.Renderer.Model
                 sp *= sp;
                 sp = 1f - sp;
                 float s1 = glm.sin(sp * glm.pi);
-                float s2 = glm.sin(swingProgress * glm.pi) * -(BoxHead.RotateAngleX - .7f) * .75f;
-                BoxArmRight.RotateAngleX = BoxArmRight.RotateAngleX - (s1 * 1.2f + s2);
-                BoxArmRight.RotateAngleY += boxBody.RotateAngleY * 2f;
-                BoxArmRight.RotateAngleZ += glm.sin(swingProgress * glm.pi) * -.4f;
+                float s2 = glm.sin(swingProgress * glm.pi) * -(boxHead.RotateAngleX - .7f) * .75f;
+                boxArmRight.RotateAngleX = boxArmRight.RotateAngleX - (s1 * 1.2f + s2);
+                boxArmRight.RotateAngleY += boxBody.RotateAngleY * 2f;
+                boxArmRight.RotateAngleZ += glm.sin(swingProgress * glm.pi) * -.4f;
             }
-
-            // Вращение рук в зависимости от торса
-            BoxArmRight.RotationPointZ = glm.sin(boxBody.RotateAngleY) * 5f;
-            BoxArmRight.RotationPointX = -glm.cos(boxBody.RotateAngleY) * 5f;
-            boxArmLeft.RotationPointZ = -glm.sin(boxBody.RotateAngleY) * 5f;
-            boxArmLeft.RotationPointX = glm.cos(boxBody.RotateAngleY) * 5f;
 
             if (entity.IsSneaking())
             {
                 // Положение сидя
                 boxBody.RotateAngleX = 0.5f;
-                BoxArmRight.RotateAngleX += 0.4f;
+                boxArmRight.RotateAngleX += 0.4f;
                 boxArmLeft.RotateAngleX += 0.4f;
                 boxLegRight.RotationPointZ = 4.0f;
                 boxLegLeft.RotationPointZ = 4.0f;
                 boxLegRight.RotationPointY = 9.0f;
                 boxLegLeft.RotationPointY = 9.0f;
-                BoxHead.RotationPointY = 1.0f;
+                boxHead.RotationPointY = 1.0f;
             }
             else
             {
@@ -149,13 +140,13 @@ namespace MvkClient.Renderer.Model
                 boxLegLeft.RotationPointZ = .1f;
                 boxLegRight.RotationPointY = 12.0f;
                 boxLegLeft.RotationPointY = 12.0f;
-                BoxHead.RotationPointY = 0.0f;
+                boxHead.RotationPointY = 0.0f;
             }
 
             // Движение рук от дыхания
-            BoxArmRight.RotateAngleZ += glm.cos(ageInTicks * 0.09f) * 0.05f + 0.05f;
+            boxArmRight.RotateAngleZ += glm.cos(ageInTicks * 0.09f) * 0.05f + 0.05f;
             boxArmLeft.RotateAngleZ -= glm.cos(ageInTicks * 0.09f) * 0.05f + 0.05f;
-            BoxArmRight.RotateAngleX += glm.sin(ageInTicks * 0.067f) * 0.05f;
+            boxArmRight.RotateAngleX += glm.sin(ageInTicks * 0.067f) * 0.05f;
             boxArmLeft.RotateAngleX -= glm.sin(ageInTicks * 0.067f) * 0.05f;
 
             //boxArmRight.RotateAngleX = boxLegLeft.RotateAngleX * .5f;

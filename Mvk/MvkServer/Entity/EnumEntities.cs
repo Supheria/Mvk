@@ -26,5 +26,14 @@
         /// Предмет кусочек
         /// </summary>
         Piece = 5,
+        /// <summary>
+        /// Чемоглот
+        /// </summary>
+        Chemoglot = 6,
+        /// <summary>
+        /// Пакан
+        /// </summary>
+        Pakan = 7
+
     }
 }

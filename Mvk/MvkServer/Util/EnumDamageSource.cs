@@ -52,7 +52,10 @@
         /// <summary>
         /// Игрок
         /// </summary>
-        Player
-
+        Player,
+        /// <summary>
+        /// Нанести урон мобом
+        /// </summary>
+        CauseMobDamage
     }
 }

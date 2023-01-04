@@ -189,12 +189,12 @@ namespace MvkServer.Entity.List
             if (GetHealth() > 0 && !World.IsRemote)
             {
                 AxisAlignedBB axis = BoundingBox.Expand(new vec3(1.5f, .8f, 1.5f));
-                List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityItem, axis, Id);
+                List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.All, axis, Id);
                 for (int i = 0; i < list.Count; i++)
                 {
-                    if (!list[i].IsDead && list[i] is EntityItem entityItem)
+                    if (!list[i].IsDead)
                     {
-                        entityItem.OnCollideWithPlayer(this);
+                        list[i].OnCollideWithPlayer(this);
                     }
                 }
             }

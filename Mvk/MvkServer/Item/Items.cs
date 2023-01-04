@@ -26,7 +26,7 @@ namespace MvkServer.Item
             switch (eItem)
             {
                 case EnumItem.Block: return new ItemBlock(block);
-                case EnumItem.Apple: return new ItemApple();
+                case EnumItem.Apple: return new ItemUniFood(EnumItem.Apple, 0, 4, 32, 16);
                 case EnumItem.DoorOak: return new ItemDoor(EnumItem.DoorOak, 32, EnumBlock.DoorOak);
                 case EnumItem.DoorBirch: return new ItemDoor(EnumItem.DoorBirch, 33, EnumBlock.DoorBirch);
                 case EnumItem.DoorSpruce: return new ItemDoor(EnumItem.DoorSpruce, 34, EnumBlock.DoorSpruce);
@@ -42,7 +42,11 @@ namespace MvkServer.Item
                 case EnumItem.PieceStone: return new ItemUniPiece(EnumItem.PieceStone, 193, .5f);
                 case EnumItem.SpawnChicken: return new ItemUniSpawn(EnumItem.SpawnChicken, 224);
                 case EnumItem.ExplosivesMin: return new ItemUniExplosives(EnumItem.ExplosivesMin, 256, 3, 2);
-                case EnumItem.ExplosivesMax: return new ItemUniExplosives(EnumItem.ExplosivesMax, 257, 7, 5);
+                case EnumItem.Explosives: return new ItemUniExplosives(EnumItem.Explosives, 258, 6, 3);
+                case EnumItem.ExplosivesMax: return new ItemUniExplosives(EnumItem.ExplosivesMax, 260, 7, 5);
+                case EnumItem.SpawnChemoglot: return new ItemUniSpawn(EnumItem.SpawnChemoglot, 225);
+                case EnumItem.SpawnPakan: return new ItemUniSpawn(EnumItem.SpawnPakan, 226);
+                case EnumItem.Egg: return new ItemUniFood(EnumItem.Egg, 1, 1, 16, 32);
             }
             
             return null;
@@ -78,10 +82,12 @@ namespace MvkServer.Item
                 25, 26, 27, 28, 29, 41, 42, 43, 62, 63,
                 30, 31, 32, 33, 34, 46, 47, 48, 49, 50,
                 35, 36, 37, 38, 39, 40, 45, 51, 52, 53, 
+
                 57, 59, 60, 61, 70, 71, 0, 0, 0, 0,
-                4097, 4118, 4114, 4115, 4116, 4117, 0, 0, 0, 0,
+                4097, 4118, 4114, 4115, 4116, 4117, 4125, 4126, 4127, 0,
                 4098, 4099, 4100, 4101, 4102, 4103, 0, 0, 0, 0,
-                4122, 4123, 4124, 4125, 4126
+                4122, 4123, 0, 0, 0, 0, 0, 0, 0, 0,
+                4124, 4128, 4129, 0, 0, 0, 0, 0, 0, 0
             };
         }
 

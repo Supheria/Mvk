@@ -334,6 +334,27 @@
   <data name="LiquidWater" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\LiquidWater.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="MobChemoglotAttack1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChemoglotAttack1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChemoglotAttack2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChemoglotAttack2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChemoglotDeath" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChemoglotDeath.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChemoglotJump1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChemoglotJump1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChemoglotJump2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChemoglotJump2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChemoglotJump3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChemoglotJump3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobChemoglotJump4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobChemoglotJump4.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="MobChickenHurt1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\MobChickenHurt1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
@@ -357,6 +378,27 @@
   </data>
   <data name="MobChickenStep2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\MobChickenStep2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobPakanDamage1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobPakanDamage1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobPakanDamage2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobPakanDamage2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobPakanDeath" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobPakanDeath.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobPakanStep1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobPakanStep1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobPakanStep2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobPakanStep2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobPakanStep3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobPakanStep3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobPakanStep4" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobPakanStep4.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="StepGrass1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\StepGrass1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

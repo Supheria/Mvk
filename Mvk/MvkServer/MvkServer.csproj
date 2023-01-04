@@ -33,6 +33,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entity\AI\EntityAIAttackOnCollide.cs" />
     <Compile Include="Entity\AI\EntityAIBase.cs" />
     <Compile Include="Entity\AI\EntityAIFindNestSleep.cs" />
     <Compile Include="Entity\AI\EntityAIFindNestEgg.cs" />
@@ -40,6 +41,7 @@
     <Compile Include="Entity\AI\EntityAIFollowYour.cs" />
     <Compile Include="Entity\AI\EntityAILookIdle.cs" />
     <Compile Include="Entity\AI\EntityAIFindSaplingEat.cs" />
+    <Compile Include="Entity\AI\EntityAIHop.cs" />
     <Compile Include="Entity\AI\EntityAISwimming.cs" />
     <Compile Include="Entity\AI\EntityAITasks.cs" />
     <Compile Include="Entity\AI\EntityAIPanic.cs" />
@@ -66,6 +68,8 @@
     <Compile Include="Entity\EntityTrackerEntry.cs" />
     <Compile Include="Entity\EnumActionChanged.cs" />
     <Compile Include="Entity\EnumParticle.cs" />
+    <Compile Include="Entity\List\EntityPakan.cs" />
+    <Compile Include="Entity\List\EntityChemoglot.cs" />
     <Compile Include="Entity\List\EntityItem.cs" />
     <Compile Include="Entity\List\EntityExplosives.cs" />
     <Compile Include="Entity\List\EntitySpawn.cs" />
@@ -87,7 +91,7 @@
     <Compile Include="Item\Items.cs" />
     <Compile Include="Item\ItemStack.cs" />
     <Compile Include="Item\List\ItemDoor.cs" />
-    <Compile Include="Item\List\ItemAbFood.cs" />
+    <Compile Include="Item\List\ItemUniFood.cs" />
     <Compile Include="Item\List\ItemAbBucketLiquid.cs" />
     <Compile Include="Item\List\ItemBucket.cs" />
     <Compile Include="Item\List\ItemBucketOil.cs" />
@@ -95,7 +99,6 @@
     <Compile Include="Item\List\ItemBucketWater.cs" />
     <Compile Include="Item\List\ItemFlintAndSteel.cs" />
     <Compile Include="Item\List\ItemPieceDirt.cs" />
-    <Compile Include="Item\List\ItemApple.cs" />
     <Compile Include="Item\List\ItemBlock.cs" />
     <Compile Include="Item\List\ItemUniExplosives.cs" />
     <Compile Include="Item\List\ItemUniSpawn.cs" />

@@ -733,6 +733,7 @@ namespace MvkClient.Entity
             List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityLiving, axis, Id);
             MovingObjectPosition moving2 = null;
             EntityBase entityHit = null;
+            vec3 rayHit = new vec3(0);
             EntityBase entity;
             float distance = 0;
             for (int i = 0; i < list.Count; i++)
@@ -751,6 +752,7 @@ namespace MvkClient.Entity
                         if (f < distance || distance == 0)
                         {
                             entityHit = entity;
+                            rayHit = moving2.RayHit;
                             distance = f;
                         }
                     }
@@ -759,7 +761,7 @@ namespace MvkClient.Entity
             if (entityHit != null)
             {
                 // Помечаем что было поподание по сущности
-                moving = new MovingObjectPosition(entityHit);
+                moving = new MovingObjectPosition(entityHit, rayHit);
             }
             return moving;
         }

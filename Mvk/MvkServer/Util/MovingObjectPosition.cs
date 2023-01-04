@@ -94,10 +94,11 @@ namespace MvkServer.Util
         /// Попадаем в сущность
         /// </summary>
         /// <param name="entity">сущьность</param>
-        public MovingObjectPosition(EntityBase entity)
+        public MovingObjectPosition(EntityBase entity, vec3 rayHit)
         {
             Block = new BlockState().Empty();
             Entity = entity;
+            RayHit = rayHit;
             type = MovingObjectType.Entity;
         }
 

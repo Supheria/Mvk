@@ -9,6 +9,7 @@ namespace MvkClient.Renderer.Model
     public class ModelChicken : ModelBase
     {
         protected ModelRender boxHead;
+        protected ModelRender boxHeadSleep;
         protected ModelRender boxBill;
         protected ModelRender boxChin;
         protected ModelRender boxBody;
@@ -23,6 +24,9 @@ namespace MvkClient.Renderer.Model
             boxHead = new ModelRender(this, 0, 0);
             boxHead.SetBox(-2, -6, -2, 4, 6, 3, 0);
             boxHead.SetRotationPoint(0, 15, -4);
+            boxHeadSleep = new ModelRender(this, 0, 23);
+            boxHeadSleep.SetBox(-2, -6, -2, 4, 6, 3, 0);
+            boxHeadSleep.SetRotationPoint(0, 15, -4);
             boxBill = new ModelRender(this, 14, 0);
             boxBill.SetBox(-2, -4, -4, 4, 2, 2, 0);
             boxBill.SetRotationPoint(0, 15, -4);
@@ -57,12 +61,21 @@ namespace MvkClient.Renderer.Model
             if (entity.IsSneaking())
             {
                 GLWindow.gl.Translate(0, .25f, 0);
-            } else
+            }
+            else
             {
                 GLWindow.gl.Translate(0, -.04f, 0);
             }
 
-            boxHead.Render(scale);
+            if (entity.IsSleep())
+            {
+                boxHeadSleep.Render(scale);
+            }
+            else
+            {
+                boxHead.Render(scale);
+            }
+
             boxBill.Render(scale);
             boxChin.Render(scale);
             boxBody.Render(scale);
@@ -77,8 +90,8 @@ namespace MvkClient.Renderer.Model
         protected override void SetRotationAngles(EntityLiving entity, float limbSwing,
             float limbSwingAmount, float ageInTicks, float headYaw, float headPitch, float scale)
         {
-            boxHead.RotateAngleY = headYaw;
-            boxHead.RotateAngleX = -headPitch;
+            boxHeadSleep.RotateAngleY = boxHead.RotateAngleY = headYaw;
+            boxHeadSleep.RotateAngleX = boxHead.RotateAngleX = -headPitch;
             boxLegRight.RotateAngleX = glm.cos(limbSwing * 2.6662f) * 1.4f * limbSwingAmount;
             boxLegLeft.RotateAngleX = glm.cos(limbSwing * 2.6662f + glm.pi) * 1.4f * limbSwingAmount;
 
@@ -100,7 +113,7 @@ namespace MvkClient.Renderer.Model
 
             if (entity.IsSneaking())
             {
-                boxHead.RotationPointY = 16.5f;
+                boxHeadSleep.RotationPointY = boxHead.RotationPointY = 16.5f;
                 boxBill.RotationPointY = 16.5f;
                 boxChin.RotationPointY = 16.5f;
                 boxLegRight.RotationPointY = 15;
@@ -108,7 +121,7 @@ namespace MvkClient.Renderer.Model
             }
             else
             {
-                boxHead.RotationPointY = 14;
+                boxHeadSleep.RotationPointY = boxHead.RotationPointY = 14;
                 boxBill.RotationPointY = 14;
                 boxChin.RotationPointY = 14;
                 boxLegRight.RotationPointY = 19;

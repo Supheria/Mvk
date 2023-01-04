@@ -1,14 +1,15 @@
-﻿using MvkServer.Glm;
+﻿using MvkServer.Entity.List;
+using MvkServer.Glm;
 
 namespace MvkServer.Entity.AI
 {
     /// <summary>
-    /// Задача следовать за своими
+    /// Задача следовать за игроком
     /// </summary>
     public class EntityAIFollowPlayer : EntityAIBase
     {
         /// <summary>
-        /// Тип сущностей своих
+        /// Тип сущностей
         /// </summary>
         private readonly EnumEntities typeEntity;
         /// <summary>
@@ -25,14 +26,18 @@ namespace MvkServer.Entity.AI
         /// Время в тиках на обновление перемещения
         /// </summary>
         private int timeUp;
-
+        /// <summary>
+        /// Задать остановку при соприкосновении коллизии, true - соприкосновении коллизии, false - центр
+        /// </summary>
+        private readonly bool stopOnOverlap;
         /// <summary>
         /// Задача следовать за своими
         /// </summary>
-        public EntityAIFollowPlayer(EntityLiving entity, float speed = 1f)
+        public EntityAIFollowPlayer(EntityLiving entity, float speed = 1f, bool stopOnOverlap = true)
         {
             this.entity = entity;
             this.speed = speed;
+            this.stopOnOverlap = stopOnOverlap;
             typeEntity = entity.Type;
             SetMutexBits(3);
         }
@@ -42,25 +47,38 @@ namespace MvkServer.Entity.AI
         /// </summary>
         public override bool ShouldExecute()
         {
-            this.entityLiving = null;
             if (entity.EntityAge > 100 || entity.World.Rnd.NextFloat() >= .7008f)
             {
                 return false;
             }
+            return CheckEntity();
+        }
+
+        private bool CheckEntity()
+        {
             EntityBase entityBase = entity.World.FindNearestEntityWithinAABB(World.Chunk.ChunkBase.EnumEntityClassAABB.EntityPlayer,
                 entity.BoundingBox.Expand(new vec3(16, 8, 16)), entity);
             if (entityBase != null && entityBase is EntityLiving entityLiving)
             {
+                if (entityLiving is EntityPlayer entityPlayer && entityPlayer.IsCreativeMode)
+                {
+                    this.entityLiving = null;
+                    entity.SetAttackTarget(null);
+                    return false;
+                }
                 this.entityLiving = entityLiving;
+                entity.SetAttackTarget(entityLiving);
                 return true;
             }
+            this.entityLiving = null;
+            entity.SetAttackTarget(null);
             return false;
         }
 
         /// <summary>
         /// Возвращает значение, указывающее, должна ли незавершенная тикущая задача продолжать выполнение
         /// </summary>
-        public override bool ContinueExecuting() => entityLiving != null ||  !entity.GetNavigator().NoPath();
+        public override bool ContinueExecuting() => CheckEntity();
 
         /// <summary>
         /// Выполните разовую задачу или начните выполнять непрерывную задачу
@@ -70,7 +88,11 @@ namespace MvkServer.Entity.AI
         /// <summary>
         /// Сбрасывает задачу
         /// </summary>
-        public override void ResetTask() => entityLiving = null;
+        public override void ResetTask()
+        {
+            entityLiving = null;
+            entity.SetAttackTarget(null);
+        }
 
         /// <summary>
         /// Обновляет задачу
@@ -85,7 +107,7 @@ namespace MvkServer.Entity.AI
         /// </summary>
         private void TryMoveToEntityLiving()
         {
-            if (entity.GetNavigator().TryMoveToEntityLiving(entityLiving, speed, true, true)) timeUp = 10;
+            if (entity.GetNavigator().TryMoveToEntityLiving(entityLiving, speed, true, stopOnOverlap)) timeUp = 10;
         }
     }
 }

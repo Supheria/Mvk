@@ -10,20 +10,25 @@ namespace MvkServer.Entity.AI
         private int time;
         private float lookX;
         private float lookZ;
+        /// <summary>
+        /// Частота вероятности сработки задачи
+        /// </summary>
+        private readonly float probability;
 
         /// <summary>
         /// Задача смотреть без дела
         /// </summary>
-        public EntityAILookIdle(EntityLiving entity)
+        public EntityAILookIdle(EntityLiving entity, float probability = .02f)
         {
             this.entity = entity;
+            this.probability = probability;
             SetMutexBits(2);
         }
 
         /// <summary>
         /// Возвращает значение, указывающее, следует ли начать выполнение
         /// </summary>
-        public override bool ShouldExecute() => entity.World.Rnd.NextFloat() < .02f;
+        public override bool ShouldExecute() => entity.World.Rnd.NextFloat() < probability;
 
         /// <summary>
         /// Возвращает значение, указывающее, должна ли незавершенная тикущая задача продолжать выполнение

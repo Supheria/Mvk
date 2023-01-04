@@ -78,6 +78,14 @@
         /// <summary>
         /// Контейнер инвенторя креатива
         /// </summary>
-        ConteinerItems
+        ConteinerItems,
+        /// <summary>
+        /// Текстура моба чемоглот
+        /// </summary>
+        Chemoglot,
+        /// <summary>
+        /// Пакан
+        /// </summary>
+        Pakan
     }
 }

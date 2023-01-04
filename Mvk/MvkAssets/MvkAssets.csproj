@@ -159,6 +159,13 @@
     <None Include="Resources\LiquidSwim3.ogg" />
     <None Include="Resources\LiquidSwim4.ogg" />
     <None Include="Resources\LiquidWater.ogg" />
+    <None Include="Resources\MobChemoglotAttack1.ogg" />
+    <None Include="Resources\MobChemoglotAttack2.ogg" />
+    <None Include="Resources\MobChemoglotDeath.ogg" />
+    <None Include="Resources\MobChemoglotJump1.ogg" />
+    <None Include="Resources\MobChemoglotJump2.ogg" />
+    <None Include="Resources\MobChemoglotJump3.ogg" />
+    <None Include="Resources\MobChemoglotJump4.ogg" />
     <None Include="Resources\MobChickenHurt1.ogg" />
     <None Include="Resources\MobChickenHurt2.ogg" />
     <None Include="Resources\MobChickenSay1.ogg" />
@@ -166,6 +173,13 @@
     <None Include="Resources\MobChickenSay3.ogg" />
     <None Include="Resources\MobChickenStep1.ogg" />
     <None Include="Resources\MobChickenStep2.ogg" />
+    <None Include="Resources\MobPakanDamage1.ogg" />
+    <None Include="Resources\MobPakanDamage2.ogg" />
+    <None Include="Resources\MobPakanDeath.ogg" />
+    <None Include="Resources\MobPakanStep1.ogg" />
+    <None Include="Resources\MobPakanStep2.ogg" />
+    <None Include="Resources\MobPakanStep3.ogg" />
+    <None Include="Resources\MobPakanStep4.ogg" />
     <None Include="Resources\StepGrass1.ogg" />
     <None Include="Resources\StepGrass2.ogg" />
     <None Include="Resources\StepGrass3.ogg" />
@@ -250,6 +264,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AtlasItems.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Chemoglot.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Pakan.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

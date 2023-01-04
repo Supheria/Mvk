@@ -830,6 +830,11 @@ namespace MvkServer.Entity
             return vx * vx + vy * vy + vz * vz;
         }
 
+        /// <summary>
+        /// Вызывается сущностью игрока при столкновении с сущностью 
+        /// </summary>
+        public virtual void OnCollideWithPlayer(EntityPlayer entityIn) { }
+
         public virtual void WriteEntityToNBT(TagCompound nbt)
         {
             nbt.SetTag("Pos", new TagList(new float[] { Position.x, Position.y, Position.z }));

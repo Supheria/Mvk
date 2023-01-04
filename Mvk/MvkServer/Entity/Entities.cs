@@ -19,6 +19,8 @@ namespace MvkServer.Entity
                 case EnumEntities.Chicken: return new EntityChicken(world);
                 case EnumEntities.Item: return new EntityItem(world);
                 case EnumEntities.Piece: return new EntityPiece(world);
+                case EnumEntities.Chemoglot: return new EntityChemoglot(world);
+                case EnumEntities.Pakan: return new EntityPakan(world);
             }
             throw new Exception("Объекта сущности [" + enumEssences.ToString() + "] не существует");
         }

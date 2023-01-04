@@ -124,6 +124,8 @@
     <Compile Include="Renderer\EffectRenderer.cs" />
     <Compile Include="Renderer\Entity\Layers\ILayerRenderer.cs" />
     <Compile Include="Renderer\Entity\Layers\LayerHeldItem.cs" />
+    <Compile Include="Renderer\Entity\RenderPakan.cs" />
+    <Compile Include="Renderer\Entity\RenderChemoglot.cs" />
     <Compile Include="Renderer\Entity\RenderItem.cs" />
     <Compile Include="Renderer\Entity\RenderEntityBase.cs" />
     <Compile Include="Renderer\Entity\RenderBlock.cs" />
@@ -136,6 +138,8 @@
     <Compile Include="Renderer\Entity\RenderPlayer.cs" />
     <Compile Include="Renderer\Model\ModelBase.cs" />
     <Compile Include="Renderer\Model\ModelBox.cs" />
+    <Compile Include="Renderer\Model\ModelPakan.cs" />
+    <Compile Include="Renderer\Model\ModelChemoglot.cs" />
     <Compile Include="Renderer\Model\ModelChicken.cs" />
     <Compile Include="Renderer\Model\ModelPlayerHand.cs" />
     <Compile Include="Renderer\Model\ModelPlayer.cs" />
