@@ -334,6 +334,21 @@
   <data name="LiquidWater" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\LiquidWater.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="MobBookAttack" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobBookAttack.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobBookDeath" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobBookDeath.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobBookSay1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobBookSay1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobBookSay2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobBookSay2.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="MobBookSay3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MobBookSay3.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="MobChemoglotAttack1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\MobChemoglotAttack1.ogg;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>

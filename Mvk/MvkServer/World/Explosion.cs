@@ -277,7 +277,11 @@ namespace MvkServer.World
                             entity.AttackEntityFrom(EnumDamageSource.ExplosionSource, strength * kof);// * 8f);
 
                             // Определяем смещение от взрыва 
-                            vec3 motion = (epos - pos).normalize() * kof * 4f;
+                            vec3 motion = epos - pos;
+                            if (!motion.IsZero())
+                            {
+                                motion = motion.normalize() * kof * 4f;
+                            }
                             entity.SetMotion(entity.Motion + motion);
 
                             if (entity is EntityPlayer entityPlayer)

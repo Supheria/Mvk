@@ -783,6 +783,56 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] MobBookAttack {
+            get {
+                object obj = ResourceManager.GetObject("MobBookAttack", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobBookDeath {
+            get {
+                object obj = ResourceManager.GetObject("MobBookDeath", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobBookSay1 {
+            get {
+                object obj = ResourceManager.GetObject("MobBookSay1", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobBookSay2 {
+            get {
+                object obj = ResourceManager.GetObject("MobBookSay2", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] MobBookSay3 {
+            get {
+                object obj = ResourceManager.GetObject("MobBookSay3", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] MobChemoglotAttack1 {
             get {
                 object obj = ResourceManager.GetObject("MobChemoglotAttack1", resourceCulture);

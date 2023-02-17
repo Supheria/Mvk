@@ -97,6 +97,36 @@ block.ElBattery:Батарея электрическая
 block.ElSwitch:Выключатель электрический
 block.Tnt:TNT
 block.TntClock:TNT с часовы детонатором
+block.SmallStone:Маленький камень
+block.Nest:Гнездо
 
 item.Apple:Яблоко
-item.PieceDirt:Земляной кусочек
+item.DoorOak:Дверь дубовая
+item.DoorBirch:Дверь берёзовая
+item.DoorSpruce:Дверь еловая
+item.DoorFruit:Дверь плодовая
+item.DoorPalm:Дверь из пальмы
+item.DoorIron:Дверь железная
+item.Bucket:Ведро
+item.BucketWater:Ведро с водой
+item.BucketLava:Ведро с лавой
+item.BucketOil:Ведро с нефтью
+item.FlintAndSteel:Кремень и сталь
+item.PieceDirt:Комок земли
+item.PieceStone:Камушек
+item.SpawnChicken:Спавн курицы
+item.ExplosivesMin:Маленькая взрывчатка
+item.Explosives:Взрывчатка
+item.ExplosivesMax:Большая взрывчатка
+item.SpawnChemoglot:Спавн чемоглота
+item.SpawnPakan:Спавн пакана
+item.Egg:Яйцо
+item.PieceSand:Немного песка
+item.PieceSandstone:Кусочек песчаника
+item.PieceClay:Комок глины
+item.PieceTerracotta:Осколок керамики
+item.PieceBasalt:Кусочек базальта
+item.PieceLimestone:Кусочек известняка
+item.PieceGravel:Мелкие камушки
+item.PieceGranite:Кусочек гранита
+item.SpawnBook:Спавн книги

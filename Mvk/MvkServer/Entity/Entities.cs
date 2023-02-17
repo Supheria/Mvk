@@ -21,6 +21,7 @@ namespace MvkServer.Entity
                 case EnumEntities.Piece: return new EntityPiece(world);
                 case EnumEntities.Chemoglot: return new EntityChemoglot(world);
                 case EnumEntities.Pakan: return new EntityPakan(world);
+                case EnumEntities.Book: return new EntityBook(world);
             }
             throw new Exception("Объекта сущности [" + enumEssences.ToString() + "] не существует");
         }

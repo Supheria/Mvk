@@ -58,6 +58,7 @@ namespace MvkServer.Entity.List
                 case EnumItem.SpawnChicken: return EnumEntities.Chicken;
                 case EnumItem.SpawnChemoglot: return EnumEntities.Chemoglot;
                 case EnumItem.SpawnPakan: return EnumEntities.Pakan;
+                case EnumItem.SpawnBook: return EnumEntities.Book;
             }
             return EnumEntities.None;
         }

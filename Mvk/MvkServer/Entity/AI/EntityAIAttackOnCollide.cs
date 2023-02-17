@@ -1,4 +1,5 @@
-﻿using MvkServer.Util;
+﻿using MvkServer.Glm;
+using MvkServer.Util;
 
 namespace MvkServer.Entity.AI
 {
@@ -55,10 +56,11 @@ namespace MvkServer.Entity.AI
                 }
                 else
                 {
-                    float distantion = entity.GetDistanceSq(entityLiving.Position.x, entityLiving.Position.y, entityLiving.Position.z);
-                    float width = entity.Width * entity.Width * 8f + entityLiving.Width * 2f;
-
-                    if (distantion <= width)
+                    AxisAlignedBB aabb = entity.BoundingBox.Expand(new vec3(.5f));
+                    if (aabb.IntersectsWith(entityLiving.BoundingBox))
+                    //float distantion = entity.GetDistanceSq(entityLiving.Position.x, entityLiving.Position.y, entityLiving.Position.z);
+                    //float width = entity.Width * entity.Width * 8f + entityLiving.Width * 2f;
+                    //if (distantion <= width)
                     {
                         attackTick = 20;
                         entity.SwingItem();

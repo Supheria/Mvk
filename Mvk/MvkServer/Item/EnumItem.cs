@@ -144,7 +144,43 @@
         /// <summary>
         /// Яйцо
         /// </summary>
-        Egg = 34
+        Egg = 34,
+        /// <summary>
+        /// Песчаный кусочек
+        /// </summary>
+        PieceSand = 35,
+        /// <summary>
+        /// Песчаник кусочек
+        /// </summary>
+        PieceSandstone = 36,
+        /// <summary>
+        /// Глина кусочек
+        /// </summary>
+        PieceClay = 37,
+        /// <summary>
+        /// Керамики кусочек
+        /// </summary>
+        PieceTerracotta = 38,
+        /// <summary>
+        /// Базальт кусочек
+        /// </summary>
+        PieceBasalt = 39,
+        /// <summary>
+        /// Известняк кусочек
+        /// </summary>
+        PieceLimestone = 40,
+        /// <summary>
+        /// Гравий кусочек
+        /// </summary>
+        PieceGravel = 41,
+        /// <summary>
+        /// Гранит кусочек
+        /// </summary>
+        PieceGranite = 42,
+        /// <summary>
+        /// Спавн книги
+        /// </summary>
+        SpawnBook = 43,
     }
 
     /// <summary>
@@ -152,6 +188,6 @@
     /// </summary>
     public class ItemsCount
     {
-        public const int COUNT = 34;
+        public const int COUNT = 43;
     }
 }

@@ -67,8 +67,15 @@ namespace MvkServer.Entity.AI.PathFinding
         /// Создает путь от одного объекта к другому на минимальном расстоянии
         /// </summary>
         public PathEntity CreateEntityPathTo(WorldBase world, EntityLiving entity, EntityLiving entityGoal, float distance)
-            => CreateEntityPathTo(world, entity, entityGoal.Position.x, entityGoal.Position.y, entityGoal.Position.z, entityGoal.Width, distance);
-
+        {
+            float y = entityGoal.Position.y;
+            if (entity.IsFlying && nodeProcessor is SwimOrFlyNodeProcessor)
+            {
+                y += entityGoal.GetEyeHeight();
+            }
+            return CreateEntityPathTo(world, entity, entityGoal.Position.x, y, entityGoal.Position.z, entityGoal.Width, distance);
+        }
+            
         /// <summary>
         /// Создает путь от объекта к указанному местоположению на минимальном расстоянии
         /// </summary>

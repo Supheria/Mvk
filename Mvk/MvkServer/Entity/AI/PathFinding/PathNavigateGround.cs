@@ -30,6 +30,10 @@ namespace MvkServer.Entity.AI.PathFinding
         /// Следует избегать воды
         /// </summary>
         public void SetAvoidWater(bool avoidWater) => nodeProcessor.avoidsWater = avoidWater;
+        /// <summary>
+        /// Следует избегать лавы и огня
+        /// </summary>
+        public void SetAvoidLavaOrFire(bool avoidLavaOrFire) => nodeProcessor.avoidsLavaOrFire = avoidLavaOrFire;
 
         /// <summary>
         /// Получить объект PathFinder

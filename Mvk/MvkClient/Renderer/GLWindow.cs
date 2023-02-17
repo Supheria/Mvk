@@ -1,6 +1,7 @@
 ﻿using MvkClient.Renderer.Shaders;
 using MvkServer.Util;
 using SharpGL;
+using SharpGL.Shaders;
 using System;
 using System.Diagnostics;
 
@@ -48,6 +49,13 @@ namespace MvkClient.Renderer
         /// </summary>
         public static void Initialize(OpenGL gl)
         {
+            string version = gl.GetString(OpenGL.GL_VERSION);
+            string versionPrefix = version.Substring(0, 1);
+            if (versionPrefix != "3" && versionPrefix != "4")
+            {
+                throw new Exception("Для игры нужна версия OpenGL 3.3 и выше!");
+            }
+
             GLWindow.gl = gl;
             GLRender.Initialize();
             stopwatch.Start();
@@ -61,7 +69,15 @@ namespace MvkClient.Renderer
             Texture = new TextureMap();
             Texture.InitializeOne();
 
-            Shaders.Create(gl);
+            try
+            {
+                Shaders.Create(gl);
+            }
+            catch (ShaderCompilationException ex)
+            {
+                Logger.Crach(ex, "ErrorShader: {0}", ex.CompilerOutput);
+                throw new Exception("ErrorShader: " + ex.CompilerOutput);
+            }
         }
 
         public static void Resized(int width, int height)
@@ -125,7 +141,10 @@ namespace MvkClient.Renderer
             //gl.Perspective(70.0f, (float)windowWidth / (float)windowHeight, 0.1f, 512);
 
             gl.Viewport(0, 0, WindowWidth, WindowHeight);
-            
+            // ! Устанавливаем шейдерную программу текущей
+            // Подробнее на esate.ru: http://esate.ru/uroki/OpenGL/uroki_opengl/_p4208/
+            //gl.UseProgram(Shaders.ShVoxel.ShaderProgramObject);
+
             // Включает Буфер глубины 
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
             gl.Enable(OpenGL.GL_CULL_FACE);
@@ -157,6 +176,8 @@ namespace MvkClient.Renderer
                 fps = 0;
                 tps = 0;
             }
+            // ! Отключаем шейдерную программу
+            //gl.UseProgram(0);
             Debug.DrawDebug();
             speedFrameAll += (float)(stopwatch.ElapsedTicks - tickDraw) / MvkStatic.TimerFrequency;
         }

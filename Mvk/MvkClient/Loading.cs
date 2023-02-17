@@ -47,7 +47,9 @@ namespace MvkClient
                 OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStep));
 
                 // Загрузка семплов
-                foreach (AssetsSample key in Enum.GetValues(typeof(AssetsSample)))
+                Array array = Enum.GetValues(typeof(AssetsSample));
+                client.Sample.InitializeArray(array.Length);
+                foreach (AssetsSample key in array)
                 {
                     if (key == AssetsSample.None) continue;
                     client.Sample.InitializeSample(key);

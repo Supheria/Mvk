@@ -86,6 +86,10 @@
         /// <summary>
         /// Пакан
         /// </summary>
-        Pakan
+        Pakan,
+        /// <summary>
+        /// Книга
+        /// </summary>
+        Book
     }
 }

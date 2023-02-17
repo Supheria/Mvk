@@ -10,9 +10,9 @@ namespace MvkLauncher
 {
     public partial class FormLauncher : Form
     {
-        protected Client client = new Client();
+        private readonly Client client = new Client();
 
-        public FormLauncher()
+        public void Initialize()
         {
             client.Initialize();
             InitializeComponent();

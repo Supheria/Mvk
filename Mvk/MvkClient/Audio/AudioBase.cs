@@ -3,7 +3,6 @@ using MvkClient.Setitings;
 using MvkServer.Glm;
 using MvkServer.Sound;
 using System;
-using System.Collections;
 
 namespace MvkClient.Audio
 {
@@ -15,11 +14,11 @@ namespace MvkClient.Audio
         /// <summary>
         /// Массив всех семплов
         /// </summary>
-        protected Hashtable items = new Hashtable();
+        private AudioSample[] items;
         /// <summary>
         /// Объект источников звука
         /// </summary>
-        protected AudioSources sources = new AudioSources();
+        private readonly AudioSources sources = new AudioSources();
         /// <summary>
         /// Строка для дэбага сколько источников и занятых
         /// </summary>
@@ -37,6 +36,11 @@ namespace MvkClient.Audio
         }
 
         /// <summary>
+        /// Инициализировать длинну массива для семплов
+        /// </summary>
+        public void InitializeArray(int count) => items = new AudioSample[count];
+
+        /// <summary>
         /// Загрузка сэмпла
         /// </summary>
         public void InitializeSample(AssetsSample key)
@@ -44,7 +48,7 @@ namespace MvkClient.Audio
             byte[] vs = Assets.GetSample(key.ToString());
             AudioSample sample = new AudioSample();
             sample.LoadOgg(vs);
-            Set(key, sample);
+            items[(int)key] = sample;
         }
 
         /// <summary>
@@ -61,9 +65,9 @@ namespace MvkClient.Audio
         /// </summary>
         public void PlaySound(AssetsSample key, vec3 pos, float volume, float pitch)
         {
-            if (Setting.SoundVolume > 0 && items.Contains(key))
+            if (Setting.SoundVolume > 0)
             {
-                AudioSample sample = Get(key);
+                AudioSample sample = items[(int)key];
                 if (sample != null && sample.Size > 0)
                 {
                     AudioSource source = sources.GetAudio();
@@ -83,25 +87,5 @@ namespace MvkClient.Audio
         /// Проиграть звук
         /// </summary>
         public void PlaySound(AssetsSample key, float volume) => PlaySound(key, new vec3(0), volume, 1f);
-
-        /// <summary>
-        /// Добавить или изменить сэмпл
-        /// </summary>
-        protected void Set(AssetsSample key, AudioSample sample)
-        {
-            if (items.ContainsKey(key))
-            {
-                items[key] = sample;
-            }
-            else
-            {
-                items.Add(key, sample);
-            }
-        }
-
-        /// <summary>
-        /// Получить сэмпл по ключу
-        /// </summary>
-        protected AudioSample Get(AssetsSample key) => items.ContainsKey(key) ? items[key] as AudioSample : null;
     }
 }

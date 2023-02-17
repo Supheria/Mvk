@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MvkLauncher
@@ -19,7 +16,17 @@ namespace MvkLauncher
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new FormLauncher());
+
+            FormLauncher form = new FormLauncher();
+            try
+            {
+                form.Initialize();
+                Application.Run(form);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // Метод для масштаба

@@ -57,7 +57,7 @@ namespace MvkServer.Entity.AI
         private bool CheckEntity()
         {
             EntityBase entityBase = entity.World.FindNearestEntityWithinAABB(World.Chunk.ChunkBase.EnumEntityClassAABB.EntityPlayer,
-                entity.BoundingBox.Expand(new vec3(16, 8, 16)), entity);
+                entity.BoundingBox.Expand(new vec3(32, 12, 32)), entity);
             if (entityBase != null && entityBase is EntityLiving entityLiving)
             {
                 if (entityLiving is EntityPlayer entityPlayer && entityPlayer.IsCreativeMode)
@@ -107,7 +107,10 @@ namespace MvkServer.Entity.AI
         /// </summary>
         private void TryMoveToEntityLiving()
         {
-            if (entity.GetNavigator().TryMoveToEntityLiving(entityLiving, speed, true, stopOnOverlap)) timeUp = 10;
+            if (entity.GetNavigator().TryMoveToEntityLiving(entityLiving, speed, true, stopOnOverlap))
+            {
+                timeUp = 10;
+            }
         }
     }
 }

@@ -33,7 +33,11 @@
         /// <summary>
         /// Пакан
         /// </summary>
-        Pakan = 7
+        Pakan = 7,
+        /// <summary>
+        /// Книга
+        /// </summary>
+        Book = 8
 
     }
 }

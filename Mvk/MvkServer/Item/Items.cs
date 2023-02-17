@@ -38,7 +38,7 @@ namespace MvkServer.Item
                 case EnumItem.BucketLava: return new ItemBucketLava();
                 case EnumItem.BucketOil: return new ItemBucketOil();
                 case EnumItem.FlintAndSteel: return new ItemFlintAndSteel();
-                case EnumItem.PieceDirt: return new ItemUniPiece(EnumItem.PieceDirt, 192, .32f);
+                case EnumItem.PieceDirt: return new ItemUniPiece(EnumItem.PieceDirt, 192, .02f);
                 case EnumItem.PieceStone: return new ItemUniPiece(EnumItem.PieceStone, 193, .5f);
                 case EnumItem.SpawnChicken: return new ItemUniSpawn(EnumItem.SpawnChicken, 224);
                 case EnumItem.ExplosivesMin: return new ItemUniExplosives(EnumItem.ExplosivesMin, 256, 3, 2);
@@ -47,6 +47,15 @@ namespace MvkServer.Item
                 case EnumItem.SpawnChemoglot: return new ItemUniSpawn(EnumItem.SpawnChemoglot, 225);
                 case EnumItem.SpawnPakan: return new ItemUniSpawn(EnumItem.SpawnPakan, 226);
                 case EnumItem.Egg: return new ItemUniFood(EnumItem.Egg, 1, 1, 16, 32);
+                case EnumItem.PieceSand: return new ItemUniPiece(EnumItem.PieceSand, 194, .02f);
+                case EnumItem.PieceSandstone: return new ItemUniPiece(EnumItem.PieceSandstone, 195, .32f);
+                case EnumItem.PieceClay: return new ItemUniPiece(EnumItem.PieceClay, 196, .02f);
+                case EnumItem.PieceTerracotta: return new ItemUniPiece(EnumItem.PieceTerracotta, 197, .32f);
+                case EnumItem.PieceBasalt: return new ItemUniPiece(EnumItem.PieceBasalt, 198, .64f);
+                case EnumItem.PieceLimestone: return new ItemUniPiece(EnumItem.PieceLimestone, 199, .32f);
+                case EnumItem.PieceGravel: return new ItemUniPiece(EnumItem.PieceGravel, 200, .02f);
+                case EnumItem.PieceGranite: return new ItemUniPiece(EnumItem.PieceGranite, 201, .32f);
+                case EnumItem.SpawnBook: return new ItemUniSpawn(EnumItem.SpawnBook, 227);
             }
             
             return null;
@@ -86,8 +95,8 @@ namespace MvkServer.Item
                 57, 59, 60, 61, 70, 71, 0, 0, 0, 0,
                 4097, 4118, 4114, 4115, 4116, 4117, 4125, 4126, 4127, 0,
                 4098, 4099, 4100, 4101, 4102, 4103, 0, 0, 0, 0,
-                4122, 4123, 0, 0, 0, 0, 0, 0, 0, 0,
-                4124, 4128, 4129, 0, 0, 0, 0, 0, 0, 0
+                4122, 4123, 4131, 4132, 4133, 4134, 4135, 4136, 4137, 4138,
+                4124, 4128, 4129, 4139, 0, 0, 0, 0, 0, 
             };
         }
 

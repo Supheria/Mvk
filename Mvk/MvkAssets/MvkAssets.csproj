@@ -159,6 +159,12 @@
     <None Include="Resources\LiquidSwim3.ogg" />
     <None Include="Resources\LiquidSwim4.ogg" />
     <None Include="Resources\LiquidWater.ogg" />
+    <None Include="Resources\MobBookAttack.ogg" />
+    <None Include="Resources\MobBookDeath.ogg" />
+    <None Include="Resources\MobBookSay.ogg" />
+    <None Include="Resources\MobBookSay1.ogg" />
+    <None Include="Resources\MobBookSay2.ogg" />
+    <None Include="Resources\MobBookSay3.ogg" />
     <None Include="Resources\MobChemoglotAttack1.ogg" />
     <None Include="Resources\MobChemoglotAttack2.ogg" />
     <None Include="Resources\MobChemoglotDeath.ogg" />
@@ -270,6 +276,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Pakan.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Book.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

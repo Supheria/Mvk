@@ -23,6 +23,10 @@ namespace MvkServer.Glm
         /// </summary>
         public readonly static float pi15 = 0.2617993878f;
         /// <summary>
+        /// Четверть Пи, аналог 20гр
+        /// </summary>
+        public readonly static float pi20 = 0.349065850399f;
+        /// <summary>
         /// Четверть Пи, аналог 45гр
         /// </summary>
         public readonly static float pi45 = 0.7853981625f;

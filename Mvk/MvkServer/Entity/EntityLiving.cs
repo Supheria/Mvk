@@ -160,7 +160,7 @@ namespace MvkServer.Entity
         /// <summary>
         /// Боевые задачи (используются монстрами, волками, оцелотами)
         /// </summary>
-        protected EntityAITasks targetTasks;
+        //protected EntityAITasks targetTasks;
 
         /// <summary>
         /// Активная цель, которую система задач использует для отслеживания
@@ -205,7 +205,7 @@ namespace MvkServer.Entity
             if (IsLivingUpdate())
             {
                 tasks = new EntityAITasks(world);
-                targetTasks = new EntityAITasks(world);
+                //targetTasks = new EntityAITasks(world);
                 lookHelper = new EntityLookHelper(this);
                 moveHelper = new EntityMoveHelper(this);
                 navigator = InitNavigate(World);
@@ -817,7 +817,7 @@ namespace MvkServer.Entity
             // Ощущение. (senses)
 
             // Определение цели, боевых задач
-            targetTasks.OnUpdateTasks();
+            //targetTasks.OnUpdateTasks();
             // Определение цели, пассивных задач
             tasks.OnUpdateTasks();
             // Навигация. Расчёт следующего шага до точки прибытия в навигации
@@ -1035,7 +1035,7 @@ namespace MvkServer.Entity
         protected void MoveWithHeading(float strafe, float forward, float jumpMovementFactor)
         {
             vec3 motion = new vec3();
-            
+
             // трение
             float study;
             // делим на три части, вода, лава, остальное

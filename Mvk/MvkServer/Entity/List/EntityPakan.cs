@@ -1,5 +1,6 @@
 ﻿using MvkServer.Entity.AI;
 using MvkServer.Entity.AI.PathFinding;
+using MvkServer.Item;
 using MvkServer.NBT;
 using MvkServer.Sound;
 using MvkServer.Util;
@@ -21,17 +22,23 @@ namespace MvkServer.Entity.List
             Speed = .1f;
             if (!world.IsRemote)
             {
+                ((PathNavigateGround)navigator).SetAvoidLavaOrFire(false);
+
                 tasks.AddTask(0, new EntityAISwimming(this));
                 tasks.AddTask(1, new EntityAIAttackOnCollide(this, 4));
-                
-                // tasks.AddTask(1, new EntityAIHop(this));
+                tasks.AddTask(1, new EntityAIAttackThrowableItem(this, EnumItem.PieceBasalt, 6));
+
                 tasks.AddTask(2, new EntityAIFollowPlayer(this, 1f, false));
                 
                 tasks.AddTask(3, new EntityAIWander(this, .05f));
-                //tasks.AddTask(4, new EntityAIWatchClosest(this, 10f));
                 tasks.AddTask(5, new EntityAILookIdle(this, .3f));
             }
         }
+
+        /// <summary>
+        /// Имеется ли у сущности иммунитет от горения в огне и лаве
+        /// </summary>
+        protected override bool IsImmuneToFire() => true;
 
         /// <summary>
         /// Возвращает звук, издаваемый этим мобом при смерти

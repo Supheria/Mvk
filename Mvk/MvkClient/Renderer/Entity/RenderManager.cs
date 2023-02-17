@@ -55,6 +55,7 @@ namespace MvkClient.Renderer.Entity
             entities.Add(EnumEntities.Piece, new RenderEntityItem(this, Item));
             entities.Add(EnumEntities.Chemoglot, new RenderChemoglot(this, new ModelChemoglot()));
             entities.Add(EnumEntities.Pakan, new RenderPakan(this, new ModelPakan()));
+            entities.Add(EnumEntities.Book, new RenderBook(this, new ModelBook()));
         }
 
         /// <summary>

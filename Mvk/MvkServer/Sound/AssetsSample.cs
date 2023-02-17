@@ -89,6 +89,12 @@
         LiquidLavaPop,
         LiquidWater,
 
+        MobBookAttack,
+        MobBookDeath,
+        MobBookSay1,
+        MobBookSay2,
+        MobBookSay3,
+
         MobChemoglotAttack1,
         MobChemoglotAttack2,
         MobChemoglotDeath,

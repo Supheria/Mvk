@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("SuperAnt")]
 [assembly: AssemblyProduct("Малювекi")]
-[assembly: AssemblyCopyright("Copyright © 2022")]
+[assembly: AssemblyCopyright("Copyright © 2022-2023")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //   Номер сборки
 //      Редакция
 //
-[assembly: AssemblyVersion("0.1.9.0")]
-[assembly: AssemblyFileVersion("0.1.9.0")]
+[assembly: AssemblyVersion("0.1.12.1")]
+[assembly: AssemblyFileVersion("0.1.12.1")]

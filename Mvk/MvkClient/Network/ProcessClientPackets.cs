@@ -67,7 +67,9 @@ namespace MvkClient.Network
 
         private void UpdateReceivePacketClient(IPacket packet)
         {
-            switch (GetId(packet))
+            byte id = GetId(packet);
+            //if (id != 0x21) ClientMain.World.Log.Log("P:{0:X}", id);
+            switch (id)
             {
                 case 0x01: Handle01KeepAlive((PacketS01KeepAlive)packet); break;
                 case 0x03: Handle03TimeUpdate((PacketS03TimeUpdate)packet); break;
@@ -259,6 +261,12 @@ namespace MvkClient.Network
             if (entity is EntityLiving entityLiving)
             {
                 entityLiving.SetPosLook(packet.GetPos(), packet.GetYaw(), packet.GetPitch());
+            }
+            else
+            {
+                entity.SetPosition(packet.GetPos());
+                // Надо задать позицию с сервера, на земле не важено
+                entity.SetMotionServer(packet.GetPos(), false);
             }
             ArrayList list = packet.GetList();
             if (list != null && list.Count > 0)

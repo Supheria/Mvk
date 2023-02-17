@@ -291,16 +291,20 @@ namespace MvkClient.Renderer
             //int countRender = MvkGlobal.COUNT_RENDER_CHUNK_FRAME;
             List<ChunkRender> chunks = new List<ChunkRender>();
 
-            int count = ClientMain.Player.ChunkFC.Length - 1;
+            FrustumStruct[] fss = ClientMain.Player.ChunkFC;
+
+            int count = fss.Length - 1;
             int i, j, y;
             bool isDense;
+            
             FrustumStruct fs;
             ChunkRender chunk;
             byte[] vs;
+
             // Пробегаем по всем чанкам которые видим FrustumCulling
             for (i = 0; i <= count; i++)
             {
-                fs = ClientMain.Player.ChunkFC[i];
+                fs = fss[i];
                 if (fs.IsChunk())
                 {
                     chunk = fs.GetChunk();

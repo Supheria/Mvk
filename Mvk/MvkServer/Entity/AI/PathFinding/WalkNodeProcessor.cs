@@ -21,6 +21,10 @@ namespace MvkServer.Entity.AI.PathFinding
         /// Следует избегать воды
         /// </summary>
         private bool shouldAvoidWater = true;
+        /// <summary>
+        /// Избегает лавы и огня
+        /// </summary>
+        public bool avoidsLavaOrFire = true;
 
         /// <summary>
         /// Инициализация
@@ -143,7 +147,7 @@ namespace MvkServer.Entity.AI.PathFinding
                     // Проверяем что под ногами
                     i = CheckRowBlocks(x, y - 1, z);
 
-                    if ((avoidsWater && i == -1) || i == -2)
+                    if ((avoidsWater && i == -1) || (avoidsLavaOrFire && i == -3) || i == -2)
                     {
                         // Если вода, если избегаем воду или любая опастность (лава, огонь, нефть)
                         return null;
@@ -206,7 +210,7 @@ namespace MvkServer.Entity.AI.PathFinding
                                 // столкновении с водой (если избегает воды)
                                 return true;
                             }
-                            if (material == EnumMaterial.Lava || material == EnumMaterial.Fire)
+                            if (avoidsLavaOrFire && (material == EnumMaterial.Lava || material == EnumMaterial.Fire))
                             {
                                 // столкновении с лавой или огнём
                                 return true;
@@ -223,13 +227,14 @@ namespace MvkServer.Entity.AI.PathFinding
 
             return false;
         }
-        
+
         /// <summary>
         /// Проверьте блоки ряда снизу, чтоб можно было упасть, возвращаем:
         /// 1 -  нет столкновений для перемещения по блокам,
         /// 0 -  столкновении с любым сплошным блоком, можно ходить, !приоритет 
-        /// -1 - столкновении с водой (если избегает воды), 
-        /// -2 - столкновении с лавой или огнём или нефтью
+        /// -1 - столкновении с водой, 
+        /// -2 - столкновении с нефтью,
+        /// -3 - столкновении с лавой или огнём
         /// </summary>
         private int CheckRowBlocks(int posX, int posY, int posZ)
         {
@@ -238,8 +243,10 @@ namespace MvkServer.Entity.AI.PathFinding
             EnumMaterial material;
             // имеется блок воды
             bool isWater = false;
-            // имеется блок опастности, лавы, нефти или огня
-            bool isWarning = false;
+            // имеется блок нефти
+            bool isOil = false;
+            // имеется блок лавы или огня
+            bool isLavaOrFile = false;
 
             for (int x = posX; x < posX + sizeXZ; ++x)
             {
@@ -251,15 +258,20 @@ namespace MvkServer.Entity.AI.PathFinding
                         block = blockState.GetBlock();
                         material = block.Material;
 
-                        if (material == EnumMaterial.Water && avoidsWater)
+                        if (material == EnumMaterial.Water)
                         {
-                            // столкновении с водой (если избегает воды)
+                            // столкновении с водой
                             isWater = true;
                         }
-                        else if (material == EnumMaterial.Lava || material == EnumMaterial.Fire || material == EnumMaterial.Oil)
+                        else if (material == EnumMaterial.Oil)
                         {
-                            // столкновении с лавой или огнём или нефтью
-                            isWarning = true;
+                            // столкновении с нефтью
+                            isOil = true;
+                        }
+                        else if (material == EnumMaterial.Lava || material == EnumMaterial.Fire)
+                        {
+                            // столкновении с лавой или огнём
+                            isLavaOrFile = true;
                         }
                         else if (block.IsPassableOnIt(blockState.met))
                         {
@@ -270,7 +282,8 @@ namespace MvkServer.Entity.AI.PathFinding
                 }
             }
 
-            if (isWarning) return -2;
+            if (isLavaOrFile) return -3;
+            if (isOil) return -2;
             if (isWater) return -1;
             return 1;
         }

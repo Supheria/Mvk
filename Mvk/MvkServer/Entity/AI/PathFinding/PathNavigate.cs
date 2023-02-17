@@ -13,17 +13,17 @@ namespace MvkServer.Entity.AI.PathFinding
         /// Путь максимальной длинны, да обрезания бесмысленного поиска обхода.
         /// Значение должно быть примерно по формуле Sqrt(PATH_SEARCH_RANGE^2 * 2) * 2
         /// </summary>
-        public const int PATH_MAXIMUN_LENGTH = 44;
+        public const int PATH_MAXIMUN_LENGTH = 90;
         /// <summary>
         /// Максимальное расстояние, на котором будет выполняться поиск пути.
         /// Количество блоков (дополнительных) +/- на каждой оси, которые извлекаются в качестве кеша 
         /// для пространства поиска навигатора
         /// </summary>
-        private const float PATH_SEARCH_RANGE = 16f;
+        private const float PATH_SEARCH_RANGE = 32f;
         /// <summary>
         /// Через какое количество тиков прерывается перемещение, если сущность не перемещалось
         /// </summary>
-        private const int COUNT_TICK_NOT_PATH = 50;
+        private const int COUNT_TICK_NOT_PATH = 40;
 
         protected EntityLiving theEntity; 
         protected WorldBase world;

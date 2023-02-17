@@ -13,7 +13,7 @@ namespace MvkServer.Entity.List
     {
         public EntityPiece(WorldBase world) : base(world)
             => Type = EnumEntities.Piece;
-        public EntityPiece(WorldBase world, EntityPlayer entityPlayer) : base(world, entityPlayer)
+        public EntityPiece(WorldBase world, EntityLiving entityThrower) : base(world, entityThrower)
             => Type = EnumEntities.Piece;
 
         protected override void OnImpact(MovingObjectPosition moving, bool isLiquid)
@@ -61,7 +61,7 @@ namespace MvkServer.Entity.List
                     }
                     else if (moving.IsEntity())
                     {
-                        moving.Entity.AttackEntityFrom(EnumDamageSource.Piece, power, Motion, EntityThrower);
+                        moving.Entity.AttackEntityFrom(EnumDamageSource.Piece, power, Motion * .2f, EntityThrower);
                     }
                     if (isBreak)
                     {

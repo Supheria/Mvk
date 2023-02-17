@@ -254,7 +254,6 @@ namespace MvkClient.World
         public void AddEntityToWorld(ushort id, EntityBase entity)
         {
             EntityBase entityId = GetEntityByID(id);
-
             if (entityId == null)
             {
                 SpawnEntityInWorld(entity);
@@ -536,7 +535,6 @@ namespace MvkClient.World
         protected override void OnEntityRemoved(EntityBase entity)
         {
             base.OnEntityRemoved(entity);
-
             if (EntityList.ContainsValue(entity))
             {
                 if (!entity.IsDead)

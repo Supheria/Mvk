@@ -18,10 +18,8 @@ namespace MvkClient.Renderer.Shaders
             ShVoxel.Create(gl, new Dictionary<uint, string> {
                 { 0, "v_position" },
                 { 1, "v_texCoord" },
-                //{ 2, "v_color" },
-                { 2, "v_r" },
-                { 3, "v_g" },
-                { 4, "v_b" }
+                { 2, "v_rgbl" },
+                { 3, "v_anim" }
             });
         }
     }

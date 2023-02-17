@@ -10,8 +10,8 @@ namespace MvkServer.World.Block.List
     /// </summary>
     public class BlockUniLoose : BlockUniSolid
     {
-        public BlockUniLoose(int numberTexture, vec3 color, int hardness = 5, float resistance = .5f)
-            : base(numberTexture, color, hardness, resistance)
+        public BlockUniLoose(int numberTexture, vec3 color, EnumItem dropItem, int hardness = 5, float resistance = .5f)
+            : base(numberTexture, color, dropItem, hardness, resistance)
         {
             Material = EnumMaterial.Loose;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGravel1, AssetsSample.DigGravel2, AssetsSample.DigGravel3, AssetsSample.DigGravel4 };

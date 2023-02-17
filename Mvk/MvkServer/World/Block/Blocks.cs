@@ -36,16 +36,16 @@ namespace MvkServer.World.Block
                 case EnumBlock.Air: return new BlockAir();
                 case EnumBlock.Debug: return new BlockDebug();
                 case EnumBlock.Bedrock: return new BlockBedrock();
-                case EnumBlock.Stone: return new BlockUniSolid(2, new vec3(.7f));
-                case EnumBlock.Cobblestone: return new BlockUniSolid(3, new vec3(.7f));
-                case EnumBlock.Limestone: return new BlockUniSolid(4, new vec3(.76f, .77f, .67f), 20);
-                case EnumBlock.Granite: return new BlockUniSolid(5, new vec3(.86f, .69f, .6f));
+                case EnumBlock.Stone: return new BlockUniSolid(2, new vec3(.7f), EnumItem.PieceStone);
+                case EnumBlock.Cobblestone: return new BlockUniSolid(3, new vec3(.7f), EnumItem.PieceStone);
+                case EnumBlock.Limestone: return new BlockUniSolid(4, new vec3(.76f, .77f, .67f), EnumItem.PieceLimestone, 20);
+                case EnumBlock.Granite: return new BlockUniSolid(5, new vec3(.86f, .69f, .6f), EnumItem.PieceGranite);
                 case EnumBlock.Sandstone: return new BlockSandstone();
-                case EnumBlock.Dirt: return new BlockUniLoose(64, new vec3(.62f, .44f, .37f));
+                case EnumBlock.Dirt: return new BlockUniLoose(64, new vec3(.62f, .44f, .37f), EnumItem.PieceDirt);
                 case EnumBlock.Turf: return new BlockTurf();
                 case EnumBlock.Sand: return new BlockSand();
-                case EnumBlock.Gravel: return new BlockUniLoose(69, new vec3(1));
-                case EnumBlock.Clay: return new BlockUniLoose(70, new vec3(1));
+                case EnumBlock.Gravel: return new BlockUniLoose(69, new vec3(1), EnumItem.PieceGravel);
+                case EnumBlock.Clay: return new BlockUniLoose(70, new vec3(1), EnumItem.PieceClay);
                 case EnumBlock.Water: return new BlockWater();
                 case EnumBlock.WaterFlowing: return new BlockWaterFlowing();
                 case EnumBlock.Lava: return new BlockLava();
@@ -85,11 +85,11 @@ namespace MvkServer.World.Block
                 case EnumBlock.GlassWhite: return new BlockUniGlass(322, new vec3(1f));
                 case EnumBlock.GlassRed: return new BlockUniGlass(322, new vec3(1f, 0, 0));
                 case EnumBlock.GlassPane: return new BlockUniGlassPane(320, 321, new vec3(1f), false);
-                case EnumBlock.GlassPaneWhite: return new BlockUniGlassPane(322, 323, new vec3(1f, 0, 0));
-                case EnumBlock.GlassPaneRed: return new BlockUniGlassPane(322, 323, new vec3(1f));
-                case EnumBlock.Terracotta: return new BlockUniSolid(9, new vec3(.62f, .44f, .37f));
+                case EnumBlock.GlassPaneWhite: return new BlockUniGlassPane(322, 323, new vec3(1f));
+                case EnumBlock.GlassPaneRed: return new BlockUniGlassPane(322, 323, new vec3(1f, 0, 0));
+                case EnumBlock.Terracotta: return new BlockUniSolid(9, new vec3(.62f, .44f, .37f), EnumItem.PieceTerracotta);
                 case EnumBlock.Basalt: return new BlockBasalt();
-                case EnumBlock.Obsidian: return new BlockUniSolid(12, new vec3(.6f), 40, 20); // Resistance = 2000 minecraft
+                case EnumBlock.Obsidian: return new BlockUniSolid(12, new vec3(.6f), EnumItem.Block, 40, 20); // Resistance = 2000 minecraft
                 case EnumBlock.ElWire: return new BlockElWire();
                 case EnumBlock.ElLampOn: return new BlockElLampOn();
                 case EnumBlock.ElLampOff: return new BlockElLampOff();

@@ -33,18 +33,21 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entity\AI\EntityAIAttackThrowableItem.cs" />
     <Compile Include="Entity\AI\EntityAIAttackOnCollide.cs" />
     <Compile Include="Entity\AI\EntityAIBase.cs" />
     <Compile Include="Entity\AI\EntityAIFindNestSleep.cs" />
     <Compile Include="Entity\AI\EntityAIFindNestEgg.cs" />
     <Compile Include="Entity\AI\EntityAIFollowPlayer.cs" />
     <Compile Include="Entity\AI\EntityAIFollowYour.cs" />
+    <Compile Include="Entity\AI\EntityAISay.cs" />
     <Compile Include="Entity\AI\EntityAILookIdle.cs" />
     <Compile Include="Entity\AI\EntityAIFindSaplingEat.cs" />
     <Compile Include="Entity\AI\EntityAIHop.cs" />
     <Compile Include="Entity\AI\EntityAISwimming.cs" />
     <Compile Include="Entity\AI\EntityAITasks.cs" />
     <Compile Include="Entity\AI\EntityAIPanic.cs" />
+    <Compile Include="Entity\AI\EntityAIWanderFly.cs" />
     <Compile Include="Entity\AI\EntityAIWander.cs" />
     <Compile Include="Entity\AI\EntityAIWatchClosest.cs" />
     <Compile Include="Entity\AI\EntityMoveHelper.cs" />
@@ -68,6 +71,7 @@
     <Compile Include="Entity\EntityTrackerEntry.cs" />
     <Compile Include="Entity\EnumActionChanged.cs" />
     <Compile Include="Entity\EnumParticle.cs" />
+    <Compile Include="Entity\List\EntityBook.cs" />
     <Compile Include="Entity\List\EntityPakan.cs" />
     <Compile Include="Entity\List\EntityChemoglot.cs" />
     <Compile Include="Entity\List\EntityItem.cs" />

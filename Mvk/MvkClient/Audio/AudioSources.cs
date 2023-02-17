@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using MvkServer.Util;
+using System;
+using System.Collections.Generic;
 
 namespace MvkClient.Audio
 {
@@ -7,7 +9,7 @@ namespace MvkClient.Audio
     /// </summary>
     public class AudioSources
     {
-        protected AudioSource[] sources;
+        private AudioSource[] sources;
         /// <summary>
         /// Общее количество источников
         /// </summary>
@@ -22,10 +24,17 @@ namespace MvkClient.Audio
         /// </summary>
         public void Initialize()
         {
+            IntPtr device = Al.alcOpenDevice("");
+            if (device == IntPtr.Zero)
+            {
+                throw new Exception("Библиотека звука OpenAL не смогла инициализироваться,\r\nскорее всего файл OpenAL32.dll не подходит.");
+            }
             List<AudioSource> list = new List<AudioSource>();
             bool error = false;
-            while (!error)
+            int count = 10000;
+            while (!error && count > 0)
             {
+                count--;
                 AudioSource audio = new AudioSource();
                 if (audio.IsError)
                 {
@@ -35,6 +44,10 @@ namespace MvkClient.Audio
                 {
                     list.Add(audio);
                 }
+            }
+            if (count <= 0)
+            {
+                throw new Exception("Библиотека звука OpenAL собрала больше 10000 каналов, это подозрительно!");
             }
             sources = list.ToArray();
             CountAll = list.Count;
