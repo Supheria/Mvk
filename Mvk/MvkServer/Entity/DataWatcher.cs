@@ -126,8 +126,9 @@ namespace MvkServer.Entity
 
         /// <summary>
         /// Обновляет уже существующий объект
+        /// Вернёт true если было обновление
         /// </summary>
-        public void UpdateObject(int id, object obj)
+        public bool UpdateObject(int id, object obj)
         {
             WatchableObject watchableObject = GetWatchedObject(id);
 
@@ -138,7 +139,9 @@ namespace MvkServer.Entity
                 watchableObject.SetWatched(true);
                 watched[id] = watchableObject;
                 IsChanged = true;
+                return true;
             }
+            return false;
         }
 
         /// <summary>

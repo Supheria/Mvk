@@ -263,20 +263,15 @@ namespace MvkClient.World
         public void ModifiedToRenderAlpha(int x, int y, int z)
         {
             ChunkRender chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x, z));
-            if (chunk != null)
-            {
-                chunk.ModifiedToRenderAlpha(y);
-                chunk.ModifiedToRenderAlpha(y - 1);
-                chunk.ModifiedToRenderAlpha(y + 1);
-            }
+            if (chunk != null) chunk.ModifiedToRenderAlpha();
             chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x + 1, z));
-            if (chunk != null) chunk.ModifiedToRenderAlpha(y);
+            if (chunk != null) chunk.ModifiedToRenderAlpha();
             chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x - 1, z));
-            if (chunk != null) chunk.ModifiedToRenderAlpha(y);
+            if (chunk != null) chunk.ModifiedToRenderAlpha();
             chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x, z + 1));
-            if (chunk != null) chunk.ModifiedToRenderAlpha(y);
+            if (chunk != null) chunk.ModifiedToRenderAlpha();
             chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x, z - 1));
-            if (chunk != null) chunk.ModifiedToRenderAlpha(y);
+            if (chunk != null) chunk.ModifiedToRenderAlpha();
         }
 
         /**

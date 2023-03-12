@@ -224,10 +224,12 @@ namespace MvkServer.Entity.List
         /// </summary>
         private void SearchForOtherItemsNearby()
         {
-            List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityItem, BoundingBox.Expand(new vec3(.5f, 0, .5f)), -1);
+            List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.EntityItem,
+                BoundingBox.Expand(new vec3(1.5f)), -1);
+
             for (int i = 0; i < list.Count; i++)
             {
-                CombineItems(list[i] as EntityItem);
+                if (CombineItems(list[i] as EntityItem)) return;
             }
         }
 
@@ -255,7 +257,7 @@ namespace MvkServer.Entity.List
                         {
                             stackOther.AddAmount(stack.Amount);
                             other.delayBeforeCanPickup = Mth.Max(other.delayBeforeCanPickup, delayBeforeCanPickup);
-                            other.Age = Mth.Min(other.Age, Age);
+                            other.Age = Mth.Max(other.Age, Age);
                             other.SetEntityItemStack(stackOther);
                             SetDead();
                             return true;
@@ -291,8 +293,10 @@ namespace MvkServer.Entity.List
         /// </summary>
         private void SetEntityItemStack(ItemStack itemStack)
         {
-            MetaData.UpdateObject(10, itemStack);
-            //MetaData.SetObjectWatched(10);
+            if (!MetaData.UpdateObject(10, itemStack))
+            {
+                MetaData.SetObjectWatched(10);
+            }
         }
 
         /// <summary>

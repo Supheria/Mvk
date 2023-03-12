@@ -109,6 +109,7 @@ namespace MvkClient.Renderer.Block
         {
             xc = chunk.Position.x;
             zc = chunk.Position.y;
+
             int rs;
             if (posChunkY + 1 >= ChunkBase.COUNT_HEIGHT_BLOCK) rs = resultSide[0] = 0x0F;
             else rs = resultSide[0] = GetBlockSideState(posChunkX, posChunkY + 1, posChunkZ, false, true);
@@ -131,6 +132,7 @@ namespace MvkClient.Renderer.Block
                 }
                 else
                 {
+                    DamagedBlocksValue = chunk.GetDestroyBlocksValue(posChunkX, posChunkY, posChunkZ);
                     RenderMeshBlock();
                 }
             }

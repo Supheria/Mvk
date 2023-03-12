@@ -167,9 +167,11 @@ namespace MvkClient.Renderer
             {
                 int countChunk = Debug.CountUpdateChunck;
                 Debug.CountUpdateChunck = 0;
+                int countChunkAlpha = Debug.CountUpdateChunckAlpha;
+                Debug.CountUpdateChunckAlpha = 0;
                 float speedTick = 0;
                 if (tps > 0) speedTick = speedTickAll / tps;
-                Debug.SetTpsFps(fps, speedFrameAll / fps, tps, speedTick, countChunk);
+                Debug.SetTpsFps(fps, speedFrameAll / fps, tps, speedTick, countChunk, countChunkAlpha);
                 timerSecond += 1000;
                 speedFrameAll = 0;
                 speedTickAll = 0;

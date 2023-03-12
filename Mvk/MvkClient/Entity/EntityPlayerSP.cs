@@ -189,7 +189,7 @@ namespace MvkClient.Entity
             GLWindow.gl.LoadIdentity();
             GLWindow.gl.Perspective(glm.degrees(Fov.ValueFrame),
                 (float)GLWindow.WindowWidth / (float)GLWindow.WindowHeight,
-                0.001f, distantion == 0 ? CamersDistance() : distantion);
+                0.01f, distantion == 0 ? CamersDistance() : distantion);
             GLWindow.gl.MatrixMode(OpenGL.GL_MODELVIEW);
             GLWindow.gl.LoadIdentity();
             if (lookAtDL != null && lookAtDL.Length == 3)
@@ -489,7 +489,7 @@ namespace MvkClient.Entity
             int ort = Debug.IsDrawOrto * 2;
             mat4 projection = Debug.IsDrawOrto > 0
                 ? glm.ortho(-GLWindow.WindowWidth / ort, GLWindow.WindowWidth / ort, -GLWindow.WindowHeight / ort, GLWindow.WindowHeight / ort, -250, 500)
-                : glm.perspective(Fov.ValueFrame, (float)GLWindow.WindowWidth / (float)GLWindow.WindowHeight, 0.001f, CamersDistance());
+                : glm.perspective(Fov.ValueFrame, (float)GLWindow.WindowWidth / (float)GLWindow.WindowHeight, 0.01f, CamersDistance());
             Projection = projection.to_array();
 
             vec3 pos = new vec3(0, GetEyeHeightFrame(), 0);
@@ -613,7 +613,6 @@ namespace MvkClient.Entity
             
             List<FrustumStruct> listC = new List<FrustumStruct>();
 
-            
             if (DistSqrt != null)
             {
                 int i, xc, zc, xb, zb, x1, y1, z1, x2, y2, z2;
@@ -649,8 +648,9 @@ namespace MvkClient.Entity
                                 if (!Debug.DrawFrustumCulling.Contains(coord)) Debug.DrawFrustumCulling.Add(coord);
                             }
                             listC.Add(frustum);
-                            countFC += count;
                         }
+                        // Для подсчёта чанков меша
+                        countFC++;
                     }
                 }
             }
@@ -1013,7 +1013,7 @@ namespace MvkClient.Entity
                 {
                     vec2i pos = new vec2i(posCh.x + distSqrtAlpha[d].x, posCh.y + distSqrtAlpha[d].z);
                     ChunkRender chunk = ClientWorld.ChunkPrClient.GetChunkRender(pos);
-                    if (chunk != null) chunk.ModifiedToRenderAlpha(posY + distSqrtAlpha[d].y);
+                    if (chunk != null) chunk.ModifiedToRenderAlpha();
                 }
             }
             else if (!PositionAlphaBlock.Equals(positionAlphaBlockPrev))

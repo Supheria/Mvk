@@ -953,7 +953,7 @@ namespace MvkServer.Entity
             if (IsFlying)
             {
                 float y = Motion.y;
-                MoveWithHeading(strafe, forward, .5951f * Speed * (IsSprinting() ? 2.0f : 1f));
+                MoveWithHeading(strafe, forward, .5951f * Speed * (IsSprinting() ? 5.0f : 1f));
                 Motion = new vec3(Motion.x, y * .6f, Motion.z);
             }
             else

@@ -1,7 +1,6 @@
 ﻿using MvkClient.Util;
 using SharpGL;
 using System;
-using System.Collections.Generic;
 
 namespace MvkClient.Renderer.Chunk
 {
@@ -22,14 +21,7 @@ namespace MvkClient.Renderer.Chunk
         private OpenGL gl;
         private readonly uint[] vao = new uint[1];
         private readonly uint[] vbo = new uint[1];
-        /// <summary>
-        /// Количество float на одну вершину
-        /// </summary>
-        //private readonly int vertexSize = 7;
-        /// <summary>
-        /// Количество float в буфере на один полигон
-        /// </summary>
-        //private readonly int poligonFloat = 21;
+
         /// <summary>
         /// Количество вершин
         /// </summary>

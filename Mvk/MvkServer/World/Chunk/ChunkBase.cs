@@ -455,7 +455,6 @@ namespace MvkServer.World.Chunk
                             if (storage.addMet.ContainsKey(key)) storage.addMet[key] = (ushort)(buffer[count++] | buffer[count++] << 8);
                             else storage.addMet.Add(key, (ushort)(buffer[count++] | buffer[count++] << 8) );
                         }
-                        ModifiedToRender(sy);
                     }
                 }
                 // биом
@@ -479,7 +478,7 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Пометить что надо перерендерить сетку чанка для клиента
         /// </summary>
-        public virtual void ModifiedToRender(int y) { }
+        public virtual void ModifiedToRender() { }
 
         /// <summary>
         /// Задать чанк байтами

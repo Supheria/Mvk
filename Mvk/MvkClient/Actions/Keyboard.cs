@@ -84,10 +84,7 @@ namespace MvkClient.Actions
             else if (key == 82)
             {
                 ChunkBase chunk = World.GetChunk(ClientMain.Player.GetChunkPos());
-                for (int y = 0; y < ChunkBase.COUNT_HEIGHT; y++)
-                {
-                    chunk.ModifiedToRender(y); // R
-                }
+                chunk.ModifiedToRender(); // R
             }
 
             else if (key == 65) ClientMain.KeyBind.left = true;

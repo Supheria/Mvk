@@ -63,6 +63,10 @@ namespace MvkClient
         /// </summary>
         public static int CountUpdateChunck = 0;
         /// <summary>
+        /// Сколько обновилось чанков
+        /// </summary>
+        public static int CountUpdateChunckAlpha = 0;
+        /// <summary>
         /// Фокус блок
         /// </summary>
         public static string BlockFocus = "";
@@ -70,7 +74,7 @@ namespace MvkClient
         /// Время рендера чанка в мс, среднее из последних 8
         /// </summary>
         public static float RenderChunckTime8 = 0;
-        public static float RenderChunckTime = 0;
+        public static float RenderChunckTimeAlpha8 = 0;
 
         /// <summary>
         /// Трафик в байтах
@@ -85,13 +89,13 @@ namespace MvkClient
         public static float DFloat = 0;
         public static string DStr = "";
 
-
-
         public static bool DStart = false;
 
         protected static string strTpsFps = "";
-        public static void SetTpsFps(int fps, float speedFrame, int tps, float speedTick, int countUpdateChunk) 
-            => strTpsFps = string.Format("Speed: {0} fps {1:0.00} ms {2} tps {3:0.00} ms ({4})", fps, speedFrame, tps, speedTick, countUpdateChunk);
+        public static void SetTpsFps(int fps, float speedFrame, int tps, float speedTick,
+            int countUpdateChunk, int countUpdateChunkAlpha) 
+            => strTpsFps = string.Format("Speed: {0} fps {1:0.00} ms {2} tps {3:0.00} ms ({4}/a{5})",
+                fps, speedFrame, tps, speedTick, countUpdateChunk, countUpdateChunkAlpha);
 
         public static string strServer = "";
         public static string strClient = "";
@@ -107,8 +111,8 @@ namespace MvkClient
             string s = strServer == "" ? "" : "Server " + strServer + "\r\n";
             string c = strClient == "" ? "" : "Client " + strClient + "\r\n"
                     + "Traffic mb:" + (Traffic / 1048576f).ToString("0.00") + "\r\n"
-                    + "RenderChunk8 ms:" + RenderChunckTime8.ToString("0.000") + "\r\n";
-            
+                    + "RenderChunk8 ms:" + RenderChunckTime8.ToString("0.000") 
+                    + " a ms:" + RenderChunckTimeAlpha8.ToString("0.000") + "\r\n";
             return version + "\r\n"
                 + strTpsFps + "\r\n"
                 + "Sound: " + strSound + "\r\n"

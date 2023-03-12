@@ -399,10 +399,7 @@ namespace MvkClient.World
                     ChunkRender chunk = ChunkPrClient.GetChunkRender(new vec2i(x, z));
                     if (chunk != null)
                     {
-                        for (y = c0y; y <= c1y; y++)
-                        {
-                            chunk.ModifiedToRender(y);
-                        }
+                        chunk.ModifiedToRender();
                     }
                 }
             }
@@ -471,7 +468,7 @@ namespace MvkClient.World
                     }
                     chunk.DestroyBlockRemove(breakerId);
                 }
-                chunk.ModifiedToRender(blockPos.GetPositionChunkY());
+                chunk.ModifiedToRender();
             }
         }
 
@@ -510,10 +507,7 @@ namespace MvkClient.World
                     ChunkRender chunk = ChunkPrClient.GetChunkRender(coord);
                     if (chunk != null)
                     {
-                        for (int y = 0; y < chunk.StorageArrays.Length; y++)
-                        {
-                            chunk.ModifiedToRender(y);
-                        }
+                        chunk.ModifiedToRender();
                     }
                 }
             }
