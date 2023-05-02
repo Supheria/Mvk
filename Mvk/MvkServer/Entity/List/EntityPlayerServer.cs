@@ -301,7 +301,7 @@ namespace MvkServer.Entity.List
         public void UpOverviewChunkPrev()
         {
             OverviewChunkPrev = OverviewChunk;
-            DistSqrt = MvkStatic.GetSqrt(OverviewChunk + 5);
+            DistSqrt = MvkStatic.DistSqrtTwo2d[OverviewChunk + PlayerManager.addServer];
         }
 
         /// <summary>

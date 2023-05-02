@@ -1,4 +1,5 @@
 ﻿using MvkClient.Renderer.Chunk;
+using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
@@ -236,23 +237,24 @@ namespace MvkClient.World
         /// для клиента
         /// Tick
         /// </summary>
-        //public void FixOverviewChunk(EntityPlayer entity)
-        //{
-        //    // дополнительно к обзору для кэша из-за клона обработки, разных потоков
-        //    int additional = 6;
-        //    vec2i chunkCoor = entity.GetChunkPos();
-        //    vec2i min = chunkCoor - (entity.OverviewChunk + additional);
-        //    vec2i max = chunkCoor + (entity.OverviewChunk + additional);
+        public void FixOverviewChunk()
+        {
+            EntityPlayer entity = ClientWorld.ClientMain.Player;
+            // дополнительно к обзору для кэша из-за возможной обработки, разных потоков
+            int additional = 2;
+            vec2i chunkCoor = entity.GetChunkPos();
+            vec2i min = chunkCoor - (entity.OverviewChunk + additional);
+            vec2i max = chunkCoor + (entity.OverviewChunk + additional);
 
-        //    Hashtable ht = chunkMapping.CloneMap();
-        //    foreach (ChunkRender chunk in ht.Values)
-        //    {
-        //        if (chunk.Position.x < min.x || chunk.Position.x > max.x || chunk.Position.y < min.y || chunk.Position.y > max.y)
-        //        {
-        //            UnloadChunk(chunk);
-        //        }
-        //    }
-        //}
+            Dictionary<vec2i, ChunkBase>.ValueCollection chunks = chunkMapping.Values();
+            foreach (ChunkRender chunk in chunks)
+            {
+                if (chunk.Position.x < min.x || chunk.Position.x > max.x || chunk.Position.y < min.y || chunk.Position.y > max.y)
+                {
+                    UnloadChunk(chunk);
+                }
+            }
+        }
 
         /// <summary>
         /// Сделать запрос на обновление близ лежащих псевдо чанков для альфа блоков
@@ -263,15 +265,24 @@ namespace MvkClient.World
         public void ModifiedToRenderAlpha(int x, int y, int z)
         {
             ChunkRender chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x, z));
-            if (chunk != null) chunk.ModifiedToRenderAlpha();
+            if (chunk != null)
+            {
+                if (!chunk.ModifiedToRenderAlpha(y))
+                {
+                    if (!chunk.ModifiedToRenderAlpha(y - 1))
+                    {
+                        chunk.ModifiedToRenderAlpha(y + 1);
+                    }
+                }
+            }
             chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x + 1, z));
-            if (chunk != null) chunk.ModifiedToRenderAlpha();
+            if (chunk != null) chunk.ModifiedToRenderAlpha(y);
             chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x - 1, z));
-            if (chunk != null) chunk.ModifiedToRenderAlpha();
+            if (chunk != null) chunk.ModifiedToRenderAlpha(y);
             chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x, z + 1));
-            if (chunk != null) chunk.ModifiedToRenderAlpha();
+            if (chunk != null) chunk.ModifiedToRenderAlpha(y);
             chunk = ClientWorld.ChunkPrClient.GetChunkRender(new vec2i(x, z - 1));
-            if (chunk != null) chunk.ModifiedToRenderAlpha();
+            if (chunk != null) chunk.ModifiedToRenderAlpha(y);
         }
 
         /**

@@ -76,29 +76,22 @@ namespace MvkServer.Management
         /// <summary>
         /// Убрать игрока с конкретного чанка
         /// </summary>
+        /// <param name="isServer">Для обзора у сервера, где +5 чанков к обзору</param>
         public void RemovePlayer(EntityPlayerServer player, bool isServer)
         {
             if (playersWatchingChunk.Contains(player))
             {
-                ChunkBase chunk = playerManager.World.GetChunk(CurrentChunk);
-
-                // отправить игроку что чанк удалить
-                //if (chunk.IsPopulated()) 
-                if (chunk != null)
-                {
-                    //playerManager.World.Log.Log("Remov: {0}", CurrentChunk);
-                    player.SendPacket(new PacketS21ChunkData(chunk, false, 0));
-                }
-
-                player.LoadedChunks.Remove(CurrentChunk);
-
-                if (isServer)
+                if (isServer) 
                 {
                     playersWatchingChunk.Remove(player);
 
                     if (playersWatchingChunk.Count == 0)
                     {
-                        if (chunk != null) IncreaseInhabitedTime(chunk);
+                        ChunkBase chunk = playerManager.World.GetChunk(CurrentChunk);
+                        if (chunk != null)
+                        {
+                            IncreaseInhabitedTime(chunk);
+                        }
                         playerManager.PlayerInstancesRemove(CurrentChunk, this);
                         if (numBlocksToUpdate > 0)
                         {
@@ -106,6 +99,16 @@ namespace MvkServer.Management
                         }
                         playerManager.World.ChunkPrServ.DropChunk(CurrentChunk);
                     }
+                }
+                else
+                {
+                    ChunkBase chunk = playerManager.World.GetChunk(CurrentChunk);
+                    // отправить игроку что чанк удалить
+                    if (chunk != null)
+                    {
+                        player.SendPacket(new PacketS21ChunkData(chunk, false, 0));
+                    }
+                    player.LoadedChunks.Remove(CurrentChunk);
                 }
             }
         }
@@ -161,13 +164,17 @@ namespace MvkServer.Management
         //    List<EntityPlayerServer> list = playersWatchingChunk.GetRange(0, playersWatchingChunk.Count);
         //    foreach (EntityPlayerServer entityPlayer in list)
         //    {
-        //        int radius = entityPlayer.OverviewChunk + 1;
+        //        int radius = entityPlayer.OverviewChunk + 4 + 1;
         //        vec2i min = entityPlayer.ChunkPosManaged - radius;
         //        vec2i max = entityPlayer.ChunkPosManaged + radius;
         //        if (CurrentChunk.x < min.x || CurrentChunk.x > max.x || CurrentChunk.y < min.y || CurrentChunk.y > max.y)
         //        {
-        //            RemovePlayer(entityPlayer);
+        //            RemovePlayer(entityPlayer, true);
         //        }
+        //    }
+        //    if (list.Count == 0)
+        //    {
+        //        playerManager.World.ChunkPrServ.DropChunk(CurrentChunk);
         //    }
         //}
 
@@ -265,13 +272,13 @@ namespace MvkServer.Management
         public void ProcessChunk()
         {
             IncreaseInhabitedTime(playerManager.World.GetChunk(CurrentChunk));
-            //    FixOverviewChunk();
+            //FixOverviewChunk();
             //    if (CountPlayers() == 0)
             //    {
             //        playerInstances.Remove(ccp.Position);
             //        world.ChunkPrServ.DroppedChunks.Add(ccp.Position);
             //    }
-            //// Добавить в список удаляющих чанков которые не полного статуса
+            // Добавить в список удаляющих чанков которые не полного статуса
             //    world.ChunkPrServ.DroopedChunkStatusMin(players);
         }
 

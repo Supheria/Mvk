@@ -38,9 +38,13 @@ namespace MvkClient.Renderer
         public ScreenInGame ScreenGame { get; private set; }
 
         /// <summary>
+        /// Буфер сплошных блоков всего ряда (8)
+        /// </summary>
+        public readonly ArrayMvk<byte> bufferHeight = new ArrayMvk<byte>(66060288);
+        /// <summary>
         /// Буфер сплошных блоков всего ряда
         /// </summary>
-        public readonly ArrayMvk<byte> buffer = new ArrayMvk<byte>(66060288);
+        public readonly ArrayMvk<byte> buffer = new ArrayMvk<byte>(4128768);
         /// <summary>
         /// Буфер сплошных блоков кэш
         /// </summary>
@@ -219,7 +223,6 @@ namespace MvkClient.Renderer
             DrawSky(timeIndex);
 
             // Воксели VBO
-            
             List<ChunkRender> chunks = DrawVoxel(timeIndex);
 
             GLRender.BlendEnable();
@@ -288,7 +291,6 @@ namespace MvkClient.Renderer
             int i;
             FrustumStruct fs;
             ChunkRender chunk;
-            byte[] vs;
 
             // Пробегаем по всем чанкам которые видим FrustumCulling
             for (i = 0; i <= count; i++)
@@ -298,7 +300,7 @@ namespace MvkClient.Renderer
                 {
                     chunk = fs.GetChunk();
                     if (chunk == null || !chunk.IsChunkPresent) continue;
-                    vs = fs.GetSortList();
+
                     // Проверяем надо ли рендер для псевдо чанка, и возможно ли по времени
                     if (chunk.IsModifiedRender() && renderQueues.CountForward < MvkGlobal.COUNT_RENDER_CHUNK_FRAME)
                     {
@@ -369,7 +371,7 @@ namespace MvkClient.Renderer
             int i;
             FrustumStruct fs;
             ChunkRender chunk;
-            byte[] vs;
+            
             // Пробегаем по всем чанкам которые видим FrustumCulling в обратном порядке, с далека и ближе
             for (i = count; i >= 0; i--)
             {
@@ -377,7 +379,7 @@ namespace MvkClient.Renderer
                 if (fs.IsChunk())
                 {
                     chunk = fs.GetChunk();
-                    vs = fs.GetSortList();
+                    
                     // Проверяем надо ли рендер для псевдо чанка, и возможно ли по времени
                     if (chunk.IsModifiedRenderAlpha() && renderAlphaQueues.CountForward < MvkGlobal.COUNT_RENDER_CHUNK_FRAME_ALPHA)
                     {
@@ -393,7 +395,7 @@ namespace MvkClient.Renderer
 
                     // Занести буфер альфа блоков псевдо чанка если это требуется
                     if (chunk.IsMeshAlphaBinding()) chunk.BindBufferAlpha();
-
+                    
                     // Прорисовка альфа блоков псевдо чанка
                     if (chunk.NotNullMeshAlpha())
                     {
@@ -645,7 +647,7 @@ namespace MvkClient.Renderer
             GLRender.FogEnable();
 
             // Если игрок ниже уровня моря, то низ делаем тёмный, для защиты от бликов, при удалении блоков
-            if (ClientMain.Player.Position.y < 96)
+            if (ClientMain.Player.Position.y < MvkServer.World.Biome.BiomeBase.HEIGHT_WATER)
             {
                 GLRender.PushMatrix();
                 GLRender.Texture2DDisable();
@@ -737,8 +739,8 @@ namespace MvkClient.Renderer
             GLRender.CullDisable();
             GLRender.BlendEnable();
             // TODO::2022-05-27 туман облаков, в зависимости от уровня ландшафта, примерно прикинул на 96
-            GLWindow.gl.Fog(OpenGL.GL_FOG_START, 386f);
-            GLWindow.gl.Fog(OpenGL.GL_FOG_END, 512f);
+            GLWindow.gl.Fog(OpenGL.GL_FOG_START, 386f); // 386
+            GLWindow.gl.Fog(OpenGL.GL_FOG_END, 512f); // 512
             GLRender.FogEnable();
             GLWindow.gl.BlendFuncSeparate(OpenGL.GL_SRC_ALPHA, OpenGL.GL_ONE_MINUS_SRC_ALPHA, OpenGL.GL_ONE, OpenGL.GL_ZERO);
 
@@ -748,7 +750,8 @@ namespace MvkClient.Renderer
             vec3 pos = ClientMain.Player.GetPositionFrame(timeIndex);
             float speed = ClientMain.CloudTickCounter + timeIndex;
 
-            float y = 256f - pos.y;
+            //float y = 256f - pos.y;
+            float y = 128f - pos.y;
             float x0 = pos.x + speed * WorldBase.SPEED_CLOUD;
             
             float f1 = WorldBase.CLOUD_SIZE_TEXTURE;

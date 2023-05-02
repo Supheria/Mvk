@@ -62,12 +62,7 @@ namespace MvkServer.World.Block.List
                 numberTexture + 192, numberTexture + 193,
             };
             IsAddMet = true;
-            FullBlock = false;
-            Shadow = false;
-            AllSideForcibly = true;
-            АmbientOcclusion = false;
-            UseNeighborBrightness = true;
-            LightOpacity = 0;
+            SetUnique();
             Combustibility = true;
             IgniteOddsSunbathing = 10;
             BurnOdds = 20;
@@ -83,11 +78,6 @@ namespace MvkServer.World.Block.List
         /// Разрушается ли блок от жидкости
         /// </summary>
         public override bool IsLiquidDestruction() => true;
-
-        /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public override bool BlocksNotSame(int met) => true;
 
         /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)

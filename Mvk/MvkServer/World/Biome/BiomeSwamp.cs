@@ -1,14 +1,24 @@
-﻿using MvkServer.World.Gen;
+﻿using MvkServer.World.Block;
+using MvkServer.World.Gen;
 
 namespace MvkServer.World.Biome
 {
     /// <summary>
     /// Биом болотный
     /// </summary>
-    public class BiomeSwamp : BiomeBase
+    public class BiomeSwamp : BiomeAbGrass
     {
-        public BiomeSwamp(ChunkProviderGenerate chunkProvider) : base(chunkProvider)
+        public BiomeSwamp(ChunkProviderGenerateBase chunkProvider) : base(chunkProvider)
         {
+            blockIdBiomDebug = (ushort)EnumBlock.Clay;
+        }
+
+        /// <summary>
+        /// Инициализировать декорацию
+        /// </summary>
+        public override void InitDecorator(bool isRobinson)
+        {
+            base.InitDecorator(isRobinson);
             Decorator.oakPerChunk = 1;
             Decorator.fruitPerChunk = 1;
             Decorator.grassPerChunk = 32;
@@ -23,11 +33,22 @@ namespace MvkServer.World.Biome
         /// <param name="river">Определение центра реки 1..0..1</param>
         protected override int GetLevelHeight(int x, int z, float height, float river)
         {
-            int yh = 96 + (int)(height * 96f);
+            int yh = HEIGHT_WATER + (int)(height * HEIGHT_HILL);
             // пляшки чтоб понизить, больше в воде было
             float area = Provider.AreaNoise[x << 4 | z];
             if (area > 2f || area < -2f) yh--;
             return yh;
         }
+
+        /// <summary>
+        /// Получить уровень множителя высоты
+        /// </summary>
+        /// <param name="x">X 0..15</param>
+        /// <param name="z">Z 0..15</param>
+        /// <param name="height">Высота в блоках, средняя рекомендуемая</param>
+        /// <param name="heightNoise">Высота -1..0..1</param>
+        /// <param name="addNoise">Диапазон -1..0..1</param>
+        protected override int GetLevelHeightRobinson(int x, int z, int height, float heightNoise, float addNoise)
+            => height + (int) (addNoise * 4 - .8f);
     }
 }

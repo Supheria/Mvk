@@ -110,30 +110,41 @@ namespace MvkClient.Renderer.Block
             xc = chunk.Position.x;
             zc = chunk.Position.y;
 
-            int rs;
-            if (posChunkY + 1 >= ChunkBase.COUNT_HEIGHT_BLOCK) rs = resultSide[0] = 0x0F;
-            else rs = resultSide[0] = GetBlockSideState(posChunkX, posChunkY + 1, posChunkZ, false, true);
-            if (posChunkY - 1 < 0) rs += resultSide[1] = 0x0F;
-            else rs += resultSide[1] = GetBlockSideState(posChunkX, posChunkY - 1, posChunkZ, false);
-
-            yc = posChunkY >> 4;
-            rs += resultSide[2] = GetBlockSideState(posChunkX + 1, posChunkY, posChunkZ, true);
-            rs += resultSide[3] = GetBlockSideState(posChunkX - 1, posChunkY, posChunkZ, true);
-            rs += resultSide[4] = GetBlockSideState(posChunkX, posChunkY, posChunkZ - 1, true);
-            rs += resultSide[5] = GetBlockSideState(posChunkX, posChunkY, posChunkZ + 1, true);
-
-            stateLightHis = -1;
-            if (rs != -6)
+            if (block.IsUnique)
             {
-                if (block.UseNeighborBrightness) stateLightHis = blockState.lightBlock << 4 | blockState.lightSky & 0xF;
-                if (block.Liquid)
+                yc = posChunkY >> 4;
+                DamagedBlocksValue = chunk.GetDestroyBlocksValue(posChunkX, posChunkY, posChunkZ);
+                RenderMeshBlockUnique();
+            }
+            else
+            {
+                //return;
+                int rs;
+                if (posChunkY + 1 > ChunkBase.COUNT_HEIGHT_BLOCK) rs = resultSide[0] = 0x0F;
+                else rs = resultSide[0] = GetBlockSideState(posChunkX, posChunkY + 1, posChunkZ, false, true);
+                if (posChunkY - 1 < 0) rs += resultSide[1] = 0x0F;
+                //if (posChunkY - 1 < 0) rs += resultSide[1] = -1;
+                else rs += resultSide[1] = GetBlockSideState(posChunkX, posChunkY - 1, posChunkZ, false);
+
+                yc = posChunkY >> 4;
+                rs += resultSide[2] = GetBlockSideState(posChunkX + 1, posChunkY, posChunkZ, true);
+                rs += resultSide[3] = GetBlockSideState(posChunkX - 1, posChunkY, posChunkZ, true);
+                rs += resultSide[4] = GetBlockSideState(posChunkX, posChunkY, posChunkZ - 1, true);
+                rs += resultSide[5] = GetBlockSideState(posChunkX, posChunkY, posChunkZ + 1, true);
+
+                stateLightHis = -1;
+                if (rs != -6)
                 {
-                    RenderMeshBlockLiquid();
-                }
-                else
-                {
-                    DamagedBlocksValue = chunk.GetDestroyBlocksValue(posChunkX, posChunkY, posChunkZ);
-                    RenderMeshBlock();
+                    if (block.UseNeighborBrightness) stateLightHis = blockState.lightBlock << 4 | blockState.lightSky & 0xF;
+                    if (block.Liquid)
+                    {
+                        RenderMeshBlockLiquid();
+                    }
+                    else
+                    {
+                        DamagedBlocksValue = chunk.GetDestroyBlocksValue(posChunkX, posChunkY, posChunkZ);
+                        RenderMeshBlock();
+                    }
                 }
             }
         }
@@ -188,14 +199,22 @@ namespace MvkClient.Renderer.Block
                 id = 0;
             }
             
+            if (id == 0)
+            {
+                return storage.lightBlock[i] << 4 | storage.lightSky[i] & 0xF;
+            }
+
             blockCheck = Blocks.blocksInt[id];
 
-            isDraw = id == 0 || blockCheck.AllSideForcibly || (isUp && block.Liquid);
-            if (isDraw && (blockCheck.Material == block.Material && !blockCheck.BlocksNotSame(met))) isDraw = false;
-            
-            int k = (block.Material == EnumMaterial.Water && (blockCheck.Material == EnumMaterial.Glass || blockCheck.Material == EnumMaterial.Oil)) ? 1024 : 0;
-            // Яркость берётся из данных блока
-            return isDraw ? (storage.lightBlock[i] << 4 | storage.lightSky[i] & 0xF) + k : -1;
+            if (blockCheck.AllSideForcibly || (isUp && block.Liquid))
+            {
+                if (!(!blockCheck.BlocksNotSame && blockCheck.Material == block.Material))
+                { 
+                    return (storage.lightBlock[i] << 4 | storage.lightSky[i] & 0xF)
+                        + ((block.Material == EnumMaterial.Water && (blockCheck.Material == EnumMaterial.Glass || blockCheck.Material == EnumMaterial.Oil)) ? 1024 : 0);
+                }
+            }
+            return -1;
         }
 
         private void RenderMeshBlock()
@@ -237,14 +256,8 @@ namespace MvkClient.Renderer.Block
         /// </summary>
         private void RenderMeshSide()
         {
-            if (block.BlocksNotSame(met))
-            {
-                stateLight = stateLightHis == -1 ? resultSide[cSideInt] : stateLightHis;
-            }
-            else
-            {
-                stateLight = resultSide[cSideInt];
-            }
+            stateLight = GetLightMixNull(resultSide[cSideInt], stateLightHis);
+
             if (stateLight != -1)
             {
                 stateLight = stateLight & 0xFF;
@@ -494,14 +507,6 @@ namespace MvkClient.Renderer.Block
                 aoLight.color = new vec3(1);
                 return aoLight;
             }
-            if (pY >= ChunkBase.COUNT_HEIGHT_BLOCK)
-            {
-                aoLight.lightSky = 15;
-                aoLight.color = new vec3(1);
-                aoLight.aol = 1;
-                return aoLight;
-            }
-            yc = pY >> 4;
             // Определяем рабочий чанк соседнего блока
             chunkCheck = (xc == chunk.Position.x && zc == chunk.Position.y) ? chunk : chunk.Chunk(xcn, zcn);
             if (chunkCheck == null || !chunkCheck.IsChunkPresent)
@@ -512,6 +517,13 @@ namespace MvkClient.Renderer.Block
                 return aoLight;
             }
             aoLight.color = GetBiomeColor(chunkCheck, xb, zb);
+            if (pY >= ChunkBase.COUNT_HEIGHT_BLOCK)
+            {
+                aoLight.lightSky = 15;
+                aoLight.aol = 1;
+                return aoLight;
+            }
+            yc = pY >> 4;
             storage = chunkCheck.StorageArrays[yc];
 
             yb = pY & 15;
@@ -533,8 +545,8 @@ namespace MvkClient.Renderer.Block
             aoLight.aoc = blockCheck.АmbientOcclusion ? 1 : 0;
             aoLight.aol = blockCheck.IsNotTransparent() || blockCheck.Liquid ? 0 : 1;
 
-            isDraw = id == 0 || (blockCheck.AllSideForcibly && blockCheck.UseNeighborBrightness);
-            if (isDraw && (blockCheck.Material == block.Material && !blockCheck.BlocksNotSame(met))) isDraw = false;
+            isDraw = id == 0 || blockCheck.AllSideForcibly /*|| block.AllSideForcibly*/;// && blockCheck.UseNeighborBrightness);
+            if (isDraw && (blockCheck.Material == block.Material && !blockCheck.BlocksNotSame)) isDraw = false;
 
             if (isDraw)
             {
@@ -911,24 +923,52 @@ namespace MvkClient.Renderer.Block
 
             blockUV.AddBufferCache();
         }
+        /// <summary>
+        /// Смекшировать яркость, в зависимости от требований самой яркой, может быть -1
+        /// </summary>
+        private int GetLightMixNull(int stateLight, int stateLightHis)
+        {
+            if (stateLight != -1 && stateLight != stateLightHis)
+            {
+                if (block.UseNeighborBrightness)
+                {
+                    //if (stateLight == -1) return stateLightHis;
+                    if (stateLightHis == -1) return stateLight;
 
+                    stateLight = stateLight & 0xFF;
+                    int s1 = stateLight >> 4;
+                    int s2 = stateLight & 0x0F;
+                    int s3 = stateLightHis >> 4;
+                    int s4 = stateLightHis & 0x0F;
+
+                    int s5 = s1 > s3 ? s1 : s3;
+                    int s6 = s2 > s4 ? s2 : s4;
+
+                    return (s5 << 4 | s6 & 0xF);
+                }
+            }
+            return stateLight;
+        }
         /// <summary>
         /// Смекшировать яркость, в зависимости от требований самой яркой
         /// </summary>
         private byte GetLightMix(int stateLight, int stateLightHis)
         {
-            stateLight = stateLight & 0xFF;
-            if (block.UseNeighborBrightness)
+            if (stateLight != stateLightHis)
             {
-                int s1 = stateLight >> 4;
-                int s2 = stateLight & 0x0F;
-                int s3 = stateLightHis >> 4;
-                int s4 = stateLightHis & 0x0F;
+                stateLight = stateLight & 0xFF;
+                if (block.UseNeighborBrightness)
+                {
+                    int s1 = stateLight >> 4;
+                    int s2 = stateLight & 0x0F;
+                    int s3 = stateLightHis >> 4;
+                    int s4 = stateLightHis & 0x0F;
 
-                int s5 = s1 > s3 ? s1 : s3;
-                int s6 = s2 > s4 ? s2 : s4;
+                    int s5 = s1 > s3 ? s1 : s3;
+                    int s6 = s2 > s4 ? s2 : s4;
 
-                return (byte)(s5 << 4 | s6 & 0xF);
+                    return (byte)(s5 << 4 | s6 & 0xF);
+                }
             }
             return (byte)stateLight;
         }
@@ -1051,5 +1091,57 @@ namespace MvkClient.Renderer.Block
         }
 
         #endregion
+
+        private void RenderMeshBlockUnique()
+        {
+            int idB = 0;
+            int idF = 0;
+            Box[] boxes = block.GetBoxes(met, xc, zc, posChunkX, posChunkZ);
+            int countB = boxes.Length;
+            int countF = 0;
+            while (idB < countB)
+            {
+                cBox = boxes[idB];
+                countF = cBox.Faces.Length;
+                idF = 0;
+                while (idF < countF)
+                {
+                    cFace = cBox.Faces[idF];
+                    if (cFace.side == -1)
+                    {
+                        for (int i = 0; i < 6; i++)
+                        {
+                            cSideInt = i;
+                            RenderMeshSideUnique();
+                        }
+                    }
+                    else
+                    {
+                        cSideInt = cFace.side;
+                        RenderMeshSideUnique();
+                    }
+                    idF++;
+                }
+                idB++;
+            }
+        }
+
+        /// <summary>
+        /// Получть Сетку стороны блока с проверкой соседнего блока и разрушения его
+        /// </summary>
+        private void RenderMeshSideUnique()
+        {
+            stateLight = blockState.lightBlock << 4 | blockState.lightSky & 0xF;
+
+            RenderMeshFace((byte)stateLight);
+
+            if (DamagedBlocksValue != -1)
+            {
+                Face face = cFace;
+                cFace = new Face((Pole)cSideInt, 4032 + DamagedBlocksValue, true, cFace.color);
+                RenderMeshFace((byte)stateLight);
+                cFace = face;
+            }
+        }
     }
 }

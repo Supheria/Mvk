@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Util;
+﻿using MvkServer.World.Block;
 using MvkServer.World.Gen;
 
 namespace MvkServer.World.Biome
@@ -7,19 +6,45 @@ namespace MvkServer.World.Biome
     /// <summary>
     /// Биом Горы
     /// </summary>
-    public class BiomeMountains : BiomeBase
+    public class BiomeMountains : BiomeAbGrass
     {
         /// <summary>
         /// Блок тела
         /// </summary>
-        protected ushort blockIdBody2 = 3;
+        protected ushort blockIdBody2;
 
-        public BiomeMountains(ChunkProviderGenerate chunkProvider) : base(chunkProvider)
+        /// <summary>
+        /// Максимальный уровень стартового значения слаёв
+        /// </summary>
+        protected byte maxLevel = 96;
+        /// <summary>
+        /// Коэфициент дополнительного шума
+        /// </summary>
+        protected float kofAddNoise = 16f;
+
+        public BiomeMountains(ChunkProviderGenerateBase chunkProvider) : base(chunkProvider)
         {
+            blockIdBody2 = blockIdBiomDebug = (ushort)EnumBlock.Stone;
+        }
+
+        /// <summary>
+        /// Инициализировать декорацию
+        /// </summary>
+        public override void InitDecorator(bool isRobinson)
+        {
+            base.InitDecorator(isRobinson);
             Decorator.limestonePerChunk = 10;
             Decorator.oakPerChunk = 1;
             Decorator.randomTree = 10;
             Decorator.brolPerChunk = 1;
+            if (isRobinson)
+            {
+                Decorator.granitePerChunk = 10;
+                Decorator.coalPerChunk = 10;
+                Decorator.ironPerChunk = 8;
+                Decorator.goldPerChunk = 1;
+                blockIdBody = blockIdUp = blockIdBody2;
+            }
         }
 
         protected virtual int BodyHeight(float area, int yh) => yh;
@@ -29,7 +54,8 @@ namespace MvkServer.World.Biome
         /// </summary>
         /// <param name="height">Высота -1..0..1</param>
         /// <param name="river">Определение центра реки 1..0..1</param>
-        protected override int GetLevelHeight(int x, int z, float height, float river) => 97 + (int)(height * 96f);
+        protected override int GetLevelHeight(int x, int z, float height, float river) 
+            => HEIGHT_WATER_PLUS + (int)(height * HEIGHT_HILL);
 
         /// <summary>
         /// Возращаем сгенерированный столбец
@@ -47,7 +73,7 @@ namespace MvkServer.World.Biome
             height = h + .125f;
 
             // Максимальная высота горы 96 + 96 = 192
-            int yh = 96 + (int)(height * 96f);
+            int yh = HEIGHT_WATER + (int)(height * HEIGHT_HILL);
             chunk.heightMap[x << 4 | z] = yh;
             int index = x << 12 | z << 8;
             int y;
@@ -61,7 +87,7 @@ namespace MvkServer.World.Biome
 
             // Проплешены из земли
             // 108 - 124
-            float k = (yh - 106f) / 4f;
+            float k = (yh - HEIGHT_MOUNTAINS_MIX) / 4f;
             if (area > k || area < -k)
             {
                 chunk.id[index | yh] = blockIdUp;
@@ -69,7 +95,7 @@ namespace MvkServer.World.Biome
                 h = 4f;
                 while (true)
                 {
-                    k = ((yh + y) - 106f) / h;
+                    k = ((yh + y) - HEIGHT_MOUNTAINS_MIX) / h;
                     if (area > k || area < -k)
                     {
                         chunk.id[index | (yh - y)] = blockIdBody;
@@ -82,6 +108,33 @@ namespace MvkServer.World.Biome
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Получить уровень множителя высоты
+        /// </summary>
+        /// <param name="x">X 0..15</param>
+        /// <param name="z">Z 0..15</param>
+        /// <param name="height">Высота в блоках, средняя рекомендуемая</param>
+        /// <param name="heightNoise">Высота -1..0..1</param>
+        /// <param name="addNoise">Диапазон -1..0..1</param>
+        protected override int GetLevelHeightRobinson(int x, int z, int height, float heightNoise, float addNoise)
+        {
+            if (height < maxLevel) addNoise *= addNoise;
+            float noiseKof;
+
+            if (heightNoise < 0)
+            {
+                noiseKof = 8f;
+            }
+            else
+            {
+                noiseKof = 12f;
+                heightNoise = 1 - heightNoise;
+                heightNoise *= heightNoise;
+                heightNoise = 1 - heightNoise;
+            }
+            return height + (int)(heightNoise * noiseKof) + (int)(addNoise * kofAddNoise);
         }
     }
 }

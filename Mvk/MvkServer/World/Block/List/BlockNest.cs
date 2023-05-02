@@ -23,13 +23,8 @@ namespace MvkServer.World.Block.List
         public BlockNest()
         {
             Color = new vec3(.95f, .91f, .73f);
-            FullBlock = false;
-            AllSideForcibly = true;
-            АmbientOcclusion = false;
-            UseNeighborBrightness = true;
+            SetUnique();
             Material = EnumMaterial.Interior;
-            Shadow = false;
-            LightOpacity = 0;
             Particle = 960;
             Combustibility = true;
             IgniteOddsSunbathing = 30;
@@ -43,11 +38,6 @@ namespace MvkServer.World.Block.List
         /// Разрушается ли блок от жидкости
         /// </summary>
         public override bool IsLiquidDestruction() => true;
-
-        /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public override bool BlocksNotSame(int met) => true;
 
         /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)

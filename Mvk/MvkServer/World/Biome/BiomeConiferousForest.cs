@@ -5,10 +5,16 @@ namespace MvkServer.World.Biome
     /// <summary>
     /// Биом Хвойный лес
     /// </summary>
-    public class BiomeConiferousForest : BiomeBase
+    public class BiomeConiferousForest : BiomeAbGrass
     {
-        public BiomeConiferousForest(ChunkProviderGenerate chunkProvider) : base(chunkProvider)
+        public BiomeConiferousForest(ChunkProviderGenerateBase chunkProvider) : base(chunkProvider) { }
+
+        /// <summary>
+        /// Инициализировать декорацию
+        /// </summary>
+        public override void InitDecorator(bool isRobinson)
         {
+            base.InitDecorator(isRobinson);
             Decorator.sprucePerChunk = 4;
             Decorator.grassPerChunk = 12;
         }

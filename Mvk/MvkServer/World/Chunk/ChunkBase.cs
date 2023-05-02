@@ -21,15 +21,19 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Количество псевдо чанков
         /// </summary>
-        public const int COUNT_HEIGHT = 16;
+        public const int COUNT_HEIGHT = 8;
         /// <summary>
         /// Количество псевдо чанков COUNT_HEIGHT - 1
         /// </summary>
-        public const int COUNT_HEIGHT15 = 15;
+        public const int COUNT_HEIGHT15 = 7;
         /// <summary>
         /// Количество блоков в высоту
         /// </summary>
-        public const int COUNT_HEIGHT_BLOCK = 255;
+        public const int COUNT_HEIGHT_BLOCK = 127;
+        /// <summary>
+        /// Верхний блок который можно установить
+        /// </summary>
+        public const int MAX_HEIGHT_BLOCK = 126;
         /// <summary>
         /// Количество блоков за так в чанке без приоритетных
         /// </summary>
@@ -478,7 +482,7 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Пометить что надо перерендерить сетку чанка для клиента
         /// </summary>
-        public virtual void ModifiedToRender() { }
+        public virtual void ModifiedToRender(int y) { }
 
         /// <summary>
         /// Задать чанк байтами
@@ -646,14 +650,14 @@ namespace MvkServer.World.Chunk
         /// <summary>
         /// Задать тип блок по координатам чанка XZ 0..15, Y 0..255
         /// </summary>
-        public void SetEBlock(int x, int y, int z, EnumBlock eBlock, ushort met = 0)
-        {
-            int chy = y >> 4;
-            if (x >> 4 == 0 && z >> 4 == 0 && y >= 0 && chy < COUNT_HEIGHT)
-            {
-                StorageArrays[chy].SetData((y & 15) << 8 | z << 4 | x, (ushort)eBlock, met);
-            }
-        }
+        //public void SetEBlock(int x, int y, int z, EnumBlock eBlock, ushort met = 0)
+        //{
+        //    int chy = y >> 4;
+        //    if (x >> 4 == 0 && z >> 4 == 0 && y >= 0 && chy < COUNT_HEIGHT)
+        //    {
+        //        StorageArrays[chy].SetData((y & 15) << 8 | z << 4 | x, (ushort)eBlock, met);
+        //    }
+        //}
 
         public void SetBlockStateClient(BlockPos blockPos, BlockState blockState)
         {

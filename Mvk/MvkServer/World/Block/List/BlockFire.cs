@@ -41,15 +41,10 @@ namespace MvkServer.World.Block.List
             // Затычка, для сортировки, и прорисовки из нутри когда к примеру блок стекла
             //Translucent = true; // Наложение на древесину, декали
             IsAddMet = true;
-            FullBlock = false;
+            SetUnique();
             IsCollidable = false;
-            АmbientOcclusion = false;
             NoSideDimming = true;
-            Shadow = false;
-            AllSideForcibly = true;
-            UseNeighborBrightness = true;
             IsReplaceable = true;
-            LightOpacity = 0;
             LightValue = 15;
             IsParticle = false;
             Material = EnumMaterial.Fire;
@@ -58,11 +53,6 @@ namespace MvkServer.World.Block.List
             //samplesStep = new AssetsSample[] { AssetsSample.LiquidSwim1, AssetsSample.LiquidSwim2, AssetsSample.LiquidSwim3, AssetsSample.LiquidSwim4 };
             InitBoxs();
         }
-
-        /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public override bool BlocksNotSame(int met) => true;
 
         /// <summary>
         /// Является ли блок проходимым, т.е. можно ли ходить через него

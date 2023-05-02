@@ -1,4 +1,5 @@
 ﻿using MvkServer.Glm;
+using MvkServer.World.Chunk;
 
 namespace MvkServer.Util
 {
@@ -124,12 +125,12 @@ namespace MvkServer.Util
         /// <summary>
         /// Проверьте, имеет ли данный BlockPos действительные координаты
         /// </summary>
-        public bool IsValid() => X >= -30000000 && Z >= -30000000 && X < 30000000 && Z < 30000000 && Y >= 0 && Y < 256;
+        public bool IsValid() => X >= -30000000 && Z >= -30000000 && X < 30000000 && Z < 30000000 && Y >= 0 && Y <= ChunkBase.MAX_HEIGHT_BLOCK;
 
         /// <summary>
         /// Проверьте, имеет ли данный BlockPos действительные координаты только по Y
         /// </summary>
-        public bool IsValidY() => Y >= 0 && Y < 256;
+        //public bool IsValidY() => Y >= 0 && Y <= ChunkBase.COUNT_HEIGHT_BLOCK;
 
         /// <summary>
         /// Получить массив всех позиция попадающих в облость

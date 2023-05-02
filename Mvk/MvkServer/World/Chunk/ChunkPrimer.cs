@@ -15,6 +15,7 @@ namespace MvkServer.World.Chunk
         /// 12 bit Id блока и 4 bit параметр блока
         /// x << 12 | z << 8 | y;
         /// 65536 = 16 * 16 * 256
+        /// 32768 = 16 * 16 * 128
         /// </summary>
         public ushort[] id = new ushort[65536];
         /// <summary>
@@ -50,19 +51,6 @@ namespace MvkServer.World.Chunk
                 heightMap[i] = 0;
             }
             arrayLightBlocks.Clear();
-        }
-
-        /// <summary>
-        /// Высотная карта самый высокий блок в чанке от неба
-        /// </summary>
-        public int GetHeightMapMax()
-        {
-            int heightMapMax = 0;
-            for (int i = 0; i < 256; i++)
-            {
-                if (heightMap[i] > heightMapMax) heightMapMax = heightMap[i];
-            }
-            return heightMapMax;
         }
     }
 }

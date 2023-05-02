@@ -20,10 +20,6 @@ namespace MvkServer
         /// </summary>
         public Logger Log { get; protected set; }
         /// <summary>
-        /// Дополнительный поток для генерации и загрузки мира
-        /// </summary>
-        public bool IsAddLoopGen { get; private set; } = false;
-        /// <summary>
         /// Указывает, запущен сервер или нет. Установите значение false, чтобы инициировать завершение работы. 
         /// </summary>
         private bool serverRunning = true;
@@ -231,17 +227,7 @@ namespace MvkServer
         /// <summary>
         /// Запрос остановки сервера
         /// </summary>
-        public void ServerStop()
-        {
-            if (IsAddLoopGen)
-            {
-                threadGenLoop = false; // Сначала останавливаем поток генерации
-            }
-            else
-            {
-                serverRunning = false;
-            }
-        }
+        public void ServerStop() => serverRunning = false;
 
         /// <summary>
         /// Метод должен работать в отдельном потоке
@@ -321,12 +307,6 @@ namespace MvkServer
         protected void StartServerLoop()
         {
             serverRunning = true;
-            // Запускаем постоянный поток генерации мира
-            if (IsAddLoopGen)
-            {
-                Thread myThread = new Thread(ServerGenLoop);
-                myThread.Start();
-            }
 
             EntityPlayerServer entityPlayer = World.Players.GetEntityPlayerMain();
             vec2i pos = entityPlayer != null ? entityPlayer.GetChunkPos() : new vec2i(0, 0);
@@ -478,38 +458,6 @@ namespace MvkServer
 
             // фиксируем время выполнения такта
             tickTimeArray[TickCounter % 4] = differenceTime;
-        }
-
-        /// <summary>
-        /// Отдельный поток для генерации чанков
-        /// </summary>
-        private void ServerGenLoop()
-        {
-            try
-            {
-                threadGenLoop = true;
-                Log.Log("server.threadGenLoop.run");
-
-                while (threadGenLoop && serverRunning)
-                {
-                    // Тут генерация чанков
-                    World.ChunkPrServ.LoadGenRequest();
-                    Thread.Sleep(1);
-                }
-
-                Log.Log("server.threadGenLoop.stop");
-                // После остановки потока генерации останавливаем основной поток
-                serverRunning = false;
-            }
-            catch (Exception ex)
-            {
-                Logger.Crach(ex);
-            }
-            finally
-            {
-                threadGenLoop = false;
-                serverRunning = false;
-            }
         }
 
         /// <summary>

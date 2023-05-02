@@ -25,6 +25,14 @@ namespace MvkClient.Renderer.Chunk
         /// </summary>
         private ChunkMesh meshDense = new ChunkMesh();
         /// <summary>
+        /// Буфер сетки секций чанков
+        /// </summary>
+        private readonly ChunkSectionMesh[] meshSectionDense = new ChunkSectionMesh[COUNT_HEIGHT];
+        /// <summary>
+        /// Массив какие секции сплошных чанков надо рендерить, для потока где идёт рендер
+        /// </summary>
+        private readonly bool[] isRenderingSectionDense = new bool[COUNT_HEIGHT];
+        /// <summary>
         /// Сетка чанка альфа блоков
         /// </summary>
         private readonly ChunkMesh meshAlpha = new ChunkMesh();
@@ -37,16 +45,34 @@ namespace MvkClient.Renderer.Chunk
         /// </summary>
         private int countAlpha;
         /// <summary>
+        /// Количество альфа блоков в секции
+        /// </summary>
+        private readonly int[] countSectionAlpha = new int[COUNT_HEIGHT];
+        /// <summary>
         /// Соседние чанки, заполняются перед рендером
         /// </summary>
         private readonly ChunkRender[] chunks = new ChunkRender[8];
 
-        public ChunkRender(WorldClient worldIn, vec2i pos) : base(worldIn, pos) => ClientWorld = worldIn;
+        public ChunkRender(WorldClient worldIn, vec2i pos) : base(worldIn, pos)
+        {
+            ClientWorld = worldIn;
+            for (int y = 0; y < COUNT_HEIGHT; y++)
+            {
+                meshSectionDense[y] = new ChunkSectionMesh();
+                meshSectionDense[y].Init();
+                isRenderingSectionDense[y] = false;
+                countSectionAlpha[y] = 0;
+            }
+        }
 
         /// <summary>
         /// Пометить что надо перерендерить сетку чанка
         /// </summary>
-        public override void ModifiedToRender() => meshDense.SetModifiedRender();
+        public override void ModifiedToRender(int y)
+        {
+            meshDense.SetModifiedRender();
+            if (y >= 0 && y < COUNT_HEIGHT) meshSectionDense[y].isModifiedRender = true;
+        }
 
         /// <summary>
         /// Проверка, нужен ли рендер этого псевдо чанка
@@ -56,12 +82,15 @@ namespace MvkClient.Renderer.Chunk
         /// <summary>
         /// Пометить что надо перерендерить сетку чанка альфа блоков
         /// </summary>
-        public void ModifiedToRenderAlpha()
+        public bool ModifiedToRenderAlpha(int y)
         {
-            if (countAlpha > 0)
+            //if (countAlpha > 0)
+            if (y >= 0 && y < COUNT_HEIGHT && countSectionAlpha[y] > 0)
             {
                 meshAlpha.SetModifiedRender();
+                return true;
             }
+            return false;
         }
         
         /// <summary>
@@ -77,6 +106,12 @@ namespace MvkClient.Renderer.Chunk
             meshDense.Delete();
             meshAlpha.Delete();
             countAlpha = 0;
+            for (int y = 0; y < COUNT_HEIGHT; y++)
+            {
+                meshSectionDense[y].Clear();
+                countSectionAlpha[y] = 0;
+                isRenderingSectionDense[y] = false;
+            }
         }
 
         /// <summary>
@@ -85,6 +120,11 @@ namespace MvkClient.Renderer.Chunk
         public void StartRendering()
         {
             meshDense.StatusRendering();
+            for (int y = 0; y < COUNT_HEIGHT; y++)
+            {
+                isRenderingSectionDense[y] = meshSectionDense[y].isModifiedRender;
+                meshSectionDense[y].isModifiedRender = false;
+            }
             meshAlpha.StatusRendering();
         }
 
@@ -140,71 +180,89 @@ namespace MvkClient.Renderer.Chunk
                 blockRender.blockUV.buffer = ClientWorld.WorldRender.buffer;
                 blockAlphaRender.blockUV.bufferCache = blockRender.blockUV.bufferCache 
                     = ClientWorld.WorldRender.bufferCache;
+                bool isDense2;
+                int cAlpha = 0;
                 try
                 {
                     for (cbY = 0; cbY < COUNT_HEIGHT; cbY++)
-                    //for (cbY = 4; cbY < 12; cbY++)
+                    //for (cbY = 4; cbY < COUNT_HEIGHT; cbY++)
                     {
-                        chunkStorage = StorageArrays[cbY];
-                        if (chunkStorage.data != null && !chunkStorage.IsEmptyData())
+                        isDense2 = isRenderingSectionDense[cbY];
+                        if (isDense2 || countSectionAlpha[cbY] > 0)
                         {
-                            for (yb = 0; yb < 16; yb++)
+                            chunkStorage = StorageArrays[cbY];
+                            if (chunkStorage.data != null && !chunkStorage.IsEmptyData())
                             {
-                                realY = cbY << 4 | yb;
-                                    
-                                for (int z = 0; z < 16; z++)
+                                for (yb = 0; yb < 16; yb++)
                                 {
-                                        
-                                    for (int x = 0; x < 16; x++)
+                                    realY = cbY << 4 | yb;
+
+                                    for (int z = 0; z < 16; z++)
                                     {
-                                        i = yb << 8 | z << 4 | x;
-                                        data = chunkStorage.data[i];
-                                        if (data == 0 || data == 4096) continue;
-                                        id = (ushort)(data & 0xFFF);
-                                        met = Blocks.blocksAddMet[id] ? chunkStorage.addMet[(ushort)i] : (ushort)(data >> 12);
 
-                                        blockRender.block = Blocks.blocksInt[id];
-
-                                        if (blockRender.block.Translucent)
+                                        for (int x = 0; x < 16; x++)
                                         {
-                                            // Альфа!
-                                            blockAlphaRender.blockState.id = id;
-                                            blockAlphaRender.met = blockAlphaRender.blockState.met = met;
-                                            blockAlphaRender.blockState.lightBlock = chunkStorage.lightBlock[i];
-                                            blockAlphaRender.blockState.lightSky = chunkStorage.lightSky[i];
-                                            blockAlphaRender.posChunkX = x;
-                                            blockAlphaRender.posChunkY = realY;
-                                            blockAlphaRender.posChunkZ = z;
-                                            blockAlphaRender.posChunkY0 = realY;
-                                            blockAlphaRender.block = blockRender.block;
-                                            blockAlphaRender.RenderMesh();
-                                            if (blockAlphaRender.blockUV.buffer.count > 0)
+                                            i = yb << 8 | z << 4 | x;
+                                            data = chunkStorage.data[i];
+                                            if (data == 0 || data == 4096) continue;
+                                            id = (ushort)(data & 0xFFF);
+                                            met = Blocks.blocksAddMet[id] ? chunkStorage.addMet[(ushort)i] : (ushort)(data >> 12);
+
+                                            blockRender.block = Blocks.blocksInt[id];
+
+                                            if (blockRender.block.Translucent)
                                             {
-                                                realZ = cbZ | z;
-                                                alphas.Add(new BlockBuffer()
+                                                // Альфа!
+                                                blockAlphaRender.blockState.id = id;
+                                                blockAlphaRender.met = blockAlphaRender.blockState.met = met;
+                                                blockAlphaRender.blockState.lightBlock = chunkStorage.lightBlock[i];
+                                                blockAlphaRender.blockState.lightSky = chunkStorage.lightSky[i];
+                                                blockAlphaRender.posChunkX = x;
+                                                blockAlphaRender.posChunkY = realY;
+                                                blockAlphaRender.posChunkZ = z;
+                                                blockAlphaRender.posChunkY0 = realY;
+                                                blockAlphaRender.block = blockRender.block;
+                                                blockAlphaRender.RenderMesh();
+                                                if (blockAlphaRender.blockUV.buffer.count > 0)
                                                 {
-                                                    buffer = blockAlphaRender.blockUV.buffer.ToArray(),
-                                                    distance = glm.distance(posPlayer, new vec3i(cbX | x, realY, realZ))
-                                                });
-                                                blockAlphaRender.blockUV.buffer.Clear();
+                                                    cAlpha++;
+                                                    realZ = cbZ | z;
+                                                    alphas.Add(new BlockBuffer()
+                                                    {
+                                                        buffer = blockAlphaRender.blockUV.buffer.ToArray(),
+                                                        distance = glm.distance(posPlayer, new vec3i(cbX | x, realY, realZ))
+                                                    });
+                                                    blockAlphaRender.blockUV.buffer.Clear();
+                                                }
                                             }
-                                        }
-                                        else if (isDense)
-                                        {
-                                            // Сплошной блок
-                                            blockRender.blockState.id = id;
-                                            blockRender.met = blockRender.blockState.met = met;
-                                            blockRender.blockState.lightBlock = chunkStorage.lightBlock[i];
-                                            blockRender.blockState.lightSky = chunkStorage.lightSky[i];
-                                            blockRender.posChunkX = x;
-                                            blockRender.posChunkY0 = realY;
-                                            blockRender.posChunkY = realY;
-                                            blockRender.posChunkZ = z;
-                                            blockRender.RenderMesh();
+                                            else if (isDense)
+                                            {
+                                                // Сплошной блок
+                                                blockRender.blockState.id = id;
+                                                blockRender.met = blockRender.blockState.met = met;
+                                                blockRender.blockState.lightBlock = chunkStorage.lightBlock[i];
+                                                blockRender.blockState.lightSky = chunkStorage.lightSky[i];
+                                                blockRender.posChunkX = x;
+                                                blockRender.posChunkY0 = realY;
+                                                blockRender.posChunkY = realY;
+                                                blockRender.posChunkZ = z;
+                                                blockRender.RenderMesh();
+                                            }
                                         }
                                     }
                                 }
                             }
+                            if (isDense2 && isDense)
+                            {
+                                countSectionAlpha[cbY] = cAlpha;
+                                meshSectionDense[cbY].bufferData = ClientWorld.WorldRender.buffer.ToArray();
+                                ClientWorld.WorldRender.buffer.Clear();
+                            }
+                        }
+                        cAlpha = 0;
+                        if (isDense)
+                        {
+                            ClientWorld.WorldRender.bufferHeight.Combine(meshSectionDense[cbY].bufferData);
                         }
                     }
                 }
@@ -215,8 +273,8 @@ namespace MvkClient.Renderer.Chunk
 
                 if (isDense)
                 {
-                    meshDense.SetBuffer(ClientWorld.WorldRender.buffer.ToArray());
-                    ClientWorld.WorldRender.buffer.Clear();
+                    meshDense.SetBuffer(ClientWorld.WorldRender.bufferHeight.ToArray());
+                    ClientWorld.WorldRender.bufferHeight.Clear();
                 }
                 
                 countAlpha = alphas.Count;

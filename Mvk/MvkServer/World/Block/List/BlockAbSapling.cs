@@ -15,14 +15,9 @@ namespace MvkServer.World.Block.List
             Color = color;
             Material = EnumMaterial.Sapling;
             Particle = numberTexture;
-            FullBlock = false;
-            АmbientOcclusion = false;
-            Shadow = false;
-            AllSideForcibly = true;
+            SetUnique();
             NoSideDimming = true;
-            LightOpacity = 0;
             IsCollidable = false;
-            UseNeighborBrightness = true;
             Combustibility = true;
             IgniteOddsSunbathing = 60;
             BurnOdds = 100;
@@ -53,11 +48,6 @@ namespace MvkServer.World.Block.List
             EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
             return /*enumBlock == EnumBlock.Dirt ||*/ enumBlock == EnumBlock.Turf;
         }
-
-        /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public override bool BlocksNotSame(int met) => true;
 
         /// <summary>
         /// Передать список ограничительных рамок блока

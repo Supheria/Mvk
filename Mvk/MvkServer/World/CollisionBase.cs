@@ -24,7 +24,7 @@ namespace MvkServer.World
         /// </summary>
         protected BlockState GetBlockState(int x, int y, int z)
         {
-            if (y >= 0 && y <= 255)
+            if (y >= 0 && y <= ChunkBase.COUNT_HEIGHT_BLOCK)
             {
                 ChunkBase chunk = World.GetChunk(new vec2i(x >> 4, z >> 4));
                 if (chunk != null)
@@ -34,9 +34,10 @@ namespace MvkServer.World
                     if (blockState.IsEmpty()) return new BlockState();
                     return chunk.GetBlockState(x & 15, y, z & 15);
                 }
+                // Для колизи важно, если чанк не загружен, то блоки все с колизией, так-как начнём падать
+                return new BlockState().Empty();
             }
-            // Для колизи важно, если чанк не загружен, то блоки все с колизией, так-как начнём падать
-            return new BlockState().Empty();
+            return new BlockState();
         }
 
         /// <summary>
@@ -56,7 +57,7 @@ namespace MvkServer.World
                 {
                     for (int z = min.z; z <= max.z; z++)
                     {
-                        if (y >= 0 && y <= 255)
+                        if (y >= 0 && y <= ChunkBase.COUNT_HEIGHT_BLOCK)
                         {
                             BlockState blockState = GetBlockState(x, y, z);
                             BlockBase block = blockState.GetBlock();

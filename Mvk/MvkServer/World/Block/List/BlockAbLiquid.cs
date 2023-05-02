@@ -38,6 +38,7 @@ namespace MvkServer.World.Block.List
             FullBlock = false;
             Liquid = true;
 
+            BlocksNotSame = false;
             UseNeighborBrightness = true;
             AllSideForcibly = true;
             IsAction = false;

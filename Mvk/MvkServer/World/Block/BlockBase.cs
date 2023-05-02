@@ -58,6 +58,10 @@ namespace MvkServer.World.Block
         /// </summary>
         public bool NoSideDimming { get; protected set; } = false;
         /// <summary>
+        /// При значении flase у AllSideForcibly + обнотипные блоков не будет между собой сетки, пример: вода, блок стекла
+        /// </summary>
+        public bool BlocksNotSame { get; protected set; } = true;
+        /// <summary>
         /// Может ли быть тень сущности на блоке, только для целых блоков
         /// </summary>
         public bool Shadow { get; protected set; } = true;
@@ -124,6 +128,10 @@ namespace MvkServer.World.Block
         /// Имеет ли блок дополнительные данные свыше 4 bit
         /// </summary>
         public bool IsAddMet { get; protected set; } = false;
+        /// <summary>
+        /// Является ли эта модель не блоком, со всеми сторонами и прозрачной
+        /// </summary>
+        public bool IsUnique { get; private set; } = false;
         /// <summary>
         /// Горючесть материала
         /// </summary>
@@ -203,6 +211,19 @@ namespace MvkServer.World.Block
         /// </summary>
         protected virtual void InitBoxs(int numberTexture, bool isColor, vec3 color)
             => boxes = new Box[][] { new Box[] { new Box(numberTexture, isColor, color) } };
+
+        /// <summary>
+        /// Задать уникальную прозрачную модель не целого блока
+        /// </summary>
+        protected void SetUnique()
+        {
+            IsUnique = true;
+            FullBlock = false;
+            AllSideForcibly = true;
+            LightOpacity = 0;
+            АmbientOcclusion = false;
+            Shadow = false;
+        }
 
         /// <summary>
         /// Задать тип блока
@@ -435,11 +456,6 @@ namespace MvkServer.World.Block
         /// Обновить блок в такте
         /// </summary>
         public virtual void UpdateTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random) { }
-
-        /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public virtual bool BlocksNotSame(int met) => false;
 
         /// <summary>
         /// Флаг отличия, для рендера прорисовки однотипных материалов, пример листва чёрная контачит с листвой прозрачной

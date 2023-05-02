@@ -115,7 +115,7 @@ namespace MvkServer.World.Chunk.Light
             int yb = Chunk.GetTopFilledSegment() + 17;
             if (yb > ChunkBase.COUNT_HEIGHT_BLOCK + 1) yb = ChunkBase.COUNT_HEIGHT_BLOCK + 1;
             int x, y, z, y1;
-            yb--;
+            //yb--;
             for (x = 0; x < 16; x++)
             {
                 for (z = 0; z < 16; z++)
@@ -143,12 +143,11 @@ namespace MvkServer.World.Chunk.Light
         public void GenerateHeightMapSky()
         {
             heightMapMax = 0;
-            //int yb = Chunk.GetTopFilledSegment() + 17;
-            //if (yb > ChunkBase.COUNT_HEIGHT_BLOCK + 1) yb = ChunkBase.COUNT_HEIGHT_BLOCK + 1;
             int x, y, z, y1, opacity, light, y2, index;
-            int yb = 255;
+            int yb = ChunkBase.COUNT_HEIGHT_BLOCK;
             int y1c = ChunkBase.COUNT_HEIGHT15;
             ChunkStorage chunkStorage = Chunk.StorageArrays[y1c];
+            ChunkStorage chunkStorage2;
             for (x = 0; x < 16; x++)
             {
                 for (z = 0; z < 16; z++)
@@ -178,19 +177,18 @@ namespace MvkServer.World.Chunk.Light
                             
                             light = 15;
                             y2 = y;
-
                             Chunk.StorageArrays[y2 >> 4].lightSky[(y2 & 15) << 8 | z << 4 | x] = 0xF;
                             y2--;
                             // Запускаем цикл затемнения блоков
                             while (light > 0 && y2 > 0)
                             {
-                                chunkStorage = Chunk.StorageArrays[y2 >> 4];
+                                chunkStorage2 = Chunk.StorageArrays[y2 >> 4];
                                 index = (y2 & 15) << 8 | z << 4 | x;
-                                if (chunkStorage.countBlock != 0) opacity = Blocks.blocksLightOpacity[chunkStorage.data[index] & 0xFFF] >> 4;
+                                if (chunkStorage2.countBlock != 0) opacity = Blocks.blocksLightOpacity[chunkStorage2.data[index] & 0xFFF] >> 4;
                                 else opacity = 0;
                                 light = light - opacity - 1;
                                 if (light < 0) light = 0;
-                                Chunk.StorageArrays[y2 >> 4].lightSky[index] = (byte)light;
+                                chunkStorage2.lightSky[index] = (byte)light;
                                 y2--;
                             }
                             heightMapOpacity[z << 4 | x] = (byte)(y2 + 2);
@@ -268,7 +266,7 @@ namespace MvkServer.World.Chunk.Light
                     World.Light.CheckLightSky(x, y, z, lo);
                 }
             }
-            else if (y == yh - 1)
+            else if (y == yh - 1 || y == ChunkBase.COUNT_HEIGHT_BLOCK)
             {
                 // Открываем небо, проверка столба неба
                 CheckLightColumnSky(x, y, z, yh);
@@ -321,7 +319,7 @@ namespace MvkServer.World.Chunk.Light
             if (yh == y0) return;
 
             int yh2 = yh0;
-            if (yh2 > ChunkBase.COUNT_HEIGHT_BLOCK) yh2 = ChunkBase.COUNT_HEIGHT_BLOCK;
+            if (yh2 > ChunkBase.COUNT_HEIGHT_BLOCK + 1) yh2 = ChunkBase.COUNT_HEIGHT_BLOCK + 1;
             heightMap[zb << 4 | xb] = (byte)yh2;
             if (heightMapMax < yh2) heightMapMax = yh2;
 

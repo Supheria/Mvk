@@ -4,6 +4,7 @@ using MvkClient.Renderer;
 using MvkClient.Renderer.Chunk;
 using MvkClient.Renderer.Entity;
 using MvkClient.Setitings;
+using MvkServer;
 using MvkServer.Entity;
 using MvkServer.Glm;
 using MvkServer.Network.Packets.Client;
@@ -66,11 +67,11 @@ namespace MvkClient.World
         /// <summary>
         /// фиксатор чистки мира
         /// </summary>
-        protected uint previousTotalWorldTime;
+        private uint previousTotalWorldTime;
         /// <summary>
         /// Количество прорисованных сущностей, для отладки
         /// </summary>
-        protected int entitiesCountShow = 0;
+        private int entitiesCountShow = 0;
 
         /// <summary>
         /// Флаг потока пакетов чанка
@@ -178,7 +179,7 @@ namespace MvkClient.World
                 //if (time - previousTotalWorldTime > MvkGlobal.CHUNK_CLEANING_TIME)
                 //{
                 //    previousTotalWorldTime = time;
-                //    ChunkPrClient.FixOverviewChunk(ClientMain.Player);
+                //    ChunkPrClient.FixOverviewChunk();
                 //}
 
                 // Выгрузка чанков в тике
@@ -366,7 +367,7 @@ namespace MvkClient.World
             //    AreaModifiedToRender(min.x >> 4, min.y >> 4, min.z >> 4, max.x >> 4, max.y >> 4, max.z >> 4);
             //}
 
-            return true;
+            return result;
             //return false;
         }
 
@@ -399,7 +400,10 @@ namespace MvkClient.World
                     ChunkRender chunk = ChunkPrClient.GetChunkRender(new vec2i(x, z));
                     if (chunk != null)
                     {
-                        chunk.ModifiedToRender();
+                        for (y = c0y; y <= c1y; y++)
+                        {
+                            chunk.ModifiedToRender(y);
+                        }
                     }
                 }
             }
@@ -468,7 +472,7 @@ namespace MvkClient.World
                     }
                     chunk.DestroyBlockRemove(breakerId);
                 }
-                chunk.ModifiedToRender();
+                chunk.ModifiedToRender(blockPos.GetPositionChunkY());
             }
         }
 
@@ -500,14 +504,19 @@ namespace MvkClient.World
         {
             if (ClientMain.Player.DistSqrt != null)
             {
-                for (int i = 0; i < ClientMain.Player.DistSqrt.Length; i++)
+                int count = ClientMain.Player.DistSqrt.Length;
+                for (int i = 0; i < count; i++)
                 {
                     vec2i coord = new vec2i(Mth.Floor(ClientMain.Player.Position.x) >> 4, Mth.Floor(ClientMain.Player.Position.z) >> 4)
                         + ClientMain.Player.DistSqrt[i];
                     ChunkRender chunk = ChunkPrClient.GetChunkRender(coord);
                     if (chunk != null)
                     {
-                        chunk.ModifiedToRender();
+                        int count2 = chunk.StorageArrays.Length;
+                        for (int y = 0; y < count2; y++)
+                        {
+                            chunk.ModifiedToRender(y);
+                        }
                     }
                 }
             }
@@ -683,6 +692,22 @@ namespace MvkClient.World
                 blockPos.Z = playerPos.z + random.Next(distance) - random.Next(distance);
                 blockState = GetBlockState(blockPos);
                 blockState.GetBlock().RandomDisplayTick(this, blockPos, blockState, random);
+            }
+        }
+
+        /// <summary>
+        /// Сменить обзор чанков у игрока на единицу
+        /// </summary>
+        public void AddOverviewChunk(int value)
+        {
+            int overviewChunk = ClientMain.Player.OverviewChunk;
+            int overviewChunkNew = overviewChunk + value;
+            if (overviewChunkNew < 2) overviewChunkNew = 2;
+            if (overviewChunkNew > 32) overviewChunkNew = 32;
+            if (overviewChunkNew != overviewChunk)
+            {
+                ClientMain.Player.SetOverviewChunk(overviewChunkNew);
+                ChunkPrClient.SetOverviewChunk();
             }
         }
 

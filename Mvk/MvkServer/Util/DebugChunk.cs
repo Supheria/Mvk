@@ -18,5 +18,7 @@ namespace MvkServer.Util
     {
         public vec2i pos;
         public bool entities;
+
+        public override string ToString() => pos + " " + (entities ? "E" : "");
     }
 }

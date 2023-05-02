@@ -73,8 +73,8 @@ namespace MvkClient.Actions
             else if (key == 114) keyF3 = true; // F3
             else if (key == 27 || key == 18) World.ClientMain.Screen.InGameMenu(); // Esc или Alt
             else if (key == 116) ClientMain.Player.ViewCameraNext(); // F5
-            else if (key == 117) Debug.ScreenFileBiome(World); // F6
-            else if (key == 118) 
+            else if (key == 117) Debug.ScreenFileBiomeArea(World); // F6
+            else if (key == 118)
             {
                 if (++Debug.IsDrawOrto > 5) Debug.IsDrawOrto = 0; // F7
             }
@@ -84,8 +84,14 @@ namespace MvkClient.Actions
             else if (key == 82)
             {
                 ChunkBase chunk = World.GetChunk(ClientMain.Player.GetChunkPos());
-                chunk.ModifiedToRender(); // R
+                for (int y = 0; y < ChunkBase.COUNT_HEIGHT; y++)
+                {
+                    chunk.ModifiedToRender(y); // R
+                }
             }
+
+            else if (key == 33) ClientMain.World.AddOverviewChunk(1); // PaheUp
+            else if (key == 34) ClientMain.World.AddOverviewChunk(-1); // PaheDown
 
             else if (key == 65) ClientMain.KeyBind.left = true;
             else if (key == 68) ClientMain.KeyBind.right = true;

@@ -7,8 +7,10 @@ using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Biome;
 using MvkServer.World.Chunk;
+using MvkServer.World.Gen.Layer;
 using SharpGL;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 
 namespace MvkClient
@@ -121,7 +123,7 @@ namespace MvkClient
                 + "DS: " + DebugString + "\r\n"
                 + BlockFocus
                 + string.Format("")
-                + string.Format("Mesh: {0}/{6} Poligons: {4}\r\nint: {1} float: {2:0.00} string: {3} long: {5}", 
+                + string.Format("Mesh: {0}/{6} Polygons: {4}\r\nint: {1} float: {2:0.00} string: {3} long: {5}", 
                 CountMesh, DInt, DFloat, DStr, CountPoligon, DLong, CountMeshAll);
         }
 
@@ -273,6 +275,67 @@ namespace MvkClient
                 }
             }
             bitmap.Save("biome.png", System.Drawing.Imaging.ImageFormat.Png);
+        }
+
+        /// <summary>
+        /// Сделать скрин биомов определённого размера, при этом не надо ждать рендер чанков
+        /// </summary>
+        public static void ScreenFileBiomeArea(WorldClient world)
+        {
+            int width = 2048;
+            int height = 2048;
+            
+            GenLayer[] genLayer = GenLayer.BeginLayerBiome(5);
+
+            Bitmap bitmap = new Bitmap(width, height);
+            //bitmap.
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            int x, z, key;
+
+            // 0 - biome, 1 - height
+            int id = 0;
+
+            int[] ar = genLayer[id].GetInts(width / -2, height / -2, width, height);
+            long l = stopwatch.ElapsedTicks;
+            world.Log.Log("GenBioms[{1}:{2}]: {0:0.00} ms",
+                l / (float)MvkStatic.TimerFrequency, width, height);
+            EnumBiome biome;
+
+
+            for (x = 0; x < width; x++)
+            {
+                for (z = 0; z < height; z++)
+                {
+                    if (id == 0)
+                    {
+                        biome = (EnumBiome)ar[z * width + x];
+                        if (biome != EnumBiome.Sea)
+                        {
+                            bitmap.SetPixel(x, z, ConvertBiome(biome));
+                        }
+                    }
+                    else
+                    {
+                        key = ar[z * width + x];
+                        if (key != 0)
+                        {
+                            bitmap.SetPixel(x, z, ConvertBiomeHeight(key));
+                        }
+                    }
+                }
+            }
+
+            world.Log.Log("SetPixelGenBioms[{1}:{2}]: {0:0.00} ms",
+                (stopwatch.ElapsedTicks - l) / (float)MvkStatic.TimerFrequency, width, height);
+
+            bitmap.Save("biomeLayer" + (id == 0 ? "" : "H") + ".png", System.Drawing.Imaging.ImageFormat.Png);
+        }
+
+        private static Color ConvertBiomeHeight(int index)
+        {
+            int rgb = 255 - index * 2;
+            return Color.FromArgb(rgb, rgb, rgb);
         }
 
         private static Color ConvertBiome(EnumBiome biome)

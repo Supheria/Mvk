@@ -14,6 +14,7 @@ namespace MvkServer.World.Block.List
             Translucent = translucent;
             LightOpacity = (byte)(translucent ? 2 : 0);
             АmbientOcclusion = false;
+            BlocksNotSame = false;
             Color = color;
             AllSideForcibly = true;
             UseNeighborBrightness = true;

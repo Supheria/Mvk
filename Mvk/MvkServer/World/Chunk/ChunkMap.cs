@@ -21,14 +21,6 @@ namespace MvkServer.World.Chunk
             chunk.UpdateTime();
             try
             {
-                if (map.ContainsKey(chunk.Position))
-                {
-                    map[chunk.Position] = chunk;
-                }
-                else
-                {
-                    map.Add(chunk.Position, chunk);
-                }
                 int chx = chunk.Position.x;
                 int chz = chunk.Position.y;
                 vec2i r = new vec2i(chx >> 5, chz >> 5);
@@ -37,6 +29,14 @@ namespace MvkServer.World.Chunk
                     reg.Add(r, new RgionChunk());
                 }
                 reg[r].Set(chx, chz, chunk);
+                if (map.ContainsKey(chunk.Position))
+                {
+                    map[chunk.Position] = chunk;
+                }
+                else
+                {
+                    map.Add(chunk.Position, chunk);
+                }
             }
             catch (Exception ex)
             {
@@ -149,11 +149,17 @@ namespace MvkServer.World.Chunk
 
             public bool Remove(int chx, int chz)
             {
-                ar[(chz & 31) << 5 | (chx & 31)] = null;
-                count--;
+                int index = (chz & 31) << 5 | (chx & 31);
+                if (ar[index] != null)
+                {
+                    ar[index] = null;
+                    count--;
+                }
                 if (count <= 0) return true;
                 return false;
             }
+
+            public override string ToString() => count.ToString();
         }
     }
 }

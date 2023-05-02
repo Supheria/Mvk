@@ -61,11 +61,19 @@ namespace MvkServer.Util
         /// <summary>
         /// Массив круговой до 37 (32+5) обзора
         /// </summary>
-        public static vec2i[] DistSqrt37 { get; private set; } = new vec2i[38];
+        public static vec2i[] DistSqrt37 { get; private set; }
+        /// <summary>
+        /// Массив круговой 2d до 37 (32+5) обзора
+        /// </summary>
+        public static vec2i[][] DistSqrtTwo2d { get; private set; }
+        /// <summary>
+        /// Массив круговой 3d до UPDATE_ALPHE_CHUNK (4)
+        /// </summary>
+        public static vec3i[][] DistSqrtTwo3d { get; private set; }
         /// <summary>
         /// Длинна массива при нужном обзоре DistSqrt37
         /// </summary>
-        public static int[] DistSqrt37Light { get; private set; } = new int[38];
+        public static int[] DistSqrt37Light { get; private set; } = new int[40];
         /// <summary>
         /// Яркость для текстур
         /// </summary>
@@ -104,11 +112,21 @@ namespace MvkServer.Util
             TimerFrequency = Stopwatch.Frequency / 1000;
             TimerFrequencyTps = Stopwatch.Frequency / 20;
 
-            for (int i = 0; i < 38; i++)
+            DistSqrt37 = GetSqrt(40);
+            DistSqrtTwo2d = new vec2i[40][];
+            for (int i = 0; i < 40; i++)
             {
-                DistSqrt37 = GetSqrt(i);
-                DistSqrt37Light[i] = DistSqrt37.Length;
+                DistSqrtTwo2d[i] = GetSqrt(i);
+                DistSqrt37Light[i] = GetSqrtCount(i);
             }
+
+            int count = MvkGlobal.UPDATE_ALPHE_CHUNK + 1;
+            DistSqrtTwo3d = new vec3i[count][];
+            for (int i = 0; i < count; i++)
+            {
+                DistSqrtTwo3d[i] = GetSqrt3d(i);
+            }
+            
 
             float fm = 0f;
             for (int i = 0; i < 16; i++)
@@ -123,7 +141,7 @@ namespace MvkServer.Util
         /// Сгенерировать массив по длинам используя квадратный корень
         /// </summary>
         /// <param name="overview">Обзор, в одну сторону от ноля</param>
-        public static vec2i[] GetSqrt(int overview)
+        private static vec2i[] GetSqrt(int overview)
         {
             List<ArrayDistance> r = new List<ArrayDistance>();
             for (int x = -overview; x <= overview; x++)
@@ -143,10 +161,32 @@ namespace MvkServer.Util
         }
 
         /// <summary>
+        /// Сгенерировать массив по длинам используя квадратный корень
+        /// </summary>
+        /// <param name="overview">Обзор, в одну сторону от ноля</param>
+        private static int GetSqrtCount(int overview)
+        {
+            int count = 0;
+            ArrayDistance arrayDistance;
+            for (int x = -overview; x <= overview; x++)
+            {
+                for (int y = -overview; y <= overview; y++)
+                {
+                    arrayDistance = new ArrayDistance(new vec3i(x, y, 0), Mth.Sqrt(x * x + y * y));
+                    if (arrayDistance.Distance() - .3f  <= overview)
+                    {
+                        count++;
+                    }
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
         /// Сгенерировать массив по длинам используя квадратный корень в объёме
         /// </summary>
         /// <param name="overview">Обзор, в одну сторону от ноля</param>
-        public static vec3i[] GetSqrt3d(int overview)
+        private static vec3i[] GetSqrt3d(int overview)
         {
             List<ArrayDistance> r = new List<ArrayDistance>();
             for (int x = -overview; x <= overview; x++)

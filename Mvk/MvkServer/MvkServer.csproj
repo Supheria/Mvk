@@ -109,6 +109,8 @@
     <Compile Include="Item\List\ItemUniPiece.cs" />
     <Compile Include="Management\ItemInWorldManager.cs" />
     <Compile Include="Management\PlayerInstance.cs" />
+    <Compile Include="Management\PlayerManagerFragmentCircle.cs" />
+    <Compile Include="Management\PlayerManagerFragmentSquare.cs" />
     <Compile Include="NBT\NBTTools.cs" />
     <Compile Include="NBT\NBTStream.cs" />
     <Compile Include="NBT\NBTBase.cs" />
@@ -204,9 +206,11 @@
     <Compile Include="Util\Smooth.cs" />
     <Compile Include="Util\SmoothFrame.cs" />
     <Compile Include="Util\TickBlock.cs" />
+    <Compile Include="World\Biome\BiomeAbGrass.cs" />
     <Compile Include="World\Biome\BiomeBase.cs" />
     <Compile Include="World\Biome\BiomeBirchForest.cs" />
     <Compile Include="World\Biome\BiomeConiferousForest.cs" />
+    <Compile Include="World\Biome\BiomeDebug.cs" />
     <Compile Include="World\Biome\BiomeMountainsDesert.cs" />
     <Compile Include="World\Biome\BiomeMountains.cs" />
     <Compile Include="World\Biome\BiomeMixedForest.cs" />
@@ -309,8 +313,11 @@
     <Compile Include="World\Chunk\ChunkPrimer.cs" />
     <Compile Include="World\Explosion.cs" />
     <Compile Include="World\Gen\BiomeDecorator.cs" />
+    <Compile Include="World\Gen\BiomeDecoratorRobinson.cs" />
+    <Compile Include="World\Gen\ChunkProviderGenerateBase.cs" />
     <Compile Include="World\Gen\ChunkProviderGenerateDebug.cs" />
-    <Compile Include="World\Gen\ChunkProviderGenerate.cs" />
+    <Compile Include="World\Gen\ChunkProviderGenerateRobinson.cs" />
+    <Compile Include="World\Gen\ChunkProviderGenerateOld.cs" />
     <Compile Include="World\Chunk\ChunkProviderServer.cs" />
     <Compile Include="World\Chunk\ChunkProvider.cs" />
     <Compile Include="World\Chunk\ChunkStorage.cs" />
@@ -329,6 +336,16 @@
     <Compile Include="World\Gen\Feature\WorldGenTreeSpruce.cs" />
     <Compile Include="World\Gen\Feature\WorldGenTreeFruit.cs" />
     <Compile Include="World\Gen\Feature\WorldGenTree.cs" />
+    <Compile Include="World\Gen\Layer\GenLayer.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerBiomeHeight.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerShore.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerRiver.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerSmoothMix.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerSmooth.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerZoomRandom.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerZoom.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerGenerationPattern.cs" />
+    <Compile Include="World\Gen\Layer\GenPatternWorld.cs" />
     <Compile Include="World\Gen\NoiseGeneratorPerlin.cs" />
     <Compile Include="World\Gen\NoiseGeneratorSimplex.cs" />
     <Compile Include="World\RegionFile.cs" />
@@ -340,6 +357,5 @@
     <Compile Include="World\WorldInfo.cs" />
     <Compile Include="World\WorldServer.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

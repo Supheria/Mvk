@@ -76,10 +76,39 @@ namespace MvkServer.World.Gen
         /// </summary>
         public int randomTree = 1;
 
+
+        /// <summary>
+        /// Количество нефти, создаваемой на чанке
+        /// </summary>
+        public int oilPerChunk = 3;
+        /// <summary>
+        /// Количество земли, создаваемой на чанке
+        /// </summary>
+        public int dirtPerChunk = 10;
+        /// <summary>
+        /// Количество гравия, создаваемой на чанке
+        /// </summary>
+        public int gravelPerChunk = 8;
+        /// <summary>
+        /// Количество гранита, создаваемой на чанке
+        /// </summary>
+        public int granitePerChunk = 10;
         /// <summary>
         /// Количество известняка, создаваемой на чанке
         /// </summary>
         public int limestonePerChunk = 0;
+        /// <summary>
+        /// Количество угля, создаваемой на чанке
+        /// </summary>
+        public int coalPerChunk = 20;
+        /// <summary>
+        /// Количество железа, создаваемой на чанке
+        /// </summary>
+        public int ironPerChunk = 20;
+        /// <summary>
+        /// Количество золота, создаваемой на чанке
+        /// </summary>
+        public int goldPerChunk = 1;
 
         #region PancakePerChunk
 
@@ -102,15 +131,18 @@ namespace MvkServer.World.Gen
 
         #endregion
 
-        private readonly WorldServer world;
-        private ChunkBase currentChunk;
-        private ChunkBase currentChunkSpawn;
-        private Rand currentRand;
-        private BlockPos currentBlockPos;
+        protected readonly WorldServer world;
+        protected ChunkBase currentChunk;
+        protected ChunkBase currentChunkSpawn;
+        protected Rand currentRand;
+        protected BlockPos currentBlockPos;
 
-        public BiomeDecorator(WorldServer world)
+        public BiomeDecorator() { }
+
+        public BiomeDecorator(WorldServer world) => this.world = world;
+
+        public virtual void Init()
         {
-            this.world = world;
             genPlants = new WorldGenPlants();
             genCactus = new WorldGenCactus();
             genOak = new WorldGenTreeOak();
@@ -135,7 +167,7 @@ namespace MvkServer.World.Gen
             genPancakeDirt = new WorldGenPancake(EnumBlock.Dirt, 9, 7);
         }
 
-        private void UpSeed(Rand rand, int xbc, int zbc, long seed)
+        protected void UpSeed(Rand rand, int xbc, int zbc, long seed)
         {
             rand.SetSeed(seed);
             int realX = xbc * rand.Next();
@@ -150,7 +182,7 @@ namespace MvkServer.World.Gen
         /// <param name="provider"></param>
         /// <param name="chunk">которы сетим</param>
         /// <param name="chunkOffset">где спавн</param>
-        public void GenDecorationsArea(WorldServer world, ChunkProviderGenerate provider, ChunkBase chunk, ChunkBase chunkSpawn)
+        public void GenDecorationsArea(WorldServer world, ChunkProviderGenerateBase provider, ChunkBase chunk, ChunkBase chunkSpawn)
         {
             int xbc = chunkSpawn.Position.x << 4;
             int zbc = chunkSpawn.Position.y << 4;
@@ -181,17 +213,22 @@ namespace MvkServer.World.Gen
             GenTree(sprucePerChunk, genSpruce);
             GenTree(fruitPerChunk, genFruit);
 
-            GenStandardOre(3, genOil, 24, 64); // Нефть под вопросом!!!
-            GenStandardOre(10, genDirt, 1, 256);
-            GenStandardOre(8, gemGravel, 1, 256);
-            GenStandardOre(10, genGranite, 1, 112); // 80
-            GenStandardOre(limestonePerChunk, genLimestone, 1, 112); // 80
-            GenStandardOre(20, genCoal, 3, 160); // 128
-            GenStandardOre(20, genIron, 3, 96); // 64
-            GenStandardOre(1, genGold, 3, 16);
+            GenStandardOres();
         }
 
-        private void GenStandardOre(int count, WorldGenMinable worldGenMinable, int yMin, int yMax)
+        protected virtual void GenStandardOres()
+        {
+            GenStandardOre(oilPerChunk, genOil, 24, 32); // Нефть под вопросом!!!
+            GenStandardOre(dirtPerChunk, genDirt, 1, 112);
+            GenStandardOre(gravelPerChunk, gemGravel, 1, 112);
+            GenStandardOre(granitePerChunk, genGranite, 1, 112); // 80
+            GenStandardOre(limestonePerChunk, genLimestone, 1, 112); // 80
+            GenStandardOre(coalPerChunk, genCoal, 3, 96); // 128
+            GenStandardOre(ironPerChunk, genIron, 3, 48); // 64
+            GenStandardOre(goldPerChunk, genGold, 3, 16);
+        }
+
+        protected void GenStandardOre(int count, WorldGenMinable worldGenMinable, int yMin, int yMax)
         {
             if (count > 0)
             {
@@ -210,7 +247,7 @@ namespace MvkServer.World.Gen
             }
         }
 
-        private void GenPancake(int count, WorldGenPancake worldGenPancake)
+        protected void GenPancake(int count, WorldGenPancake worldGenPancake)
         {
             if (count > 0)
             {
@@ -225,7 +262,7 @@ namespace MvkServer.World.Gen
             }
         }
 
-        private void GenTree(int count, WorldGenTree worldGenTree)
+        protected void GenTree(int count, WorldGenTree worldGenTree)
         {
             if (count > 0)
             {
@@ -244,13 +281,21 @@ namespace MvkServer.World.Gen
             }
         }
 
+        protected virtual void GenBrol(Rand rand, int xbc, int zbc)
+        {
+            for (int i = 0; i < brolPerChunk; i++)
+            {
+                genBrol.Generate(world, rand, new BlockPos(xbc + rand.Next(16), rand.Next(10) + 3, zbc + rand.Next(16)));
+            }
+        }
+
         /// <summary>
         /// Декорация в одном столбце или 1 блок
         /// </summary>
         /// <param name="world"></param>
         /// <param name="provider"></param>
         /// <param name="chunk"></param>
-        public void GenDecorations(WorldServer world, ChunkProviderGenerate provider, ChunkBase chunk)
+        public void GenDecorations(WorldServer world, ChunkProviderGenerateBase provider, ChunkBase chunk)
         {
             int xbc = chunk.Position.x << 4;
             int zbc = chunk.Position.y << 4;
@@ -294,11 +339,7 @@ namespace MvkServer.World.Gen
                 genCactus.Generate(world, rand, blockPos);
             }
             // Брол
-            for (i = 0; i < brolPerChunk; i++)
-            {
-                genBrol.Generate(world, rand, new BlockPos(xbc + rand.Next(16), rand.Next(10) + 3, zbc + rand.Next(16)));
-            }
-
+            GenBrol(rand, xbc, zbc);
         }
     }
 }

@@ -203,7 +203,8 @@ namespace MvkServer.World.Chunk.Light
                 arCache[indexEnd++] = (x - bOffsetX + 32 | y << 6 | z - bOffsetZ + 32 << 14 | lightBeside << 20);
                 BrighterLightSky();
             }
-            else if (lightOld > lightBeside)
+            // TODO::fix 2023-04-11 проверит небесное боковое освещение
+            else// if (lightOld > lightBeside) 
             {
                 // Затемнить
                 chunkStorage.lightSky[index] = 0;
@@ -933,18 +934,12 @@ namespace MvkServer.World.Chunk.Light
         /// </summary>
         public byte GetLevelBrightSky(int x, int y, int z, byte lo)
         {
-            // Количество излучаемого света
-            int light = 0;
             // Сколько света вычитается для прохождения этого блока
             int opacity = lo >> 4;
-            if (opacity >= 15 && light > 0) opacity = 1;
-            if (opacity < 1) opacity = 1;
+            if (opacity < 1 || opacity >= 15) opacity = 1;
 
-            // Если блок не проводит свет, значит темно
-            if (opacity >= 15) return 0;
-            // Если блок яркий выводим значение
-            if (light >= 14) return (byte)light;
-
+            // Количество излучаемого света
+            int light = 0;
             vec3i vec;
             int lightNew, y2;
             // обрабатываем соседние блоки, вдруг рядом плафон ярче, чтоб не затемнить
@@ -959,6 +954,10 @@ namespace MvkServer.World.Chunk.Light
                     if (lightNew > light) light = lightNew;
                     // Если блок яркий выводим значение
                     if (light >= 14) return (byte)light;
+                }
+                else
+                {
+                    return 15;
                 }
             }
             return (byte)light;

@@ -27,13 +27,8 @@ namespace MvkServer.World.Block.List
             this.numberTexture = numberTexture;
             this.enumItem = enumItem;
             Particle = numberTexture;
-            FullBlock = false;
-            АmbientOcclusion = false;
-            Shadow = false;
-            AllSideForcibly = true;
-            UseNeighborBrightness = true;
+            SetUnique();
             IsReplaceable = true;
-            LightOpacity = 0;
             Material = EnumMaterial.Piece;
             InitBoxs();
         }
@@ -42,11 +37,6 @@ namespace MvkServer.World.Block.List
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
         public override int Hardness(BlockState state) => 1;
-
-        /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public override bool BlocksNotSame(int met) => true;
 
         /// <summary>
         /// Является ли блок проходимым, т.е. можно ли ходить через него

@@ -33,15 +33,9 @@ namespace MvkServer.World.Block.List
             Translucent = translucent;
             this.numberTextureButt = numberTextureButt;
             this.numberTextureSide = numberTextureSide;
-            FullBlock = false;
-            АmbientOcclusion = false;
-            Shadow = false;
+            SetUnique();
             Color = color;
-            AllSideForcibly = true;
-            NoSideDimming = true;
-            UseNeighborBrightness = true;
             Particle = numberTextureSide;
-            LightOpacity = 0;
             Resistance = .6f;
             Material = EnumMaterial.GlassPane;
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
@@ -52,11 +46,6 @@ namespace MvkServer.World.Block.List
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
         public override int Hardness(BlockState state) => 10;
-
-        /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public override bool BlocksNotSame(int met) => true;
 
         /// <summary>
         /// Коробки для рендера 

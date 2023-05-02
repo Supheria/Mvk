@@ -49,6 +49,15 @@ namespace MvkServer.Util
             }
         }
 
+        public void AddFloat(T[] items)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                buffer[count + i] = items[i];
+            }
+            count += 4;
+        }
+
         public void AddRange(ArrayMvk<T> items)
         {
             int count = items.count;

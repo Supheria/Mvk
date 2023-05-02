@@ -59,7 +59,7 @@ namespace MvkServer.World
             File = new WorldFile(this, slot);
             Info = new WorldInfo(this);
             Rnd = new Rand(Info.Seed);
-            ChunkPr = new ChunkProviderServer(this);
+            ChunkPr = new ChunkProviderServer(this, slot);
             Players = new PlayerManager(this);
             Tracker = new EntityTracker(this);
             Log = ServerMain.Log;

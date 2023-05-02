@@ -15,14 +15,15 @@ namespace MvkServer.World
         /// <summary>
         /// Скорость облаков
         /// </summary>
-        public const float SPEED_CLOUD = .125f;
+        public const float SPEED_CLOUD = 0.0625f; // .125f;
         /// <summary>
         /// Размер растяжки текстуры облака. Чем крупнее тем облако больше.
         /// </summary>
-        public const float CLOUD_SIZE_TEXTURE = 8192f; //2048f;// 8192f;
-                                                       /// <summary>
-                                                       /// Размер пикселя текстуры облака = 1/CLOUD_SIZE_TEXTURE
-                                                       /// </summary>
+        public const float CLOUD_SIZE_TEXTURE = 4096f;// 8192f; //2048f;// 8192f;
+
+        /// <summary>
+        /// Размер пикселя текстуры облака = 1/CLOUD_SIZE_TEXTURE
+        /// </summary>
         //public const float CLOUD_PIXEL_TEXTURE = .0001220703125f;// .00048828125f;// .0001220703125f;
 
         /// <summary>

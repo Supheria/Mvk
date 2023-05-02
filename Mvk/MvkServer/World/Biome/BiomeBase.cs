@@ -2,6 +2,7 @@
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
 using MvkServer.World.Gen;
+using System;
 
 namespace MvkServer.World.Biome
 {
@@ -10,7 +11,52 @@ namespace MvkServer.World.Biome
     /// </summary>
     public class BiomeBase
     {
-        public ChunkProviderGenerate Provider { get; protected set; }
+        /// <summary>
+        /// Высота уровня воды
+        /// </summary>
+        public const int HEIGHT_WATER = 48;// 96;
+        /// <summary>
+        /// Высота воды -1
+        /// </summary>
+        public const int HEIGHT_WATER_MINUS = 47;// 95;
+        /// <summary>
+        /// Высота воды -2
+        /// </summary>
+        public const int HEIGHT_WATER_MINUS_2 = 46;// 94;
+        /// <summary>
+        /// Высота воды +1
+        /// </summary>
+        public const int HEIGHT_WATER_PLUS = 49;// 97;
+        /// <summary>
+        /// Высота холмов, плюсует к высоте воды
+        /// </summary>
+        public const int HEIGHT_HILL = 72;// 96;
+        /// <summary>
+        /// Высота в горах, проплешина с землёй
+        /// </summary>
+        public const int HEIGHT_MOUNTAINS_MIX = 58;//  58;// 106;
+        /// <summary>
+        /// Высота в горах пустынных
+        /// </summary>
+        public const int HEIGHT_MOUNTAINS_DESERT = 60;// 108;
+        /// <summary>
+        /// Высота холмов на пляже
+        /// </summary>
+        public const int HEIGHT_HILL_BEACH = 288; // 288;
+        /// <summary>
+        /// Высота холмов на море
+        /// </summary>
+        public const int HEIGHT_HILL_SEA = 384; // 384;
+        /// <summary>
+        /// Минимальная высота для декорации блинчиков
+        /// </summary>
+        public const int HEIGHT_PANCAKE_MIN = 40;// 88;
+        /// <summary>
+        /// Центр амплитуды пещер
+        /// </summary>
+        public const int HEIGHT_CENTER_CAVE = 32;// 64;
+
+        public ChunkProviderGenerateBase Provider { get; protected set; }
         /// <summary>
         /// Декорация
         /// </summary>
@@ -25,6 +71,10 @@ namespace MvkServer.World.Biome
         protected Rand rand;
 
         /// <summary>
+        /// Блок для отладки визуализации биома
+        /// </summary>
+        protected ushort blockIdBiomDebug;
+        /// <summary>
         /// Вверхний блок
         /// </summary>
         protected ushort blockIdUp;
@@ -36,14 +86,20 @@ namespace MvkServer.World.Biome
         protected bool isBlockBody;
 
         protected BiomeBase() { }
-        public BiomeBase(ChunkProviderGenerate chunkProvider)
+        public BiomeBase(ChunkProviderGenerateBase chunkProvider)
         {
             Provider = chunkProvider;
             rand = Provider.Random;
-            blockIdUp = (int)EnumBlock.Turf;
-            blockIdBody = (int)EnumBlock.Dirt;
-            isBlockBody = true;
-            Decorator = new BiomeDecorator(Provider.World);
+            blockIdBiomDebug = blockIdUp = blockIdBody = (ushort)EnumBlock.Stone;
+        }
+
+        /// <summary>
+        /// Инициализировать декорацию
+        /// </summary>
+        public virtual void InitDecorator(bool isRobinson)
+        {
+            Decorator = isRobinson ? new BiomeDecoratorRobinson(Provider.World) : new BiomeDecorator(Provider.World);
+            Decorator.Init();
         }
 
         public void Init(ChunkPrimer chunk, int xbc, int zbc)
@@ -74,33 +130,42 @@ namespace MvkServer.World.Biome
         public virtual void Column(int x, int z, float height, float river)
         {
             int yh = GetLevelHeight(x, z, height, river);
+            if (yh < 2) yh = 2;
             chunk.heightMap[x << 4 | z] = yh;
             int index = x << 12 | z << 8;
-            int y;
+            int y = 0;
 
-            if (isBlockBody)
+            try
             {
-                // Определяем высоту тела по шуму (3 - 6)
-                int bodyHeight = (int)(Provider.AreaNoise[x << 4 | z] / 4f + 5f);
+                if (isBlockBody)
+                {
+                    // Определяем высоту тела по шуму (3 - 6)
+                    int bodyHeight = (int)(Provider.AreaNoise[x << 4 | z] / 4f + 5f);
 
-                int yb = yh - bodyHeight;
-                // заполняем камнем
-                for (y = 3; y < yb; y++) chunk.id[index | y] = 3;
-                // заполняем тело
-                for (y = yb; y < yh; y++) chunk.id[index | y] = blockIdBody;
-                chunk.id[x << 12 | z << 8 | yh] = yh < 96 ? blockIdBody : blockIdUp;
+                    int yb = yh - bodyHeight;
+                    if (yb < 2) yb = 2;
+
+                    // заполняем камнем
+                    for (y = 3; y < yb; y++) chunk.id[index | y] = 3;
+                    // заполняем тело
+                    for (y = yb; y < yh; y++) chunk.id[index | y] = blockIdBody;
+                    chunk.id[x << 12 | z << 8 | yh] = yh < HEIGHT_WATER ? blockIdBody : blockIdUp;
+                }
+                else
+                {
+                    // заполняем камнем
+                    for (y = 3; y <= yh; y++) chunk.id[index | y] = 3;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // заполняем камнем
-                for (y = 3; y <= yh; y++) chunk.id[index | y] = 3;
+                Logger.Crach(ex, "yh:{0} y:{1} index:{2}", yh, y, index);
             }
-
-            if (yh < 96)
+            if (yh < HEIGHT_WATER)
             {
                 // меньше уровня воды
                 yh++;
-                for (y = yh; y < 97; y++)
+                for (y = yh; y < HEIGHT_WATER_PLUS; y++)
                 {
                     // заполняем водой
                     chunk.id[index | y] = 13;
@@ -108,12 +173,15 @@ namespace MvkServer.World.Biome
             }
         }
 
+        
+
         /// <summary>
         /// Получить уровень высоты
         /// </summary>
         /// <param name="height">Высота -1..0..1</param>
         /// <param name="river">Определение центра реки 1..0..1</param>
-        protected virtual int GetLevelHeight(int x, int z, float height, float river) => 96 + (int)(height * 96f);
+        protected virtual int GetLevelHeight(int x, int z, float height, float river) 
+            => HEIGHT_WATER + (int)(height * HEIGHT_HILL);
 
         /// <summary>
         /// Генерация наза 0-3 блока
@@ -136,6 +204,88 @@ namespace MvkServer.World.Biome
                 }
             }
         }
+
+        /// <summary>
+        /// Возращаем сгенерированный блок на 4 высоте, конкретного биома
+        /// </summary>
+        /// <param name="x">X 0..15</param>
+        /// <param name="z">Z 0..15</param>
+        /// <param name="height">Высота -1..0..1</param>
+        /// <param name="river">Определение центра реки 1..0..1</param>
+        public virtual void ViewDebugBiom(int x, int z)//, float height, float river)
+        {
+            chunk.id[x << 12 | z << 8 | 3] = blockIdBiomDebug;
+        }
+
+        #region Robinson
+
+        /// <summary>
+        /// Возращаем сгенерированный столбец и возвращает фактическую высоту, без воды
+        /// </summary>
+        /// <param name="x">X 0..15</param>
+        /// <param name="z">Z 0..15</param>
+        /// <param name="height">Высота в блоках, средняя рекомендуемая</param>
+        /// <param name="heightNoise">Высота -1..0..1</param>
+        /// <param name="addNoise">Диапазон -1..0..1</param>
+        public int ColumnRobinson(int x, int z, int height, float heightNoise, float addNoise)
+        {
+            int yh = GetLevelHeightRobinson(x, z, height, heightNoise, addNoise);
+            if (yh < 2) yh = 2;
+            int result = chunk.heightMap[x << 4 | z] = yh;
+            int index = x << 12 | z << 8;
+            int y = 0;
+
+            try
+            {
+                if (isBlockBody)
+                {
+                    // Определяем высоту тела по шуму (3 - 6)
+                    int bodyHeight = (int)(Provider.AreaNoise[x << 4 | z] / 4f + 5f);
+
+                    int yb = yh - bodyHeight;
+                    if (yb < 2) yb = 2;
+
+                    // заполняем камнем
+                    for (y = 3; y < yb; y++) chunk.id[index | y] = 3;
+                    // заполняем тело
+                    for (y = yb; y < yh; y++) chunk.id[index | y] = blockIdBody;
+                    chunk.id[x << 12 | z << 8 | yh] = yh < HEIGHT_WATER ? blockIdBody : blockIdUp;
+                }
+                else
+                {
+                    // заполняем камнем
+                    for (y = 3; y <= yh; y++) chunk.id[index | y] = 3;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Crach(ex, "yh:{0} y:{1} index:{2}", yh, y, index);
+            }
+            if (yh < HEIGHT_WATER)
+            {
+                // меньше уровня воды
+                yh++;
+                for (y = yh; y < HEIGHT_WATER_PLUS; y++)
+                {
+                    // заполняем водой
+                    chunk.id[index | y] = 13;
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Получить уровень множителя высоты
+        /// </summary>
+        /// <param name="x">X 0..15</param>
+        /// <param name="z">Z 0..15</param>
+        /// <param name="height">Высота в блоках, средняя рекомендуемая</param>
+        /// <param name="heightNoise">Высота -1..0..1</param>
+        /// <param name="addNoise">Диапазон -1..0..1</param>
+        protected virtual int GetLevelHeightRobinson(int x, int z, int height, float heightNoise, float addNoise)
+            => height + (int)(heightNoise * (heightNoise < 0 ? 3f : 8f));
+
+        #endregion
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Util;
+using MvkServer.World.Biome;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
 
@@ -55,7 +56,7 @@ namespace MvkServer.World.Gen.Feature
             int by = blockPos.Y;
             int bz = blockPos.Z;
             // Если меньше 88 значит глубоко, блинчики не нужны
-            if (by < 88) return false;
+            if (by < BiomeBase.HEIGHT_PANCAKE_MIN) return false;
 
             vec2i posCh = chunk.Position;
             ChunkStorage chunkStorage;

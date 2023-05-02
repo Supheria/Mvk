@@ -8,14 +8,14 @@
         /// <summary>
         /// При загрузке мира, сколько загружается обзор мира
         /// </summary>
-        public const int OVERVIEW_CHUNK_START = 8;
+        public const int OVERVIEW_CHUNK_START = 5;
 
         /// <summary>
         /// Время чистки чанков на сервере и клиенте, в тактах
         /// 6000 = 5 min
-        /// 400 = 20 sec
+        /// 600 = 30 sec
         /// </summary>
-        public const int CHUNK_CLEANING_TIME = 400; // 6000;
+        public const int CHUNK_CLEANING_TIME = 600; // 6000;
 
         /// <summary>
         /// Визуальная отладка прогрузки чанков
@@ -34,21 +34,21 @@
         /// <summary>
         /// Количество чанков для загрузки или генерации за такт, было 5
         /// </summary>
-        public const int COUNT_CHUNK_LOAD_OR_GEN_TPS = 10;// 5;
+        public const int COUNT_CHUNK_LOAD_OR_GEN_TPS = 12;// 10 5;
 
         /// <summary>
         /// Cколько пакетов чанков передавать по сети за один ТПС
         /// </summary>
-        public const int COUNT_PACKET_CHUNK_TPS = 10;// 10;
+        public const int COUNT_PACKET_CHUNK_TPS = 12;// 10;
 
         /// <summary>
         /// Cколько псевдочанков рендерим в один кадр
         /// </summary>
-        public const int COUNT_RENDER_CHUNK_FRAME = 2;// 32;// 16; // было 5 целых чанков, теперь псевдо чанки; потом 50
+        public const int COUNT_RENDER_CHUNK_FRAME = 8; // 6 // 32;// 16; // было 5 целых чанков, теперь псевдо чанки; потом 50
         /// <summary>
         /// Cколько псевдочанков рендерим в один кадр для альфа блоков
         /// </summary>
-        public const int COUNT_RENDER_CHUNK_FRAME_ALPHA = 4;
+        public const int COUNT_RENDER_CHUNK_FRAME_ALPHA = 8;
 
         /// <summary>
         /// Эффект покачивания при движении

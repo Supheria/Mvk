@@ -34,11 +34,6 @@ namespace MvkServer.World.Block.List
         public override int Hardness(BlockState state) => 100;
 
         /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public override bool BlocksNotSame(int met) => true;
-
-        /// <summary>
         /// Передать список ограничительных рамок блока
         /// </summary>
         public override AxisAlignedBB[] GetCollisionBoxesToList(BlockPos blockPos, int met)

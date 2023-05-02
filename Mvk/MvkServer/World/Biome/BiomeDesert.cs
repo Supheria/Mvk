@@ -8,10 +8,19 @@ namespace MvkServer.World.Biome
     /// </summary>
     public class BiomeDesert : BiomeBase
     {
-        public BiomeDesert(ChunkProviderGenerate chunkProvider) : base(chunkProvider)
+        public BiomeDesert(ChunkProviderGenerateBase chunkProvider) : base(chunkProvider)
         {
+            blockIdBiomDebug = blockIdBody = blockIdUp = (ushort)EnumBlock.Sand;
+            isBlockBody = true;
+        }
+
+        /// <summary>
+        /// Инициализировать декорацию
+        /// </summary>
+        public override void InitDecorator(bool isRobinson)
+        {
+            base.InitDecorator(isRobinson);
             Decorator.cactiPerChunk = 10;
-            blockIdBody = blockIdUp = (ushort)EnumBlock.Sand;
         }
     }
 }

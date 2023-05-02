@@ -619,10 +619,13 @@ namespace MvkClient.Entity
                 FrustumStruct frustum;
                 ChunkRender chunk;
                 vec2i coord;
-                for (i = 0; i < DistSqrt.Length; i++)
+                vec2i vec;
+                int countOC = DistSqrt.Length;
+                for (i = 0; i < countOC; i++)
                 {
-                    xc = DistSqrt[i].x;
-                    zc = DistSqrt[i].y;
+                    vec = DistSqrt[i];
+                    xc = vec.x;
+                    zc = vec.y;
                     xb = xc << 4;
                     zb = zc << 4;
 
@@ -977,8 +980,8 @@ namespace MvkClient.Entity
         public override void SetOverviewChunk(int overviewChunk)
         {
             OverviewChunkPrev = OverviewChunk = overviewChunk;
-            DistSqrt = MvkStatic.GetSqrt(OverviewChunk);
-            distSqrtAlpha = MvkStatic.GetSqrt3d(OverviewChunk < MvkGlobal.UPDATE_ALPHE_CHUNK ? OverviewChunk : MvkGlobal.UPDATE_ALPHE_CHUNK);
+            DistSqrt = MvkStatic.DistSqrtTwo2d[OverviewChunk];
+            distSqrtAlpha = MvkStatic.DistSqrtTwo3d[OverviewChunk < MvkGlobal.UPDATE_ALPHE_CHUNK ? OverviewChunk : MvkGlobal.UPDATE_ALPHE_CHUNK];
         }
 
         /// <summary>
@@ -1013,7 +1016,7 @@ namespace MvkClient.Entity
                 {
                     vec2i pos = new vec2i(posCh.x + distSqrtAlpha[d].x, posCh.y + distSqrtAlpha[d].z);
                     ChunkRender chunk = ClientWorld.ChunkPrClient.GetChunkRender(pos);
-                    if (chunk != null) chunk.ModifiedToRenderAlpha();
+                    if (chunk != null) chunk.ModifiedToRenderAlpha(posY + distSqrtAlpha[d].y);
                 }
             }
             else if (!PositionAlphaBlock.Equals(positionAlphaBlockPrev))
@@ -1050,9 +1053,6 @@ namespace MvkClient.Entity
         public override vec3 GetLookFrame(float timeIndex) => GetRay(yawHeadFrame, pitchFrame);
 
         #endregion
-
-
-
 
         /// <summary>
         /// Действие рук

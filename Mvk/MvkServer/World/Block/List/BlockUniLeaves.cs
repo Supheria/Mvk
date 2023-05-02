@@ -13,10 +13,11 @@ namespace MvkServer.World.Block.List
         {
             Material = EnumMaterial.Leaves;
             IsCollidable = false;
+            SetUnique();
             LightOpacity = 2;
-            UseNeighborBrightness = true;
-            AllSideForcibly = true;
-            АmbientOcclusion = false;
+            //UseNeighborBrightness = true;
+            //AllSideForcibly = true;
+            //АmbientOcclusion = false;
             BiomeColor = true;
             Color = new vec3(.56f, .73f, .35f);
             Particle = numberTexture;
@@ -58,14 +59,6 @@ namespace MvkServer.World.Block.List
         /// Коробки
         /// </summary>
         public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met];
-
-        /// <summary>
-        /// Не однотипные блоки, пример: трава, цветы, кактус
-        /// </summary>
-        public override bool BlocksNotSame(int met)
-        {
-            return met == 0;
-        }
 
         /// <summary>
         /// Флаг отличия, для рендера прорисовки однотипных материалов, пример листва чёрная контачит с листвой прозрачной

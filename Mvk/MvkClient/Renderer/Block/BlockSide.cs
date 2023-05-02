@@ -211,11 +211,11 @@ namespace MvkClient.Renderer.Block
                 z += translateZ;
             }
 
-            buffer.AddRange(BitConverter.GetBytes(x));
-            buffer.AddRange(BitConverter.GetBytes(y));
-            buffer.AddRange(BitConverter.GetBytes(z));
-            buffer.AddRange(BitConverter.GetBytes(u));
-            buffer.AddRange(BitConverter.GetBytes(v));
+            buffer.AddFloat(BitConverter.GetBytes(x));
+            buffer.AddFloat(BitConverter.GetBytes(y));
+            buffer.AddFloat(BitConverter.GetBytes(z));
+            buffer.AddFloat(BitConverter.GetBytes(u));
+            buffer.AddFloat(BitConverter.GetBytes(v));
             buffer.buffer[buffer.count++] = r;
             buffer.buffer[buffer.count++] = g;
             buffer.buffer[buffer.count++] = b;

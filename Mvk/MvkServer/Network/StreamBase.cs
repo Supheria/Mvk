@@ -91,7 +91,8 @@ namespace MvkServer.Network
         /// <summary>
         /// Прочесть тип float (точность 0,0001) 4 байта
         /// </summary>
-        public float ReadFloat() => ReadInt() / 10000f;
+        public float ReadFloat() => ReadInt() / 10000f; // Этот быстрее на ~10-20%
+        //public float ReadFloat() => BitConverter.ToSingle(new byte[] { ReadByte(), ReadByte(), ReadByte(), ReadByte() }, 0);
 
         #endregion
 
@@ -173,7 +174,8 @@ namespace MvkServer.Network
         /// <summary>
         /// Записать тип float (точность 0,0001) 4 байта
         /// </summary>
-        public void WriteFloat(float value) => WriteInt((int)(value * 10000));
+        public void WriteFloat(float value) => WriteInt((int)(value * 10000)); // Этот быстрее на ~10-20%
+        //public void WriteFloat(float value) => Write(BitConverter.GetBytes(value), 0, 4);
 
         #endregion
 
