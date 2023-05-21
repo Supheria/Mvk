@@ -1,4 +1,5 @@
-﻿using MvkServer.Glm;
+﻿using MvkServer.Entity.List;
+using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -110,5 +111,15 @@ namespace MvkServer.World.Block.List
         /// Является ли блок проходимым, т.е. можно ли ходить через него
         /// </summary>
         public override bool IsPassable(int met) => true;
+
+        // TODO::2023-05-18 Вырастает дерево по нажатию правой мыши, УБРАТЬ!
+        /// <summary>
+        /// Активация блока, клик правой клавишей мыши по блоку, true - был клик, false - нет такой возможности
+        /// </summary>
+        public override bool OnBlockActivated(WorldBase worldIn, EntityPlayer entityPlayer, BlockPos pos, BlockState state, Pole side, vec3 facing)
+        {
+            if (!worldIn.IsRemote) GenefateTree(worldIn, worldIn.Rnd, pos);
+            return true;
+        }
     }
 }

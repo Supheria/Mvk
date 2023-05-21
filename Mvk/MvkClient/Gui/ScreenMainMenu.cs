@@ -41,14 +41,14 @@ namespace MvkClient.Gui
         /// </summary>
         protected override void ResizedScreen()
         {
-            int h = Height / 4 + 92 * sizeInterface;
-            int hMax = h + 208 * sizeInterface;
+            int h = Height / 4 + 92 * SizeInterface;
+            int hMax = h + 208 * SizeInterface;
             if (hMax > Height) h -= hMax - Height;
 
-            buttonSingle.Position = new vec2i(100 * sizeInterface, h);
-            buttonMultiplayer.Position = new vec2i(100 * sizeInterface, h + 44 * sizeInterface);
-            buttonOptions.Position = new vec2i(100 * sizeInterface, h + 88 * sizeInterface);
-            buttonExit.Position = new vec2i(100 * sizeInterface, h + 148 * sizeInterface);
+            buttonSingle.Position = new vec2i(100 * SizeInterface, h);
+            buttonMultiplayer.Position = new vec2i(100 * SizeInterface, h + 44 * SizeInterface);
+            buttonOptions.Position = new vec2i(100 * SizeInterface, h + 88 * SizeInterface);
+            buttonExit.Position = new vec2i(100 * SizeInterface, h + 148 * SizeInterface);
         }
 
         private void ButtonExit_Click(object sender, EventArgs e)

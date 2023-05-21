@@ -14,7 +14,7 @@ namespace MvkServer.Entity.List
         public EntityBook(WorldBase world) : base(world)
         {
             IsFlying = true;
-            Type = EnumEntities.Book;
+            type = EnumEntities.Book;
             StepHeight = 1.01f;
             samplesHurt = new AssetsSample[] { AssetsSample.MobBookAttack };
             samplesSay = new AssetsSample[] { AssetsSample.MobBookSay1, AssetsSample.MobBookSay2, AssetsSample.MobBookSay3 };

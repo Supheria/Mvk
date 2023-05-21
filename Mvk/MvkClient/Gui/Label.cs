@@ -1,10 +1,10 @@
 ﻿using MvkAssets;
 using MvkClient.Renderer;
 using MvkClient.Renderer.Font;
+using MvkClient.Util;
 using MvkServer.Glm;
 using SharpGL;
 using System;
-using System.Collections.Generic;
 
 namespace MvkClient.Gui
 {
@@ -28,7 +28,7 @@ namespace MvkClient.Gui
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.Color(1f, 1f, 1f, 1f);
             GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
-            vec4 color = Enabled ? new vec4(1f) : new vec4(.6f, .6f, .6f, 1f);
+            vec3 color = Enabled ? new vec3(1) : new vec3(.6f);
 
             GLRender.PushMatrix();
             {
@@ -44,8 +44,7 @@ namespace MvkClient.Gui
                 foreach (string str in strs)
                 {
                     int x = GetXAlight(str, 0);
-                    FontRenderer.RenderString(x + 2, 15 + h, new vec4(0, 0, 0, 1f), str, size);
-                    FontRenderer.RenderString(x, 14 + h, color, str, size);
+                    FontRenderer.RenderString(x, 14 + h, str, size, color, Alpha, true);
                     h += FontAdvance.VertAdvance[(int)size] + 4;
                 }
             }
@@ -55,35 +54,12 @@ namespace MvkClient.Gui
         /// <summary>
         /// Перенести текст согласно ширине контрола
         /// </summary>
-        public void TransferText()
+        public void Transfer()
         {
-            string[] stringSeparators = new string[] { "\r\n" };
-            string[] strs = Text.Split(stringSeparators, StringSplitOptions.None);
-
-            List<string> symbols = new List<string>();
-            foreach(string str in strs)
-            {
-                symbols.AddRange(str.Split(' '));
-            }
-
-            int wspase = FontRenderer.WidthString(" ", size);
-            int w = 0;
-            string text = "";
-            foreach (string symbol in symbols)
-            {
-                int ws = FontRenderer.WidthString(symbol, size) * sizeInterface;
-                if (w + wspase + ws > Width)
-                {
-                    w = ws;
-                    text += "\r\n" + symbol;
-                } else
-                {
-                    if (w > 0) text += " ";
-                    text += symbol;
-                    w += wspase + ws;
-                }
-            }
-            Text = text;
+            TransferText transfer = new TransferText(size, Width, sizeInterface);
+            transfer.Run(Text);
+            Text = transfer.OutText;
         }
+
     }
 }

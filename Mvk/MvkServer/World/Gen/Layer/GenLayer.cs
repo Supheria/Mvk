@@ -1,6 +1,8 @@
-﻿namespace MvkServer.World.Gen.Layer
+﻿using MvkServer.World.Biome;
+
+namespace MvkServer.World.Gen.Layer
 {
-    // TODO::2023-04-18 нас C https://github.com/Cubitect/cubiomes
+    // https://github.com/Cubitect/cubiomes
     /// <summary>
     /// Абстрактный класс слоёв
     /// </summary>
@@ -99,42 +101,67 @@
 
         public static GenLayer[] BeginLayerBiome(long worldSeed)
         {
-            GenLayerSmoothMix layerSmoothMix;
+            GenLayer layerBiomeOne;
+            GenLayer layerBiomeParam1;
+            GenLayer layerBiomeParam2;
+            GenLayer layerBiome;
+            GenLayer layerHeight;
 
-            GenLayerGenerationPattern layerGenerationPattern = new GenLayerGenerationPattern(worldSeed);
-
-            GenLayerZoom layerZoom = new GenLayerZoom(layerGenerationPattern);
-            GenLayerZoomRandom layerZoomRand = new GenLayerZoomRandom(21, layerZoom);
+            layerBiomeOne = new GenLayerGenerationPattern(worldSeed);
+            layerBiomeOne = new GenLayerZoom(layerBiomeOne);
             // Этот слой если увеличить биомы в 2 раза
-           // layerZoomRand = new GenLayerZoomRandom(71, layerZoomRand);
+            layerBiomeOne = new GenLayerZoomRandom(71, layerBiomeOne);
+            // Река и пляж
+            layerBiomeOne = new GenLayerShore(new GenLayerRiver(layerBiomeOne));
 
-            // Река
-            GenLayerRiver layerRiver = new GenLayerRiver(layerZoomRand);
-            // Берег пляжа
-            GenLayerShore layerShore = new GenLayerShore(layerRiver);
+            int idRiver = (int)EnumBiome.River;
+            int idSea = (int)EnumBiome.Sea;
+            // Biome
+            layerBiome = new GenLayerZoomRandom(21, layerBiomeOne);
+            // Расширяем биом реки, для бесконечного источника воды
+            layerBiome = new GenLayerExpand(layerBiome, idRiver);
+            layerBiome = new GenLayerExpand(layerBiome, idSea);
+            layerBiome = new GenLayerZoomRandom(24, layerBiome);
+            // Расширяем биом реки, для бесконечного источника воды
+            layerBiome = new GenLayerExpand(layerBiome, idRiver);
+            layerBiome = new GenLayerExpand(layerBiome, idSea);
+            layerBiome = layerBiomeParam1 = new GenLayerZoomRandom(15, new GenLayerSmooth(15, layerBiome));
+            layerBiome = new GenLayerZoomRandom(25, layerBiome);
+            layerBiome = new GenLayerSmooth(7, layerBiome);
+            // Расширяем биом реки, для бесконечного источника воды
+            layerBiome = new GenLayerExpand(layerBiome, idRiver);
+            layerBiome = layerBiomeParam2 = new GenLayerSmooth(17, layerBiome);
+            // Расширяем биом реки, для бесконечного источника воды
+            layerBiome = new GenLayerExpand(layerBiome, idRiver);
+            layerBiome = new GenLayerZoomRandom(23, layerBiome);
+            layerBiome = new GenLayerSmooth(2, layerBiome);
+            // EndBiome
 
             // Height
-            layerSmoothMix = new GenLayerSmoothMix(new GenLayerBiomeHeight(layerShore));
-            layerSmoothMix = new GenLayerSmoothMix(new GenLayerZoomRandom(24, layerSmoothMix));
-            layerSmoothMix = new GenLayerSmoothMix(new GenLayerZoomRandom(15, layerSmoothMix));
-            layerSmoothMix = new GenLayerSmoothMix(new GenLayerZoomRandom(25, layerSmoothMix));
-            layerSmoothMix = new GenLayerSmoothMix(new GenLayerZoomRandom(23, layerSmoothMix));
-            layerSmoothMix.InitWorldGenSeed(worldSeed);
+            layerHeight = new GenLayerBiomeHeight(layerBiomeOne);
+            layerHeight = new GenLayerHeightAddBegin(2, layerHeight);
+            layerHeight = new GenLayerSmoothMix(new GenLayerZoomRandom(21, layerHeight));
+            // Объект по добавлении высот (неровности вверх)
+            layerHeight = new GenLayerHeightAddUp(2, layerHeight);
+            layerHeight = new GenLayerSmoothMix(new GenLayerZoomRandom(24, layerHeight));
+            // добавлении высот (ущелены в море и не большие неровности)
+            layerHeight = new GenLayerHeightAddSea(100, layerHeight);
+            layerHeight = new GenLayerSmoothMix(new GenLayerZoomRandom(15, new GenLayerSmooth(15, layerHeight)));
+            // Добавляем на гора, болоте и лесу неровности
+            layerHeight = new GenLayerHeightAddBiome(200, layerHeight, layerBiomeParam1, true);
+            layerHeight = new GenLayerSmoothMix(new GenLayerZoomRandom(25, layerHeight));
+            // Добавляем на гора, болоте неровности, чтоб более острее
+            layerHeight = new GenLayerHeightAddBiome(300, layerHeight, layerBiomeParam2, false);
+            layerHeight = new GenLayerSmooth(7, layerHeight);
+            layerHeight = new GenLayerSmooth(17, layerHeight);
+            layerHeight = new GenLayerSmoothMix(new GenLayerZoomRandom(23, layerHeight));
+            layerHeight = new GenLayerSmooth(2, layerHeight);
             // EndHeight
 
-            // Original
-            layerZoomRand = new GenLayerZoomRandom(24, layerShore);
-            layerZoomRand = new GenLayerZoomRandom(15, new GenLayerSmooth(15, layerZoomRand));
-            layerZoomRand = new GenLayerZoomRandom(25, layerZoomRand);
-            layerZoomRand = new GenLayerZoomRandom(23, layerZoomRand);
-            // EndOriginal
+            layerBiome.InitWorldGenSeed(worldSeed);
+            layerHeight.InitWorldGenSeed(worldSeed);
 
-            // Эффект сглаживания только для биомов
-            GenLayerSmooth layerSmooth = new GenLayerSmooth(7, layerZoomRand);
-            layerSmooth = new GenLayerSmooth(2, layerSmooth);
-            layerSmooth.InitWorldGenSeed(worldSeed);
-
-            return new GenLayer[] { layerSmooth, layerSmoothMix };
+            return new GenLayer[] { layerBiome, layerHeight };
         }
     }
 }

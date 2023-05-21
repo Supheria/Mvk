@@ -34,6 +34,8 @@ gui.net:Открыть сеть
 gui.net.on:Сеть открыта
 gui.game.over:Вы умерли!
 gui.respawn:Возродиться
+gui.conteiner.chat:Чат
+gui.conteiner.console:Консоль
 gui.conteiner.inventory:Инвентарь
 
 world.player.duplicate:Игрок с таким именем уже в игре!

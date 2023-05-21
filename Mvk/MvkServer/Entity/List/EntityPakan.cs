@@ -15,7 +15,7 @@ namespace MvkServer.Entity.List
     {
         public EntityPakan(WorldBase world) : base(world)
         {
-            Type = EnumEntities.Pakan;
+            type = EnumEntities.Pakan;
             StepHeight = 1.01f;
             samplesStep = new AssetsSample[] { AssetsSample.MobPakanStep1, AssetsSample.MobPakanStep2, AssetsSample.MobPakanStep3, AssetsSample.MobPakanStep4 };
             samplesHurt = new AssetsSample[] { AssetsSample.MobPakanDamage1, AssetsSample.MobPakanDamage2 };

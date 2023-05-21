@@ -33,7 +33,7 @@ namespace MvkServer.Entity.List
 
         public EntityChicken(WorldBase world) : base(world)
         {
-            Type = EnumEntities.Chicken;
+            type = EnumEntities.Chicken;
             StepHeight = 1.01f;
             samplesStep = new AssetsSample[] { AssetsSample.MobChickenStep1, AssetsSample.MobChickenStep2 };
             samplesSay = new AssetsSample[] { AssetsSample.MobChickenSay1, AssetsSample.MobChickenSay2, AssetsSample.MobChickenSay3 };

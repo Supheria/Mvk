@@ -230,8 +230,10 @@ namespace MvkClient.Renderer
             DrawEntities(chunks, timeIndex);
 
             GLRender.TextureLightmapDisable();
+
             // Рендер и прорисовка курсора выбранного блока по AABB
-            renderBlockCursor.Render(ClientMain.Player.MovingObject);
+            renderBlockCursor.Render(ClientMain.Player, skyLight);
+            
             // Курсор чанка
             renderChunkCursor.Render(ClientMain.World.RenderEntityManager.CameraOffset);
 
@@ -249,12 +251,13 @@ namespace MvkClient.Renderer
             DrawVoxelAlpha(timeIndex);
 
             // Прорисовка руки
-            if (ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
+            if (!ClientMain.Player.IsInvisible() && ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
             {
                 // Матрица камеры
                 ClientMain.Player.MatrixProjection(0);
                 World.RenderEntityManager.RenderEntity(ClientMain.Player, timeIndex);
             }
+            GLRender.TextureLightmapDisable();
 
             // GUI во время игры без доп окон, так же эффекты
             ScreenGame.Draw(timeIndex);
@@ -364,7 +367,6 @@ namespace MvkClient.Renderer
             GLRender.CullEnable();
             ShaderVoxel shader = VoxelsBegin(timeIndex);
             GLRender.DepthEnable();
-            GLRender.DepthMask(false);
             GLRender.BlendEnable();
 
             int count = ClientMain.Player.ChunkFC.Length - 1;
@@ -405,7 +407,6 @@ namespace MvkClient.Renderer
                 }
             }
             shader.Unbind(GLWindow.gl);
-            GLRender.DepthMask(true);
         }
 
         /// <summary>

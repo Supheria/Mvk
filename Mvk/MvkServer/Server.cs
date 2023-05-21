@@ -476,7 +476,11 @@ namespace MvkServer
         /// <summary>
         /// Задать игровое время в тактах
         /// </summary>
-        public void SetDayTime(uint dayTime) => TickCounter = dayTime; 
+        public void SetDayTime(uint dayTime)
+        {
+            TickCounter = dayTime;
+            ResponsePacketAll(new PacketS03TimeUpdate(TickCounter));
+        }
 
         /// <summary>
         /// Строка для дебага, формируется по запросу

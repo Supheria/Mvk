@@ -8,6 +8,7 @@ namespace MvkServer.World.Gen.Layer
     public class GenLayerShore : GenLayer
     {
         private readonly int idPlain = (int)EnumBiome.Plain;
+        private readonly int idDesert = (int)EnumBiome.Desert;
         private readonly int idSea = (int)EnumBiome.Sea;
         private readonly int idBeach = (int)EnumBiome.Beach;
 
@@ -22,30 +23,25 @@ namespace MvkServer.World.Gen.Layer
             int[] arParent = parent.GetInts(px, pz, pw, ph);
             int[] ar = new int[width * height];
             int x, z, idx;
-            bool c01, c21, c10, c12;
 
             for (z = 0; z < height; z++)
             {
                 for (x = 0; x < width; x++)
                 {
                     idx = arParent[x + 1 + (z + 1) * pw];
-                    if (idx == idPlain)
+                    if (idx == idPlain || idx == idDesert)
                     {
-                        c01 = arParent[x + 0 + (z + 1) * pw] == idSea;
-                        c21 = arParent[x + 2 + (z + 1) * pw] == idSea;
-                        c10 = arParent[x + 1 + (z + 0) * pw] == idSea;
-                        c12 = arParent[x + 1 + (z + 2) * pw] == idSea;
-
-                        ar[x + z * width] = (c01 || c10 || c21 || c12) ? idBeach : idx;
+                        ar[x + z * width] = arParent[x + 0 + (z + 1) * pw] == idSea
+                            || arParent[x + 2 + (z + 1) * pw] == idSea
+                            || arParent[x + 1 + (z + 0) * pw] == idSea
+                            || arParent[x + 1 + (z + 2) * pw] == idSea ? idBeach : idx;
                     }
                     else if (idx == idSea)
                     {
-                        c01 = arParent[x + 0 + (z + 1) * pw] == idPlain;
-                        c21 = arParent[x + 2 + (z + 1) * pw] == idPlain;
-                        c10 = arParent[x + 1 + (z + 0) * pw] == idPlain;
-                        c12 = arParent[x + 1 + (z + 2) * pw] == idPlain;
-
-                        ar[x + z * width] = (c01 || c10 || c21 || c12) ? idBeach : idx;
+                        ar[x + z * width] = Check(arParent[x + 0 + (z + 1) * pw])
+                            || Check(arParent[x + 2 + (z + 1) * pw])
+                            || Check(arParent[x + 1 + (z + 0) * pw])
+                            || Check(arParent[x + 1 + (z + 2) * pw]) ? idBeach : idx;
                     }
                     else
                     {
@@ -53,8 +49,9 @@ namespace MvkServer.World.Gen.Layer
                     }
                 }
             }
-
             return ar;
         }
+
+        private bool Check(int idx) => idx == idPlain || idx == idDesert;
     }
 }

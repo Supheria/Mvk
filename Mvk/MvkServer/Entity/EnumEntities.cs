@@ -37,7 +37,11 @@
         /// <summary>
         /// Книга
         /// </summary>
-        Book = 8
+        Book = 8,
+        /// <summary>
+        /// Игрок в режиме невидимки
+        /// </summary>
+        PlayerInvisible = 9
 
     }
 }

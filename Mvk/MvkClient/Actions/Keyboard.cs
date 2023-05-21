@@ -56,10 +56,10 @@ namespace MvkClient.Actions
                 stopwatch.Restart();
                 if (ms < 300 && key == keyPrev)
                 {
-                    if (ClientMain.Player.IsCreativeMode)
+                    if (!ClientMain.Player.NoClip && ClientMain.Player.AllowFlying)
                     {
                         // Только креатив может летать, покуда
-                        if (ClientMain.Player.IsFlying) ClientMain.Player.ModeSurvival();
+                        if (ClientMain.Player.IsFlying) ClientMain.Player.NotFlying();
                         else if (!ClientMain.Player.IsSneaking()) ClientMain.Player.ModeFly();
                     }
                 }
@@ -80,7 +80,8 @@ namespace MvkClient.Actions
             }
             else if (key == 119) Debug.IsDrawVoxelLine = !Debug.IsDrawVoxelLine; // F8
             else if (key == 69) World.ClientMain.Screen.InGameConteiner(); // E
-            else if (key == 75) ClientMain.Player.Kill(); // K
+            // тут нельзя, так-как сразу срабатывает KeyPress
+            //else if (key == 84) World.ClientMain.Screen.InGameChat(); // T 
             else if (key == 82)
             {
                 ChunkBase chunk = World.GetChunk(ClientMain.Player.GetChunkPos());
@@ -115,6 +116,8 @@ namespace MvkClient.Actions
                 keyF3 = false;
                 if (keyPrev == 114) Debug.IsDraw = !Debug.IsDraw; // Нажимали только F3
             }
+            else if (key == 84 && ClientMain.Screen.IsEmptyScreen()) ClientMain.Screen.InGameChat(false); // T
+            else if (key == 192 && ClientMain.Screen.IsEmptyScreen()) ClientMain.Screen.InGameChat(true); // ~Ё
             else if (key == 65) ClientMain.KeyBind.left = false;
             else if (key == 68) ClientMain.KeyBind.right = false;
             else if (key == 87) ClientMain.KeyBind.forward = false;

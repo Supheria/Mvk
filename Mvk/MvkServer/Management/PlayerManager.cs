@@ -1,4 +1,5 @@
-﻿using MvkServer.Entity;
+﻿using MvkServer.Command;
+using MvkServer.Entity;
 using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.NBT;
@@ -25,6 +26,10 @@ namespace MvkServer.Management
         /// Серверный объект мира
         /// </summary>
         public WorldServer World { get; private set; }
+        /// <summary>
+        /// Менеджер команд
+        /// </summary>
+        private ManagerCommand managerCommand; 
         /// <summary>
         /// Объект логотладки
         /// </summary>
@@ -75,6 +80,7 @@ namespace MvkServer.Management
         public PlayerManager(WorldServer worldServer)
         {
             World = worldServer;
+            managerCommand = new ManagerCommand(World);
             profiler = new Profiler(worldServer.ServerMain.Log);
             addServer = isOverviewChunkCircle ? 6 : 4;
         }
@@ -335,6 +341,12 @@ namespace MvkServer.Management
         #region Player
 
         /// <summary>
+        /// Отправить всем сообщение
+        /// </summary>
+        public void SendToAllMessage(string message, bool isConsole = true) 
+            => SendToAll(new PacketS3AMessage(message, isConsole));
+
+        /// <summary>
         /// Отправить всем игрокам пакет
         /// </summary>
         public void SendToAll(IPacket packet)
@@ -446,8 +458,12 @@ namespace MvkServer.Management
             // TODO::2023-03-16 Стартовая позиция!
             Rand random = new Rand();
             //entityPlayer.SetPosLook(new vec3(random.Next(32) + 56, 0, random.Next(32) + 16), -0.9f, -.8f);
-            //entityPlayer.SetPosLook(new vec3(random.Next(4), 0, random.Next(4)), -0.9f, -.8f);
-            entityPlayer.SetPosLook(new vec3(random.Next(16) - 160, 0, random.Next(16) + 368), -0.9f, -.8f);
+            //entityPlayer.SetPosLook(new vec3(66, 0, -15), -0.9f, -.8f);
+            //entityPlayer.SetGameMode(1);
+
+            // РОБИНЗОН
+            //entityPlayer.SetPosLook(new vec3(random.Next(16) - 160, 0, random.Next(16) + 368), -0.9f, -.8f);
+            entityPlayer.SetPosLook(new vec3(random.Next(16) - 400, 0, random.Next(16) + 704), 3.14f, .2f);
             ///
             //entityPlayer.SetPosLook(new vec3(random.Next(32) - 950046, 0, random.Next(32) + 950046) , -0.9f, -.8f);
             SpawnPositionCheck(entityPlayer);
@@ -635,9 +651,10 @@ namespace MvkServer.Management
         /// </summary>
         public void ResponsePacketJoinGame(EntityPlayerServer player)
         {
-            player.SendPacket(new PacketS02JoinGame(player.Id, player.UUID, player.IsCreativeMode));
+            player.SendPacket(new PacketS02JoinGame(player.Id, player.UUID));
             player.SendPacket(new PacketS08PlayerPosLook(player.Position, player.RotationYawHead, player.RotationPitch));
             player.SendPacket(new PacketS03TimeUpdate(World.ServerMain.TickCounter));
+            player.SendPlayerAbilities();
             player.SendUpdateInventory();
         }
         
@@ -651,6 +668,34 @@ namespace MvkServer.Management
             {
                 // Смена обзора
                 player.SetOverviewChunk(packet.GetOverviewChunk());
+            }
+        }
+
+        /// <summary>
+        /// Пакет команд и чата клиента
+        /// </summary>
+        public void ClientMessage(Socket socket, PacketC14Message packet)
+        {
+            EntityPlayerServer player = GetPlayerSocket(socket);
+            string message = packet.GetCommandSender().GetMessage();
+
+            if (packet.IsCommand())
+            {
+                // Пишем в лог все
+                World.Log.Log("{0}>>{1}", player != null ? player.GetName() : "[NULL]", message);
+                message = managerCommand.ExecutionCommand(packet.GetCommandSender().SetPlayer(player));
+                if (player != null && message != "")
+                {
+                    player.SendMessage(message);
+                }
+            }
+            else
+            {
+                if (player != null)
+                {
+                    World.Log.Log("<{0}>: {1}", player.GetName(), message);
+                    SendToAllMessage(ChatStyle.Aqua + player.GetName() + ": " + ChatStyle.Reset + message, false);
+                }
             }
         }
 

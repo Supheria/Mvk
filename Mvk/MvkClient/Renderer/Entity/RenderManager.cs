@@ -48,7 +48,7 @@ namespace MvkClient.Renderer.Entity
             World = world;
             ClientMain = world.ClientMain;
             Item = new RenderItems();
-            entities.Add(EnumEntities.Player, new RenderPlayer(this, new ModelPlayer()));
+            entities.Add(EnumEntities.Player, new RenderPlayer(this, new ModelPlayer(), false));
             entities.Add(EnumEntities.PlayerHand, new RenderHead(this, new ModelPlayerHand()));
             entities.Add(EnumEntities.Chicken, new RenderChicken(this, new ModelChicken()));
             entities.Add(EnumEntities.Item, new RenderEntityItem(this, Item));
@@ -56,6 +56,7 @@ namespace MvkClient.Renderer.Entity
             entities.Add(EnumEntities.Chemoglot, new RenderChemoglot(this, new ModelChemoglot()));
             entities.Add(EnumEntities.Pakan, new RenderPakan(this, new ModelPakan()));
             entities.Add(EnumEntities.Book, new RenderBook(this, new ModelBook()));
+            entities.Add(EnumEntities.PlayerInvisible, new RenderPlayer(this, new ModelPlayer(), true));
         }
 
         /// <summary>
@@ -71,9 +72,9 @@ namespace MvkClient.Renderer.Entity
 
         protected RenderEntityBase GetEntityRenderObject(EntityBase entity)
         {
-            if (entities.ContainsKey(entity.Type))
+            if (entities.ContainsKey(entity.GetEntityType()))
             {
-                return entities[entity.Type] as RenderEntityBase;
+                return entities[entity.GetEntityType()] as RenderEntityBase;
             }
             return null;
         }
@@ -90,13 +91,20 @@ namespace MvkClient.Renderer.Entity
                  
                 if (render != null)
                 {
-                    render.DoRenderShadowAndFire(entity, CameraOffset, timeIndex);
+                    GLRender.Texture2DEnable();
+                    GLRender.TextureLightmapDisable();
+                    bool visible = !entity.IsInvisible();
+                    if (visible)
+                    {
+                        render.DoRenderShadowAndFire(entity, CameraOffset, timeIndex);
+                    }
+                    GLRender.TextureLightmapEnable();
+                    GLRender.LightmapTextureCoords(entity.GetBrightnessForRender());
                     render.DoRender(entity, CameraOffset, timeIndex);
-                    if (!IsHiddenHitbox)
+                    if (!IsHiddenHitbox && visible)
                     {
                         RenderEntityBoundingBox(entity, CameraOffset, timeIndex);
                     }
-                    
                 }
             }
         }

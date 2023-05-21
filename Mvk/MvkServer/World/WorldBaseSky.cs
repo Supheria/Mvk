@@ -11,7 +11,7 @@ namespace MvkServer.World
         /// <summary>
         /// Скорость суток в тактах
         /// </summary>
-        private const int SPEED_DAY = 24000;
+        public const int SPEED_DAY = 24000;
         /// <summary>
         /// Скорость облаков
         /// </summary>

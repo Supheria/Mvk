@@ -2,7 +2,6 @@
 using MvkClient.Actions;
 using MvkClient.Renderer;
 using MvkClient.Renderer.Font;
-using MvkClient.Setitings;
 using MvkServer.Glm;
 using SharpGL;
 using System;
@@ -10,32 +9,20 @@ using System.Collections.Generic;
 
 namespace MvkClient.Gui
 {
-    public class Screen : IDisposable
+    /// <summary>
+    /// Абстрактный класс скрина для заменяющих скринов, с откликами мыши и клавиатуры
+    /// с одним графическим листом
+    /// </summary>
+    public abstract class Screen : ScreenBase, IDisposable
     {
         /// <summary>
         /// Колекция всех контролов
         /// </summary>
         public List<Control> Controls { get; protected set; } = new List<Control>();
         /// <summary>
-        /// Ширина окна
-        /// </summary>
-        public int Width { get; private set; }
-        /// <summary>
-        /// Высота окна
-        /// </summary>
-        public int Height { get; private set; }
-        /// <summary>
         /// Координата мыши
         /// </summary>
         public vec2i MouseCoord { get; protected set; }
-        /// <summary>
-        /// Основной клиент
-        /// </summary>
-        public Client ClientMain { get; protected set; }
-        /// <summary>
-        /// Является ли окно контейнером во время игры
-        /// </summary>
-        public bool IsConteiner { get; protected set; } = false;
         /// <summary>
         /// Для меню фпс 20, в игре обычный игровой
         /// </summary>
@@ -45,14 +32,6 @@ namespace MvkClient.Gui
         /// Откуда зашёл
         /// </summary>
         protected EnumScreenKey where;
-        /// <summary>
-        /// Объект OpenGL
-        /// </summary>
-        protected static OpenGL gl;
-        /// <summary>
-        /// Размер интерфеса
-        /// </summary>
-        protected int sizeInterface;
         /// <summary>
         /// Тип фона
         /// </summary>
@@ -70,19 +49,7 @@ namespace MvkClient.Gui
         /// </summary>
         private string toolTip = "";
 
-        protected Screen() => sizeInterface = Setting.SizeInterface;
-        public Screen(Client client) : this() => ClientMain = client;
-
-        public void Initialize()
-        {
-            gl = GLWindow.gl;
-            Width = GLWindow.WindowWidth;
-            Height = GLWindow.WindowHeight;
-            Init();
-            Resized();
-        }
-
-        protected virtual void Init() { }
+        public Screen(Client client) : base(client) { }
 
         /// <summary>
         /// Инициализация нажатие кнопки
@@ -98,11 +65,9 @@ namespace MvkClient.Gui
         /// <summary>
         /// Изменён размер окна
         /// </summary>
-        public void Resized()
+        public override void Resized()
         {
-            Width = GLWindow.WindowWidth;
-            Height = GLWindow.WindowHeight;
-            sizeInterface = Setting.SizeInterface;
+            base.Resized();
             foreach (Control control in Controls)
             {
                 control.Resized();
@@ -110,6 +75,24 @@ namespace MvkClient.Gui
             ResizedScreen();
             RenderList();
         }
+
+        /// <summary>
+        /// Такт игрового времени
+        /// </summary>
+        public override void Tick()
+        {
+            if (!IsFpsMin)
+            {
+                foreach (Control control in Controls)
+                {
+                    if (control is TextBox textBox && textBox.Focus)
+                    {
+                        textBox.UpdateCursorCounterTick();
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Изменён размер окна
         /// </summary>
@@ -127,14 +110,11 @@ namespace MvkClient.Gui
             }
             foreach (Control control in Controls)
             {
-                if (control.GetType() == typeof(TextBox))
+                if (control is TextBox textBox && textBox.Focus)
                 {
-                    TextBox textBox = control as TextBox;
-                    if (textBox.Focus)
-                    {
-                        textBox.UpdateCursorCounter();
-                        if (textBox.IsRender) RenderList();
-                    }
+                    if (IsFpsMin) textBox.UpdateCursorCounterTick();
+                    textBox.CursorCounterDraw();
+                    if (textBox.IsRender) RenderList();
                 }
             }
             GLRender.ListCall(dList);
@@ -155,16 +135,8 @@ namespace MvkClient.Gui
         protected void RenderList()
         {
             uint list = GLRender.ListBegin();
-
-            gl.MatrixMode(OpenGL.GL_PROJECTION);
-            gl.LoadIdentity();
-            //gl.Ortho2D(0, Width, Height, 0);
-            gl.Ortho(0, Width, Height, 0, -100, 100);
-            gl.MatrixMode(OpenGL.GL_MODELVIEW);
-            gl.LoadIdentity();
-
+            Ortho2D();
             Render();
-
             gl.EndList();
             GLRender.ListDelete(dList);
             dList = list;
@@ -179,7 +151,7 @@ namespace MvkClient.Gui
             {
                 GLRender.PushMatrix();
                 GLRender.Translate(control.Position.x, control.Position.y, 0);
-                GLRender.Scale(sizeInterface, sizeInterface, 1);
+                GLRender.Scale(SizeInterface, SizeInterface, 1);
                 control.Draw();
                 GLRender.PopMatrix();
             }
@@ -227,16 +199,13 @@ namespace MvkClient.Gui
                 GLRender.Rectangle(0, 0, w, h, 0f, 0.5f, 1f, 0.75f);
                 GLWindow.Texture.BindTexture(AssetsTexture.Font8);
                 string text = ClientMain.NameVersion;
-                vec4 colorB = new vec4(0.2f, 0.2f, 0.2f, 1f);
-                vec4 color = new vec4(1.0f, 1.0f, 1.0f, 1f);
+                vec3 color = new vec3(1);
                 GLRender.PushMatrix();
-                GLRender.Scale(sizeInterface, sizeInterface, 1);
-                FontRenderer.RenderString(11, Height / sizeInterface - 19, colorB, text, FontSize.Font8);
-                FontRenderer.RenderString(10, Height / sizeInterface - 20, color, text, FontSize.Font8);
+                GLRender.Scale(SizeInterface, SizeInterface, 1);
+                FontRenderer.RenderString(10, Height / SizeInterface - 20, text, FontSize.Font8, color, 1, true, .2f, 1);
                 text = "SuperAnt";
                 int ws = FontRenderer.WidthString(text, FontSize.Font8) + 10;
-                FontRenderer.RenderString(Width / sizeInterface - ws + 1, Height / sizeInterface - 19, colorB, text, FontSize.Font8);
-                FontRenderer.RenderString(Width / sizeInterface - ws, Height / sizeInterface - 20, color, text, FontSize.Font8);
+                FontRenderer.RenderString(Width / SizeInterface - ws, Height / SizeInterface - 20, text, FontSize.Font8, color, 1, true, .2f, 1);
                 GLRender.PopMatrix();
             }
             else if (background == EnumBackground.Game)
@@ -329,6 +298,11 @@ namespace MvkClient.Gui
             }
         }
 
+        /// <summary>
+        /// Нажата клавиша
+        /// </summary>
+        public virtual void KeyDown(int key) { }
+
         public void Dispose() => Delete();
         public void Delete() => GLRender.ListDelete(dList);
 
@@ -344,13 +318,6 @@ namespace MvkClient.Gui
         public event ScreenEventHandler Finished;
         protected virtual void OnFinished(EnumScreenKey key) => OnFinished(new ScreenEventArgs(key));
         protected virtual void OnFinished(ScreenEventArgs e) => Finished?.Invoke(this, e);
-
-        /// <summary>
-        /// Прорисовать прямоугольник с текстурой, где расчёт текстуры через пиксели, где текстура 512*512
-        /// </summary>
-        protected void DrawTexturedModalRect(int x, int y, int textureX, int textureY, int width, int height)
-            => GLRender.Rectangle(x, y, x + width, y + height, textureX * .001953125f, textureY * .001953125f,
-                (textureX + width) * .001953125f, (textureY + height) * .001953125f);
 
         #region ToolTip
 
@@ -376,7 +343,7 @@ namespace MvkClient.Gui
             GLRender.PushMatrix();
             GLRender.Texture2DDisable();
             GLRender.Translate(x - 16, y + 32, 0);
-            GLRender.Scale(sizeInterface, sizeInterface, 1);
+            GLRender.Scale(SizeInterface, SizeInterface, 1);
             GLRender.Rectangle(1, 0, w, 1, colorBorder);
             GLRender.Rectangle(1, h, w, h + 1, colorBorder);
             GLRender.Rectangle(0, 1, 1, h, colorBorder);
@@ -384,10 +351,7 @@ namespace MvkClient.Gui
             GLRender.Rectangle(1, 1, w, h, new vec4(.31f, .26f, .21f, .9f));
             GLRender.Texture2DEnable();
             GLWindow.Texture.BindTexture(AssetsTexture.Font12);
-            vec4 colorB = new vec4(0.2f, 0.2f, 0.2f, 1f);
-            vec4 color = new vec4(1.0f, 1.0f, 1.0f, 1f);
-            FontRenderer.RenderText(7, 7, colorB, toolTip, FontSize.Font12);
-            FontRenderer.RenderText(6, 6, color, toolTip, FontSize.Font12);
+            FontRenderer.RenderText(6, 6, toolTip, FontSize.Font12, new vec3(1), 1, true, .2f, 1);
             GLRender.PopMatrix();
         }
 

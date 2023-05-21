@@ -1,9 +1,6 @@
-﻿using MvkServer.Entity;
-using MvkServer.Entity.List;
-using MvkServer.NBT;
+﻿using MvkServer.NBT;
 using MvkServer.Util;
 using System;
-using System.Diagnostics;
 
 namespace MvkServer.World
 {
@@ -20,10 +17,6 @@ namespace MvkServer.World
         /// Зерно генерации случайных чисел
         /// </summary>
         public long Seed { get; private set; } = 2;
-        /// <summary>
-        /// Тестовый параметр, мир весь для креатива
-        /// </summary>
-        public bool IsCreativeMode { get; private set; }
         /// <summary>
         /// Имя мира
         /// </summary>
@@ -43,7 +36,6 @@ namespace MvkServer.World
                 nameWorld = nbt.GetString("LevelName");
                 Seed = nbt.GetInt("Seed");
                 World.ServerMain.SetDayTime((uint)nbt.GetLong("DayTime"));
-                IsCreativeMode = nbt.GetBool("Creative");
             }
             catch (Exception ex)
             {
@@ -61,7 +53,7 @@ namespace MvkServer.World
             nbt.SetString("LevelName", "World #" + slot);
             nbt.SetLong("Seed", slot);
             nbt.SetLong("DayTime", 0);
-            nbt.SetBool("Creative", slot > 3);
+            //nbt.SetBool("Creative", slot > 3);
         }
 
         /// <summary>
@@ -75,7 +67,7 @@ namespace MvkServer.World
                 nbt.SetString("LevelName", nameWorld);
                 nbt.SetLong("Seed", Seed);
                 nbt.SetLong("DayTime", World.ServerMain.TickCounter);
-                nbt.SetBool("Creative", IsCreativeMode);
+                //nbt.SetBool("Creative", IsCreativeMode);
 
                 World.File.WorldInfoWrite(nbt);
 

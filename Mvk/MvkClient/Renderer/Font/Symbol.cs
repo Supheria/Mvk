@@ -1,5 +1,8 @@
 ﻿using MvkClient.Util;
 using MvkServer.Glm;
+using SharpGL;
+using System;
+using System.Collections.Generic;
 
 namespace MvkClient.Renderer.Font
 {
@@ -8,11 +11,47 @@ namespace MvkClient.Renderer.Font
     /// </summary>
     public class Symbol
     {
-        private static string Key = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзиклмнопрстуфхцчшщъыьэюяЁёЙйІіЎў";
+        #region static
         /// <summary>
-        /// Получить массив символов
+        /// Массив символов
         /// </summary>
-        public static char[] ToArrayKey() => Key.ToCharArray();
+        public static char[] arrayKey;
+        /// <summary>
+        /// Строка символов
+        /// </summary>
+        private static string key = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~ АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзиклмнопрстуфхцчшщъыьэюяЁёЙйІіЎў";
+        /// <summary>
+        /// Массив для проверки символа
+        /// </summary>
+        private static bool[] checks;
+
+        public static void Initialized()
+        {
+            arrayKey = key.ToCharArray();
+            List<int> ar = new List<int>();
+            int max = 0;
+            char[] vc = key.ToCharArray();
+            int i, id;
+            for (i = 0; i < vc.Length; i++)
+            {
+                id = Convert.ToInt32(vc[i]);
+                if (id > max) max = id;
+                ar.Add(id);
+            }
+            checks = new bool[max + 1];
+            for (i = 0; i < ar.Count; i++)
+            {
+                checks[ar[i]] = true;
+            }
+        }
+
+        /// <summary>
+        /// Проверить, присутствует ли такой символ
+        /// </summary>
+        /// <param name="key">id символа</param>
+        public static bool IsPresent(int key) => key < checks.Length ? checks[key] : false;
+
+        #endregion
 
         /// <summary>
         /// Размер шрифта
@@ -40,7 +79,7 @@ namespace MvkClient.Renderer.Font
 
         public void Initialize(BufferedImage bi)
         {
-            int index = Key.IndexOf(Symb) + 32;
+            int index = key.IndexOf(Symb) + 32;
             if (index == -1) return;
 
             float u1 = (index & 15) * 0.0625f;
@@ -58,6 +97,34 @@ namespace MvkClient.Renderer.Font
         /// Прорисовка символа
         /// </summary>
         public void Draw() => GLRender.ListCall(dList);
+
+        /// <summary>
+        /// Прорисовка наклонного символа
+        /// </summary>
+        public void DrawItalic()
+        {
+            int index = key.IndexOf(Symb) + 32;
+            if (index == -1) return;
+
+            float u1 = (index & 15) * 0.0625f;
+            float u2 = u1 + 0.0625f;
+            float v1 = (index >> 4) * 0.0625f;
+            float v2 = v1 + 0.0625f;
+
+            int x2 = FontAdvance.HoriAdvance[Size];
+            int y2 = FontAdvance.VertAdvance[Size];
+
+            GLRender.Begin(OpenGL.GL_TRIANGLE_STRIP);
+            GLRender.TexCoord(u1, v2);
+            GLRender.Vertex(-1.6f, y2);
+            GLRender.TexCoord(u2, v2);
+            GLRender.Vertex(x2 - 1.6f, y2);
+            GLRender.TexCoord(u1, v1);
+            GLRender.Vertex(1.6f, 0);
+            GLRender.TexCoord(u2, v1);
+            GLRender.Vertex(x2 + 1.6f, 0);
+            GLRender.End();
+        }
 
         /// <summary>
         /// Получить ширину символа
@@ -84,5 +151,7 @@ namespace MvkClient.Renderer.Font
                 }
             }
         }
+
+        
     }
 }

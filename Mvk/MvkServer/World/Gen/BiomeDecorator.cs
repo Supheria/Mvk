@@ -10,6 +10,7 @@ namespace MvkServer.World.Gen
     /// </summary>
     public class BiomeDecorator
     {
+        public WorldGenPiece genPiece;
         public WorldGenPlants genPlants;
         public WorldGenCactus genCactus;
         public WorldGenTree genPalm;
@@ -48,6 +49,10 @@ namespace MvkServer.World.Gen
         /// </summary>
         public int grassPerChunk = 0;
         /// <summary>
+        /// Количество маленьких блоков, создаваемой на чанке
+        /// </summary>
+        public int piecePerChunk = 0;
+        /// <summary>
         /// Количество какутосов, создаваемой на чанке
         /// </summary>
         public int cactiPerChunk = 0;
@@ -75,7 +80,10 @@ namespace MvkServer.World.Gen
         /// Вероятность генерации дерева при одной на чанк, с вероятностью 1 к randomTree
         /// </summary>
         public int randomTree = 1;
-
+        /// <summary>
+        /// Вероятность генерации маленьких блоков при одной на чанк, с вероятностью 1 к randomTree
+        /// </summary>
+        public int randomPiece = 1;
 
         /// <summary>
         /// Количество нефти, создаваемой на чанке
@@ -340,6 +348,22 @@ namespace MvkServer.World.Gen
             }
             // Брол
             GenBrol(rand, xbc, zbc);
+            // Маленькие камни
+            if (piecePerChunk > 0 || (randomPiece > 1 && currentRand.Next(randomPiece) == 0))
+            {
+                int count = piecePerChunk > 0 ? piecePerChunk : 1; 
+                for (i = 0; i < count; i++)
+                {
+                    x = rand.Next(16);
+                    z = rand.Next(16);
+                    x += rand.Next(8) - rand.Next(8);
+                    z += rand.Next(8) - rand.Next(8);
+                    blockPos = new BlockPos(xbc + x, 0, zbc + z);
+                    blockPos.Y = world.GetChunk(blockPos).GetHeightGen(x & 15, z & 15);
+                    genPiece.SetId(70); //EnumBiome.SmallStone
+                    genPiece.Generate(world, rand, blockPos);
+                }
+            }
         }
     }
 }

@@ -69,9 +69,8 @@ namespace MvkClient.Gui
                     GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
                     Text = slot.Amount.ToString();
                     int x = GetXAlight(Text, 12) + 6;
-                    if (Enabled) FontRenderer.RenderString(x + 2, 10, new vec4(.1f, .1f, .1f, 1f), Text, size);
-                    vec4 color = Enabled ? enter ? new vec4(1f, 1f, .5f, 1f) : new vec4(1f) : new vec4(.5f, .5f, .5f, 1f);
-                    FontRenderer.RenderString(x, 9, color, Text, size);
+                    vec3 color = Enabled ? enter ? new vec3(1, 1, .5f) : new vec3(1) : new vec3(.5f);
+                    FontRenderer.RenderString(x, 9, Text, size, color, Alpha, Enabled, .1f);
                 }
             }
             GLRender.ListEnd();

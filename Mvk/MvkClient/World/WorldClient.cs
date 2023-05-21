@@ -159,6 +159,9 @@ namespace MvkClient.World
                // interpolation.Restart();
                 uint time = ClientMain.TickCounter;
 
+                // Такт на игровом скрине
+                WorldRender.ScreenGame.Tick();
+
                 ClientMain.Sample.Tick();
                 Debug.strSound = ClientMain.Sample.StrDebug;
 

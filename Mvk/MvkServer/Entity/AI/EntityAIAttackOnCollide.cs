@@ -64,7 +64,7 @@ namespace MvkServer.Entity.AI
                     {
                         attackTick = 20;
                         entity.SwingItem();
-                        entityLiving.AttackEntityFrom(EnumDamageSource.CauseMobDamage, damage);
+                        entityLiving.AttackEntityFrom(EnumDamageSource.CauseMobDamage, damage, entity);
                     }
                 }
             }

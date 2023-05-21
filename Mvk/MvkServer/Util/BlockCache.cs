@@ -27,22 +27,28 @@ namespace MvkServer.Util
         /// Дополнительные данные
         /// </summary>
         public ushort met;
+        /// <summary>
+        /// Тело, доп параметр
+        /// </summary>
+        public bool body;
 
-        public BlockCache(BlockPos blockPos, EnumBlock enumBlock, ushort met = 0)
+        public BlockCache(BlockPos blockPos, EnumBlock enumBlock, ushort met = 0, bool body = false)
         {
             x = blockPos.X;
             y = blockPos.Y;
             z = blockPos.Z;
             id = (ushort)enumBlock;
             this.met = 0;
+            this.body = body;
         }
-        public BlockCache(int x, int y, int z, ushort id, ushort met = 0)
+        public BlockCache(int x, int y, int z, ushort id, ushort met = 0, bool body = false)
         {
             this.x = x;
             this.y = y;
             this.z = z;
             this.id = id;
             this.met = met;
+            this.body = body;
         }
     }
 }

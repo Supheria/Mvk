@@ -38,7 +38,7 @@ namespace MvkServer.Entity.AI
             this.entity = entity;
             this.speed = speed;
             this.stopOnOverlap = stopOnOverlap;
-            typeEntity = entity.Type;
+            typeEntity = entity.GetEntityType();
             SetMutexBits(3);
         }
 
@@ -60,7 +60,7 @@ namespace MvkServer.Entity.AI
                 entity.BoundingBox.Expand(new vec3(32, 12, 32)), entity);
             if (entityBase != null && entityBase is EntityLiving entityLiving)
             {
-                if (entityLiving is EntityPlayer entityPlayer && entityPlayer.IsCreativeMode)
+                if (entityLiving is EntityPlayer entityPlayer && entityPlayer.DisableDamage)
                 {
                     this.entityLiving = null;
                     entity.SetAttackTarget(null);

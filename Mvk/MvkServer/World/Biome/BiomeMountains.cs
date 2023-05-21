@@ -43,6 +43,7 @@ namespace MvkServer.World.Biome
                 Decorator.coalPerChunk = 10;
                 Decorator.ironPerChunk = 8;
                 Decorator.goldPerChunk = 1;
+                Decorator.piecePerChunk = 8;
                 blockIdBody = blockIdUp = blockIdBody2;
             }
         }
@@ -108,33 +109,6 @@ namespace MvkServer.World.Biome
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Получить уровень множителя высоты
-        /// </summary>
-        /// <param name="x">X 0..15</param>
-        /// <param name="z">Z 0..15</param>
-        /// <param name="height">Высота в блоках, средняя рекомендуемая</param>
-        /// <param name="heightNoise">Высота -1..0..1</param>
-        /// <param name="addNoise">Диапазон -1..0..1</param>
-        protected override int GetLevelHeightRobinson(int x, int z, int height, float heightNoise, float addNoise)
-        {
-            if (height < maxLevel) addNoise *= addNoise;
-            float noiseKof;
-
-            if (heightNoise < 0)
-            {
-                noiseKof = 8f;
-            }
-            else
-            {
-                noiseKof = 12f;
-                heightNoise = 1 - heightNoise;
-                heightNoise *= heightNoise;
-                heightNoise = 1 - heightNoise;
-            }
-            return height + (int)(heightNoise * noiseKof) + (int)(addNoise * kofAddNoise);
         }
     }
 }

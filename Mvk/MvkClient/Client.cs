@@ -5,6 +5,7 @@ using MvkClient.Entity;
 using MvkClient.Gui;
 using MvkClient.Network;
 using MvkClient.Renderer;
+using MvkClient.Renderer.Font;
 using MvkClient.Setitings;
 using MvkClient.Util;
 using MvkClient.World;
@@ -134,6 +135,7 @@ namespace MvkClient
             Sample.Initialize();
             glm.Initialized();
             MvkStatic.Initialized();
+            Symbol.Initialized();
             Blocks.Initialized();
             Items.Initialized();
             Screen = new GuiScreen(this);
@@ -257,34 +259,16 @@ namespace MvkClient
                 }
                 else
                 {
-                    if (key == 27) // ESC
-                    {
-                        // если контейнер или меню возращаемся в игру
-                        if (World.ClientMain.Screen.IsScreenPause()
-                            || World.ClientMain.Screen.IsScreenConteiner())
-                        {
-                            World.ClientMain.Screen.GameMode();
-                        }
-                    }
-                    if (key == 69) // E
-                    {
-                        if (World.ClientMain.Screen.IsScreenConteiner())
-                        {
-                            World.ClientMain.Screen.GameMode();
-                        }
-                    }
+                    Screen.KeyDown(key);
                 }
             }
             else if (key == 114) Debug.IsDraw = !Debug.IsDraw; // F3
         }
-        
+
         /// <summary>
         /// Нажата клавиша в char формате
         /// </summary>
-        public void KeyPress(char key)
-        {
-            Screen.KeyPress(key);
-        }
+        public void KeyPress(char key) => Screen.KeyPress(key);
 
         /// <summary>
         /// Отпущена клавиша
@@ -672,12 +656,13 @@ namespace MvkClient
                     if (CloudTickCounter > (WorldBase.CLOUD_SIZE_TEXTURE / WorldBase.SPEED_CLOUD)) CloudTickCounter = 0;
                     // почерёдно получаем пакеты с сервера
                     packets.Update();
+                    // Такт на скринах если это надо
+                    Screen.Tick();
                     // Обновить игрока
                     Player.Update();
-                    if ((Player.IsDead /*|| Player.Health == 0*/) && !Screen.IsScreenGameOver())
+                    if (Player.IsDead && !(!Screen.IsEmptyScreen() && Screen.GetTypeScreen() == typeof(ScreenGameOver)))
                     {
-                        // GameOver надо указать причину смерти
-                        SetScreen(ObjectKey.GameOver, "Boom");
+                        SetScreen(ObjectKey.GameOver, Player.TextDeath);
                     }
                     try
                     {
@@ -763,7 +748,10 @@ namespace MvkClient
         private void Screen_Changed(object sender, EventArgs e)
         {
             // определить паузу
-            IsGamePaused = IsGamePlay && Screen.IsScreenPause() && !locServer.IsOpenNet() && locServer.IsLoacl;
+            IsGamePaused = IsGamePlay && !Screen.IsEmptyScreen() 
+                && (Screen.GetTypeScreen() == typeof(ScreenInGameMenu)
+                    || Screen.GetTypeScreen() == typeof(ScreenOptions))
+                && !locServer.IsOpenNet() && locServer.IsLoacl;
             locServer.SetGamePauseSingle(IsGamePaused);
 
             if (IsGamePlay && Screen.IsEmptyScreen())
@@ -772,7 +760,8 @@ namespace MvkClient
                 // Центрирование мыши
                 firstMouse = true;
                 CursorShow(false);
-            } else
+            }
+            else
             {
                 CursorShow(true);
             }

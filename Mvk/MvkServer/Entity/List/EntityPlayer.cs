@@ -3,7 +3,6 @@ using MvkServer.Inventory;
 using MvkServer.Item;
 using MvkServer.NBT;
 using MvkServer.Sound;
-using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
 
@@ -39,9 +38,17 @@ namespace MvkServer.Entity.List
         /// </summary>
         public InventoryPlayer Inventory { get; protected set; }
         /// <summary>
-        /// Творческий режим
+        /// Творческий режим, бесконечный инвентарь, и всё ломаем за один клик
         /// </summary>
         public bool IsCreativeMode { get; protected set; } = false;
+        /// <summary>
+        /// Разрешается ли летать
+        /// </summary>
+        public bool AllowFlying { get; protected set; } = false;
+        /// <summary>
+        /// Отключить урон
+        /// </summary>
+        public bool DisableDamage { get; protected set; } = false;
 
         /// <summary>
         /// Тикущий уровень игрока
@@ -64,10 +71,11 @@ namespace MvkServer.Entity.List
         /// Это поле начинается равным GetMaxItemUseDuration и уменьшается на каждый тик.
         /// </summary>
         public int ItemInUseCount { get; protected set; }
+        
 
         protected EntityPlayer(WorldBase world) : base(world)
         {
-            Type = EnumEntities.Player;
+            type = EnumEntities.Player;
             StepHeight = 1.2f;
             Inventory = new InventoryPlayer(this);
             previousEquipment = new ItemStack[InventoryPlayer.COUNT_ARMOR + 1];
@@ -107,6 +115,11 @@ namespace MvkServer.Entity.List
             }
 
         }
+
+        /// <summary>
+        /// Тип сущности
+        /// </summary>
+        public override EnumEntities GetEntityType() => IsInvisible() ? EnumEntities.PlayerInvisible : EnumEntities.Player;
 
         /// <summary>
         /// Обновление действия предмета, надо засунуть в такт клиента и сервере
@@ -265,7 +278,7 @@ namespace MvkServer.Entity.List
         /// <summary>
         /// Есть ли звуковой эффект шага
         /// </summary>
-        public override bool IsSampleStep(BlockBase blockDown) => blockDown.IsSampleStep();
+        public override bool IsSampleStep(BlockBase blockDown) => IsInvisible() ? false : blockDown.IsSampleStep();
 
         /// <summary>
         /// Семпл хотьбы
@@ -275,7 +288,7 @@ namespace MvkServer.Entity.List
         /// <summary>
         /// Имеется ли у сущности иммунитет на всё
         /// </summary>
-        protected override bool IsImmuneToAll() => IsCreativeMode;
+        protected override bool IsImmuneToAll() => DisableDamage;
 
         /// <summary>
         /// Дропнуть предмет от сущности
@@ -420,12 +433,12 @@ namespace MvkServer.Entity.List
         /// <summary>
         /// Может дышать под водой
         /// </summary>
-        public override bool CanBreatheUnderwater() => IsCreativeMode ? true : false;
+        public override bool CanBreatheUnderwater() => DisableDamage ? true : false;
 
         /// <summary>
-        /// Активация режима выживания
+        /// Перестаём летать
         /// </summary>
-        public override void ModeSurvival()
+        public override void NotFlying()
         {
             if (IsFlying) IsFlying = false;
         }
@@ -466,6 +479,24 @@ namespace MvkServer.Entity.List
         protected override AssetsSample GetDeathSound() => AssetsSample.None;
 
         /// <summary>
+        /// Имеются ли ограничения по скорости, в воде и на блоках
+        /// </summary>
+        protected override bool IsSpeed​​Limit() => !IsFlying;
+        /// <summary>
+        /// Имеются ли звук шага
+        /// </summary>
+        protected override bool IsSoundStep() => !IsFlying;
+
+        /// <summary>
+        /// Возвращает истину, если другие Сущности не должны проходить через эту Сущность
+        /// </summary>
+        public override bool CanBeCollidedWith() => IsInvisible() ? false : base.CanBeCollidedWith();
+        /// <summary>
+        /// Возвращает true, если этот объект должен толкать и толкать другие объекты при столкновении
+        /// </summary>
+        public override bool CanBePushed() => IsInvisible() ? false : base.CanBePushed();
+
+        /// <summary>
         /// Либо запишите эту сущность в указанный тег NBT и верните true, либо верните false, ничего не делая.
         /// Если это возвращает false объект не сохраняется на диске.
         /// </summary>
@@ -474,6 +505,11 @@ namespace MvkServer.Entity.List
         public override void WriteEntityToNBT(TagCompound nbt)
         {
             base.WriteEntityToNBT(nbt);
+            nbt.SetBool("IsCreativeMode", IsCreativeMode);
+            nbt.SetBool("NoClip", NoClip);
+            nbt.SetBool("AllowFlying", AllowFlying);
+            nbt.SetBool("DisableDamage", DisableDamage);
+            nbt.SetBool("Invisible", IsInvisible());
             TagList list = new TagList();
             Inventory.WriteToNBT(list);
             nbt.SetTag("Inventory", list);
@@ -482,6 +518,11 @@ namespace MvkServer.Entity.List
         public override void ReadEntityFromNBT(TagCompound nbt)
         {
             base.ReadEntityFromNBT(nbt);
+            IsCreativeMode = nbt.GetBool("IsCreativeMode");
+            NoClip = nbt.GetBool("NoClip");
+            AllowFlying = nbt.GetBool("AllowFlying");
+            DisableDamage = nbt.GetBool("DisableDamage");
+            SetInvisible(nbt.GetBool("Invisible"));
             Inventory.ReadFromNBT(nbt.GetTagList("Inventory", 10));
         }
     }

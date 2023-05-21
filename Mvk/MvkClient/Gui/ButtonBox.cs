@@ -28,15 +28,14 @@ namespace MvkClient.Gui
             base.Draw();
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             GLWindow.Texture.BindTexture(AssetsTexture.Widgets);
-            gl.Color(1f, 1f, 1f, 1f);
+            gl.Color(1f, 1f, 1f, Alpha);
             float v1 = Enabled ? enter ? .875f : .75f : .625f;
             GLRender.Rectangle(0, 0, Width, Height, v1, .46875f, v1 + .125f, .59375f);
 
             GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
             int x = GetXAlight(Text, 12);
-            if (Enabled) FontRenderer.RenderString(x + 2, 12, new vec4(.1f, .1f, .1f, 1f), Text, size);
-            vec4 color = Enabled ? enter ? new vec4(1f, 1f, .5f, 1f) : new vec4(1f) : new vec4(.5f, .5f, .5f, 1f);
-            FontRenderer.RenderString(x, 11, color, Text, size);
+            vec3 color = Enabled ? enter ? new vec3(1, 1, .5f) : new vec3(1) : new vec3(.5f);
+            FontRenderer.RenderString(x, 11, Text, size, color, Alpha, Enabled, .1f);
         }
 
         public override void MouseDown(MouseButton button, int x, int y)

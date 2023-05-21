@@ -5,28 +5,28 @@
     /// </summary>
     public struct PacketS19EntityStatus : IPacket
     {
-        private ushort id;
         private byte status;
+        private string text;
 
-        public ushort GetId() => id;
         public EnumStatus GetStatus() => (EnumStatus)status;
+        public string GetText() => text;
 
-        public PacketS19EntityStatus(ushort id, EnumStatus status)
+        public PacketS19EntityStatus(EnumStatus status, string text)
         {
-            this.id = id;
             this.status = (byte)status;
+            this.text = text;
         }
 
         public void ReadPacket(StreamBase stream)
         {
-            id = stream.ReadUShort();
             status = stream.ReadByte();
+            text = stream.ReadString();
         }
 
         public void WritePacket(StreamBase stream)
         {
-            stream.WriteUShort(id);
             stream.WriteByte(status);
+            stream.WriteString(text);
         }
 
         public enum EnumStatus

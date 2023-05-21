@@ -40,16 +40,11 @@ namespace MvkClient.Renderer.Entity
             }
             if (render)
             {
-
                 vec3 pos = entity.GetPositionFrame(timeIndex);
                 vec3 offsetPos = pos - offset;
                 rand = new Rand(entity.Id);
                 int begin = rand.Next(360);
                 rand = new Rand(187);
-
-                GLRender.LightmapTextureCoords(entity.GetBrightnessForRender());
-                GLRender.TextureLightmapEnable();
-                GLRender.Texture2DEnable();
 
                 GLRender.PushMatrix();
                 {

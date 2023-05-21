@@ -8,6 +8,7 @@ using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.Management;
 using MvkServer.Network.Packets.Client;
+using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
@@ -91,6 +92,10 @@ namespace MvkClient.Entity
         /// Для эффекта где находяться глаза
         /// </summary>
         public WhereEyes WhereEyesEff { get; private set; } = WhereEyes.Air;
+        /// <summary>
+        /// Причина смерти, строка
+        /// </summary>
+        public string TextDeath { get; private set; } = "";
 
         /// <summary>
         /// Массив по длинам используя квадратный корень для всей видимости в объёме для обновление чанков в объёме
@@ -174,9 +179,25 @@ namespace MvkClient.Entity
         }
 
         /// <summary>
+        /// Тип сущности
+        /// </summary>
+        public override EnumEntities GetEntityType() => IsInvisible() 
+            ? EnumEntities.PlayerInvisible 
+            : (GetHealth() > 0 && ViewCamera == EnumViewCamera.Eye) ? EnumEntities.PlayerHand : EnumEntities.Player;
+
+        /// <summary>
         /// Возвращает true, если эта вещь названа
         /// </summary>
         public override bool HasCustomName() => false;
+
+        /// <summary>
+        /// Пометить игрока как мёртвым и указать ему причину
+        /// </summary>
+        public void OnDeathClient(string text)
+        {
+            TextDeath = text;
+            SetHealth(0);
+        }
 
         #region DisplayList
 
@@ -313,13 +334,8 @@ namespace MvkClient.Entity
                 UpdateActionPacket();
             }
 
-            
             // синхронизация выброного слота
             SyncCurrentPlayItem();
-
-            // Скрыть прорисовку себя если вид с глаз
-            Type = GetHealth() > 0 && ViewCamera == EnumViewCamera.Eye ? EnumEntities.PlayerHand : EnumEntities.Player;
-            //Type = EnumEntities.PlayerHand;
         }
 
         /// <summary>
@@ -428,6 +444,16 @@ namespace MvkClient.Entity
         /// </summary>
         private void UpCursor()
         {
+            if (IsInvisible())
+            {
+                // Если невидимка мы не можем выбирать объекты
+                if (MovingObject.IsCollision())
+                {
+                    // Если был объект убираем его
+                    MovingObject = new MovingObjectPosition();
+                }
+                return;
+            }
             MovingObject = RayCast();
             if (MovingObject.IsBlock())
             {
@@ -710,6 +736,10 @@ namespace MvkClient.Entity
         private vec3 GetPositionCamera(vec3 pos, vec3 vec, float dis)
         {
             vec3 offset = ClientWorld.RenderEntityManager.CameraOffset;
+            if (IsInvisible())
+            {
+                return pos + vec * dis;
+            }
             MovingObjectPosition moving = World.RayCastBlock(pos + offset, vec, dis, true);
             return pos + vec * (moving.IsBlock() ? glm.distance(pos, moving.RayHit + new vec3(moving.Norm) * .5f - offset) : dis);
         }
@@ -774,36 +804,39 @@ namespace MvkClient.Entity
         /// </summary>
         private void HandActionUpdate()
         {
-            MovingObjectPosition moving = RayCast();
-
-            if (handAction == ActionHand.Left)
+            if (!IsInvisible())
             {
-                // Разрушаем блок
-                if (itemInWorldManager.IsDestroyingBlock && ((moving.IsBlock() && !itemInWorldManager.BlockPosDestroy.ToVec3i().Equals(moving.BlockPosition.ToVec3i())) || !moving.IsBlock()))
+                MovingObjectPosition moving = RayCast();
+
+                if (handAction == ActionHand.Left)
                 {
-                    // Отмена разбитие блока, сменился блок
-                    ClientMain.TrancivePacket(new PacketC07PlayerDigging(itemInWorldManager.BlockPosDestroy, PacketC07PlayerDigging.EnumDigging.About));
-                    itemInWorldManager.DestroyAbout();
-                }
-                else if (itemInWorldManager.IsDestroyingBlock)
-                {
-                    // Этап разбития блока
-                    if (itemInWorldManager.IsDestroy())
+                    // Разрушаем блок
+                    if (itemInWorldManager.IsDestroyingBlock && ((moving.IsBlock() && !itemInWorldManager.BlockPosDestroy.ToVec3i().Equals(moving.BlockPosition.ToVec3i())) || !moving.IsBlock()))
                     {
-                        // Стоп, окончено разбитие
-                        ClientMain.TrancivePacket(new PacketC07PlayerDigging(itemInWorldManager.BlockPosDestroy, PacketC07PlayerDigging.EnumDigging.Stop));
-                        itemInWorldManager.DestroyStop();
+                        // Отмена разбитие блока, сменился блок
+                        ClientMain.TrancivePacket(new PacketC07PlayerDigging(itemInWorldManager.BlockPosDestroy, PacketC07PlayerDigging.EnumDigging.About));
+                        itemInWorldManager.DestroyAbout();
+                    }
+                    else if (itemInWorldManager.IsDestroyingBlock)
+                    {
+                        // Этап разбития блока
+                        if (itemInWorldManager.IsDestroy())
+                        {
+                            // Стоп, окончено разбитие
+                            ClientMain.TrancivePacket(new PacketC07PlayerDigging(itemInWorldManager.BlockPosDestroy, PacketC07PlayerDigging.EnumDigging.Stop));
+                            itemInWorldManager.DestroyStop();
+                        }
+                    }
+                    else if (itemInWorldManager.NotPauseUpdate)
+                    {
+                        DestroyingBlockStart(moving, false);
                     }
                 }
-                else if (itemInWorldManager.NotPauseUpdate)
+                else if (handAction == ActionHand.Right && itemInWorldManager.NotPauseUpdate)
                 {
-                    DestroyingBlockStart(moving, false);
+                    // устанавливаем блок
+                    HandActionRightStart(moving, false);
                 }
-            }
-            else if (handAction == ActionHand.Right && itemInWorldManager.NotPauseUpdate)
-            {
-                // устанавливаем блок
-                HandActionRightStart(moving, false);
             }
         }
 
@@ -812,17 +845,20 @@ namespace MvkClient.Entity
         /// </summary>
         public void HandAction()
         {
-            MovingObjectPosition moving = RayCast();
-            if (moving.IsEntity())
+            if (!IsInvisible())
             {
-                // Курсор попал на сущность
-                entityAtack = moving.Entity;
-                handAction = ActionHand.None;
-            }
-            else
-            {
-                DestroyingBlockStart(moving, true);
-                handAction = ActionHand.Left;
+                MovingObjectPosition moving = RayCast();
+                if (moving.IsEntity())
+                {
+                    // Курсор попал на сущность
+                    entityAtack = moving.Entity;
+                    handAction = ActionHand.None;
+                }
+                else
+                {
+                    DestroyingBlockStart(moving, true);
+                    handAction = ActionHand.Left;
+                }
             }
         }
 
@@ -840,8 +876,11 @@ namespace MvkClient.Entity
         /// </summary>
         public void HandActionRight()
         {
-            MovingObjectPosition moving = RayCast();
-            HandActionRightStart(moving, true);
+            if (!IsInvisible())
+            {
+                MovingObjectPosition moving = RayCast();
+                HandActionRightStart(moving, true);
+            }
         }
 
         /// <summary>
@@ -1026,6 +1065,18 @@ namespace MvkClient.Entity
                 vec2i posCh = GetChunkPos();
                 ClientWorld.ChunkPrClient.ModifiedToRenderAlpha(posCh.x, GetChunkY(), posCh.y);
             }
+        }
+
+        /// <summary>
+        /// Задать атрибуты игроку
+        /// </summary>
+        public void SetPlayerAbilities(PacketS39PlayerAbilities packet)
+        {
+            IsCreativeMode = packet.IsCreativeMode();
+            NoClip = packet.IsNoClip();
+            IsFlying = AllowFlying = packet.IsAllowFlying();
+            DisableDamage = packet.IsDisableDamage();
+            //SetInvisible()Invisible = packet.IsInvisible();
         }
 
         #region Frame

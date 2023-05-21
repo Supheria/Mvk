@@ -79,6 +79,7 @@ namespace MvkServer.Network
                 case 0x0A: Handle0AAnimation(socket, (PacketC0AAnimation)packet); break;
                 case 0x0C: Handle0CPlayerAction(socket, (PacketC0CPlayerAction)packet); break;
                 case 0x10: Handle10CreativeInventoryAction(socket, (PacketC10CreativeInventoryAction)packet); break;
+                case 0x14: HandleC14Message(socket, (PacketC14Message)packet); break;
                 case 0x15: Handle15ClientSetting(socket, (PacketC15ClientSetting)packet); break;
                 case 0x16: Handle16ClientStatus(socket, (PacketC16ClientStatus)packet); break;
             }
@@ -357,20 +358,22 @@ namespace MvkServer.Network
         }
 
         /// <summary>
+        /// Пакет чата
+        /// </summary>
+        private void HandleC14Message(Socket socket, PacketC14Message packet) 
+            => ServerMain.World.Players.ClientMessage(socket, packet);
+
+        /// <summary>
         /// Пакет настроек клиента
         /// </summary>
-        private void Handle15ClientSetting(Socket socket, PacketC15ClientSetting packet)
-        {
-            ServerMain.World.Players.ClientSetting(socket, packet);
-        }
+        private void Handle15ClientSetting(Socket socket, PacketC15ClientSetting packet) 
+            => ServerMain.World.Players.ClientSetting(socket, packet);
 
         /// <summary>
         /// Пакет статуса клиента
         /// </summary>
-        private void Handle16ClientStatus(Socket socket, PacketC16ClientStatus packet)
-        {
-            ServerMain.World.Players.ClientStatus(socket, packet.GetState());
-        }
+        private void Handle16ClientStatus(Socket socket, PacketC16ClientStatus packet) 
+            => ServerMain.World.Players.ClientStatus(socket, packet.GetState());
 
         ///// <summary>
         ///// Отправить изменение по здоровью
@@ -395,6 +398,6 @@ namespace MvkServer.Network
         //    }
         //}
 
-        
+
     }
 }

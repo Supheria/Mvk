@@ -13,6 +13,7 @@ namespace MvkServer.World.Gen
 
         public override void Init()
         {
+            genPiece = new WorldGenPiece();
             genPlants = new WorldGenPlants();
             genCactus = new WorldGenCactus();
             genOak = new WorldGenTreeOak();

@@ -39,9 +39,8 @@ namespace MvkClient.Renderer.Entity
                 model.SetSwingProgress(entityLiving.GetSwingProgressFrame(timeIndex));
                 
                 GLRender.PushMatrix();
-                
                 GLRender.CullDisable();
-                vec3 color = new vec3(1f);
+                vec3 color = new vec3(1);
                     
                 if (entityLiving.IsHurtAnimation && entityLiving.DamageTime > 0)
                 {
@@ -51,9 +50,8 @@ namespace MvkClient.Renderer.Entity
                     color = new vec3(1f, 1f - dt, 1f - dt);
                 }
 
-                GLRender.LightmapTextureCoords(entity.GetBrightnessForRender());
-                GLRender.Color(color);
-                BindTexture();
+                GLRender.Color(color, entity.IsInvisible() ? .5f : 1);
+                GLWindow.Texture.BindTexture(texture);
 
                 GLRender.Translate(offsetPos.x, offsetPos.y, offsetPos.z);
                 RotateCorpse(entityLiving, timeIndex);
@@ -69,9 +67,7 @@ namespace MvkClient.Renderer.Entity
                 // доп слой
                 LayerRenders(entityLiving, limbSwing, limbSwingAmount, timeIndex, ageInTicks, -yawBody, headPitch, .0625f);
 
-                GLRender.TextureLightmapDisable();
                 GLRender.PopMatrix();
-                
                 base.DoRender(entity, offset, timeIndex);
             }
         }
@@ -82,14 +78,6 @@ namespace MvkClient.Renderer.Entity
         protected virtual void RenderModel(EntityLiving entity, float limbSwing, float limbSwingAmount, float ageInTicks, float headYaw, float headPitch, float scale)
         {
             model.Render(entity, limbSwing, limbSwingAmount, ageInTicks, headYaw, headPitch, scale);
-        }
-
-        protected void BindTexture()
-        {
-            GLRender.TextureLightmapEnable();
-            GLRender.Texture2DEnable();
-            TextureStruct ts = GLWindow.Texture.GetData(texture);
-            GLWindow.Texture.BindTexture(ts.GetKey());
         }
 
         /// <summary>

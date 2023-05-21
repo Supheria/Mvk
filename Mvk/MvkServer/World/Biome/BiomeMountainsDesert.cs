@@ -29,6 +29,7 @@ namespace MvkServer.World.Biome
             Decorator.oakPerChunk = 0;
             Decorator.randomTree = 1;
             Decorator.brolPerChunk = 0;
+            Decorator.piecePerChunk = 0;
             blockIdBody = blockIdUp = isRobinson ? blockIdBody2 : (ushort)EnumBlock.Sand;
         }
     }

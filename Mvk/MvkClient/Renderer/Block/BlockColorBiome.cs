@@ -15,6 +15,9 @@ namespace MvkClient.Renderer.Block
         {
             switch (eBiome)
             {
+                //case EnumBiome.River:
+                //case EnumBiome.Sea:
+                //    return new vec3(.06f, .73f, .85f);
                 case EnumBiome.Desert:
                 case EnumBiome.Tropics:
                 case EnumBiome.MountainsDesert:

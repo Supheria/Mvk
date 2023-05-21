@@ -37,9 +37,8 @@ namespace MvkClient.Renderer.Entity
                     GLRender.CullEnable();
                     GLRender.DepthDisable();
                     vec4 color = new vec4(1);
-                    GLRender.LightmapTextureCoords(entity.GetBrightnessForRender());
                     GLRender.Color(color);
-                    BindTexture();
+                    GLWindow.Texture.BindTexture(texture);
 
                     GLRender.Translate(pos.x - offset.x, pos.y - offset.y, pos.z - offset.z);
                     GLRender.PushMatrix();
@@ -63,7 +62,6 @@ namespace MvkClient.Renderer.Entity
                     }
                     GLRender.PopMatrix();
                     GLRender.DepthEnable();
-                    GLRender.TextureLightmapDisable();
                 }
                 GLRender.PopMatrix();
             }

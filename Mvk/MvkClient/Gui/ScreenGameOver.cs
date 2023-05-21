@@ -38,10 +38,10 @@ namespace MvkClient.Gui
         {
 
 
-            label.Position = new vec2i(Width / 2 - 200 * sizeInterface, 120);
-            labelText.Position = new vec2i(Width / 2 - 200 * sizeInterface, 120 + 80 * sizeInterface);
-            buttonRespawn.Position = new vec2i(Width / 2 - 200 * sizeInterface, Height / 4 + 148 * sizeInterface);
-            buttonExit.Position = new vec2i(Width / 2 - 200 * sizeInterface, Height / 4 + 192 * sizeInterface);
+            label.Position = new vec2i(Width / 2 - 200 * SizeInterface, 120);
+            labelText.Position = new vec2i(Width / 2 - 200 * SizeInterface, 120 + 80 * SizeInterface);
+            buttonRespawn.Position = new vec2i(Width / 2 - 200 * SizeInterface, Height / 4 + 148 * SizeInterface);
+            buttonExit.Position = new vec2i(Width / 2 - 200 * SizeInterface, Height / 4 + 192 * SizeInterface);
         }
     }
 }

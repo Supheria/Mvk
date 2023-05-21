@@ -148,8 +148,7 @@ namespace MvkClient
                 GLWindow.gl.Enable(OpenGL.GL_TEXTURE_2D);
                 GLWindow.Texture.BindTexture(AssetsTexture.Font12);
                 GLRender.Scale(Setting.SizeInterface);
-                FontRenderer.RenderText(11f, 11f, new vec4(.2f, .2f, .2f, 1f), ToStringDebug(), FontSize.Font12);
-                FontRenderer.RenderText(10f, 10f, new vec4(0.9f, 0.9f, .6f, 1f), ToStringDebug(), FontSize.Font12);
+                FontRenderer.RenderText(10, 10, ToStringDebug(), FontSize.Font12, new vec3(.9f, .9f, .6f), 1, true, .2f, 1);
                 GLRender.ListEnd();
             }
 
@@ -282,10 +281,25 @@ namespace MvkClient
         /// </summary>
         public static void ScreenFileBiomeArea(WorldClient world)
         {
-            int width = 2048;
-            int height = 2048;
-            
-            GenLayer[] genLayer = GenLayer.BeginLayerBiome(5);
+            int seed = 1;
+            // 0 - biome
+            FileBiomeArea(seed, world, 0);
+            // 1 - height
+            FileBiomeArea(seed, world, 1);
+        }
+
+        /// <summary>
+        /// Сделать скрин биомов определённого размера, при этом не надо ждать рендер чанков
+        /// </summary>
+        public static void FileBiomeArea(int seed, WorldClient world, int id)
+        {
+            int width, height;
+            width = height = 4096;
+            //int width = 2048;
+            //int height = 2048;
+
+
+            GenLayer[] genLayer = GenLayer.BeginLayerBiome(seed);
 
             Bitmap bitmap = new Bitmap(width, height);
             //bitmap.
@@ -293,15 +307,11 @@ namespace MvkClient
             stopwatch.Start();
             int x, z, key;
 
-            // 0 - biome, 1 - height
-            int id = 0;
-
             int[] ar = genLayer[id].GetInts(width / -2, height / -2, width, height);
             long l = stopwatch.ElapsedTicks;
             world.Log.Log("GenBioms[{1}:{2}]: {0:0.00} ms",
                 l / (float)MvkStatic.TimerFrequency, width, height);
             EnumBiome biome;
-
 
             for (x = 0; x < width; x++)
             {
@@ -334,6 +344,7 @@ namespace MvkClient
 
         private static Color ConvertBiomeHeight(int index)
         {
+            //if (index > 48) index = (index - 48) / 4 + 48;
             int rgb = 255 - index * 2;
             return Color.FromArgb(rgb, rgb, rgb);
         }

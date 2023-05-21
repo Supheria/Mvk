@@ -21,7 +21,7 @@ namespace MvkClient.Gui
                 Width = 160,
                 Alight = EnumAlight.Right
             };
-            textBoxAddress = new TextBox(Setting.IpAddress) { Width = 160 };
+            textBoxAddress = new TextBox(Setting.IpAddress, TextBox.EnumRestrictions.IpPort) { Width = 160 };
             buttonConnect = new Button(Language.T("gui.connect")) { Width = 256 };
             buttonConnect.Click += ButtonConnect_Click;
             buttonCancel = new Button(EnumScreenKey.Main, Language.T("gui.cancel")) { Width = 256 };
@@ -42,15 +42,15 @@ namespace MvkClient.Gui
         /// </summary>
         protected override void ResizedScreen()
         {
-            int h = Height / 2 - 108 * sizeInterface;
-            int hMax = h + 252 * sizeInterface;
+            int h = Height / 2 - 108 * SizeInterface;
+            int hMax = h + 252 * SizeInterface;
             if (hMax > Height) h -= hMax - Height;
 
-            label.Position = new vec2i(Width / 2 - 200 * sizeInterface, h);
-            labelAddress.Position = new vec2i(Width / 2 - 162 * sizeInterface, h + 92 * sizeInterface);
-            textBoxAddress.Position = new vec2i(Width / 2 + 2 * sizeInterface, h + 92 * sizeInterface);
-            buttonConnect.Position = new vec2i(Width / 2 - 258 * sizeInterface, h + 192 * sizeInterface);
-            buttonCancel.Position = new vec2i(Width / 2 + 2 * sizeInterface, h + 192 * sizeInterface);
+            label.Position = new vec2i(Width / 2 - 200 * SizeInterface, h);
+            labelAddress.Position = new vec2i(Width / 2 - 162 * SizeInterface, h + 92 * SizeInterface);
+            textBoxAddress.Position = new vec2i(Width / 2 + 2 * SizeInterface, h + 92 * SizeInterface);
+            buttonConnect.Position = new vec2i(Width / 2 - 258 * SizeInterface, h + 192 * SizeInterface);
+            buttonCancel.Position = new vec2i(Width / 2 + 2 * SizeInterface, h + 192 * SizeInterface);
         }
 
         private void ButtonConnect_Click(object sender, EventArgs e)

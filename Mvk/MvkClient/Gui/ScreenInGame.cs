@@ -6,8 +6,6 @@ using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.Item.List;
 using MvkServer.Util;
-using MvkServer.World.Block;
-using SharpGL;
 
 namespace MvkClient.Gui
 {
@@ -15,9 +13,8 @@ namespace MvkClient.Gui
     /// Скрин во время игры
     /// Тут всё игрока, инвентарь на экране, ХП и другие опции, эффект воды и прочего
     /// </summary>
-    public class ScreenInGame : Screen
+    public class ScreenInGame : ScreenBase
     {
-
         /// <summary>
         /// Цвет воды для эффектов
         /// </summary>
@@ -31,37 +28,21 @@ namespace MvkClient.Gui
         /// </summary>
         public static vec3 colorOilEff = new vec3(0f, 0f, .1f);
 
-
-        protected Button buttonSingle;
+        /// <summary>
+        /// Экземпляр ChatGUI, который сохраняет все предыдущие данные чата
+        /// </summary>
+        public GuiChatList PersistantChatGUI { get; private set; }
 
         public ScreenInGame(Client client) : base(client)
         {
-            background = EnumBackground.Game;
-
-            buttonSingle = new Button(EnumScreenKey.SinglePlayer, Language.T("gui.singleplayer")) { Width = 300 };
-            InitButtonClick(buttonSingle);
-
-
+            PersistantChatGUI = new GuiChatList(this);
             Initialize();
-
-        }
-
-        protected override void Init()
-        {
-           // AddControls(buttonSingle);
         }
 
         /// <summary>
-        /// Изменён размер окна
+        /// Такт игрового времени
         /// </summary>
-        protected override void ResizedScreen()
-        {
-            int h = Height / 4 + 92 * sizeInterface;
-            int hMax = h + 208 * sizeInterface;
-            if (hMax > Height) h -= hMax - Height;
-
-            buttonSingle.Position = new vec2i(100 * sizeInterface, h);
-        }
+        public override void Tick() => PersistantChatGUI.Tick();
 
         /// <summary>
         /// Прорисовка
@@ -71,49 +52,60 @@ namespace MvkClient.Gui
         {
             //vec3 pos = ClientMain.Player.GetPositionFrame(timeIndex);
             //pos.y += ClientMain.Player.GetEyeHeight();
-            sizeInterface = Setitings.Setting.SizeInterface;
+            SizeInterface = Setitings.Setting.SizeInterface;
 
-            // базовая прорисовка контролов, скорее всего тут будет чат
-            base.Draw();
+            // Матрица проекции камеры для 2д, GUI
+            Ortho2D();
+
+            bool visible = !ClientMain.Player.IsInvisible();
 
             // Прицел
-            if (ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
+            if (visible && ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
             {
-                
                 GLRender.PushMatrix();
                 GLRender.Translate(Width / 2, Height / 2, 0);
-                GLRender.Scale(sizeInterface, sizeInterface, 1);
+                GLRender.Scale(SizeInterface, SizeInterface, 1);
                 GLRender.Texture2DEnable();
                 GLWindow.Texture.BindTexture(AssetsTexture.Icons);
                 GLRender.Color(1f);
                 GLRender.Rectangle(-16, -16, 16, 16, .9375f, .9375f, 1f, 1f);
                 GLRender.PopMatrix();
             }
-
             // Эффект урона
             DrawEffDamage(ClientMain.Player.DamageTime, timeIndex);
+            
             // Эффект воды если надо
             DrawEffEyes(timeIndex);
-            if (ClientMain.Player.InFire() && ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
+            if (visible)
             {
-                // Огонь
-                DrawFire();
+                if (ClientMain.Player.InFire() && ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
+                {
+                    // Огонь
+                    DrawFire();
+                }
+
+                // Центровка
+                GLRender.PushMatrix();
+                GLRender.Translate(Width / 2, Height, 0);
+                GLRender.Scale(SizeInterface, SizeInterface, 1);
+                GLRender.Texture2DEnable();
+
+                // Инвенатрь
+                DrawInventory();
+                // Статусы
+                DrawStat();
+
+                GLRender.PopMatrix();
             }
 
-            GLRender.PushMatrix();
-            GLRender.Translate(Width / 2, Height, 0);
-            GLRender.Scale(sizeInterface, sizeInterface, 1);
-            GLRender.Texture2DEnable();
-
-            // Инвенатрь
-            DrawInventory();
-            // Статусы
-            DrawStat();
-            
-            GLRender.PopMatrix();
-
-            
+            // Чат
+            if (ClientMain.Screen.IsEmptyScreen() || ClientMain.Screen.GetTypeScreen() != typeof(ScreenChat))
+            {
+                PersistantChatGUI.DrawInGame();
+            }
         }
+
+        #region Draws
 
         /// <summary>
         /// Прорисовка статусов
@@ -147,11 +139,12 @@ namespace MvkClient.Gui
                 GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(fontSize));
                 int x = FontRenderer.WidthString(str, fontSize) / -2;
                 int y = -73;
-                FontRenderer.RenderString(x + 1, y, new vec4(0, 0, 0, 1), str, fontSize);
-                FontRenderer.RenderString(x - 1, y, new vec4(0, 0, 0, 1), str, fontSize);
-                FontRenderer.RenderString(x, y + 1, new vec4(0, 0, 0, 1), str, fontSize);
-                FontRenderer.RenderString(x, y - 1, new vec4(0, 0, 0, 1), str, fontSize);
-                FontRenderer.RenderString(x, y, new vec4(.52f, .9f, .2f, 1f), str, fontSize);//.5f, 1f, .125f
+                vec3 colorbg = new vec3(0);
+                FontRenderer.RenderString(x + 1, y, str, fontSize, colorbg);
+                FontRenderer.RenderString(x - 1, y, str, fontSize, colorbg);
+                FontRenderer.RenderString(x, y + 1, str, fontSize, colorbg);
+                FontRenderer.RenderString(x, y - 1, str, fontSize, colorbg);
+                FontRenderer.RenderString(x, y, str, fontSize, new vec3(.52f, .9f, .2f));//.5f, 1f, .125f
             }
 
             GLRender.Color(1f);
@@ -289,8 +282,7 @@ namespace MvkClient.Gui
                         GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(fontSize));
                         string str = itemStack.Amount.ToString();
                         int ws = FontRenderer.WidthString(str, fontSize);
-                        FontRenderer.RenderString(w1 + 21 - ws, h1 + 10, new vec4(0, 0, 0, 1), str, fontSize);
-                        FontRenderer.RenderString(w1 + 20 - ws, h1 + 9, new vec4(1), str, fontSize);
+                        FontRenderer.RenderString(w1 + 20 - ws, h1 + 9, str, fontSize, new vec3(1), 1, true, 0, 1);
                     }
                     if (itemStack.ItemDamage > 0)
                     {
@@ -298,8 +290,7 @@ namespace MvkClient.Gui
                         GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(fontSize));
                         string str = itemStack.ItemDamage.ToString();
                         //int ws = FontRenderer.WidthString(str, fontSize);
-                        FontRenderer.RenderString(w0 + 7, h1 + 10, new vec4(0, 0, 0, 1), str, fontSize);
-                        FontRenderer.RenderString(w0 + 6, h1 + 9, new vec4(1), str, fontSize);
+                        FontRenderer.RenderString(w0 + 6, h1 + 9, str, fontSize, new vec3(1), 1, true, 0, 1);
                     }
                 }
             }
@@ -375,5 +366,7 @@ namespace MvkClient.Gui
             GLRender.Rectangle(0, 0, Width, Height, u1, v1, u2, v2);
             GLRender.PopMatrix();
         }
+
+        #endregion
     }
 }

@@ -12,9 +12,9 @@ namespace MvkServer.Entity.List
     public class EntityExplosives : EntityThrowable
     {
         public EntityExplosives(WorldBase world) : base(world)
-            => Type = EnumEntities.Piece;
+            => type = EnumEntities.Piece;
         public EntityExplosives(WorldBase world, EntityPlayer entityPlayer) : base(world, entityPlayer)
-            => Type = EnumEntities.Piece;
+            => type = EnumEntities.Piece;
 
         protected override void OnImpact(MovingObjectPosition moving, bool isLiquid)
         {

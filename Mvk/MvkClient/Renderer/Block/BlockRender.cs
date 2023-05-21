@@ -333,7 +333,7 @@ namespace MvkClient.Renderer.Block
         /// </summary>
         private ColorsLights GenColors(byte light)
         {
-            vec3 color = cFace.isColor ? GetBiomeColor(chunk, posChunkX, posChunkZ) : new vec3(1f);
+            vec3 color = GetBiomeColor(chunk, posChunkX, posChunkZ);
             float lightPole = block.NoSideDimming ? 0f : 1f - LightPole();
 
             if (ambientOcclusion && (block.АmbientOcclusion || block.BiomeColor || block.Liquid))
@@ -373,17 +373,20 @@ namespace MvkClient.Renderer.Block
             // подготовка для теста плавности цвета
             if (cFace.isColor)
             {
-                if (block.EBlock == EnumBlock.Turf || block.EBlock == EnumBlock.TallGrass)
+                if (block.BiomeColor)
                 {
-                    return BlockColorBiome.Grass(chunk.biome[bx << 4 | bz]);
-                }
-                if (block.Material == EnumMaterial.Leaves)
-                {
-                    return BlockColorBiome.Leaves(chunk.biome[bx << 4 | bz]);
-                }
-                if (block.Material == EnumMaterial.Water)
-                {
-                    return BlockColorBiome.Water(chunk.biome[bx << 4 | bz]);
+                    if (block.EBlock == EnumBlock.Turf || block.EBlock == EnumBlock.TallGrass)
+                    {
+                        return BlockColorBiome.Grass(chunk.biome[bx << 4 | bz]);
+                    }
+                    if (block.Material == EnumMaterial.Leaves)
+                    {
+                        return BlockColorBiome.Leaves(chunk.biome[bx << 4 | bz]);
+                    }
+                    if (block.Material == EnumMaterial.Water)
+                    {
+                        return BlockColorBiome.Water(chunk.biome[bx << 4 | bz]);
+                    }
                 }
                 return cFace.color;
             }

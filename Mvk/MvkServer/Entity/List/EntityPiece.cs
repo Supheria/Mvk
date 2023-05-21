@@ -12,9 +12,9 @@ namespace MvkServer.Entity.List
     public class EntityPiece : EntityThrowable
     {
         public EntityPiece(WorldBase world) : base(world)
-            => Type = EnumEntities.Piece;
+            => type = EnumEntities.Piece;
         public EntityPiece(WorldBase world, EntityLiving entityThrower) : base(world, entityThrower)
-            => Type = EnumEntities.Piece;
+            => type = EnumEntities.Piece;
 
         protected override void OnImpact(MovingObjectPosition moving, bool isLiquid)
         {

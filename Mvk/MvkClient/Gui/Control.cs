@@ -19,7 +19,7 @@ namespace MvkClient.Gui
         /// <summary>
         /// Ширина
         /// </summary>
-        public int Width { get; set; }
+        public virtual int Width { get; set; }
         /// <summary>
         /// Высотаа
         /// </summary>
@@ -51,7 +51,11 @@ namespace MvkClient.Gui
         /// <summary>
         /// Текст
         /// </summary>
-        public string Text { get; protected set; }
+        public string Text { get; protected set; } = "";
+        /// <summary>
+        /// Альфа цвет контрола
+        /// </summary>
+        public float Alpha { get; set; } = 1;
 
         /// <summary>
         /// Когда мышь находится на элементе
@@ -87,7 +91,7 @@ namespace MvkClient.Gui
         /// <summary>
         /// Задать текст
         /// </summary>
-        public void SetText(string text)
+        public virtual void SetText(string text)
         {
             Text = text;
             IsRender = true;

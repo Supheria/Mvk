@@ -123,7 +123,11 @@ namespace MvkServer.World.Gen.Feature
                             chy = y >> 4;
                             chunkStorage = chunk.StorageArrays[chy];
                             index = (y & 15) << 8 | bz << 4 | bx;
-                            chunkStorage.SetData(index, blockCache.id, blockCache.met);
+                            if (blockCache.body || (!chunkStorage.IsEmptyData() && (chunkStorage.data[index] & 0xFFF) == 0)
+                                || chunkStorage.IsEmptyData())
+                            {
+                                chunkStorage.SetData(index, blockCache.id, blockCache.met);
+                            }
                         }
                     }
                 }
@@ -153,6 +157,7 @@ namespace MvkServer.World.Gen.Feature
                     pos.Z = blockCache.z;
                     if (pos.IsValid())
                     {
+                        if (blockCache.body || world.GetBlockState(pos).IsAir())
                         world.SetBlockState(pos, new BlockState(blockCache.id, blockCache.met), 14);
                     }
                 }
@@ -227,7 +232,7 @@ namespace MvkServer.World.Gen.Feature
 
                 if (check)
                 {
-                    blockCaches.Add(new BlockCache(blockPos.OffsetDown(), blockPut));
+                    blockCaches.Add(new BlockCache(blockPos.OffsetDown(), blockPut, 0, true));
                     bool notLeaves = false;
                     int indexBranches = 0;
                     int ychu = crownHeight - crownHeightUntouchable;
@@ -292,7 +297,7 @@ namespace MvkServer.World.Gen.Feature
             for (i = 0; i < count; i++)
             {
                 y = by + i;
-                blockCaches.Add(new BlockCache(bx, y, bz, idLog, (ushort)(i == 0 ? 6 : 0)));
+                blockCaches.Add(new BlockCache(bx, y, bz, idLog, (ushort)(i == 0 ? 6 : 0), true));
             }
         }
 
@@ -314,7 +319,7 @@ namespace MvkServer.World.Gen.Feature
             {
                 y = by + i;
                 // Ствол
-                blockCaches.Add(new BlockCache(bx, y, bz, idLog, (ushort)(i == 0 ? 6 : 0)));
+                blockCaches.Add(new BlockCache(bx, y, bz, idLog, (ushort)(i == 0 ? 6 : 0), true));
 
                 // Ветки
                 if (i >= trunkHeight)
@@ -327,7 +332,7 @@ namespace MvkServer.World.Gen.Feature
                         vec = MvkStatic.AreaOne4[j + k];
                         if (bit)
                         {
-                            blockCaches.Add(new BlockCache(bx + vec.x, y, bz + vec.y, idLog, (ushort)(2 - j)));
+                            blockCaches.Add(new BlockCache(bx + vec.x, y, bz + vec.y, idLog, (ushort)(2 - j), true));
                         }
                     }
                     k = (k == 0 ? 2 : 0);

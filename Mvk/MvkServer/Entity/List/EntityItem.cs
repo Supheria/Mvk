@@ -56,7 +56,7 @@ namespace MvkServer.Entity.List
         {
             persistenceRequired = true;
             SetSize(.25f, .5f);
-            Type = EnumEntities.Item;
+            type = EnumEntities.Item;
         }
 
         public EntityItem(WorldBase world, vec3 pos) : this(world)

@@ -1,7 +1,5 @@
 ﻿using MvkClient.Actions;
-using MvkClient.Renderer;
 using MvkClient.Setitings;
-using SharpGL;
 using System;
 
 namespace MvkClient.Gui
@@ -29,18 +27,9 @@ namespace MvkClient.Gui
         /// </summary>
         public bool IsEmptyScreen() => screen == null;
         /// <summary>
-        /// Является ли скрин меню, для паузы
+        /// Получить тип скрина
         /// </summary>
-        public bool IsScreenPause() 
-            => screen != null && (screen.GetType() == typeof(ScreenInGameMenu) || screen.GetType() == typeof(ScreenOptions));
-        /// <summary>
-        /// Является ли скрин конец игры
-        /// </summary>
-        public bool IsScreenGameOver() => screen != null && screen.GetType() == typeof(ScreenGameOver);
-        /// <summary>
-        /// Имеется ли скрин контейнера
-        /// </summary>
-        public bool IsScreenConteiner() => screen != null && screen.IsConteiner;
+        public Type GetTypeScreen() => screen.GetType();
 
         /// <summary>
         /// Изменён размер окна
@@ -48,6 +37,14 @@ namespace MvkClient.Gui
         public void Resized()
         {
             if (screen != null) screen.Resized();
+        }
+
+        /// <summary>
+        /// Такт игрового времени
+        /// </summary>
+        public void Tick()
+        {
+            if (screen != null) screen.Tick();
         }
 
         /// <summary>
@@ -110,6 +107,14 @@ namespace MvkClient.Gui
         }
 
         /// <summary>
+        /// Нажата клавиша
+        /// </summary>
+        public void KeyDown(int key)
+        {
+            if (screen != null) screen.KeyDown(key);
+        }
+
+        /// <summary>
         /// Заменить экран на другое меню
         /// </summary>
         public void Exchange(Screen screenNew)
@@ -131,6 +136,10 @@ namespace MvkClient.Gui
         /// Активация меню во время игры
         /// </summary>
         public void InGameMenu() => Exchange(new ScreenInGameMenu(ClientMain));
+        /// <summary>
+        /// Активация чат во время игры
+        /// </summary>
+        public void InGameChat(bool isConsole) => Exchange(new ScreenChat(ClientMain, isConsole));
         /// <summary>
         /// Главного меню
         /// </summary>

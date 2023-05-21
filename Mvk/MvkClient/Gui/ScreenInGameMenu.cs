@@ -22,6 +22,17 @@ namespace MvkClient.Gui
             buttonExit.Click += (sender, e) => ClientMain.ExitingWorld("");
         }
 
+        /// <summary>
+        /// Нажата клавиша
+        /// </summary>
+        public override void KeyDown(int key)
+        {
+            if (key == 27)// ESC
+            {
+                ClientMain.Screen.GameMode();
+            }
+        }
+
         protected override void Init()
         {
             AddControls(buttonBack);
@@ -34,13 +45,13 @@ namespace MvkClient.Gui
         /// </summary>
         protected override void ResizedScreen()
         {
-            int h = Height / 4 + 48 * sizeInterface;
-            int hMax = h + 248 * sizeInterface;
+            int h = Height / 4 + 48 * SizeInterface;
+            int hMax = h + 248 * SizeInterface;
             if (hMax > Height) h -= hMax - Height;
 
-            buttonBack.Position = new vec2i(Width / 2 - 200 * sizeInterface, h);
-            buttonOptions.Position = new vec2i(Width / 2 - 200 * sizeInterface, h + 44 * sizeInterface);
-            buttonExit.Position = new vec2i(Width / 2 - 200 * sizeInterface, h + 144 * sizeInterface);
+            buttonBack.Position = new vec2i(Width / 2 - 200 * SizeInterface, h);
+            buttonOptions.Position = new vec2i(Width / 2 - 200 * SizeInterface, h + 44 * SizeInterface);
+            buttonExit.Position = new vec2i(Width / 2 - 200 * SizeInterface, h + 144 * SizeInterface);
         }
     }
 }

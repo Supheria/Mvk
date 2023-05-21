@@ -117,8 +117,7 @@ namespace MvkServer.World.Block.List
         /// Проверка установи блока, можно ли его установить тут
         /// </summary>
         public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos) 
-            => worldIn.GetBlockState(blockPos).IsAir() 
-            && worldIn.GetBlockState(blockPos.OffsetDown()).GetBlock().FullBlock;
+            => worldIn.GetBlockState(blockPos.OffsetDown()).GetBlock().FullBlock;
 
         private Box[] B(vec3 offsetMet)
         {

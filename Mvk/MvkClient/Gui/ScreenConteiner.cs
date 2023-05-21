@@ -1,13 +1,10 @@
 ﻿using MvkAssets;
 using MvkClient.Actions;
 using MvkClient.Renderer;
-using MvkClient.Renderer.Font;
-using MvkClient.Setitings;
 using MvkServer.Glm;
 using MvkServer.Inventory;
 using MvkServer.Item;
 using MvkServer.Network.Packets.Client;
-using SharpGL;
 using System;
 
 namespace MvkClient.Gui
@@ -15,7 +12,7 @@ namespace MvkClient.Gui
     /// <summary>
     /// У гульні запушчана меню кантэйнера
     /// </summary>
-    public class ScreenConteiner : Screen
+    public class ScreenConteiner : ScreenWindow
     {
         protected Label labelPage;
         protected Button buttonClose;
@@ -45,12 +42,12 @@ namespace MvkClient.Gui
 
         public ScreenConteiner(Client client) : base(client)
         {
+            textTitle = "gui.conteiner.inventory";
             IsFpsMin = false;
             icon = new CursorIcon();
             theSlot = new Slot();
             button = new ButtonSlot[pageCount];
             buttonInv = new ButtonSlot[8];
-            IsConteiner = true;
             labelPage = new Label("", FontSize.Font12) { Alight = EnumAlight.Center, Width = 50 };
             background = EnumBackground.GameWindow;
             buttonClose = new Button(EnumScreenKey.World, "X") { Width = 42 };
@@ -80,6 +77,17 @@ namespace MvkClient.Gui
                 buttonInv[i].ClickRight += ButtonInvSlotClickRight;
             }
             client.Player.Inventory.Changed += InventoryChanged;
+        }
+
+        /// <summary>
+        /// Нажата клавиша
+        /// </summary>
+        public override void KeyDown(int key)
+        {
+            if (key == 27 || key == 69) // ESC || E
+            {
+                ClientMain.Screen.GameMode();
+            }
         }
 
         private void InventoryChanged(object sender, SlotEventArgs e)
@@ -121,14 +129,16 @@ namespace MvkClient.Gui
         /// </summary>
         protected override void ResizedScreen()
         {
-            int w = Width / 2;
-            int h = Height / 2;
-            buttonClose.Position = new vec2i(w + 214 * sizeInterface, h - 221 * sizeInterface);
-            labelPage.Position = new vec2i(w + 50 * sizeInterface, h - 213 * sizeInterface);
-            buttonBack.Position = new vec2i(w + 18 * sizeInterface, h - 213 * sizeInterface);
-            buttonNext.Position = new vec2i(w + 100 * sizeInterface, h - 213 * sizeInterface);
-            int x0 = w - 250 * sizeInterface;
-            int y0 = h - 179 * sizeInterface;
+            position = new vec2i(Width / 2 - size.x / 2 * SizeInterface, Height / 2 - size.y / 2 * SizeInterface);
+            int w = position.x;
+            int h = position.y;
+
+            buttonClose.Position = new vec2i(w + 470 * SizeInterface, h - 8 * SizeInterface);
+            labelPage.Position = new vec2i(w + 306 * SizeInterface, h);
+            buttonBack.Position = new vec2i(w + 274 * SizeInterface, h);
+            buttonNext.Position = new vec2i(w + 356 * SizeInterface, h);
+            int x0 = w + 6 * SizeInterface;
+            int y0 = h + 38 * SizeInterface;
             int x = x0;
             int y = y0;
             int c = 0;
@@ -138,21 +148,21 @@ namespace MvkClient.Gui
                 {
                     button[i].Position = new vec2i(x, y);
                     c++;
-                    x += 50 * sizeInterface;
+                    x += 50 * SizeInterface;
                     if (c == 10)
                     {
                         c = 0;
-                        y += 50 * sizeInterface;
+                        y += 50 * SizeInterface;
                         x = x0;
                     }
                 }
             }
-            y = h + 85 * sizeInterface;
-            x = w - 200 * sizeInterface;
+            y = h + 298 * SizeInterface;
+            x = w + 56 * SizeInterface;
             for (int i = 0; i < 8; i++)
             {
                 buttonInv[i].Position = new vec2i(x, y);
-                x += 50 * sizeInterface;
+                x += 50 * SizeInterface;
             }
 
         }
@@ -178,7 +188,10 @@ namespace MvkClient.Gui
                 theSlot.Clear();
                 icon.SetSlot(theSlot);
             }
-            base.MouseDown(button, x, y);
+            else
+            {
+                base.MouseDown(button, x, y);
+            }
         }
 
         /// <summary>
@@ -192,45 +205,8 @@ namespace MvkClient.Gui
                 || (!next && page > 0))
             {
                 ButtonBackNextClick(next);
+                isRender = true;
             }
-        }
-
-        /// <summary>
-        /// За пределы окна, для выбрасывания предмета, только по горизонтали
-        /// </summary>
-        private bool IsOutsideWindow(int x, int y)
-        {
-            x -= Width / 2;
-            y -= Height / 2 - 36;
-            return x < -256 * sizeInterface || x > 256 * sizeInterface
-                || y < -177 * sizeInterface || y > 177 * sizeInterface;
-        }
-
-        /// <summary>
-        /// Окно
-        /// </summary>
-        protected override void RenderWindow()
-        {
-            GLRender.PushMatrix();
-            vec4 colBg = new vec4(1f, 1f, 1f, 1f);
-            vec4 colPr = new vec4(.13f, .44f, .91f, 1f);
-            // назва
-            gl.Enable(OpenGL.GL_TEXTURE_2D);
-            GLWindow.Texture.BindTexture(AssetsTexture.ConteinerItems);
-            gl.Color(1f, 1f, 1f, 1f);
-            int wh = Width / 2;
-            int hh = Height / 2;
-            GLRender.Translate(wh, hh - 36 * sizeInterface, 0);
-            GLRender.Scale(Setting.SizeInterface);
-
-            GLRender.Rectangle(-256, -177, 256, 177, 0, 0, 1f, 0.69140625f);
-
-            GLWindow.Texture.BindTexture(AssetsTexture.Font12);
-            string text = Language.T("gui.conteiner.inventory");
-            FontRenderer.RenderString(-242, -166, new vec4(.1f, .1f, .1f, 1f), text, FontSize.Font12);
-            FontRenderer.RenderString(-244, -167, new vec4(1f), text, FontSize.Font12);
-
-            GLRender.PopMatrix();
         }
 
         protected override void DrawAdd()
@@ -239,7 +215,7 @@ namespace MvkClient.Gui
             // Иконка
             GLRender.PushMatrix();
             GLRender.Translate(icon.Position.x, icon.Position.y, 0);
-            GLRender.Scale(sizeInterface, sizeInterface, 1);
+            GLRender.Scale(SizeInterface, SizeInterface, 1);
             icon.Draw();
             GLRender.PopMatrix();
         }

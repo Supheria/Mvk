@@ -25,7 +25,7 @@ namespace MvkClient.Gui
             base.Draw();
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             GLWindow.Texture.BindTexture(AssetsTexture.Widgets);
-            gl.Color(1f, 1f, 1f, 1f);
+            gl.Color(1f, 1f, 1f, Alpha);
             float v1 = Enabled ? enter ? 0.3125f : 0.15625f : 0f;
             float v2 = Enabled ? enter ? 0.46875f : 0.3125f : 0.15625f;
             int wh = Width / 2;
@@ -35,9 +35,8 @@ namespace MvkClient.Gui
 
             GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
             int x = GetXAlight(Text, 12);
-            if (Enabled) FontRenderer.RenderString(x + 2, 15, new vec4(.1f, .1f, .1f, 1f), Text, size);
-            vec4 color = Enabled ? enter ? new vec4(1f, 1f, .5f, 1f) : new vec4(1f) : new vec4(.5f, .5f, .5f, 1f);
-            FontRenderer.RenderString(x, 14, color, Text, size);
+            vec3 color = Enabled ? enter ? new vec3(1, 1, .5f) : new vec3(1) : new vec3(.5f);
+            FontRenderer.RenderString(x, 14, Text, size, color, Alpha, Enabled, .1f);
         }
 
 

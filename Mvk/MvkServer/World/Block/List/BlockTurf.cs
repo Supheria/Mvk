@@ -20,6 +20,7 @@ namespace MvkServer.World.Block.List
             IgniteOddsSunbathing = 5;
             NeedsRandomTick = true;
             Particle = 64;
+            BiomeColor = true;
             Color = new vec3(1);
             Material = EnumMaterial.Loose;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
@@ -97,21 +98,33 @@ namespace MvkServer.World.Block.List
                 {
                     // Распространение дёрна
                     BlockPos blockPos2;
+                    EnumBlock enumBlock2;
                     BlockState blockState2;
                     BlockState blockState2up;
                     BlockBase blockBase2up;
-                    
+                    BlockPos blockPos2up;
+
                     for (int i = 0; i < 4; i++)
                     {
                         blockPos2 = blockPos.Offset(random.Next(3) - 1, random.Next(5) - 3, random.Next(3) - 1);
-                        blockState2up = world.GetBlockState(blockPos2.OffsetUp());
+                        blockPos2up = blockPos2.OffsetUp();
+                        blockState2up = world.GetBlockState(blockPos2up);
                         blockBase2up = blockState2up.GetBlock();
                         blockState2 = world.GetBlockState(blockPos2);
+                        enumBlock2 = blockState2.GetEBlock();
 
-                        if (blockState2.GetEBlock() == EnumBlock.Dirt 
+                        if (enumBlock2 == EnumBlock.Dirt 
                             && blockState2up.lightSky >= 7 && blockBase2up.LightOpacity <= 2)
                         {
+                            // Дёрн
                             world.SetBlockState(blockPos2, new BlockState(EnumBlock.Turf), 12);
+                        }
+                        else if (world.GetBiome(blockPos2) == Biome.EnumBiome.Swamp && random.Next(16) == 0
+                            && enumBlock2 == EnumBlock.Water && blockState2up.lightSky >= 7
+                            && blockState2up.IsAir())
+                        {
+                            // Тина
+                            world.SetBlockState(blockPos2up, new BlockState(EnumBlock.Tina), 12);
                         }
                     }
                 }

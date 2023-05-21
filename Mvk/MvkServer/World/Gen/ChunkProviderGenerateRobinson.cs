@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Util;
+﻿using MvkServer.Util;
 using MvkServer.World.Biome;
 using MvkServer.World.Chunk;
 using MvkServer.World.Gen.Layer;
@@ -19,11 +18,6 @@ namespace MvkServer.World.Gen
         /// </summary>
         private readonly GenLayer genLayerHeight;
 
-        /// <summary>
-        /// Шум высот биомов
-        /// </summary>
-        private readonly NoiseGeneratorPerlin heightBiome;
-
         // Шум речных пещер, из двух частей
         private readonly NoiseGeneratorPerlin noiseCave1;
         private readonly NoiseGeneratorPerlin noiseCaveHeight1;
@@ -32,7 +26,6 @@ namespace MvkServer.World.Gen
         private readonly NoiseGeneratorPerlin noiseCave3;
         private readonly NoiseGeneratorPerlin noiseCaveHeight3;
 
-        private readonly float[] heightNoise = new float[256];
         private readonly float[] caveRiversNoise = new float[256];
         private readonly float[] caveHeightNoise = new float[256];
         //private readonly float[] caveNoise2 = new float[256];
@@ -40,25 +33,18 @@ namespace MvkServer.World.Gen
         private readonly float[] caveNoise3 = new float[256];
         private readonly float[] caveHeightNoise3 = new float[256];
 
-        /// <summary>
-        /// Шум облостей
-        /// </summary>
-        public NoiseGeneratorPerlin noiseArea;
-
         public ChunkProviderGenerateRobinson(WorldServer worldIn) : base(worldIn)
         {
             GenLayer[] gens = GenLayer.BeginLayerBiome(Seed);
             genLayerBiome = gens[0];
             genLayerHeight = gens[1];
 
-            heightBiome = new NoiseGeneratorPerlin(new Rand(Seed), 8);
             noiseCave1 = new NoiseGeneratorPerlin(new Rand(Seed + 7), 4);
             noiseCaveHeight1 = new NoiseGeneratorPerlin(new Rand(Seed + 5), 4);
             //noiseCave2 = new NoiseGeneratorPerlin(new Rand(Seed + 9), 4);
             //noiseCaveHeight2 = new NoiseGeneratorPerlin(new Rand(Seed + 11), 4);
             noiseCave3 = new NoiseGeneratorPerlin(new Rand(Seed + 12), 4);
             noiseCaveHeight3 = new NoiseGeneratorPerlin(new Rand(Seed + 13), 4);
-            noiseArea = new NoiseGeneratorPerlin(new Rand(Seed + 2), 4);
 
             for (int i = 0; i < biomes.Length; i++)
             {
@@ -68,7 +54,7 @@ namespace MvkServer.World.Gen
 
         public override void Populate(ChunkBase chunk)
         {
-            //return;
+         //   return;
             BiomeBase biome;
             ChunkBase chunkSpawn;
 
@@ -99,11 +85,6 @@ namespace MvkServer.World.Gen
                 biomeBase.Init(chunkPrimer, xbc, zbc);
                 biomeBase.Down();
 
-                // Пакет для биомов и высот с рекой
-                heightBiome.GenerateNoise2d(heightNoise, xbc, zbc, 16, 16, 1.2f, 1.2f);
-
-                // доп шумы
-                noiseArea.GenerateNoise2d(AreaNoise, xbc, zbc, 16, 16, .4f, .4f);
                 //  шумы речных пещер
                 noiseCave1.GenerateNoise2d(caveRiversNoise, xbc, zbc, 16, 16, .05f, .05f);
                 noiseCaveHeight1.GenerateNoise2d(caveHeightNoise, xbc, zbc, 16, 16, .025f, .025f);
@@ -128,13 +109,8 @@ namespace MvkServer.World.Gen
                         enumBiome = chunk.biome[count] = chunkPrimer.biome[count] = (EnumBiome)idBiome;
                         biome = biomes[idBiome];
                         biome.Init(chunkPrimer, xbc, zbc);
-
-                        level = biome.ColumnRobinson(x, z,
-                            arHeight[idx], 
-                            heightNoise[count] / 132f, 
-                            AreaNoise[count] / 8.3f
-                        );
-                        // biome.ViewDebugBiom(x, z);
+                        level = biome.ColumnRobinson(x, z, arHeight[idx]);
+                        //biome.ViewDebugBiom(x, z);
 
                         // Пещенры 2д ввиде рек
                         if ((enumBiome == EnumBiome.Mountains || enumBiome == EnumBiome.MountainsDesert && level > 58))

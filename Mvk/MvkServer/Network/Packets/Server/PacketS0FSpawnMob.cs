@@ -29,7 +29,7 @@ namespace MvkServer.Network.Packets.Server
         public PacketS0FSpawnMob(EntityBase entity)
         {
             id = entity.Id;
-            type = entity.Type;
+            type = entity.GetEntityType();
             pos = entity.Position;
             if (entity is EntityLiving entityLiving)
             {

@@ -286,17 +286,24 @@ namespace MvkServer.Entity
         /// Принимает ли пищу
         /// </summary>
         public bool IsEating() => GetFlag(4);
-
         /// <summary>
         /// Задать приём пищи
         /// </summary>
         public void SetEating(bool eating) => SetFlag(4, eating);
+        
+        /// <summary>
+        /// Невидимый
+        /// </summary>
+        public override bool IsInvisible() => GetFlag(5);
+        /// <summary>
+        /// Задать невидемая сущность
+        /// </summary>
+        public void SetInvisible(bool invisible) => SetFlag(5, invisible);
 
         /// <summary>
         /// Спит ли сущность
         /// </summary>
         public bool IsSleep() => GetFlag(6);
-
         /// <summary>
         /// Задать спит сущность
         /// </summary>
@@ -369,7 +376,7 @@ namespace MvkServer.Entity
         /// <summary>
         /// Получить название для рендеринга
         /// </summary>
-        public override string GetName() => name == "" ? "entity." + Type.ToString() : name;
+        public override string GetName() => name == "" ? "entity." + GetEntityType().ToString() : name;
 
         /// <summary>
         /// Возвращает true, если эта вещь названа
@@ -492,11 +499,14 @@ namespace MvkServer.Entity
                     LivingUpdate();
                 }
 
-                // Расчёт амплитуды движения 
-                UpLimbSwing();
+                if (!IsInvisible())
+                {
+                    // Расчёт амплитуды движения 
+                    UpLimbSwing();
 
-                // Просчёт взмаха руки
-                UpdateArmSwingProgress();
+                    // Просчёт взмаха руки
+                    UpdateArmSwingProgress();
+                }
             }
 
             // Для вращении головы
@@ -737,11 +747,7 @@ namespace MvkServer.Entity
                 {
                     if (health <= 0f)
                     {
-                        worldServer.ServerMain.Log.Log("{1} {0}", source, this.name);
-
-                        // Начало смерти
-                        worldServer.Tracker.SendToAllTrackingEntity(this, new PacketS19EntityStatus(Id,
-                            PacketS19EntityStatus.EnumStatus.Die));
+                        entityPlayerServer.OnDeathPlayerServer(worldServer, source, entityAttacks);
                     }
                     else
                     {
@@ -1039,7 +1045,7 @@ namespace MvkServer.Entity
             // трение
             float study;
             // делим на три части, вода, лава, остальное
-            if (IsInWater())
+            if (IsInWater() && IsSpeed​​Limit())
             {
                 float posY = Position.y;
                 study = .8f; // .8f;
@@ -1073,7 +1079,7 @@ namespace MvkServer.Entity
                     motion.y = 0.600001f; 
                 }
             }
-            else if (IsInLava() || IsInOil())
+            else if (IsSpeed​​Limit() && (IsInLava() || IsInOil()))
             {
                 // Lava или нефть
                 float posY = Position.y;
@@ -1096,7 +1102,7 @@ namespace MvkServer.Entity
                 //float study = .954f;// 0.91f; // для воздух
                 //if (OnGround) study = 0.739F;// 0.546f; // трение блока, определить на каком блоке стоим (.6f блок) * .91f
                 study = 0.91f; // для воздух
-                if (OnGround)
+                if (OnGround && IsSpeed​​Limit())
                 {
                     study = World.GetBlockState(new BlockPos(Mth.Floor(Position.x), Mth.Floor(BoundingBox.Min.y) - 1, Mth.Floor(Position.z))).GetBlock().Slipperiness * .91f;
                 }
@@ -1107,7 +1113,7 @@ namespace MvkServer.Entity
 
                 // трение, по умолчанию параметр ускорения падения вниз 
                 float friction = jumpMovementFactor;
-                if (OnGround)
+                if (OnGround && IsSpeed​​Limit())
                 {
                     // корректировка скорости, с трением
                     friction = GetAIMoveSpeed(strafe, forward) * param;
@@ -1327,14 +1333,17 @@ namespace MvkServer.Entity
                 if (!blockDown.IsAir)
                 {
                     nextStepDistance = (int)distanceWalkedOnStepModified + 1;
-                    SoundStep(blockDown);
+                    if (IsSoundStep())
+                    {
+                        SoundStep(blockDown);
+                    }
                 }
             }
         }
 
         public void PlaySound(AssetsSample key, float volume, float pitch)
             => World.PlaySound(this, key, Position, volume, pitch);
-
+        
         /// <summary>
         /// Звуковой эффект шага
         /// </summary>
@@ -1642,9 +1651,9 @@ namespace MvkServer.Entity
             else if (y < 0f) fallDistance -= y;
             if (OnGround)
             {
-                if (IsFlying)
+                if (IsFlying && !NoClip)
                 {
-                    ModeSurvival();
+                    NotFlying();
                     fallDistance = 0f;
                 }
                 else if (fallDistance > 0f)
@@ -1702,7 +1711,7 @@ namespace MvkServer.Entity
         /// <summary>
         /// Активация режима выживания
         /// </summary>
-        public virtual void ModeSurvival() { }
+        public virtual void NotFlying() { }
 
         /// <summary>
         /// Возвращает истину, если другие Сущности не должны проходить через эту Сущность
@@ -1945,6 +1954,11 @@ namespace MvkServer.Entity
         public override bool CanBePushed() => true;
 
         /// <summary>
+        /// Имеются ли звук шага
+        /// </summary>
+        protected virtual bool IsSoundStep() => true;
+
+        /// <summary>
         /// Столкновение с ближайшими объектами
         /// </summary>
         protected virtual void CollideWithNearbyEntities()
@@ -2037,7 +2051,7 @@ namespace MvkServer.Entity
             vec3 my = new vec3(0, motionDebug.y, 0);
             float rotationYawHead = glm.degrees(RotationYawHead);
             Pole pole = EnumFacing.FromAngle(RotationYawHead);
-            return string.Format("{15}-{16} XYZ {7} ch:{12}\r\n{0:0.000} | {13:0.000} м/c\r\nHealth: {14:0.00} Air: {17}\r\nyaw:{8:0.00} H:{9:0.00} pitch:{10:0.00} {18}-{22} \r\n{1}{2}{6}{4}{19}{20}{21} boom:{5:0.00}\r\nMotion:{3}\r\n{11}",
+            return string.Format("{15}-{16} XYZ {7} ch:{12}\r\n{0:0.000} | {13:0.000} м/c\r\nHealth: {14:0.00} Air: {17}\r\nyaw:{8:0.00} H:{9:0.00} pitch:{10:0.00} {18}-{22} \r\n{1}{2}{6}{4}{19}{20}{21}{23} boom:{5:0.00}\r\nMotion:{3}\r\n{11}",
                 glm.distance(m) * 10f, // 0
                 OnGround ? "__" : "", // 1
                 IsSprinting() ? "[Sp]" : "", // 2
@@ -2054,13 +2068,14 @@ namespace MvkServer.Entity
                 glm.distance(my) * 10f, // 13
                 GetHealth(), // 14
                 Id, // 15
-                Type, // 16
+                GetEntityType(), // 16
                 GetAir(), // 17
                 pole, // 18
                 IsInWater() ? "[W]" : "", // 19
                 IsInLava() ? "[L]" : "", // 20
                 IsInOil() ? "[O]" : "", // 21
-                EnumFacing.IsFromAngleLeft(RotationYawHead, pole) // 22
+                EnumFacing.IsFromAngleLeft(RotationYawHead, pole), // 22
+                IsInTina() ? "[T]" : "" // 23
                 );
         }
     }

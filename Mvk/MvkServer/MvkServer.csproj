@@ -33,6 +33,12 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Command\CommandBase.cs" />
+    <Compile Include="Command\CommandGameMode.cs" />
+    <Compile Include="Command\CommandTime.cs" />
+    <Compile Include="Command\CommandKill.cs" />
+    <Compile Include="Command\CommandSender.cs" />
+    <Compile Include="Command\ManagerCommand.cs" />
     <Compile Include="Entity\AI\EntityAIAttackThrowableItem.cs" />
     <Compile Include="Entity\AI\EntityAIAttackOnCollide.cs" />
     <Compile Include="Entity\AI\EntityAIBase.cs" />
@@ -133,6 +139,7 @@
     <Compile Include="Network\Packets\Client\PacketC0AAnimation.cs" />
     <Compile Include="Network\Packets\Client\PacketC04PlayerPosition.cs" />
     <Compile Include="Network\Packets\Client\PacketC10CreativeInventoryAction.cs" />
+    <Compile Include="Network\Packets\Client\PacketC14Message.cs" />
     <Compile Include="Network\Packets\Client\PacketC15ClientSetting.cs" />
     <Compile Include="Network\Packets\Client\PacketC03UseEntity.cs" />
     <Compile Include="Network\Packets\Client\PacketC05PlayerLook.cs" />
@@ -150,6 +157,8 @@
     <Compile Include="Network\Packets\Server\PacketS2FSetSlot.cs" />
     <Compile Include="Network\Packets\Server\PacketS04EntityEquipment.cs" />
     <Compile Include="Network\Packets\Server\PacketS07Respawn.cs" />
+    <Compile Include="Network\Packets\Server\PacketS39PlayerAbilities.cs" />
+    <Compile Include="Network\Packets\Server\PacketS3AMessage.cs" />
     <Compile Include="Network\Packets\Server\PacketS30WindowItems.cs" />
     <Compile Include="Network\Packets\Server\PacketS0DCollectItem.cs" />
     <Compile Include="Network\Packets\Server\PacketS0BAnimation.cs" />
@@ -165,6 +174,7 @@
     <Compile Include="Network\Packets\Server\PacketS23BlockChange.cs" />
     <Compile Include="Sound\AssetsSample.cs" />
     <Compile Include="Util\BlockCache.cs" />
+    <Compile Include="Util\ChatStyle.cs" />
     <Compile Include="Util\ListMessy.cs" />
     <Compile Include="Util\DoubleList.cs" />
     <Compile Include="Util\EnumDamageSource.cs" />
@@ -231,6 +241,7 @@
     <Compile Include="World\Block\Face.cs" />
     <Compile Include="World\Block\Liquid.cs" />
     <Compile Include="World\Block\List\BlockAbElectricity.cs" />
+    <Compile Include="World\Block\List\BlockTina.cs" />
     <Compile Include="World\Block\List\BlockNest.cs" />
     <Compile Include="World\Block\List\BlockUniPiece.cs" />
     <Compile Include="World\Block\List\BlockUniGlassPane.cs" />
@@ -328,6 +339,7 @@
     <Compile Include="World\Gen\Feature\WorldGenCactus.cs" />
     <Compile Include="World\Gen\Feature\WorldGenerator.cs" />
     <Compile Include="World\Gen\Feature\WorldGenBrol.cs" />
+    <Compile Include="World\Gen\Feature\WorldGenPiece.cs" />
     <Compile Include="World\Gen\Feature\WorldGenPlants.cs" />
     <Compile Include="World\Gen\Feature\WorldGenPancake.cs" />
     <Compile Include="World\Gen\Feature\WorldGenTreePalm.cs" />
@@ -337,9 +349,15 @@
     <Compile Include="World\Gen\Feature\WorldGenTreeFruit.cs" />
     <Compile Include="World\Gen\Feature\WorldGenTree.cs" />
     <Compile Include="World\Gen\Layer\GenLayer.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerHeightAddUp.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerHeightAddSea.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerHeightAddParam.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerHeightAddBegin.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerHeightAddBiome.cs" />
     <Compile Include="World\Gen\Layer\GenLayerBiomeHeight.cs" />
     <Compile Include="World\Gen\Layer\GenLayerShore.cs" />
     <Compile Include="World\Gen\Layer\GenLayerRiver.cs" />
+    <Compile Include="World\Gen\Layer\GenLayerExpand.cs" />
     <Compile Include="World\Gen\Layer\GenLayerSmoothMix.cs" />
     <Compile Include="World\Gen\Layer\GenLayerSmooth.cs" />
     <Compile Include="World\Gen\Layer\GenLayerZoomRandom.cs" />

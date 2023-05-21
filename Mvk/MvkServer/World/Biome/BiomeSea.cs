@@ -35,17 +35,14 @@ namespace MvkServer.World.Biome
             => HEIGHT_WATER_MINUS + (int)(height * HEIGHT_HILL_SEA);
 
         /// <summary>
-        /// Получить уровень множителя высоты
+        /// Заполняем тело
         /// </summary>
-        /// <param name="x">X 0..15</param>
-        /// <param name="z">Z 0..15</param>
-        /// <param name="height">Высота в блоках, средняя рекомендуемая</param>
-        /// <param name="heightNoise">Высота -1..0..1</param>
-        /// <param name="addNoise">Диапазон -1..0..1</param>
-        protected override int GetLevelHeightRobinson(int x, int z, int height, float heightNoise, float addNoise)
+        protected override void BodyRobinson(int yb, int yh, int index)
         {
-            if (height < 12) addNoise *= addNoise;
-            return height + (int)(heightNoise * (heightNoise < 0 ? 18f : 6f)) + (int)(addNoise * 4f);
+            for (int y = yb; y <= yh; y++)
+            {
+                chunk.id[index | y] = (ushort)(yh < HEIGHT_WATER ? blockIdBody : 3);
+            }
         }
     }
 }

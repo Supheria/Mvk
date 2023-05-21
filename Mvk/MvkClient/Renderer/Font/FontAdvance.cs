@@ -9,11 +9,6 @@ namespace MvkClient.Renderer.Font
     public class FontAdvance
     {
         /// <summary>
-        /// Массив символов
-        /// </summary>
-        private static readonly Dictionary<char, Symbol>[] items = new Dictionary<char, Symbol>[3];
-
-        /// <summary>
         /// Горизонтальное смещение начала следующего глифа
         /// </summary>
         public static int[] HoriAdvance { get; private set; } = new int[] { 8, 12, 16 };
@@ -21,6 +16,11 @@ namespace MvkClient.Renderer.Font
         /// Вертикальное смещение начала следующего глифа 
         /// </summary>
         public static int[] VertAdvance { get; private set; } = new int[] { 8, 12, 16 };
+
+        /// <summary>
+        /// Массив символов
+        /// </summary>
+        private static readonly Dictionary<char, Symbol>[] items = new Dictionary<char, Symbol>[3];
 
         /// <summary>
         /// Инициализировать шрифты
@@ -38,7 +38,7 @@ namespace MvkClient.Renderer.Font
             VertAdvance[size] = textureFont.Height >> 4;
 
             items[size] = new Dictionary<char, Symbol>();
-            char[] vc = Symbol.ToArrayKey();
+            char[] vc = Symbol.arrayKey;
             for (int i = 0; i < vc.Length; i++)
             {
                 Symbol symbol = new Symbol(vc[i], size);

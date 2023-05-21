@@ -858,6 +858,19 @@ namespace MvkServer.World
         }
 
         /// <summary>
+        /// Получить объект игрока по имени
+        /// </summary>
+        public EntityPlayer GetPlayerToName(string name)
+        {
+            for (int i = 0; i < PlayerEntities.Count; i++)
+            {
+                EntityPlayer entity = PlayerEntities.GetAt(i) as EntityPlayer;
+                if (entity.GetName().Equals(name)) return entity;
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Получает ближайшего игрока к объекту в пределах указанного расстояния 
         /// (если расстояние меньше 0, то игнорируется).
         /// </summary>
@@ -1065,6 +1078,7 @@ namespace MvkServer.World
 
             BlockPos blockPos = new BlockPos();
             BlockBase block;
+            BlockState blockState;
             EnumMaterial material;
             for (int x = minX; x < maxX; x++)
             {
@@ -1075,13 +1089,26 @@ namespace MvkServer.World
                         blockPos.X = x;
                         blockPos.Y = y;
                         blockPos.Z = z;
-                        block = GetBlockState(blockPos).GetBlock();
+                        blockState = GetBlockState(blockPos);
+                        block = blockState.GetBlock();
                         material = block.Material;
                         if (material == EnumMaterial.Water)
                         {
                             liquid.Water(block.ModifyAcceleration(this, blockPos, liquid.GetVecWater()));
                         }
                         else if (material == EnumMaterial.Lava) liquid.Lava();
+                        else if (block.EBlock == EnumBlock.Tina)
+                        {
+                            // Дополнительно проверяем кализию по блоку
+                            foreach (AxisAlignedBB aabbBlock in block.GetCollisionBoxesToList(blockPos, blockState.met))
+                            {
+                                if (aabbBlock.IntersectsWith(aabb))
+                                {
+                                    liquid.Tina();
+                                    break;
+                                }
+                            }
+                        }
                         else if (material == EnumMaterial.Oil)
                         {
                             liquid.Oil(block.ModifyAcceleration(this, blockPos, liquid.GetVecOil()));

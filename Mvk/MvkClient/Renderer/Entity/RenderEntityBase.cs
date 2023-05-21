@@ -17,10 +17,6 @@ namespace MvkClient.Renderer.Entity
     {
         protected RenderManager renderManager;
         /// <summary>
-        /// Текстура тени
-        /// </summary>
-        //private static final ResourceLocation shadowTextures = new ResourceLocation("textures/misc/shadow.png");
-        /// <summary>
         /// Размер тени
         /// </summary>
         protected float shadowSize;
@@ -37,10 +33,6 @@ namespace MvkClient.Renderer.Entity
             {
                 RenderLivingLabel(entity, entity.GetName(), offset, timeIndex);
             }
-            //if (IsShadowLabel(entity))
-            //{
-            //    RenderShadow(entity, offset, .5f, timeIndex);
-            //}
         }
 
         public void DoRenderShadowAndFire(EntityBase entity, vec3 offset, float timeIndex)
@@ -97,8 +89,10 @@ namespace MvkClient.Renderer.Entity
                     GLRender.Rectangle(-ws - 1, -1, ws + 1, 8, new vec4(0, 0, 0, .25f));
                     GLRender.Texture2DEnable();
                     GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(font));
-                    FontRenderer.RenderString(-ws, 0, new vec4(1), text, font);
+                    float alpha = entity.IsInvisible() ? .5f : 1;
+                    FontRenderer.RenderString(-ws, 0, text, font, new vec3(1), alpha);
                     GLRender.DepthEnable();
+                    FontRenderer.RenderString(-ws, 0, text, font, new vec3(1), alpha);
                 }
                 GLRender.PopMatrix();
             }
@@ -212,7 +206,6 @@ namespace MvkClient.Renderer.Entity
             float v1 = frame * .015625f;
             float v2 = v1 + .015625f;
 
-            GLRender.Texture2DEnable();
             GLWindow.Texture.BindTexture(AssetsTexture.AtlasBlocks);
 
             while (h > 0)

@@ -17,7 +17,6 @@
             int[] ar = new int[width * height];
             int x, z, c;
 
-
             for (z = 0; z < height; z++)
             {
                 for (x = 0; x < width; x++)

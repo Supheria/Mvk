@@ -14,7 +14,7 @@ namespace MvkServer.Entity.List
     {
         public EntityChemoglot(WorldBase world) : base(world)
         {
-            Type = EnumEntities.Chemoglot;
+            type = EnumEntities.Chemoglot;
             StepHeight = 1.01f;
             samplesStep = new AssetsSample[] { AssetsSample.MobChemoglotJump1, AssetsSample.MobChemoglotJump2, AssetsSample.MobChemoglotJump3, AssetsSample.MobChemoglotJump4 };
             samplesHurt = new AssetsSample[] { AssetsSample.MobChemoglotAttack1, AssetsSample.MobChemoglotAttack2 };

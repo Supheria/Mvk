@@ -46,16 +46,16 @@
         /// </summary>
         Piece,
         /// <summary>
-        /// Моб
-        /// </summary>
-        Mob,
-        /// <summary>
         /// Игрок
         /// </summary>
         Player,
         /// <summary>
         /// Нанести урон мобом
         /// </summary>
-        CauseMobDamage
+        CauseMobDamage,
+        /// <summary>
+        /// Принудительная смерть от команды
+        /// </summary>
+        Kill
     }
 }

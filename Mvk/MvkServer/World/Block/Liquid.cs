@@ -10,6 +10,7 @@ namespace MvkServer.World.Block
         private bool water;
         private bool lava;
         private bool oil;
+        private bool tina;
         private bool fire;
 
         private bool isPushedByLiquid;
@@ -19,6 +20,7 @@ namespace MvkServer.World.Block
         public bool IsWater() => water;
         public bool IsLava() => lava;
         public bool IsOil() => oil;
+        public bool IsTina() => tina;
         public bool IsFire() => fire;
 
         public vec3 GetVecOil() => vecOil;
@@ -56,5 +58,6 @@ namespace MvkServer.World.Block
             oil = true;
         }
         public void Fire() => fire = true;
+        public void Tina() => tina = true;
     }
 }

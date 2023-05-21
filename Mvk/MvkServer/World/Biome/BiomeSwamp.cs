@@ -39,16 +39,5 @@ namespace MvkServer.World.Biome
             if (area > 2f || area < -2f) yh--;
             return yh;
         }
-
-        /// <summary>
-        /// Получить уровень множителя высоты
-        /// </summary>
-        /// <param name="x">X 0..15</param>
-        /// <param name="z">Z 0..15</param>
-        /// <param name="height">Высота в блоках, средняя рекомендуемая</param>
-        /// <param name="heightNoise">Высота -1..0..1</param>
-        /// <param name="addNoise">Диапазон -1..0..1</param>
-        protected override int GetLevelHeightRobinson(int x, int z, int height, float heightNoise, float addNoise)
-            => height + (int) (addNoise * 4 - .8f);
     }
 }

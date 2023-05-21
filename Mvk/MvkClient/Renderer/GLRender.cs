@@ -44,6 +44,19 @@ namespace MvkClient.Renderer
         /// <summary>
         /// Нарисовать прямоугольник, без текстуры
         /// </summary>
+        public static void Rectangle(float x1, float y1, float x2, float y2)
+        {
+            gl.Begin(OpenGL.GL_TRIANGLE_STRIP);
+            gl.Vertex(x1, y2);
+            gl.Vertex(x2, y2);
+            gl.Vertex(x1, y1);
+            gl.Vertex(x2, y1);
+            gl.End();
+        }
+
+        /// <summary>
+        /// Нарисовать прямоугольник, без текстуры
+        /// </summary>
         public static void Rectangle(float x1, float y1, float x2, float y2, vec4 color)
         {
             Color(color);
@@ -200,6 +213,7 @@ namespace MvkClient.Renderer
         public static void Color(float r, float g, float b, float a) => gl.Color(r, g, b, a);
         public static void Color(vec4 color) => gl.Color(color.x, color.y, color.z, color.w);
         public static void Color(vec3 color) => gl.Color(color.x, color.y, color.z);
+        public static void Color(vec3 color, float alpha) => gl.Color(color.x, color.y, color.z, alpha);
         public static void Color(float r, float g, float b) => gl.Color(r, g, b);
         public static void Color(float rgb) => gl.Color(rgb, rgb, rgb);
 

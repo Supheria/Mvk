@@ -388,7 +388,8 @@ namespace MvkServer.Entity
         /// </summary>
         private IPacket PacketSpawn()
         {
-            if (TrackedEntity.Type == EnumEntities.Player && TrackedEntity is EntityPlayerServer entityPlayerServer)
+            if ((TrackedEntity.GetEntityType() == EnumEntities.Player || TrackedEntity.GetEntityType() == EnumEntities.PlayerInvisible)
+                && TrackedEntity is EntityPlayerServer entityPlayerServer)
             {
                 return new PacketS0CSpawnPlayer(entityPlayerServer);
             }

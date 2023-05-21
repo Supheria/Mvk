@@ -53,17 +53,17 @@ namespace MvkClient.Gui
         /// </summary>
         protected override void ResizedScreen()
         {
-            int h = 120 * sizeInterface;
-            int hMax = h + 292 * sizeInterface;
+            int h = 120 * SizeInterface;
+            int hMax = h + 292 * SizeInterface;
             if (hMax > Height) h -= hMax - Height;
 
-            label.Position = new vec2i(Width / 2 - 200 * sizeInterface, h - 48 * sizeInterface);
+            label.Position = new vec2i(Width / 2 - 200 * SizeInterface, h - 48 * SizeInterface);
             for (int i = 0; i < buttonSlots.Length; i++)
             {
-                buttonSlots[i].Position = new vec2i(Width / 2 - 200 * sizeInterface, h + (i * 44) * sizeInterface);
-                buttonSlotsDel[i].Position = new vec2i(Width / 2 + 160 * sizeInterface, h + (i * 44) * sizeInterface);
+                buttonSlots[i].Position = new vec2i(Width / 2 - 200 * SizeInterface, h + (i * 44) * SizeInterface);
+                buttonSlotsDel[i].Position = new vec2i(Width / 2 + 160 * SizeInterface, h + (i * 44) * SizeInterface);
             }
-            buttonCancel.Position = new vec2i(Width / 2 - 200 * sizeInterface, h + 240 * sizeInterface);
+            buttonCancel.Position = new vec2i(Width / 2 - 200 * SizeInterface, h + 240 * SizeInterface);
         }
 
         private void ButtonSlots_Click(object sender, EventArgs e)

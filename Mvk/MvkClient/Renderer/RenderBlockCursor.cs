@@ -1,4 +1,5 @@
-﻿using MvkServer.Glm;
+﻿using MvkClient.Entity;
+using MvkServer.Glm;
 using MvkServer.Util;
 using MvkServer.World.Block;
 using SharpGL;
@@ -25,11 +26,10 @@ namespace MvkClient.Renderer
             clientMain = client;
         }
 
-        public void Render(MovingObjectPosition moving)
+        public void Render(EntityPlayerSP player, float skyLight)
         {
-           
+            MovingObjectPosition moving = player.MovingObject;
             IsHidden = !moving.IsBlock();
-
             if (!IsHidden)
             {
                 vec3 pos = clientMain.Player.GetPositionFrame();
@@ -44,6 +44,10 @@ namespace MvkClient.Renderer
                     compiled = false;
                     movingObject = moving;
                 }
+                vec3 color = new vec3(.4f, .4f, .1f); // 1;1;.5
+                vec2 light = player.GetBrightnessForRender();
+                float max = Mth.Max(light.x, light.y * skyLight);
+                GLRender.Color(color * max + new vec3(.6f, .6f, .4f), .7f);
                 Render();
             }
             
@@ -70,7 +74,6 @@ namespace MvkClient.Renderer
             //GLRender.PopMatrix();
             //GLRender.DepthEnable();
             GLRender.PushMatrix();
-            GLRender.Color(new vec4(1, 1, .5f, .7f));
             foreach (AxisAlignedBB aabb in axes)
             {
                 GLRender.DrawOutlinedBoundingBox(aabb.Offset(offset).Expand(new vec3(dis)));

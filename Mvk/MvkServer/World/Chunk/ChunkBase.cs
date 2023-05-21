@@ -727,9 +727,6 @@ namespace MvkServer.World.Chunk
                 // Отмена тик блока
                 RemoveBlockTick(bx, by, bz);
 
-                // Действие блока после его удаления
-                if (!World.IsRemote) blockOld.OnBreakBlock(World, blockPos, blockStateOld);
-
                 bool differenceOpacity = block.LightOpacity != blockOld.LightOpacity;
                 if (differenceOpacity || block.LightValue != blockOld.LightValue)
                 {
@@ -746,11 +743,20 @@ namespace MvkServer.World.Chunk
                     }
                     if (isModify) Modified();
                 }
-                if (isModifyRender) World.MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+
+                if (isModifyRender)
+                {
+                    World.MarkBlockForRenderUpdate(blockPos.X, blockPos.Y, blockPos.Z);
+                }
 
                 if (World.IsRemote)
                 {
                     World.DebugString(World.Light.ToDebugString());
+                }
+                else
+                {
+                    // Действие блока после его удаления
+                    blockOld.OnBreakBlock(World, blockPos, blockStateOld);
                 }
             }
             else if (blockState.met != blockStateOld.met)
@@ -874,7 +880,7 @@ namespace MvkServer.World.Chunk
 
             if (x != Position.x || z != Position.y)
             {
-                World.Log.Log("ChunkBase: Неверное местоположение! ({0}, {1}) должно быть ({2}), {3}", x, z, Position, entity.Type);
+                World.Log.Log("ChunkBase: Неверное местоположение! ({0}, {1}) должно быть ({2}), {3}", x, z, Position, entity.GetEntityType());
                 entity.SetDead();
                 return;
             }
@@ -944,7 +950,7 @@ namespace MvkServer.World.Chunk
                 for (int i = 0; i < ListEntities[y].Count; i++)
                 {
                     EntityBase entity = ListEntities[y].GetAt(i);
-                    if (entity != null && entity.Id != entityId && entity.Type == type
+                    if (entity != null && entity.Id != entityId && entity.GetEntityType() == type
                         && entity.BoundingBox.IntersectsWith(aabb))
                     {
                         list.Add(entity);

@@ -11,7 +11,6 @@
         /// </summary>
         protected int value = 0;
 
-        protected ScreenLoading() { }
         public ScreenLoading(Client client) : base(client) { }
 
         /// <summary>

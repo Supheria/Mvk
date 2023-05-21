@@ -54,16 +54,16 @@ namespace MvkServer.Entity.AI
             {
                 return false;
             }
-            List<EntityBase> list = entity.World.GetEntitiesWithinAABB(entity.Type,
+            List<EntityBase> list = entity.World.GetEntitiesWithinAABB(entity.GetEntityType(),
                 entity.BoundingBox.Expand(new vec3(destination, 2, destination)), -1);
 
             if (list.Count == 0)
             {
-                list = entity.World.GetEntitiesWithinAABB(entity.Type,
+                list = entity.World.GetEntitiesWithinAABB(entity.GetEntityType(),
                 entity.BoundingBox.Expand(new vec3(destination + 8, 4, destination + 8)), -1);
                 if (list.Count == 0)
                 {
-                    list = entity.World.GetEntitiesWithinAABB(entity.Type,
+                    list = entity.World.GetEntitiesWithinAABB(entity.GetEntityType(),
                     entity.BoundingBox.Expand(new vec3(destination + 16, 8, destination + 16)), -1);
                 }
             }

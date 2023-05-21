@@ -1,7 +1,5 @@
 ﻿using MvkClient.World;
 using MvkServer.Entity.List;
-using MvkServer.Glm;
-using MvkServer.Util;
 
 namespace MvkClient.Entity
 {
@@ -28,12 +26,11 @@ namespace MvkClient.Entity
         /// <summary>
         /// Задать данные игрока
         /// </summary>
-        public void SetDataPlayer(ushort id, string uuid, bool isCreativeMode, string name)
+        public void SetDataPlayer(ushort id, string uuid, string name)
         {
             base.name = name;
             UUID = uuid;
             Id = id;
-            IsCreativeMode = isCreativeMode;
         }
 
         public override string ToString()

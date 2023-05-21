@@ -296,7 +296,11 @@
         /// <summary>
         /// Гнездо
         /// </summary>
-        Nest = 71
+        Nest = 71,
+        /// <summary>
+        /// Типа
+        /// </summary>
+        Tina
     }
 
     /// <summary>
@@ -304,6 +308,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 71;
+        public const int COUNT = 72;
     }
 }

@@ -225,11 +225,9 @@ namespace MvkServer.World.Biome
         /// <param name="x">X 0..15</param>
         /// <param name="z">Z 0..15</param>
         /// <param name="height">Высота в блоках, средняя рекомендуемая</param>
-        /// <param name="heightNoise">Высота -1..0..1</param>
-        /// <param name="addNoise">Диапазон -1..0..1</param>
-        public int ColumnRobinson(int x, int z, int height, float heightNoise, float addNoise)
+        public int ColumnRobinson(int x, int z, int height)
         {
-            int yh = GetLevelHeightRobinson(x, z, height, heightNoise, addNoise);
+            int yh = height;
             if (yh < 2) yh = 2;
             int result = chunk.heightMap[x << 4 | z] = yh;
             int index = x << 12 | z << 8;
@@ -248,8 +246,7 @@ namespace MvkServer.World.Biome
                     // заполняем камнем
                     for (y = 3; y < yb; y++) chunk.id[index | y] = 3;
                     // заполняем тело
-                    for (y = yb; y < yh; y++) chunk.id[index | y] = blockIdBody;
-                    chunk.id[x << 12 | z << 8 | yh] = yh < HEIGHT_WATER ? blockIdBody : blockIdUp;
+                    BodyRobinson(yb, yh, index);
                 }
                 else
                 {
@@ -275,15 +272,13 @@ namespace MvkServer.World.Biome
         }
 
         /// <summary>
-        /// Получить уровень множителя высоты
+        /// Заполняем тело
         /// </summary>
-        /// <param name="x">X 0..15</param>
-        /// <param name="z">Z 0..15</param>
-        /// <param name="height">Высота в блоках, средняя рекомендуемая</param>
-        /// <param name="heightNoise">Высота -1..0..1</param>
-        /// <param name="addNoise">Диапазон -1..0..1</param>
-        protected virtual int GetLevelHeightRobinson(int x, int z, int height, float heightNoise, float addNoise)
-            => height + (int)(heightNoise * (heightNoise < 0 ? 3f : 8f));
+        protected virtual void BodyRobinson(int yb, int yh, int index)
+        {
+            for (int y = yb; y < yh; y++) chunk.id[index | y] = blockIdBody;
+            chunk.id[index | yh] = yh < HEIGHT_WATER ? blockIdBody : blockIdUp;
+        }
 
         #endregion
     }

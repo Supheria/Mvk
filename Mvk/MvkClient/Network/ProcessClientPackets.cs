@@ -96,6 +96,8 @@ namespace MvkClient.Network
                 case 0x2A: Handle29Particles((PacketS2AParticles)packet); break;
                 case 0x2F: Handle2FSetSlot((PacketS2FSetSlot)packet); break;
                 case 0x30: Handle30WindowItems((PacketS30WindowItems)packet); break;
+                case 0x39: Handle39PlayerAbilities((PacketS39PlayerAbilities)packet); break;
+                case 0x3A: Handle3AMessage((PacketS3AMessage)packet); break;
 
                 case 0xF1: HandleF1Disconnect((PacketSF1Disconnect)packet); break;
             }
@@ -131,7 +133,7 @@ namespace MvkClient.Network
         /// </summary>
         private void Handle02JoinGame(PacketS02JoinGame packet)
         {
-            ClientMain.Player.SetDataPlayer(packet.GetId(), packet.GetUuid(), packet.IsCreativeMode(), ClientMain.ToNikname());
+            ClientMain.Player.SetDataPlayer(packet.GetId(), packet.GetUuid(), ClientMain.ToNikname());
             ClientMain.GameModeBegin();
             // отправляем настройки
             ClientMain.TrancivePacket(new PacketC15ClientSetting(Setting.OverviewChunk));
@@ -214,7 +216,7 @@ namespace MvkClient.Network
             // Удачный вход сетевого игрока, типа приветствие
             // Или после смерти
             EntityPlayerMP entity = new EntityPlayerMP(ClientMain.World);
-            entity.SetDataPlayer(packet.GetId(), packet.GetUuid(), false, packet.GetName());
+            entity.SetDataPlayer(packet.GetId(), packet.GetUuid(), packet.GetName());
             entity.SetPosLook(packet.GetPos(), packet.GetYaw(), packet.GetPitch());
             entity.Inventory.SetCurrentItemAndArmor(packet.GetStacks());
             ArrayList list = packet.GetList();
@@ -328,20 +330,16 @@ namespace MvkClient.Network
         /// </summary>
         private void Handle19EntityStatus(PacketS19EntityStatus packet)
         {
-            EntityLiving entity = ClientMain.World.GetEntityLivingByID(packet.GetId());
-            if (entity != null)
+            switch (packet.GetStatus())
             {
-                switch (packet.GetStatus())
-                {
-                    case PacketS19EntityStatus.EnumStatus.Die: entity.SetHealth(0); break;
-                }
+                case PacketS19EntityStatus.EnumStatus.Die: ClientMain.Player.OnDeathClient(packet.GetText()); break;
             }
         }
 
-        /// <summary>
-        /// Пакет дополнительных данных сущности
-        /// </summary>
-        private void Handle1CEntityMetadata(PacketS1CEntityMetadata packet)
+            /// <summary>
+            /// Пакет дополнительных данных сущности
+            /// </summary>
+            private void Handle1CEntityMetadata(PacketS1CEntityMetadata packet)
         {
             EntityBase entity = ClientMain.World.GetEntityByID(packet.GetId());
             ArrayList list = packet.GetList();
@@ -433,7 +431,21 @@ namespace MvkClient.Network
             ClientMain.Player.Inventory.SetMainAndArmor(packet.GetStacks());
         }
 
-        
+        /// <summary>
+        /// Задать атрибуты игроку
+        /// </summary>
+        private void Handle39PlayerAbilities(PacketS39PlayerAbilities packet)
+        {
+            ClientMain.Player.SetPlayerAbilities(packet);
+        }
+
+        /// <summary>
+        /// Пакет чата
+        /// </summary>
+        private void Handle3AMessage(PacketS3AMessage packet)
+        {
+            ClientMain.World.WorldRender.ScreenGame.PersistantChatGUI.AddMessage(packet.GetMessage(), packet.IsConsole());
+        }
 
         #region ConnectionDisconnect
 

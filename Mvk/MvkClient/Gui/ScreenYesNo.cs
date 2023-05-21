@@ -33,13 +33,13 @@ namespace MvkClient.Gui
         /// </summary>
         protected override void ResizedScreen()
         {
-            int h = Height / 4 + 44 * sizeInterface;
-            int hMax = h + 208 * sizeInterface;
+            int h = Height / 4 + 44 * SizeInterface;
+            int hMax = h + 208 * SizeInterface;
             if (hMax > Height) h -= hMax - Height;
 
-            label.Position = new vec2i(Width / 2 - 200 * sizeInterface, h);
-            buttonYes.Position = new vec2i(Width / 2 - 200 * sizeInterface, h + 148 * sizeInterface);
-            buttonNo.Position = new vec2i(Width / 2 + 2 * sizeInterface, h + 148 * sizeInterface);
+            label.Position = new vec2i(Width / 2 - 200 * SizeInterface, h);
+            buttonYes.Position = new vec2i(Width / 2 - 200 * SizeInterface, h + 148 * SizeInterface);
+            buttonNo.Position = new vec2i(Width / 2 + 2 * SizeInterface, h + 148 * SizeInterface);
         }
     }
 }

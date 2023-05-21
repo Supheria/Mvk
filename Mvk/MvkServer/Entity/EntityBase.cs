@@ -24,10 +24,6 @@ namespace MvkServer.Entity
         public ushort Id { get; protected set; }
 
         /// <summary>
-        /// Тип сущности
-        /// </summary>
-        public EnumEntities Type { get; protected set; } = EnumEntities.None;
-        /// <summary>
         /// Позиция объекта
         /// </summary>
         public vec3 Position { get; private set; }
@@ -134,6 +130,10 @@ namespace MvkServer.Entity
         /// </summary>
         protected bool persistenceRequired;
         /// <summary>
+        /// Тип сущности
+        /// </summary>
+        protected EnumEntities type = EnumEntities.None;
+        /// <summary>
         /// Находится ли этот объект в настоящее время в воде
         /// </summary>
         private bool inWater;
@@ -145,7 +145,10 @@ namespace MvkServer.Entity
         /// Находится ли этот объект в настоящее время в нефте
         /// </summary>
         private bool inOil;
-        
+        /// <summary>
+        /// Находится ли этот объект в настоящее время в тине
+        /// </summary>
+        private bool inTina;
 
         public EntityBase(WorldBase world)
         {
@@ -159,6 +162,11 @@ namespace MvkServer.Entity
             MetaData = new DataWatcher(this);
             AddMetaData();
         }
+
+        /// <summary>
+        /// Тип сущности
+        /// </summary>
+        public virtual EnumEntities GetEntityType() => type;
 
         protected virtual void AddMetaData() { }
 
@@ -254,11 +262,6 @@ namespace MvkServer.Entity
         public void SetEntityId(ushort id) => Id = id;
 
         /// <summary>
-        /// Убить сущность
-        /// </summary>
-        public void Kill() => SetDead();
-
-        /// <summary>
         /// Задать время сколько будет горет сущность в тактах
         /// </summary>
         public virtual void SetFire(int takt)
@@ -291,8 +294,8 @@ namespace MvkServer.Entity
         /// </summary>
         /// <param name="amount">сила урона</param>
         /// <returns>true - урон был нанесён</returns>
-        public bool AttackEntityFrom(EnumDamageSource source, float amount) 
-            => AttackEntityFrom(source, amount, new vec3(0));
+        public bool AttackEntityFrom(EnumDamageSource source, float amount, EntityLiving entityAttacks = null) 
+            => AttackEntityFrom(source, amount, new vec3(0), entityAttacks);
 
         /// <summary>
         /// Сущности наносит урон только на сервере
@@ -331,6 +334,7 @@ namespace MvkServer.Entity
             {
                 Motion = motion;
                 UpPositionMotion();
+                return;
             }
 
             AxisAlignedBB boundingBox = BoundingBox.Clone();
@@ -341,9 +345,23 @@ namespace MvkServer.Entity
             float y0 = motion.y;
             float z0 = motion.z;
 
+            if (IsInTina() && IsSpeed​​Limit())
+            {
+                // Медленее в 4 раза
+                //x0 *= .25f;
+                //y0 *= .500001f;
+                //z0 *= .25f;
+                // медленее в 2 раза
+                x0 *= .5f;
+                y0 *= .7500001f;
+                z0 *= .5f;
+            }
+
             float x = x0;
             float y = y0;
             float z = z0;
+
+            
 
             bool isSneaking = false;
             if (this is EntityLiving entityLiving)
@@ -612,10 +630,15 @@ namespace MvkServer.Entity
         /// </summary>
         public virtual bool IsInLava() => inLava;
         /// <summary>
-        /// Проверяет, находится ли этот объект внутри воды (если поле inOil имеет значение 
+        /// Проверяет, находится ли этот объект внутри нефти (если поле inOil имеет значение 
         /// true в результате HandleLiquidMovement()
         /// </summary>
         public virtual bool IsInOil() => inOil;
+        /// <summary>
+        /// Проверяет, находится ли этот объект внутри тины (если поле inTina имеет значение 
+        /// true в результате HandleLiquidMovement()
+        /// </summary>
+        public virtual bool IsInTina() => inTina;
 
         /// <summary>
         /// Возвращает, если этот объект находится в воде, и в конечном итоге 
@@ -643,23 +666,11 @@ namespace MvkServer.Entity
                 inWater = false;
             }
             // Проверка в лаве
-            if (liquid.IsLava())
-            {
-                inLava = true;
-            }
-            else
-            {
-                inLava = false;
-            }
+            inLava = liquid.IsLava();
             // Проверка в нефте
-            if (liquid.IsOil())
-            {
-                inOil = true;
-            }
-            else
-            {
-                inOil = false;
-            }
+            inOil = liquid.IsOil();
+            // Проверка в тине
+            inTina = liquid.IsTina();
 
             if (inOil || inWater)
             {
@@ -749,6 +760,11 @@ namespace MvkServer.Entity
         public virtual bool IsPushedByLiquid() => true;
 
         /// <summary>
+        /// Невидимый
+        /// </summary>
+        public virtual bool IsInvisible() => false;
+
+        /// <summary>
         /// Воздействия при нахождении в воде
         /// </summary>
         protected virtual void EffectsContactWithWater() { }
@@ -777,6 +793,10 @@ namespace MvkServer.Entity
         /// Имеется ли у сущности иммунитет на всё
         /// </summary>
         protected virtual bool IsImmuneToAll() => false;
+        /// <summary>
+        /// Имеются ли ограничения по скорости, в воде и на блоках
+        /// </summary>
+        protected virtual bool IsSpeed​​Limit() => true;
 
         /// <summary>
         /// Получить яркость для рендера 0.0 - 1.0
@@ -846,9 +866,9 @@ namespace MvkServer.Entity
         /// </summary>
         public virtual bool WriteEntityToNBToptional(TagCompound nbt)
         {
-            if (!IsDead && Type != EnumEntities.None && persistenceRequired)
+            if (!IsDead && GetEntityType() != EnumEntities.None && persistenceRequired)
             {
-                nbt.SetByte("Id", (byte)Type);
+                nbt.SetByte("Id", (byte)GetEntityType());
                 WriteEntityToNBT(nbt);
                 return true;
             }
@@ -861,6 +881,6 @@ namespace MvkServer.Entity
             LastTickPos = PositionPrev = Position = new vec3(pos.GetFloat(0), pos.GetFloat(1) + .1f, pos.GetFloat(2));
         }
 
-        public override string ToString() => string.Format("{0}-{1} XYZ {2}", Id, Type, Position);
+        public override string ToString() => string.Format("{0}-{1} XYZ {2}", Id, GetEntityType(), Position);
     }
 }

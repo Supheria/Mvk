@@ -77,5 +77,10 @@
         /// Активация при смещении количество чанков, для расчёта новых чанков в обзоре
         /// </summary>
         public const int MOVING_CHUNK_BIAS = 1;
+        
+        /// <summary>
+        /// Время жизни строки чата, в тиках
+        /// </summary>
+        public const int CHAT_LINE_TIME_LIFE = 500;
     }
 }

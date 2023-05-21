@@ -1,11 +1,9 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Management;
 using MvkServer.Network;
-using MvkServer.Network.Packets;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 using MvkServer.World;
-using MvkServer.World.Block;
 using MvkServer.World.Chunk;
 using System;
 using System.Collections.Generic;
@@ -84,7 +82,6 @@ namespace MvkServer.Entity.List
             base.name = name;
             UUID = GetHash(name);
             profiler = new Profiler(server.Log);
-            IsCreativeMode = world.Info.IsCreativeMode;
             TheItemInWorldManager = new ItemInWorldManager(world, this);
         }
 
@@ -186,7 +183,8 @@ namespace MvkServer.Entity.List
             // Обновления предметов которые могут видеть игроки, что в руке, броня
             UpdateItems();
 
-            if (GetHealth() > 0 && !World.IsRemote)
+            // Обработка соприкосновении игрока с другими сущностями
+            if (GetHealth() > 0 && !World.IsRemote && !IsInvisible())
             {
                 AxisAlignedBB axis = BoundingBox.Expand(new vec3(1.5f, .8f, 1.5f));
                 List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.All, axis, Id);
@@ -305,9 +303,47 @@ namespace MvkServer.Entity.List
         }
 
         /// <summary>
+        /// Вызывается на сервере, когда здоровье игрока достигает 0
+        /// </summary>
+        public void OnDeathPlayerServer(WorldServer worldServer, EnumDamageSource source, EntityLiving entityAttacks = null)
+        {
+            SetHealth(0);
+            string message;
+            if (entityAttacks != null && (source == EnumDamageSource.Player
+                || source == EnumDamageSource.CauseMobDamage
+                || source == EnumDamageSource.Piece
+                || source == EnumDamageSource.Kill))
+            {
+                message = string.Format("Death {1} {0} {2}", source, name, entityAttacks.GetName());
+            }
+            else
+            {
+                message = string.Format("{1} {0}", source, name);
+            }
+
+            // Начало смерти
+            SendPacket(new PacketS19EntityStatus(
+                PacketS19EntityStatus.EnumStatus.Die, message));
+            // Всем сообщение
+            worldServer.Players.SendToAllMessage(message);
+            // В лог сообщение
+            worldServer.ServerMain.Log.Log(message);
+        }
+
+        /// <summary>
         /// Отправить сетевой пакет этому игроку
         /// </summary>
         public void SendPacket(IPacket packet) => ServerMain.ResponsePacket2(SocketClient, packet);
+
+        /// <summary>
+        /// Отправить системное сообщение конкретному игроку
+        /// </summary>
+        public void SendMessage(string message) => SendPacket(new PacketS3AMessage(message, true));
+
+        /// <summary>
+        /// Отправить атрибуты игрока клиенту
+        /// </summary>
+        public void SendPlayerAbilities() => SendPacket(new PacketS39PlayerAbilities(this));
 
         /// <summary>
         /// Пометка активности игрока
@@ -318,6 +354,19 @@ namespace MvkServer.Entity.List
         /// Обновить инвентарь игрока
         /// </summary>
         public void SendUpdateInventory() => SendPacket(new PacketS30WindowItems(Inventory.GetMainAndArmor()));
+
+        /// <summary>
+        /// Задать режим игры игрока
+        /// </summary>
+        /// <param name="gm">0 - выживания, 1 - творческий, 2 - наблюдателя</param>
+        public void SetGameMode(int gm)
+        {
+            IsCreativeMode = gm == 1;
+            NoClip = gm == 2;
+            SetInvisible(NoClip);
+            DisableDamage = AllowFlying = gm != 0;
+            SendPlayerAbilities();
+        }
 
         public override string ToString()
         {
