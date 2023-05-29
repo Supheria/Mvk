@@ -9,7 +9,7 @@ namespace MvkServer.World.Block.List
     public abstract class BlockAbPlants : BlockAbSapling
     {
         public BlockAbPlants(int numberTexture) : base(numberTexture) { }
-        public BlockAbPlants(int numberTexture, vec3 color) : base(numberTexture, color) { }
+        public BlockAbPlants(int numberTexture, vec3 color) : base(numberTexture, color, true) { }
 
         /// <summary>
         /// Коробки
@@ -33,8 +33,7 @@ namespace MvkServer.World.Block.List
             boxes = new Box[5][];
             for (int i = 0; i < 5; i++)
             {
-                boxes[i] =
-                    new Box[] {
+                boxes[i] = new Box[] {
                     new Box()
                     {
                         From = new vec3(0, 0, .5f),
@@ -42,8 +41,8 @@ namespace MvkServer.World.Block.List
                         RotateYaw = glm.pi45,
                         Faces = new Face[]
                         {
-                            new Face(Pole.North, Particle, true, Color),
-                            new Face(Pole.South, Particle, true, Color),
+                            new Face(Pole.North, Particle, true, Color).SetBiomeColor(biomeColor),
+                            new Face(Pole.South, Particle, true, Color).SetBiomeColor(biomeColor),
                         }
                     },
                     new Box()
@@ -53,8 +52,8 @@ namespace MvkServer.World.Block.List
                         RotateYaw = glm.pi45,
                         Faces = new Face[]
                         {
-                            new Face(Pole.East, Particle, true, Color),
-                            new Face(Pole.West, Particle, true, Color)
+                            new Face(Pole.East, Particle, true, Color).SetBiomeColor(biomeColor),
+                            new Face(Pole.West, Particle, true, Color).SetBiomeColor(biomeColor)
                         }
                     }
                 };

@@ -364,7 +364,6 @@ namespace MvkServer.World
         /// Получить чанк по координатам блока
         /// </summary>
         public ChunkBase GetChunk(BlockPos pos) => ChunkPr.GetChunk(new vec2i(pos.X >> 4, pos.Z >> 4));
-
         /// <summary>
         /// Проверить наличие чанка
         /// </summary>

@@ -47,10 +47,10 @@ namespace MvkServer.World.Chunk
         /// </summary>
         private byte flagSaveRegion = 0;
 
-        public ChunkProviderServer(WorldServer worldIn, int slot)
+        public ChunkProviderServer(WorldServer worldIn, byte slot)
         {
             world = worldServer = worldIn;
-            if (slot == 1 || slot == 5)
+            if (slot == 1)// || slot == 5)
             {
                 ChunkGenerate = new ChunkProviderGenerateRobinson(worldIn);
             }

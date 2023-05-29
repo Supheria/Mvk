@@ -37,8 +37,8 @@ namespace MvkServer.NBT
 
         public short ReadShort() => (short)((Byte() << 8) | Byte());
         public int ReadInt() => (Byte() << 24) | (Byte() << 16) | (Byte() << 8) | Byte();
-        public long ReadLong() => (long)((Byte() << 56) | (Byte() << 48) | (Byte() << 40) | (Byte() << 32)
-            | (Byte() << 24) | (Byte() << 16) | (Byte() << 8) | Byte());
+        public long ReadLong() => ((long)(Byte() << 8) | Byte()) << 48 | ((long)(Byte() << 8) | Byte()) << 32
+                | ((long)(Byte() << 8) | Byte()) << 16 | ((long)(Byte() << 8) | Byte());
 
         /// <summary>
         /// Прочесть число с плавоющей запятой

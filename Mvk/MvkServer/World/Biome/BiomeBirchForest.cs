@@ -18,6 +18,7 @@ namespace MvkServer.World.Biome
             Decorator.birchPerChunk = 4;
             Decorator.grassPerChunk = 8;
             Decorator.flowersPerChunk = 5;
+            Decorator.randomThicketsGrass = 4;
         }
     }
 }

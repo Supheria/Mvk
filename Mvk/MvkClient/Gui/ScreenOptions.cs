@@ -8,6 +8,7 @@ namespace MvkClient.Gui
     public class ScreenOptions : Screen
     {
         protected Label label;
+        protected Label labelSeed;
         protected Label labelNickname;
         protected Label labelLanguage;
         protected Button buttonCancel;
@@ -20,6 +21,7 @@ namespace MvkClient.Gui
         protected Slider sliderSoundVolume;
         protected Slider sliderMusicVolume;
         protected Slider sliderSizeInterface;
+        protected TextBox textBoxSeed;
         protected TextBox textBoxNickname;
 
         private int cacheLanguage;
@@ -32,12 +34,18 @@ namespace MvkClient.Gui
             this.where = where;
 
             label = new Label(Language.T("gui.options"), FontSize.Font16);
+            labelSeed = new Label(Language.T("gui.seed"), FontSize.Font12)
+            {
+                Width = 160,
+                Alight = EnumAlight.Right
+            };
+            textBoxSeed = new TextBox(Setting.SeedBegin == 0 ? "" : Setting.SeedBegin.ToString(), TextBox.EnumRestrictions.Number, 8) { Width = 160 };
             labelNickname = new Label(Language.T("gui.nikname"), FontSize.Font12)
             {
                 Width = 160,
                 Alight = EnumAlight.Right
             };
-            textBoxNickname = new TextBox(Setting.Nickname, TextBox.EnumRestrictions.Name) { Width = 160 };
+            textBoxNickname = new TextBox(Setting.Nickname, TextBox.EnumRestrictions.Name) { Width = 256 };
             
             sliderFps = new Slider(10, 260, 10, Language.T("gui.fps"))
             {
@@ -82,7 +90,6 @@ namespace MvkClient.Gui
             buttonDone.Click += ButtonDone_Click;
             buttonCancel = new Button(where, Language.T("gui.cancel")) { Width = 256 };
             InitButtonClick(buttonCancel);
-
             if (where == EnumScreenKey.InGameMenu)
             {
                 background = EnumBackground.GameWindow;
@@ -116,6 +123,11 @@ namespace MvkClient.Gui
             AddControls(buttonDone);
             AddControls(buttonCancel);
             AddControls(buttonLanguage);
+            if (where != EnumScreenKey.InGameMenu)
+            {
+                AddControls(labelSeed);
+                AddControls(textBoxSeed);
+            }
             if (ClientMain.IsServerLocalRun())
             {
                 if (ClientMain.IsOpenNet())
@@ -136,7 +148,9 @@ namespace MvkClient.Gui
             int hMax = h + 360 * SizeInterface;
             if (hMax > Height) h -= hMax - Height;
 
-            label.Position = new vec2i(Width / 2 - 200 * SizeInterface, h);
+            label.Position = new vec2i(Width / 2 - 200 * SizeInterface, h - 44 * SizeInterface);
+            labelSeed.Position = new vec2i(Width / 2 - 162 * SizeInterface, h);
+            textBoxSeed.Position = new vec2i(Width / 2 + 2 * SizeInterface, h);
             labelNickname.Position = new vec2i(Width / 2 - 162 * SizeInterface, h + 44 * SizeInterface);
             textBoxNickname.Position = new vec2i(Width / 2 + 2 * SizeInterface, h + 44 * SizeInterface);
             sliderSoundVolume.Position = new vec2i(Width / 2 - 258 * SizeInterface, h + 88 * SizeInterface);
@@ -200,6 +214,7 @@ namespace MvkClient.Gui
             Setting.Language = cacheLanguage;
             Setting.SmoothLighting = cacheSmoothLighting;
             Setting.SetSizeInterface(sliderSizeInterface.Value);
+            Setting.SeedBegin = textBoxSeed.Text == "" ? 0 : int.Parse(textBoxSeed.Text);
             Setting.Save();
             Language.SetLanguage((AssetsLanguage)cacheLanguage);
 

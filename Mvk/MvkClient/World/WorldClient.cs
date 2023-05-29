@@ -156,8 +156,8 @@ namespace MvkClient.World
         {
             try
             {
-               // interpolation.Restart();
-                uint time = ClientMain.TickCounter;
+                // Рассчитать год, пору года и день в году
+                CalculateInitialYear();
 
                 // Такт на игровом скрине
                 WorldRender.ScreenGame.Tick();

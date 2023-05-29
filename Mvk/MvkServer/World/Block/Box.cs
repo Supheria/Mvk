@@ -71,6 +71,9 @@ namespace MvkServer.World.Block
 
         public Box(int numberTexture, bool isColor, vec3 color) => Faces = new Face[] { new Face(Pole.All, numberTexture, isColor, color) };
 
+        public Box(int numberTexture, bool isColor, vec3 color, bool biomeColor)
+            => Faces = new Face[] { new Face(Pole.All, numberTexture, isColor, color).SetBiomeColor() };
+
         public Box(vec3 from, vec3 to, vec2 uvf, vec2 uvt, Pole side, int numberTexture)
         {
             From = from;

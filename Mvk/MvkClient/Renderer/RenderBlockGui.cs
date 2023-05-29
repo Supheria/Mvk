@@ -40,11 +40,9 @@ namespace MvkClient.Renderer
             TextureStruct ts = GLWindow.Texture.GetData(AssetsTexture.AtlasBlocks);
             GLWindow.Texture.BindTexture(ts.GetKey());
             GLRender.PushMatrix();
-            {
-                GLRender.DepthDisable();
-                render.RenderVBOtoDL();
-                GLRender.DepthEnable();
-            }
+            GLRender.DepthDisable();
+            render.RenderVBOtoDL();
+            GLRender.DepthEnable();
             GLRender.PopMatrix();
         }
     }

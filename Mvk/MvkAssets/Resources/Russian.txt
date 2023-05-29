@@ -3,6 +3,7 @@ gui.multiplayer:Сетевая игра
 gui.options:Настройки
 gui.exit:Выход
 gui.exit.world:Выход из мира
+gui.seed:Случайное зерно
 gui.nikname:Имя игрока
 gui.fps:FPS
 gui.maxfps:Максимум FPS
@@ -19,6 +20,10 @@ gui.no:Нет
 gui.yes:Да
 gui.connect:Соединиться
 gui.world.empty:- Пусто -
+gui.world.name.robinson:Мир робинзона
+gui.world.name.robinson.empty:Мир робинзона. Создать?
+gui.world.name.sandbox:Мир песочницы
+gui.world.name.sandbox.empty:Мир песочницы. Создать?
 gui.world.broken:Мир сломан!
 gui.world.delete:Вы действительно хотите удалить мир?
 gui.saving:Сохранение...
@@ -81,7 +86,7 @@ block.OreCoal:Угольная руда
 block.OreIron:Железная руда
 block.OreGold:Золотая руда
 block.Brol:Брол
-block.TallGrass:Блок высокой травы
+block.Grass:Трава
 block.FlowerDandelion:Цветок одуванчик
 block.FlowerClover:Цветок клевер белый
 block.Glass:Стекло прозрачное
@@ -101,6 +106,7 @@ block.Tnt:TNT
 block.TntClock:TNT с часовы детонатором
 block.SmallStone:Маленький камень
 block.Nest:Гнездо
+block.Tina:Тина
 
 item.Apple:Яблоко
 item.DoorOak:Дверь дубовая
@@ -132,3 +138,4 @@ item.PieceLimestone:Кусочек известняка
 item.PieceGravel:Мелкие камушки
 item.PieceGranite:Кусочек гранита
 item.SpawnBook:Спавн книги
+item.TallGrass:Высокая трава

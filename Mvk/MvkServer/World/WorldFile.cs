@@ -21,7 +21,7 @@ namespace MvkServer.World
         /// <summary>
         /// Игровой слот
         /// </summary>
-        public int Slot { get; private set; }
+        public byte Slot { get; private set; }
         /// <summary>
         /// Путь к сохранению миров
         /// </summary>
@@ -39,18 +39,15 @@ namespace MvkServer.World
         /// </summary>
         public string PathRegions { get; private set; }
 
-        private readonly string slot;
-
         public WorldFile()
         {
             PathCore = "Saves" + Path.DirectorySeparatorChar;
         }
 
-        public WorldFile(WorldServer world, int slot) : this()
+        public WorldFile(WorldServer world, byte slot) : this()
         {
             World = world;
             Slot = slot;
-            this.slot = slot.ToString();
             PathWorld = PathCore + slot + Path.DirectorySeparatorChar;
             PathPlayers = PathWorld + "Players" + Path.DirectorySeparatorChar;
             PathRegions = PathWorld + "Regions" + Path.DirectorySeparatorChar;
@@ -84,11 +81,17 @@ namespace MvkServer.World
             {
                 TagCompound nbt = NBTTools.ReadFromFile(pf, true);
                 long tick = nbt.GetLong("DayTime");
-                
-                long h = tick / 72000;
-                long m = (tick - h * 72000) / 1200;
+
+                int day = (int)(tick / WorldBase.SPEED_DAY);
+                int year = day / 32 + 1;
+                day = day % 32 + 1;
                 return nbt.GetString("LevelName") + " " 
-                    + h + ":" + (m < 10 ? "0" + m : m.ToString());
+                    + year + "." + (day < 10 ? "0" + day : day.ToString());
+
+                //long h = tick / 72000;
+                //long m = (tick - h * 72000) / 1200;
+                //return nbt.GetString("LevelName") + " " 
+                //    + h + ":" + (m < 10 ? "0" + m : m.ToString());
             }
             //сломан
             return "gui.world.broken";

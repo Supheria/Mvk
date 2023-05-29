@@ -66,15 +66,15 @@ namespace MvkServer.World.Block
                 case EnumBlock.LeavesOak: return new BlockUniLeaves(133);
                 case EnumBlock.LeavesBirch: return new BlockUniLeaves(140);
                 case EnumBlock.LeavesSpruce: return new BlockUniLeaves(147);
-                case EnumBlock.LeavesFruit: return new BlockUniLeaves(154);
-                case EnumBlock.LeavesPalm: return new BlockUniLeaves(162);
+                case EnumBlock.LeavesFruit: return new BlockUniLeaves(154, true);
+                case EnumBlock.LeavesPalm: return new BlockUniLeaves(162, true);
                 case EnumBlock.SaplingOak: return new BlockSaplingOak();
                 case EnumBlock.SaplingBirch: return new BlockSaplingBirch();
                 case EnumBlock.SaplingSpruce: return new BlockSaplingSpruce();
                 case EnumBlock.SaplingFruit: return new BlockSaplingFruit();
                 case EnumBlock.SaplingPalm: return new BlockSaplingPalm();
                 case EnumBlock.Cactus: return new BlockCactus();
-                case EnumBlock.TallGrass: return new BlockTallGrass();
+                case EnumBlock.Grass: return new BlockGrass();
                 case EnumBlock.FlowerDandelion: return new BlockFlowerDandelion();
                 case EnumBlock.FlowerClover: return new BlockFlowerClover();
                 case EnumBlock.OreCoal: return new BlockOreCoal();
@@ -106,6 +106,8 @@ namespace MvkServer.World.Block
                 case EnumBlock.SmallStone: return new BlockUniPiece(2, EnumItem.PieceStone);
                 case EnumBlock.Nest: return new BlockNest();
                 case EnumBlock.Tina: return new BlockTina();
+                case EnumBlock.TallGrass: return new BlockTallGrass();
+                case EnumBlock.Coconut: return new BlockCoconut();
             }
 
             return new BlockAir(true);

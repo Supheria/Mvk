@@ -21,6 +21,7 @@ namespace MvkServer.World.Biome
             Decorator.oakPerChunk = 1;
             Decorator.randomTree = 32;
             Decorator.randomPiece = 24;
+            Decorator.randomThicketsGrass = 12;
         }
 
         /// <summary>

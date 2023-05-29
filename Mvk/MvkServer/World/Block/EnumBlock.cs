@@ -190,9 +190,9 @@
         /// </summary>
         Brol = 44,
         /// <summary>
-        /// Блок высокой травы
+        /// Блок травы
         /// </summary>
-        TallGrass = 45,
+        Grass = 45,
         /// <summary>
         /// Цветок одуванчик
         /// </summary>
@@ -298,9 +298,17 @@
         /// </summary>
         Nest = 71,
         /// <summary>
-        /// Типа
+        /// Тина
         /// </summary>
-        Tina
+        Tina = 72,
+        /// <summary>
+        /// Высокая трава
+        /// </summary>
+        TallGrass = 73,
+        /// <summary>
+        /// Кокос
+        /// </summary>
+        Coconut = 74
     }
 
     /// <summary>
@@ -308,6 +316,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 72;
+        public const int COUNT = 74;
     }
 }

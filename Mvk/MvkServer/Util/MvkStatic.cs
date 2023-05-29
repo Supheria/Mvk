@@ -82,6 +82,10 @@ namespace MvkServer.Util
         /// Яркость фазы лун
         /// </summary>
         public static float[] LightMoonPhase { get; private set; }
+        /// <summary>
+        /// Растущая фаза луны
+        /// </summary>
+        public static EnumMoonPhase[] GrowingMoonPhase { get; private set; }
 
         /// <summary>
         /// Инициализация, запускаем при старте
@@ -134,7 +138,13 @@ namespace MvkServer.Util
                 float f = 1f - i / 15f;
                 LightBrightnessTable[i] = (1f - f) / (f * 3f + 1f) * (1f - fm) + fm;
             }
-            LightMoonPhase = new float[] { .8f, .48f, .32f, .16f, 0, .16f, .32f, .48f };
+            LightMoonPhase = new float[] { 0, .16f, .32f, .48f, .8f, .48f, .32f, .16f };
+
+            GrowingMoonPhase = new EnumMoonPhase[] { EnumMoonPhase.NewMoon,
+                EnumMoonPhase.GrowingMoon, EnumMoonPhase.GrowingMoon, EnumMoonPhase.GrowingMoon,
+                EnumMoonPhase.FullMoon,
+                EnumMoonPhase.AgingMoon, EnumMoonPhase.AgingMoon, EnumMoonPhase.AgingMoon
+            };
         }
 
         /// <summary>

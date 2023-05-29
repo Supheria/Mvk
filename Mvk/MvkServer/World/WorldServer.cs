@@ -52,12 +52,12 @@ namespace MvkServer.World
         /// </summary>
         public ChunkProviderServer ChunkPrServ => ChunkPr as ChunkProviderServer;
         
-        public WorldServer(Server server, int slot) : base()
+        public WorldServer(Server server, byte slot, long seed, string name) : base()
         {
             IsRemote = false;
             ServerMain = server;
             File = new WorldFile(this, slot);
-            Info = new WorldInfo(this);
+            Info = new WorldInfo(this, seed, name);
             Rnd = new Rand(Info.Seed);
             ChunkPr = new ChunkProviderServer(this, slot);
             Players = new PlayerManager(this);
@@ -87,6 +87,7 @@ namespace MvkServer.World
         /// </summary>
         public override void Tick()
         {
+            CalculateInitialYear();
             CalculateInitialSkylight();
 
             profiler.StartSection("PlayersTick");
@@ -374,10 +375,14 @@ namespace MvkServer.World
                 ChunkBase chunk = GetChunk(entityPlayerServer.PositionChunk);
                 chBt = chunk.GetTickBlockCount();
                 string tracker = "";// Tracker.ToString(); 
-                return string.Format("R {6} Ch {0}-{2} EPl {1} E: {4}\r\n{3} {5}\r\nChBt: {7} Sky:{8}",
+                EnumMoonPhase moonPhase = GetMoonPhase();
+                string moon = moonPhase == EnumMoonPhase.AgingMoon ? "(|" : moonPhase == EnumMoonPhase.GrowingMoon
+                    ? "|)" : moonPhase == EnumMoonPhase.FullMoon ? "()" : "|";
+                return string.Format("R {6} Ch {0}-{2} EPl {1} E: {4} ChBt: {7}\r\n{3} {5}\r\nYear:{9} {10} {11} {12} Sky:{8}  ",
                     ChunkPr.Count, Players.PlayerCount, Players.CountPlayerInstances(), Players.ToStringDebug() // 0 - 3
                     , base.ToStringDebug(), tracker, Regions.Count(), // 4 - 6
-                    chBt, skylightSubtracted // 7 - 8
+                    chBt, skylightSubtracted, // 7 - 8
+                    GetYear(), GetTimeYear(), moon, GetDay() // 9 - 11
                     );
 
             }

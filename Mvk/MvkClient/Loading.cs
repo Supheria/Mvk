@@ -61,6 +61,10 @@ namespace MvkClient
                 OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture, 
                     new BufferedImage(AssetsTexture.AtlasBlocks, bitmapAtlasBlocks, true)));
 
+                // AtlasBlocks без мапинга
+                OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture,
+                    new BufferedImage(AssetsTexture.AtlasBlocksUnique, bitmapAtlasBlocks)));
+
                 // AtlasItems
                 Bitmap bitmapAtlasItems = File.Exists("AtlasItems.png") ? new Bitmap("AtlasItems.png") : Assets.AtlasItems;
                 OnTick(new ObjectKeyEventArgs(ObjectKey.LoadStepTexture, 

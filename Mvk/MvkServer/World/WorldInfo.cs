@@ -18,11 +18,15 @@ namespace MvkServer.World
         /// </summary>
         public long Seed { get; private set; } = 2;
         /// <summary>
+        /// Игровой слот игры, для определения типа игры
+        /// </summary>
+        public byte Slot { get; private set; } = 1;
+        /// <summary>
         /// Имя мира
         /// </summary>
         private readonly string nameWorld;
 
-        public WorldInfo(WorldServer world)
+        public WorldInfo(WorldServer world, long seed, string name)
         {
             World = world;
             try
@@ -31,10 +35,11 @@ namespace MvkServer.World
                 if (nbt == null)
                 {
                     nbt = new TagCompound();
-                    DefaultInfo(nbt, World.File.Slot);
+                    DefaultInfo(nbt, World.File.Slot, seed, name);
                 }
                 nameWorld = nbt.GetString("LevelName");
-                Seed = nbt.GetInt("Seed");
+                Seed = nbt.GetLong("Seed");
+                Slot = nbt.GetByte("Slot");
                 World.ServerMain.SetDayTime((uint)nbt.GetLong("DayTime"));
             }
             catch (Exception ex)
@@ -48,10 +53,11 @@ namespace MvkServer.World
         /// </summary>
         /// <param name="nbt">Объект NBT</param>
         /// <param name="slot">Слот мира</param>
-        private void DefaultInfo(TagCompound nbt, int slot)
+        private void DefaultInfo(TagCompound nbt, byte slot, long seed, string name)
         {
-            nbt.SetString("LevelName", "World #" + slot);
-            nbt.SetLong("Seed", slot);
+            nbt.SetString("LevelName", name);
+            nbt.SetLong("Seed", seed);
+            nbt.SetByte("Slot", slot);
             nbt.SetLong("DayTime", 0);
             //nbt.SetBool("Creative", slot > 3);
         }
@@ -66,6 +72,7 @@ namespace MvkServer.World
                 TagCompound nbt = new TagCompound();
                 nbt.SetString("LevelName", nameWorld);
                 nbt.SetLong("Seed", Seed);
+                nbt.SetByte("Slot", Slot);
                 nbt.SetLong("DayTime", World.ServerMain.TickCounter);
                 //nbt.SetBool("Creative", IsCreativeMode);
 

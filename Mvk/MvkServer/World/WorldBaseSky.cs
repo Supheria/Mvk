@@ -32,6 +32,40 @@ namespace MvkServer.World
         protected int skylightSubtracted;
 
         /// <summary>
+        /// Год
+        /// </summary>
+        private int year;
+        /// <summary>
+        /// Пора года
+        /// </summary>
+        private EnumTimeYear timeYear;
+        /// <summary>
+        /// Растущая луна
+        /// </summary>
+        private EnumMoonPhase moonPhase;
+        /// <summary>
+        /// День
+        /// </summary>
+        private int day;
+
+        /// <summary>
+        /// Порядковый номер года отсчёт начинается с 0. В году 32 дня
+        /// </summary>
+        public int GetYear() => year;
+        /// <summary>
+        /// Пора года
+        /// </summary>
+        public EnumTimeYear GetTimeYear() => timeYear;
+        /// <summary>
+        /// Фаза луны
+        /// </summary>
+        public EnumMoonPhase GetMoonPhase() => moonPhase;
+        /// <summary>
+        /// Порядковый номер дня в году, 0-31
+        /// </summary>
+        public int GetDay() => day;
+
+        /// <summary>
         /// Получить яркость неба
         /// </summary>
         public float GetSkyLight(float angle)
@@ -95,19 +129,14 @@ namespace MvkServer.World
         }
 
         /// <summary>
-        /// Фаза луны
+        /// Получить интекс фазы луны
         /// </summary>
-        public int GetMoonPhase()
-        {
-            uint totalWorldTime = GetTotalWorldTime();
-            return (int)(totalWorldTime / SPEED_DAY % 8L + 8L) % 8;
-        }
+        public int GetIndexMoonPhase() => day % 8;
 
         /// <summary>
         /// Вычисляет угол солнца и луны в небе относительно заданного времени (0.0 - 1.0)
         /// </summary>
         /// <param name="timeIndex">коэффициент времени от прошлого TPS клиента в диапазоне 0 .. 1</param>
-        /// <returns></returns>
         public float CalculateCelestialAngle(float timeIndex)
         {
             uint totalWorldTime = GetTotalWorldTime();
@@ -153,22 +182,33 @@ namespace MvkServer.World
         public bool IsDayTime() => skylightSubtracted > 6;
 
         /// <summary>
+        /// Рассчитать год, пору года и день в году
+        /// </summary>
+        public void CalculateInitialYear()
+        {
+            uint totalWorldTime = GetTotalWorldTime();
+            day = (int)(totalWorldTime / SPEED_DAY);
+            year = day / 32;
+            day = day % 32;
+            timeYear = (EnumTimeYear)(day / 8);
+        }
+
+        /// <summary>
         /// Рассчитать небесный свет ночь 0..3 в зависимости от фазы луны, день 15
+        /// А так же фазу луны
         /// </summary>
         public void CalculateInitialSkylight()
         {
+            // фаза луны
+            int moohPhase = GetIndexMoonPhase();
+            moonPhase = MvkStatic.GrowingMoonPhase[moohPhase];
+            // рассчитать небесный свет
             float angle = CalculateCelestialAngle(1f);
             float light = 1f - (glm.cos(angle * glm.pi360) * 2f + .5f);
             light = Mth.Clamp(light, 0f, 1f);
-            light = light * (1f - MvkStatic.LightMoonPhase[GetMoonPhase()] * .3125f);
+            light = light * (1f - MvkStatic.LightMoonPhase[moohPhase] * .3125f);
             light = 1f - light;
-
-            int skylight = (int)(light * 15f);
-
-            if (skylight != skylightSubtracted)
-            {
-                skylightSubtracted = skylight;
-            }
+            skylightSubtracted = (int)(light * 15f);
         }
     }
 }

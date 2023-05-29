@@ -21,6 +21,10 @@ namespace MvkServer.World.Block
         /// </summary>
         public bool isColor;
         /// <summary>
+        /// Обрабатывается блок эффектом Плавного перехода цвета между биомами
+        /// </summary>
+        public bool biomeColor;
+        /// <summary>
         /// Получить цвет
         /// </summary>
         public vec3 color;
@@ -49,7 +53,7 @@ namespace MvkServer.World.Block
         public Face(Pole pole, int numberTexture) : this(pole, numberTexture, false, new vec3(1)) { }
         public Face(int numberTexture, bool isColor) : this(Pole.All, numberTexture, isColor, new vec3(1)) { }
         public Face(Pole pole, int numberTexture, vec3 color) : this(pole, numberTexture, false, color) { }
-        public Face(Pole pole, int numberTexture, bool isColor, vec3 color)
+        public Face(Pole pole, int numberTexture, bool isColor, vec3 color) 
         {
             side = (int)pole;
             //this.numberTexture = numberTexture;
@@ -57,6 +61,7 @@ namespace MvkServer.World.Block
             v2 = numberTexture / 64 * .015625f;
             this.isColor = isColor;
             this.color = color;
+            biomeColor = false;
             animationFrame = 0;
             animationPause = 0;
         }
@@ -70,6 +75,14 @@ namespace MvkServer.World.Block
         {
             animationFrame = frame;
             animationPause = pause;
+            return this;
+        }
+        /// <summary>
+        /// Задать стороне что цвет от биома
+        /// </summary>
+        public Face SetBiomeColor(bool biomeColor = true)
+        {
+            this.biomeColor = biomeColor;
             return this;
         }
     }

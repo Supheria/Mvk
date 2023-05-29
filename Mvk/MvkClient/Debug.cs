@@ -91,6 +91,8 @@ namespace MvkClient
         public static float DFloat = 0;
         public static string DStr = "";
 
+        public static string FrizFps = "";
+
         public static bool DStart = false;
 
         protected static string strTpsFps = "";
@@ -123,8 +125,8 @@ namespace MvkClient
                 + "DS: " + DebugString + "\r\n"
                 + BlockFocus
                 + string.Format("")
-                + string.Format("Mesh: {0}/{6} Polygons: {4}\r\nint: {1} float: {2:0.00} string: {3} long: {5}", 
-                CountMesh, DInt, DFloat, DStr, CountPoligon, DLong, CountMeshAll);
+                + string.Format("Mesh: {0}/{6} Polygons: {4}\r\nint: {1} float: {2:0.00} string: {3} long: {5}\r\n{7}", 
+                CountMesh, DInt, DFloat, DStr, CountPoligon, DLong, CountMeshAll, FrizFps);
         }
 
         #region Draw

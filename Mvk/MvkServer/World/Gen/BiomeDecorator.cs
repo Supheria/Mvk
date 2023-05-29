@@ -10,30 +10,32 @@ namespace MvkServer.World.Gen
     /// </summary>
     public class BiomeDecorator
     {
-        public WorldGenPiece genPiece;
-        public WorldGenPlants genPlants;
-        public WorldGenCactus genCactus;
-        public WorldGenTree genPalm;
-        public WorldGenTree genOak;
-        public WorldGenTree genBirch;
-        public WorldGenTree genSpruce;
-        public WorldGenTree genFruit;
+        protected WorldGenPiece genPiece;
+        protected WorldGenPlants genPlants;
+        protected WorldGenTina genTina;
+        protected WorldGenCactus genCactus;
+        protected WorldGenTree genPalm;
+        protected WorldGenTree genOak;
+        protected WorldGenTree genBirch;
+        protected WorldGenTree genSpruce;
+        protected WorldGenTree genFruit;
 
-        public WorldGenBrol genBrol;
+        protected WorldGenBrol genBrol;
 
-        public WorldGenMinable genIron;
-        public WorldGenMinable genCoal;
-        public WorldGenMinable genGold;
-        public WorldGenMinable genDirt;
-        public WorldGenMinable gemGravel;
-        public WorldGenMinable genGranite;
-        public WorldGenMinable genLimestone;
-        public WorldGenMinable genOil;
+        protected WorldGenMinable genIron;
+        protected WorldGenMinable genCoal;
+        protected WorldGenMinable genGold;
+        protected WorldGenMinable genDirt;
+        protected WorldGenMinable gemGravel;
+        protected WorldGenMinable genGranite;
+        protected WorldGenMinable genLimestone;
+        protected WorldGenMinable genOil;
 
-        public WorldGenPancake genPancakeSand;
-        public WorldGenPancake gemPancakeGravel;
-        public WorldGenPancake genPancakeClay;
-        public WorldGenPancake genPancakeDirt;
+        protected WorldGenPancake genPancakeSand;
+        protected WorldGenPancake gemPancakeGravel;
+        protected WorldGenPancake genPancakeClay;
+        protected WorldGenPancake genPancakeDirt;
+        protected WorldGenThicketsGrass genThicketsGrass;
 
         /// <summary>
         /// Количество брола, создаваемой на чанке
@@ -49,6 +51,10 @@ namespace MvkServer.World.Gen
         /// </summary>
         public int grassPerChunk = 0;
         /// <summary>
+        /// Количество тины, создаваемой на чанке
+        /// </summary>
+        public int tinaPerChunk = 0;
+        /// <summary>
         /// Количество маленьких блоков, создаваемой на чанке
         /// </summary>
         public int piecePerChunk = 0;
@@ -56,10 +62,6 @@ namespace MvkServer.World.Gen
         /// Количество какутосов, создаваемой на чанке
         /// </summary>
         public int cactiPerChunk = 0;
-        /// <summary>
-        /// Количество пальм, создаваемой на чанке
-        /// </summary>
-        public int palmPerChunk = 0;
         /// <summary>
         /// Количество дубов, создаваемой на чанке
         /// </summary>
@@ -77,6 +79,10 @@ namespace MvkServer.World.Gen
         /// </summary>
         public int fruitPerChunk = 0;
         /// <summary>
+        /// Количество блинчиков травы, создаваемой на чанке
+        /// </summary>
+        public int thicketsGrassPerChunk = 0;
+        /// <summary>
         /// Вероятность генерации дерева при одной на чанк, с вероятностью 1 к randomTree
         /// </summary>
         public int randomTree = 1;
@@ -84,6 +90,14 @@ namespace MvkServer.World.Gen
         /// Вероятность генерации маленьких блоков при одной на чанк, с вероятностью 1 к randomTree
         /// </summary>
         public int randomPiece = 1;
+        /// <summary>
+        /// Вероятность генерации блинчиков травы на чанк, с вероятностью 1 к randomTree
+        /// </summary>
+        public int randomThicketsGrass = 1;
+        /// <summary>
+        /// Вероятность генерации пальм на чанк, с вероятностью 1 к randomTree
+        /// </summary>
+        public int randomPalm = 0;
 
         /// <summary>
         /// Количество нефти, создаваемой на чанке
@@ -149,8 +163,10 @@ namespace MvkServer.World.Gen
 
         public BiomeDecorator(WorldServer world) => this.world = world;
 
-        public virtual void Init()
+        protected void InitBase()
         {
+            genPiece = new WorldGenPiece();
+            genTina = new WorldGenTina();
             genPlants = new WorldGenPlants();
             genCactus = new WorldGenCactus();
             genOak = new WorldGenTreeOak();
@@ -159,7 +175,20 @@ namespace MvkServer.World.Gen
             genFruit = new WorldGenTreeFruit();
             genPalm = new WorldGenTreePalm();
 
+            genPancakeSand = new WorldGenPancake(EnumBlock.Sand, 9, 8);
+            gemPancakeGravel = new WorldGenPancake(EnumBlock.Gravel, 7, 6);
+            genPancakeClay = new WorldGenPancake(EnumBlock.Clay, 5, 4);
+            genPancakeDirt = new WorldGenPancake(EnumBlock.Dirt, 9, 7);
+
+            genThicketsGrass = new WorldGenThicketsGrass();
+
             genBrol = new WorldGenBrol();
+        }
+
+        public virtual void Init()
+        {
+            InitBase();   
+            
             genCoal = new WorldGenMinable(new BlockState(EnumBlock.OreCoal), 17);
             genIron = new WorldGenMinable(new BlockState(EnumBlock.OreIron), 9);
             genGold = new WorldGenMinable(new BlockState(EnumBlock.OreGold), 7); // 9
@@ -168,11 +197,6 @@ namespace MvkServer.World.Gen
             genGranite = new WorldGenMinable(new BlockState(EnumBlock.Granite), 33);
             genLimestone = new WorldGenMinable(new BlockState(EnumBlock.Limestone), 33);
             genOil = new WorldGenMinable(new BlockState(EnumBlock.Oil), 17);
-
-            genPancakeSand = new WorldGenPancake(EnumBlock.Sand, 9, 8);
-            gemPancakeGravel = new WorldGenPancake(EnumBlock.Gravel, 7, 6);
-            genPancakeClay = new WorldGenPancake(EnumBlock.Clay, 5, 4);
-            genPancakeDirt = new WorldGenPancake(EnumBlock.Dirt, 9, 7);
         }
 
         protected void UpSeed(Rand rand, int xbc, int zbc, long seed)
@@ -198,18 +222,18 @@ namespace MvkServer.World.Gen
             UpSeed(rand, xbc, zbc, provider.Seed);
             int i, x, y, z;
 
-            for (i = 0; i < palmPerChunk; i++)
+            currentChunk = chunk;
+            currentChunkSpawn = chunkSpawn;
+            currentRand = rand;
+            currentBlockPos = new BlockPos(xbc, 0, zbc);
+
+            if (randomPalm > 1 && currentRand.Next(randomPalm) == 0)
             {
                 x = rand.Next(16);
                 z = rand.Next(16);
                 y = chunkSpawn.GetHeightGen(x, z);
                 genPalm.GenerateArea(world, chunk, rand, new BlockPos(xbc + x, y, zbc + z));
             }
-
-            currentChunk = chunk;
-            currentChunkSpawn = chunkSpawn;
-            currentRand = rand;
-            currentBlockPos = new BlockPos(xbc, 0, zbc);
 
             GenPancake(dirtPancakePerChunk, genPancakeDirt);
             GenPancake(sandPancakePerChunk, genPancakeSand);
@@ -222,6 +246,18 @@ namespace MvkServer.World.Gen
             GenTree(fruitPerChunk, genFruit);
 
             GenStandardOres();
+
+            if (thicketsGrassPerChunk > 0 || (randomThicketsGrass > 1 && currentRand.Next(randomThicketsGrass) == 0))
+            {
+                int count = thicketsGrassPerChunk > 0 ? thicketsGrassPerChunk : 1;
+                for (i = 0; i < count; i++)
+                {
+                    x = currentRand.Next(16);
+                    z = currentRand.Next(16);
+                    y = currentChunkSpawn.GetHeightGen(x, z);
+                    genThicketsGrass.GenerateArea(world, currentChunk, currentRand, currentBlockPos.Offset(x, y, z));
+                }
+            }
         }
 
         protected virtual void GenStandardOres()
@@ -363,6 +399,17 @@ namespace MvkServer.World.Gen
                     genPiece.SetId(70); //EnumBiome.SmallStone
                     genPiece.Generate(world, rand, blockPos);
                 }
+            }
+            // Тина
+            for (i = 0; i < tinaPerChunk; i++)
+            {
+                x = rand.Next(16);
+                z = rand.Next(16);
+                x += rand.Next(8) - rand.Next(8);
+                z += rand.Next(8) - rand.Next(8);
+                blockPos = new BlockPos(xbc + x, 0, zbc + z);
+                blockPos.Y = world.GetChunk(blockPos).GetHeightGen(x & 15, z & 15);
+                genTina.Generate(world, rand, blockPos);
             }
         }
     }

@@ -2,8 +2,6 @@
 using MvkServer.Util;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
-using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace MvkServer.World.Gen.Feature
 {
@@ -54,10 +52,6 @@ namespace MvkServer.World.Gen.Feature
         /// </summary>
         protected vec2i offsetCrown = new vec2i(0);
         /// <summary>
-        /// Проверка блока на какой ставим
-        /// </summary>
-        //protected EnumBlock blockCheck = EnumBlock.Turf;
-        /// <summary>
         /// Замена блока на какой ставим
         /// </summary>
         protected EnumBlock blockPut = EnumBlock.Dirt;
@@ -76,7 +70,7 @@ namespace MvkServer.World.Gen.Feature
         protected ListMvk<BlockCache> blockCaches = new ListMvk<BlockCache>(16384);
 
         protected virtual bool IsPut(EnumBlock enumBlock)
-            => enumBlock == EnumBlock.Air || enumBlock == sapling || enumBlock == EnumBlock.TallGrass
+            => enumBlock == EnumBlock.Air || enumBlock == sapling || enumBlock == EnumBlock.Grass || enumBlock == EnumBlock.TallGrass
                 || enumBlock == EnumBlock.FlowerClover || enumBlock == EnumBlock.FlowerDandelion;
 
         protected virtual int Radius(int y0)

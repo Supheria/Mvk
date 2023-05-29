@@ -23,6 +23,7 @@ namespace MvkServer.World.Biome
 
             Decorator.grassPerChunk = 16;
             Decorator.flowersPerChunk = 1;
+            Decorator.randomThicketsGrass = 2;
         }
     }
 }

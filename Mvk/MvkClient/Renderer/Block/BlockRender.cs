@@ -107,44 +107,61 @@ namespace MvkClient.Renderer.Block
         /// <returns>сетка</returns>
         public void RenderMesh()
         {
-            xc = chunk.Position.x;
-            zc = chunk.Position.y;
-
             if (block.IsUnique)
             {
-                yc = posChunkY >> 4;
-                DamagedBlocksValue = chunk.GetDestroyBlocksValue(posChunkX, posChunkY, posChunkZ);
-                RenderMeshBlockUnique();
+                RenderMeshUnique();
             }
             else
             {
-                //return;
-                int rs;
-                if (posChunkY + 1 > ChunkBase.COUNT_HEIGHT_BLOCK) rs = resultSide[0] = 0x0F;
-                else rs = resultSide[0] = GetBlockSideState(posChunkX, posChunkY + 1, posChunkZ, false, true);
-                if (posChunkY - 1 < 0) rs += resultSide[1] = 0x0F;
-                //if (posChunkY - 1 < 0) rs += resultSide[1] = -1;
-                else rs += resultSide[1] = GetBlockSideState(posChunkX, posChunkY - 1, posChunkZ, false);
+                RenderMeshDense();
+            }
+        }
 
-                yc = posChunkY >> 4;
-                rs += resultSide[2] = GetBlockSideState(posChunkX + 1, posChunkY, posChunkZ, true);
-                rs += resultSide[3] = GetBlockSideState(posChunkX - 1, posChunkY, posChunkZ, true);
-                rs += resultSide[4] = GetBlockSideState(posChunkX, posChunkY, posChunkZ - 1, true);
-                rs += resultSide[5] = GetBlockSideState(posChunkX, posChunkY, posChunkZ + 1, true);
+        /// <summary>
+        /// Получть cетку уникального блока
+        /// </summary>
+        public void RenderMeshUnique()
+        {
+            xc = chunk.Position.x;
+            zc = chunk.Position.y;
+            yc = posChunkY >> 4;
+            DamagedBlocksValue = chunk.GetDestroyBlocksValue(posChunkX, posChunkY, posChunkZ);
+            RenderMeshBlockUnique();
+        }
 
-                stateLightHis = -1;
-                if (rs != -6)
+        /// <summary>
+        /// Получть cетку сплошного блока
+        /// </summary>
+        public void RenderMeshDense()
+        {
+            xc = chunk.Position.x;
+            zc = chunk.Position.y;
+
+            int rs;
+            if (posChunkY + 1 > ChunkBase.COUNT_HEIGHT_BLOCK) rs = resultSide[0] = 0x0F;
+            else rs = resultSide[0] = GetBlockSideState(posChunkX, posChunkY + 1, posChunkZ, false, true);
+            if (posChunkY - 1 < 0) rs += resultSide[1] = 0x0F;
+            //if (posChunkY - 1 < 0) rs += resultSide[1] = -1;
+            else rs += resultSide[1] = GetBlockSideState(posChunkX, posChunkY - 1, posChunkZ, false);
+
+            yc = posChunkY >> 4;
+            rs += resultSide[2] = GetBlockSideState(posChunkX + 1, posChunkY, posChunkZ, true);
+            rs += resultSide[3] = GetBlockSideState(posChunkX - 1, posChunkY, posChunkZ, true);
+            rs += resultSide[4] = GetBlockSideState(posChunkX, posChunkY, posChunkZ - 1, true);
+            rs += resultSide[5] = GetBlockSideState(posChunkX, posChunkY, posChunkZ + 1, true);
+
+            stateLightHis = -1;
+            if (rs != -6)
+            {
+                if (block.UseNeighborBrightness) stateLightHis = blockState.lightBlock << 4 | blockState.lightSky & 0xF;
+                if (block.Liquid)
                 {
-                    if (block.UseNeighborBrightness) stateLightHis = blockState.lightBlock << 4 | blockState.lightSky & 0xF;
-                    if (block.Liquid)
-                    {
-                        RenderMeshBlockLiquid();
-                    }
-                    else
-                    {
-                        DamagedBlocksValue = chunk.GetDestroyBlocksValue(posChunkX, posChunkY, posChunkZ);
-                        RenderMeshBlock();
-                    }
+                    RenderMeshBlockLiquid();
+                }
+                else
+                {
+                    DamagedBlocksValue = chunk.GetDestroyBlocksValue(posChunkX, posChunkY, posChunkZ);
+                    RenderMeshBlock();
                 }
             }
         }
@@ -373,9 +390,9 @@ namespace MvkClient.Renderer.Block
             // подготовка для теста плавности цвета
             if (cFace.isColor)
             {
-                if (block.BiomeColor)
+                if (cFace.biomeColor)
                 {
-                    if (block.EBlock == EnumBlock.Turf || block.EBlock == EnumBlock.TallGrass)
+                    if (block.EBlock == EnumBlock.Turf || block.EBlock == EnumBlock.Grass || block.EBlock == EnumBlock.TallGrass)
                     {
                         return BlockColorBiome.Grass(chunk.biome[bx << 4 | bz]);
                     }
@@ -763,7 +780,6 @@ namespace MvkClient.Renderer.Block
                 }
 
                 cSideInt = 0;
-
                 ColorsLights colorLight = GenColors(GetLightMix(resultSide[0], stateLightHis));
                 blockUV.colorsr = colorLight.colorr;
                 blockUV.colorsg = colorLight.colorg;

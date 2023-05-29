@@ -17,6 +17,7 @@ namespace MvkServer.World.Biome
             base.InitDecorator(isRobinson);
             Decorator.sprucePerChunk = 4;
             Decorator.grassPerChunk = 12;
+            Decorator.randomThicketsGrass = 8;
         }
     }
 }

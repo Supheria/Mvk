@@ -185,6 +185,11 @@ namespace MvkServer.World.Block
         public EnumMaterial Material { get; protected set; } = EnumMaterial.Air;
 
         /// <summary>
+        /// Цвет блока для подмешенных для гуи
+        /// </summary>
+        public virtual vec3 ColorGui() => Color;
+
+        /// <summary>
         /// Коробки для рендера 
         /// </summary>
         public virtual Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[0];
@@ -456,11 +461,6 @@ namespace MvkServer.World.Block
         /// Обновить блок в такте
         /// </summary>
         public virtual void UpdateTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random) { }
-
-        /// <summary>
-        /// Флаг отличия, для рендера прорисовки однотипных материалов, пример листва чёрная контачит с листвой прозрачной
-        /// </summary>
-        public virtual bool FlagDifference(int met) => true;
 
         /// <summary>
         /// Разрушается ли блок от жидкости

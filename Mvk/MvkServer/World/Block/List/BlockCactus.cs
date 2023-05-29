@@ -22,7 +22,7 @@ namespace MvkServer.World.Block.List
             NeedsRandomTick = true;
             Color = new vec3(.1f, .6f, .2f);
             SetUnique();
-            Material = EnumMaterial.Cactus;
+            Material = EnumMaterial.VegetableProtein;
             Particle = 193;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };

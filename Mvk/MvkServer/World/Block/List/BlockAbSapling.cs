@@ -10,8 +10,10 @@ namespace MvkServer.World.Block.List
     /// </summary>
     public abstract class BlockAbSapling : BlockBase
     {
+        protected bool biomeColor;
+
         public BlockAbSapling(int numberTexture) : this(numberTexture, new vec3(1)) { }
-        protected BlockAbSapling(int numberTexture, vec3 color)
+        protected BlockAbSapling(int numberTexture, vec3 color, bool biomeColor = false)
         {
             Color = color;
             Material = EnumMaterial.Sapling;
@@ -20,6 +22,7 @@ namespace MvkServer.World.Block.List
             NoSideDimming = true;
             IsCollidable = false;
             Combustibility = true;
+            this.biomeColor = biomeColor;
             IgniteOddsSunbathing = 60;
             BurnOdds = 100;
             Resistance = 0f;

@@ -29,7 +29,8 @@ namespace MvkServer.Entity.List
 
                     if (moving.IsBlock())
                     {
-                        float resistance = moving.Block.GetBlock().Resistance;
+                        BlockBase blockBase = moving.Block.GetBlock();
+                        float resistance = blockBase.Resistance;
                         power += power * (World.Rnd.NextFloat() - World.Rnd.NextFloat()) * .3f;
                         resistance += resistance * (World.Rnd.NextFloat() - World.Rnd.NextFloat()) * .3f;
 
@@ -40,20 +41,60 @@ namespace MvkServer.Entity.List
                             if (isBreak)
                             {
                                 // блок разрушаем
+                                BlockState blockState = World.GetBlockState(moving.BlockPosition);
+                                blockState.GetBlock().DropBlockAsItem(World, moving.BlockPosition, blockState, 0);
                                 World.SetBlockToAir(moving.BlockPosition, 15);
                             }
-
-                            if (eItem == EnumItem.PieceStone && World.Rnd.NextFloat() < .25f)
+                            if (eItem == EnumItem.Coconut)
                             {
-                                // Камень с 25% вероятности может остатся
-                                //BlockPos blockPosDown = isBreak ? moving.BlockPosition.OffsetDown() : moving.BlockPosition;
-                                //BlockPos blockPosUp = isBreak ? moving.BlockPosition : moving.BlockPosition.OffsetUp();
-                                BlockPos blockPos = isBreak ? moving.BlockPosition : moving.BlockPosition.OffsetUp();
-                                BlockBase blockStone = Blocks.GetBlockCache(EnumBlock.SmallStone);
-                                if (blockStone.CanBlockStay(World, blockPos))
+                                ItemStack itemStack;
+                                vec3 pos = moving.RayHit;
+                                if (!isBreak && blockBase.Material == EnumMaterial.Solid)
                                 {
-                                    World.SetBlockState(blockPos, new BlockState(EnumBlock.SmallStone), 14);
-                                    isBreak = true;
+                                    // Разбивается кокос на две половинки
+                                    itemStack = new ItemStack(Items.GetItemCache(EnumItem.HalfCoconut), 2);
+                                    World.PlaySoundPop(pos);
+                                }
+                                else
+                                {
+                                    // Спавним этот же предмет, но не как метательную сущность
+                                    itemStack = new ItemStack(Items.GetItemCache(eItem));
+                                }
+                                // Траекторию полёта в зависимости в какую сторону блока ударили
+                                vec3 motion = new vec3(Motion.x * .2f, Motion.y * .4f, Motion.z * .2f);
+                                Pole side = moving.Side;
+                                if (side == Pole.Up) motion.y = -motion.y;
+                                else if (side == Pole.Down) pos.y -= Height; 
+                                else if (side == Pole.East || side == Pole.West)
+                                {
+                                    motion.x = -motion.x;
+                                    pos.x += side == Pole.West ? -Width : Width;
+                                }
+                                else if (side == Pole.South || side == Pole.North)
+                                {
+                                    motion.z = -motion.z;
+                                    pos.z += side == Pole.North ? -Width : Width;
+                                }
+                                // Спавним сущность предмета
+                                EntityItem entityItem = new EntityItem(World, pos, itemStack);
+                                entityItem.SetMotion(motion);
+                                entityItem.SetDefaultPickupDelay();
+                                World.SpawnEntityInWorld(entityItem);
+                            }
+                            else if (eItem == EnumItem.PieceStone)
+                            {
+                                if (World.Rnd.NextFloat() < .25f)
+                                {
+                                    // Камень с 25% вероятности может остатся
+                                    //BlockPos blockPosDown = isBreak ? moving.BlockPosition.OffsetDown() : moving.BlockPosition;
+                                    //BlockPos blockPosUp = isBreak ? moving.BlockPosition : moving.BlockPosition.OffsetUp();
+                                    BlockPos blockPos = isBreak ? moving.BlockPosition : moving.BlockPosition.OffsetUp();
+                                    BlockBase blockStone = Blocks.GetBlockCache(EnumBlock.SmallStone);
+                                    if (blockStone.CanBlockStay(World, blockPos))
+                                    {
+                                        World.SetBlockState(blockPos, new BlockState(EnumBlock.SmallStone), 14);
+                                        isBreak = true;
+                                    }
                                 }
                             }
                         }

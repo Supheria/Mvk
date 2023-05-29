@@ -9,12 +9,12 @@
 
         protected override int GetParam(int param)
         {
-            if (param > 49 && NextInt(6) == 0)
+            if (param > 48 && NextInt(6) == 0)
             {
                 // Добавляем холм
                 param += NextInt(20) + 1;
             }
-            else if (param > 51 && NextInt(6) == 0)
+            else if (param > 50 && NextInt(6) == 0)
             {
                 // Добавляем лужу
                 param -= NextInt(4) + 1;

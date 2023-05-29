@@ -56,14 +56,8 @@ namespace MvkServer.Item.List
                             else
                             {
                                 playerIn.Inventory.DecrStackSize(playerIn.Inventory.CurrentItem, 1);
-                                if (!playerIn.Inventory.AddItemStackToInventory(itemStack))
-                                {
-                                    if (!worldIn.IsRemote)
-                                    {
-                                        // Дроп
-                                        playerIn.DropItem(itemStack, true);
-                                    }
-                                }
+                                // Берём
+                                playerIn.Inventory.AddItemStackToInventory(worldIn, playerIn, itemStack);
                             }
                             worldIn.PlaySound(playerIn, item.BlockLiquid.SampleBreak(worldIn), moving.BlockLiquidPosition.ToVec3(), 1f, 1f);
                             return itemStack;

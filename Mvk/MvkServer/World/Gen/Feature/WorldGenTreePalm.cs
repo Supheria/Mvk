@@ -28,11 +28,11 @@ namespace MvkServer.World.Gen.Feature
         {
             offsetCrown = MvkStatic.AreaOne4[rand.Next(4)] * rand.Next(4);
             // высота ствола дерева до кроны
-            trunkHeight = rand.Next(7) + 7;
+            trunkHeight = rand.Next(5) + 12;
             // ширина кроны
-            crownWidth = rand.Next(3) + 2;
+            crownWidth = rand.Next(2) + 3;
             // высота кроны
-            crownHeight = rand.Next(2) + 1;
+            crownHeight = rand.Next(4) == 0 ? 1 : 2;
             // от ствола до макушки
             crownHeightUp = 1;
         }

@@ -181,6 +181,18 @@
         /// Спавн книги
         /// </summary>
         SpawnBook = 43,
+        /// <summary>
+        /// Высокая трава
+        /// </summary>
+        TallGrass = 44,
+        /// <summary>
+        /// Кокос
+        /// </summary>
+        Coconut = 45,
+        /// <summary>
+        /// Половина кокоса
+        /// </summary>
+        HalfCoconut = 46,
     }
 
     /// <summary>
@@ -188,6 +200,6 @@
     /// </summary>
     public class ItemsCount
     {
-        public const int COUNT = 43;
+        public const int COUNT = 46;
     }
 }

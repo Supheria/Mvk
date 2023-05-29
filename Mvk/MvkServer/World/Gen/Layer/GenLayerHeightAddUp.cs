@@ -11,16 +11,16 @@ namespace MvkServer.World.Gen.Layer
 
         protected override int GetParam(int param)
         {
-            if (param < 46)
+            if (param < 45)
             {
                 // Ниже воды 
-                int r = (46 - param) / 2;
+                int r = (45 - param) / 2;
                 if (r > 0) param += Mth.Min(NextInt(r), NextInt(r));
             }
-            else if (param > 47)
+            else if (param > 46)
             {
                 // Выше воды
-                int r = param - 46;
+                int r = param - 45;
                 if (r > 0) param += NextInt(r);
             }
             return param;

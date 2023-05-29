@@ -161,7 +161,6 @@
     <None Include="Resources\LiquidWater.ogg" />
     <None Include="Resources\MobBookAttack.ogg" />
     <None Include="Resources\MobBookDeath.ogg" />
-    <None Include="Resources\MobBookSay.ogg" />
     <None Include="Resources\MobBookSay1.ogg" />
     <None Include="Resources\MobBookSay2.ogg" />
     <None Include="Resources\MobBookSay3.ogg" />
@@ -186,6 +185,7 @@
     <None Include="Resources\MobPakanStep2.ogg" />
     <None Include="Resources\MobPakanStep3.ogg" />
     <None Include="Resources\MobPakanStep4.ogg" />
+    <None Include="Resources\Pop.ogg" />
     <None Include="Resources\StepGrass1.ogg" />
     <None Include="Resources\StepGrass2.ogg" />
     <None Include="Resources\StepGrass3.ogg" />

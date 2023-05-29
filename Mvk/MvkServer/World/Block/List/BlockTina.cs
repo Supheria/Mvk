@@ -3,6 +3,7 @@ using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.Sound;
 using MvkServer.Util;
+using MvkServer.World.Biome;
 
 namespace MvkServer.World.Block.List
 {
@@ -77,60 +78,99 @@ namespace MvkServer.World.Block.List
         /// </summary>
         private void InitBoxs()
         {
-            boxes = new Box[1][];
-
-            boxes[0] = new Box[]
-            {
-                new Box()
+            boxes = new Box[][] {
+                new Box[]
                 {
-                    From = new vec3(0),
-                    To = new vec3(MvkStatic.Xy[16], MvkStatic.Xy[0], MvkStatic.Xy[16]),
-                    Faces = new Face[]
+                    new Box()
                     {
-                        new Face(Pole.Up, Particle, true, Color),
-                        new Face(Pole.Down, Particle, true, Color)
+                        From = new vec3(0),
+                        To = new vec3(MvkStatic.Xy[16], MvkStatic.Xy[0], MvkStatic.Xy[16]),
+                        Faces = new Face[]
+                        {
+                            new Face(Pole.Up, Particle),
+                            new Face(Pole.Down, Particle)
+                        }
                     }
                 }
             };
         }
 
+        /// <summary>
+        /// Спавн предмета при разрушении этого блока
+        /// </summary>
+        //public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
+
+        /// <summary>
+        /// Возвращает количество предметов, которые выпадают при разрушении блока.
+        /// </summary>
+        public override int QuantityDropped(Rand random) => 0;
+
         public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         {
-            if (world.GetBiome(blockPos) != Biome.EnumBiome.Swamp)
+            if (!CheckBiome(world.GetBiome(blockPos)))
             {
+                // Сохнет в чужом биоме
                 world.SetBlockToAir(blockPos);
             }
             else
             {
-                if (random.Next(8) == 0 && blockState.lightSky >= 9)
+                if (random.Next(8) == 0)
                 {
-                    // Распространение тины
-                    BlockPos blockPos2;
-                    BlockState blockState2;
-                    BlockState blockState2dw;
+                    EnumTimeYear timeYear = world.GetTimeYear();
+                    EnumMoonPhase moonPhase = world.GetMoonPhase();
 
-                    for (int i = 0; i < 4; i++)
+                    if (timeYear == EnumTimeYear.Summer
+                        || (timeYear == EnumTimeYear.Spring && moonPhase == EnumMoonPhase.AgingMoon))
                     {
-                        blockPos2 = blockPos.Offset(random.Next(3) - 1, random.Next(5) - 3, random.Next(3) - 1);
-                        if (world.GetBiome(blockPos2) == Biome.EnumBiome.Swamp)
+                        // Тина растёт весной в стареющей луне и всё лето
+                        BlockPos blockPos2;
+                        BlockState blockState2;
+                        // Проверяем 4 блока рядом (8 доступных)
+                        for (int i = 0; i < 4; i++)
                         {
-                            blockState2dw = world.GetBlockState(blockPos2.OffsetDown());
-                            blockState2 = world.GetBlockState(blockPos2);
-
-                            if (blockState2dw.GetEBlock() == EnumBlock.Water && blockState2.IsAir()
-                                && blockState2.lightSky >= 7)
+                            blockPos2 = blockPos.Offset(random.Next(3) - 1, 0, random.Next(3) - 1);
+                            if (world.GetBlockState(blockPos2.OffsetDown()).GetEBlock() == EnumBlock.Water
+                                && CheckBiome(world.GetBiome(blockPos2)))
                             {
-                                world.SetBlockState(blockPos2, new BlockState(EnumBlock.Tina), 12);
+                                blockState2 = world.GetBlockState(blockPos2);
+                                if (blockState2.IsAir())
+                                {
+                                    world.SetBlockState(blockPos2, new BlockState(EnumBlock.Tina), 12);
+                                }
                             }
                         }
                     }
-                }
-                else if (random.Next(64) == 0)
-                {
-                    // Очень редко тина может исчезнуть
-                    world.SetBlockToAir(blockPos);
+                    else if (timeYear == EnumTimeYear.Winter)
+                    {
+                        // Тина сохнет всю зиму
+                        world.SetBlockToAir(blockPos);
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Проверка может ли в этом биоме быть тина
+        /// </summary>
+        private static bool CheckBiome(EnumBiome biome) => biome == EnumBiome.Swamp 
+            || biome == EnumBiome.Plain || biome == EnumBiome.BirchForest 
+            || biome == EnumBiome.ConiferousForest || biome == EnumBiome.MixedForest;
+
+        /// <summary>
+        /// Может ли рости тина
+        /// </summary>
+        public static bool IsGrows(WorldBase world, BlockPos blockPos)
+        {
+            EnumTimeYear timeYear = world.GetTimeYear();
+            EnumMoonPhase moonPhase = world.GetMoonPhase();
+
+            if (timeYear == EnumTimeYear.Summer 
+                || (timeYear == EnumTimeYear.Spring && moonPhase == EnumMoonPhase.AgingMoon))
+            {
+                // Вторая половина весны, и всё лето
+                return CheckBiome(world.GetBiome(blockPos));
+            }
+            return false;
         }
     }
 }

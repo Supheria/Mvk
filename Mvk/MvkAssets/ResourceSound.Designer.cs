@@ -1053,6 +1053,16 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Byte[].
         /// </summary>
+        internal static byte[] Pop {
+            get {
+                object obj = ResourceManager.GetObject("Pop", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
         internal static byte[] StepGrass1 {
             get {
                 object obj = ResourceManager.GetObject("StepGrass1", resourceCulture);

@@ -23,8 +23,8 @@ namespace MvkServer.World.Block.List
             Material = EnumMaterial.Water;
             faces = new Face[]
             {
-                new Face(63, true).SetAnimation(32, 2),
-                new Face(62, true).SetAnimation(64, 1)
+                new Face(63, true).SetAnimation(32, 2).SetBiomeColor(),
+                new Face(62, true).SetAnimation(64, 1).SetBiomeColor()
             };
             InitBoxs();
         }
@@ -79,11 +79,55 @@ namespace MvkServer.World.Block.List
         /// </summary>
         protected override bool CheckEndlessSource(WorldBase world, BlockPos blockPos)
         {
-            // Бесконечный источник только в реках и моря на высоте от 31 до 96 включительно
-            if (blockPos.Y > 30 && blockPos.Y <= 96)
+            /*
+              
+            // Новый вариант
+            if (blockPos.Y <= 47)
             {
                 EnumBiome biome = world.GetBiome(blockPos);
-                if (biome == EnumBiome.River || biome == EnumBiome.Sea)
+                if (biome == EnumBiome.River || biome == EnumBiome.Sea
+                    || biome == EnumBiome.Swamp || biome == EnumBiome.Beach)
+                {
+                    // Количество блоков стоячей жидкости, для бескончного источника
+                    BlockState blockState;
+                    BlockBase block;
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        blockState = world.GetBlockState(blockPos.Offset(EnumFacing.GetHorizontal(i)));
+                        if (blockState.GetBlock().Material == EnumMaterial.Water)
+                        {
+                            // Бесконечный источник
+                            blockState = world.GetBlockState(blockPos.OffsetDown());
+                            block = blockState.GetBlock();
+                            if (block.FullBlock || block.EBlock == EnumBlock.Water)
+                            {
+                                world.SetBlockState(blockPos, new BlockState(eBlock), 14);
+                                world.SetBlockTick(blockPos, tickRate);
+                                return true;
+                            }
+                        }
+                    }
+
+                    blockState = world.GetBlockState(blockPos.OffsetDown());
+                    block = blockState.GetBlock();
+                    if (block.FullBlock || block.EBlock == EnumBlock.Water)
+                    {
+                        world.SetBlockState(blockPos, new BlockState(eBlock), 14);
+                        world.SetBlockTick(blockPos, tickRate);
+                        return true;
+                    }
+                }
+            }
+            */
+            
+            // Олд версия как в майне
+            // Бесконечный источник только в реках и моря на высоте от 31 до 47 включительно
+            if (blockPos.Y > 30 && blockPos.Y <= 47)
+            {
+                EnumBiome biome = world.GetBiome(blockPos);
+                if (biome == EnumBiome.River || biome == EnumBiome.Sea 
+                    || biome == EnumBiome.Swamp || biome == EnumBiome.Beach)
                 {
                     // Количество блоков стоячей жидкости, для бескончного источника
                     int counteStagnantLiquid = 0;

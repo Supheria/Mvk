@@ -75,7 +75,7 @@ namespace MvkClient.Renderer.Block
             float u1 = cFace.u1;
             float v2 = cFace.v2;
 
-            vec3 color = cFace.isColor ? cFace.color : new vec3(1f);
+            vec3 color = cFace.isColor ? cFace.biomeColor ? block.ColorGui() : cFace.color : new vec3(1f);
             float lightPole = block.NoSideDimming ? 0f : 1f - LightPole();
             color.x -= lightPole; if (color.x < 0) color.x = 0;
             color.y -= lightPole; if (color.y < 0) color.y = 0;

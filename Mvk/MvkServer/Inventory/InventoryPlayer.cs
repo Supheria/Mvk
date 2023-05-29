@@ -3,6 +3,7 @@ using MvkServer.Item;
 using MvkServer.NBT;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
+using MvkServer.World;
 using System;
 
 namespace MvkServer.Inventory
@@ -153,6 +154,23 @@ namespace MvkServer.Inventory
         /// Отправить пакет слота
         /// </summary>
         public void SendSlot(int slotIn) => SendSetSlotPlayer(slotIn);
+
+        /// <summary>
+        /// Добавляет стек предметов в инвентарь, если это невозможно заспавнит предмет рядом
+        /// </summary>
+        public void AddItemStackToInventory(WorldBase worldIn, EntityPlayer entityPlayer, ItemStack itemStack)
+        {
+            // Пробуем взять в инвентарь
+            if (!AddItemStackToInventory(itemStack))
+            {
+                // Если не смогли взять, дропаем его
+                if (!worldIn.IsRemote)
+                {
+                    // Дроп
+                    entityPlayer.DropItem(itemStack, true);
+                }
+            }
+        }
 
         /// <summary>
         /// Добавляет стек предметов в инвентарь, возвращает false, если это невозможно.

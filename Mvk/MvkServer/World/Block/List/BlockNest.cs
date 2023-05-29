@@ -68,20 +68,15 @@ namespace MvkServer.World.Block.List
         {
             if (state.met > 0)
             {
-                int met = state.met - 1;
-                worldIn.SetBlockStateMet(pos, (ushort)met, true);
-                // Добавляем предмет яйца
-                ItemBase item = Items.GetItemCache(EnumItem.Egg);
-                ItemStack itemStack = new ItemStack(item);
-                // Пробуем взять в инвентарь
-                if (!entityPlayer.Inventory.AddItemStackToInventory(itemStack))
+                if (!worldIn.IsRemote)
                 {
-                    // Если не смогли взять, дропаем его
-                    if (!worldIn.IsRemote)
-                    {
-                        // Дроп
-                        entityPlayer.DropItem(itemStack, true);
-                    }
+                    int met = state.met - 1;
+                    worldIn.SetBlockStateMet(pos, (ushort)met, true);
+                    // Берём яйцо
+                    entityPlayer.Inventory.AddItemStackToInventory(worldIn, entityPlayer,
+                        new ItemStack(Items.GetItemCache(EnumItem.Egg)));
+                    // Чпок
+                    worldIn.PlaySoundPop(pos.ToVec3() + .5f);
                 }
                 return true;
             }

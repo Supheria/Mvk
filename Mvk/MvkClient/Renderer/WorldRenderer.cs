@@ -42,9 +42,17 @@ namespace MvkClient.Renderer
         /// </summary>
         public readonly ArrayMvk<byte> bufferHeight = new ArrayMvk<byte>(66060288);
         /// <summary>
+        /// Буфер сплошных блоков всего ряда (8)
+        /// </summary>
+        public readonly ArrayMvk<byte> bufferHeightUnique = new ArrayMvk<byte>(66060288);
+        /// <summary>
         /// Буфер сплошных блоков всего ряда
         /// </summary>
         public readonly ArrayMvk<byte> buffer = new ArrayMvk<byte>(4128768);
+        /// <summary>
+        /// Буфер уникальных блоков всего ряда
+        /// </summary>
+        public readonly ArrayMvk<byte> bufferUnique = new ArrayMvk<byte>(4128768);
         /// <summary>
         /// Буфер сплошных блоков кэш
         /// </summary>
@@ -209,7 +217,7 @@ namespace MvkClient.Renderer
             skyLight = World.GetSkyLight(celestialAngle);
             colorFog = World.GetFogColor(skyLight);
 
-            textureLightMap.Update(sunLight, MvkStatic.LightMoonPhase[World.GetMoonPhase()]);
+            textureLightMap.Update(sunLight, MvkStatic.LightMoonPhase[World.GetIndexMoonPhase()]);
 
             // Обновить кадр основного игрока, камера и прочее
             ClientMain.Player.UpdateFrame(timeIndex);
@@ -224,6 +232,8 @@ namespace MvkClient.Renderer
 
             // Воксели VBO
             List<ChunkRender> chunks = DrawVoxel(timeIndex);
+
+            DrawVoxelUnique(timeIndex);
 
             GLRender.BlendEnable();
             // Сущности DisplayList
@@ -308,7 +318,7 @@ namespace MvkClient.Renderer
                     if (chunk.IsModifiedRender() && renderQueues.CountForward < MvkGlobal.COUNT_RENDER_CHUNK_FRAME)
                     {
                         // Проверяем занят ли чанк уже рендером
-                        if (chunk.IsMeshDenseWait() && chunk.IsMeshAlphaWait())
+                        if (chunk.IsMeshDenseWait() && chunk.IsMeshAlphaWait() && chunk.IsMeshUniqueWait())
                         {
                             // Обновление рендера псевдочанка
                             Debug.CountUpdateChunck++;
@@ -319,6 +329,8 @@ namespace MvkClient.Renderer
 
                     // Занести буфер сплошных блоков псевдо чанка если это требуется
                     if (chunk.IsMeshDenseBinding()) chunk.BindBufferDense();
+                    // Занести буфер уникальных блоков псевдо чанка если это требуется
+                    if (chunk.IsMeshUniqueBinding()) chunk.BindBufferUnique();
 
                     // Прорисовка сплошных блоков псевдо чанка
                     if (chunk.NotNullMeshDense())
@@ -327,10 +339,6 @@ namespace MvkClient.Renderer
                         chunk.DrawDense();
                     }
                     chunks.Add(chunk);
-
-                    // Тут бы сущность
-                    // DrawEntities2(chunk.ListEntities, timeIndex);
-
                 }
                 else
                 {
@@ -386,7 +394,7 @@ namespace MvkClient.Renderer
                     if (chunk.IsModifiedRenderAlpha() && renderAlphaQueues.CountForward < MvkGlobal.COUNT_RENDER_CHUNK_FRAME_ALPHA)
                     {
                         // Проверяем занят ли чанк уже рендером
-                        if (chunk.IsMeshDenseWait() && chunk.IsMeshAlphaWait())
+                        if (chunk.IsMeshDenseWait() && chunk.IsMeshAlphaWait() && chunk.IsMeshUniqueWait())
                         {
                             // Обновление рендера псевдочанка
                             Debug.CountUpdateChunckAlpha++;
@@ -410,10 +418,46 @@ namespace MvkClient.Renderer
         }
 
         /// <summary>
+        /// Прорисовка вокселей альфа цвета
+        /// </summary>
+        private void DrawVoxelUnique(float timeIndex)
+        {
+            GLRender.CullEnable();
+            //GLRender.CullDisable();
+            ShaderVoxel shader = VoxelsBegin(timeIndex, true);
+            GLRender.DepthEnable();
+            GLRender.BlendEnable();
+
+            int count = ClientMain.Player.ChunkFC.Length - 1;
+            int i;
+            FrustumStruct fs;
+            ChunkRender chunk;
+
+            // Пробегаем по всем чанкам которые видим FrustumCulling в обратном порядке, с далека и ближе
+            for (i = 0; i <= count; i++)
+            {
+                fs = ClientMain.Player.ChunkFC[i];
+                if (fs.IsChunk())
+                {
+                    chunk = fs.GetChunk();
+
+                    // Прорисовка уникальных блоков
+                    if (chunk.NotNullMeshUnique())
+                    {
+                        VoxelsShaderChunk(shader, chunk.Position);
+                        chunk.DrawUnique();
+                    }
+                }
+            }
+            shader.Unbind(GLWindow.gl);
+            //GLRender.CullEnable();
+        }
+
+        /// <summary>
         /// Запуск шейдеров и текстуры для прорисовки вокселей
         /// </summary>
         /// <returns></returns>
-        private ShaderVoxel VoxelsBegin(float timeIndex)
+        private ShaderVoxel VoxelsBegin(float timeIndex, bool isUnique = false)
         {
             ShaderVoxel shader = GLWindow.Shaders.ShVoxel;
             shader.Bind(GLWindow.gl);
@@ -449,7 +493,7 @@ namespace MvkClient.Renderer
 
             int atlas = shader.GetUniformLocation(GLWindow.gl, "atlas");
             int lightMap = shader.GetUniformLocation(GLWindow.gl, "light_map");
-            GLWindow.Texture.BindTexture(AssetsTexture.AtlasBlocks);
+            GLWindow.Texture.BindTexture(isUnique ? AssetsTexture.AtlasBlocksUnique : AssetsTexture.AtlasBlocks);
             GLWindow.gl.Uniform1(atlas, 0);
             GLRender.TextureLightmapEnable();
             GLWindow.gl.Uniform1(lightMap, 1);
@@ -625,7 +669,7 @@ namespace MvkClient.Renderer
                 // Луна с фазами
                 ts = GLWindow.Texture.GetData(AssetsTexture.MoonPhases);
                 GLWindow.Texture.BindTexture(ts.GetKey());
-                int phase = World.GetMoonPhase();
+                int phase = World.GetIndexMoonPhase();
                 int phaseV = phase % 4;
                 int phaseH = phase / 4 % 2;
                 float u1 = phaseV / 4f;

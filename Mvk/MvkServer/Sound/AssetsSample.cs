@@ -120,6 +120,8 @@
         MobPakanStep3,
         MobPakanStep4,
 
+        Pop,
+
         StepGrass1,
         StepGrass2,
         StepGrass3,

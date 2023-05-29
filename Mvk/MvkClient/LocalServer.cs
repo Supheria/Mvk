@@ -1,6 +1,7 @@
 ﻿using MvkAssets;
 using MvkClient.Setitings;
 using MvkClient.Util;
+using MvkClient.World;
 using MvkServer;
 using MvkServer.Network;
 using MvkServer.Util;
@@ -80,7 +81,7 @@ namespace MvkClient
         /// <summary>
         /// Запуск локального сервера
         /// </summary>
-        public void StartServer(int slot) 
+        public void StartServer(byte slot) 
         {
             // Локальный сервер
             IsStartWorld = true;
@@ -103,7 +104,7 @@ namespace MvkClient
                     Debug.ListChunks.isRender = true;
                 }
             };
-            server.Initialize(slot);
+            server.Initialize(slot, Setting.SeedBegin, ListSingleWorld.GetNameSlot(slot, false));
         }
 
         /// <summary>

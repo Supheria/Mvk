@@ -613,6 +613,10 @@ namespace MvkClient.Entity
                         float h2 = blockPos.Y + h;
                         if (posCam.y >= h2) WhereEyesEff = WhereEyes.Air;
                     }
+                    else if (World.GetBlockState(blockPos.OffsetUp()).IsAir())
+                    {
+                        if (posCam.y >= blockPos.Y + .9f) WhereEyesEff = WhereEyes.Air;
+                    }
                 }
             }
         }

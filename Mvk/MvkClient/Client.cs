@@ -438,7 +438,7 @@ namespace MvkClient
         /// Загрузить мир
         /// </summary>
         /// <param name="slot">Номер слота</param>
-        public void LoadWorld(int slot)
+        public void LoadWorld(byte slot)
         {
             try
             {

@@ -9,7 +9,7 @@
 
         protected override int GetParam(int param)
         {
-            if (param < 30 && NextInt(6) == 0)
+            if (param < 29 && NextInt(6) == 0)
             {
                 // Делаем ущелены в море
                 param = NextInt(4) + 3;

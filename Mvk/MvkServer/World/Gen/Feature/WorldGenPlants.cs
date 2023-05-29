@@ -17,16 +17,17 @@ namespace MvkServer.World.Gen.Feature
 
         public override bool Generate(WorldBase world, Rand rand, BlockPos blockPos)
         {
-            EnumBlock enumBlock = world.GetBlockState(blockPos).GetEBlock();
-            EnumBlock enumBlockDown = world.GetBlockState(blockPos.OffsetDown()).GetEBlock();
-
-            if (enumBlock == EnumBlock.Air && (enumBlockDown == EnumBlock.Turf || enumBlockDown == EnumBlock.Dirt))
+            if (world.GetBlockState(blockPos).IsAir())
             {
-                ChunkBase chunk = world.GetChunk(blockPos);
-                chunk.StorageArrays[blockPos.Y >> 4].SetData(
-                    (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15), id
-                );
-                return true;
+                EnumBlock enumBlockDown = world.GetBlockState(blockPos.OffsetDown()).GetEBlock();
+                if ((enumBlockDown == EnumBlock.Turf || enumBlockDown == EnumBlock.Dirt))
+                {
+                    ChunkBase chunk = world.GetChunk(blockPos);
+                    chunk.StorageArrays[blockPos.Y >> 4].SetData(
+                        (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15), id
+                    );
+                    return true;
+                }
             }
 
             return false;

@@ -46,6 +46,8 @@ namespace MvkServer.Item.List
                     bool result = worldIn.SetBlockState(blockPos, blockState, 15);
                     if (result)
                     {
+                        InstallAdditionalBlocks(worldIn, blockPos);
+
                         if (!playerIn.IsCreativeMode)
                         {
                             blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld, 0);
@@ -61,5 +63,10 @@ namespace MvkServer.Item.List
             }
             return false;
         }
+
+        /// <summary>
+        /// Установить дополнительные блоки
+        /// </summary>
+        protected virtual void InstallAdditionalBlocks(WorldBase worldIn, BlockPos blockPos) { }
     }
 }

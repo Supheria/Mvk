@@ -99,16 +99,8 @@ namespace MvkServer.World.Block.List
             }
             else
             {
-                // Если в руке другой предмет, пробуем взять в инвентарь
-                if (!entityPlayer.Inventory.AddItemStackToInventory(itemStack))
-                {
-                    // Если не смогли взять, дропаем его
-                    if (!worldIn.IsRemote)
-                    {
-                        // Дроп
-                        entityPlayer.DropItem(itemStack, true);
-                    }
-                }
+                // Берём
+                entityPlayer.Inventory.AddItemStackToInventory(worldIn, entityPlayer, itemStack);
             }
             return true;
         }

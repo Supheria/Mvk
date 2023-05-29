@@ -56,6 +56,9 @@ namespace MvkServer.Item
                 case EnumItem.PieceGravel: return new ItemUniPiece(EnumItem.PieceGravel, 200, .02f);
                 case EnumItem.PieceGranite: return new ItemUniPiece(EnumItem.PieceGranite, 201, .32f);
                 case EnumItem.SpawnBook: return new ItemUniSpawn(EnumItem.SpawnBook, 227);
+                case EnumItem.TallGrass: return new ItemTallGrass(EnumItem.TallGrass, 288);
+                case EnumItem.Coconut: return new ItemUniPiece(EnumItem.Coconut, 202, .16f);
+                case EnumItem.HalfCoconut: return new ItemUniFood(EnumItem.HalfCoconut, 2, 6, 96, 16);
             }
             
             return null;
@@ -88,13 +91,13 @@ namespace MvkServer.Item
             {
                 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
                 20, 21, 22, 23, 24, 12, 54, 55, 56, 44,
-                25, 26, 27, 28, 29, 41, 42, 43, 62, 63,
+                25, 26, 27, 28, 29, 40, 72, 41, 42, 43,
                 30, 31, 32, 33, 34, 46, 47, 48, 49, 50,
-                35, 36, 37, 38, 39, 40, 45, 51, 52, 53, 
+                35, 36, 37, 38, 39, 4140, 45, 51, 52, 53, 
 
-                57, 59, 60, 61, 70, 71, 72, 0, 0, 0,
-                4097, 4118, 4114, 4115, 4116, 4117, 4125, 4126, 4127, 0,
-                4098, 4099, 4100, 4101, 4102, 4103, 0, 0, 0, 0,
+                57, 59, 60, 61, 70, 71, 62, 63, 74, 0,
+                4097, 4142, 4118, 4114, 4115, 4116, 4117, 4125, 4126, 4127, 
+                4098, 4099, 4100, 4101, 4102, 4103, 0, 0, 0, 4141, 
                 4122, 4123, 4131, 4132, 4133, 4134, 4135, 4136, 4137, 4138,
                 4124, 4128, 4129, 4139, 0, 0, 0, 0, 0, 
             };

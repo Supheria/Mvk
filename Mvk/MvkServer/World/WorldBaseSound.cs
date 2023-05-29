@@ -49,5 +49,10 @@ namespace MvkServer.World
         /// Проиграть звуковой эффект только для клиента
         /// </summary>
         public virtual void PlaySound(AssetsSample key, vec3 pos, float volume, float pitch) { }
+
+        /// <summary>
+        /// Проиграть звуковой эфект чпок
+        /// </summary>
+        public virtual void PlaySoundPop(vec3 pos) => PlaySound(AssetsSample.Pop, pos, .5f, Rnd.NextFloat() * .7f + .3f);
     }
 }

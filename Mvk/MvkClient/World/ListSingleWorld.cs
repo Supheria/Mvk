@@ -1,4 +1,5 @@
-﻿using MvkServer.World;
+﻿using MvkAssets;
+using MvkServer.World;
 using System.IO;
 
 namespace MvkClient.World
@@ -48,7 +49,7 @@ namespace MvkClient.World
                 }
                 else
                 {
-                    NameWorlds[i] = "gui.world.empty";
+                    NameWorlds[i] = GetNameSlot(i + 1);
                     EmptyWorlds[i] = true;
                 }
             }
@@ -59,5 +60,21 @@ namespace MvkClient.World
         /// </summary>
         public void WorldRemove(int slot) 
             => WorldFile.DeleteDirectory(worldFile.PathCore + slot.ToString());
+
+        /// <summary>
+        /// Получить название мира по слоту
+        /// </summary>
+        public static string GetNameSlot(int slot, bool empty = true)
+        {
+            string prefix = empty ? ".empty" : "";
+            string result = "";
+            switch (slot)
+            {
+                case 1: result = "gui.world.name.robinson" + prefix; break;
+                case 2: result = "gui.world.name.sandbox" + prefix; break;
+                default: result = "gui.world.empty"; break;
+            }
+            return Language.T(result);
+        }
     }
 }

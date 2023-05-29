@@ -50,9 +50,9 @@
         /// </summary>
         Sapling,
         /// <summary>
-        /// Какутус
+        /// Растительный белок 
         /// </summary>
-        Cactus,
+        VegetableProtein,
         /// <summary>
         /// Руда
         /// </summary>

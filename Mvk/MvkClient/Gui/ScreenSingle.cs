@@ -4,12 +4,15 @@ using System;
 
 namespace MvkClient.Gui
 {
+    /// <summary>
+    /// Выбор игрового мира
+    /// </summary>
     public class ScreenSingle : Screen
     {
         private Label label;
         private Button buttonCancel;
-        private Button[] buttonSlots = new Button[5];
-        private Button[] buttonSlotsDel = new Button[5];
+        private readonly Button[] buttonSlots = new Button[5];
+        private readonly Button[] buttonSlotsDel = new Button[5];
         private Client client;
 
         public ScreenSingle(Client client, int slotDel) : base(client)
@@ -22,16 +25,24 @@ namespace MvkClient.Gui
 
             for (int i = 0; i < buttonSlots.Length; i++)
             {
-                buttonSlots[i] = new Button(Language.T(client.ListSingle.NameWorlds[i])) { Width = 356 };
-                buttonSlots[i].Tag = i + 1; // Номер слота
-                buttonSlots[i].Click += ButtonSlots_Click;
+                buttonSlots[i] = new Button(client.ListSingle.NameWorlds[i]) { Width = 356 };
                 buttonSlotsDel[i] = new Button("X")
                 {
                     Width = 40,
                     Enabled = !client.ListSingle.EmptyWorlds[i]
                 };
-                buttonSlotsDel[i].Tag = i + 1; // Номер слота
-                buttonSlotsDel[i].Click += ButtonSlotsDel_Click;
+                if (i < 2)
+                {
+                    buttonSlots[i].Tag = i + 1; // Номер слота
+                    buttonSlots[i].Click += ButtonSlots_Click;
+                    buttonSlotsDel[i].Tag = i + 1; // Номер слота
+                    buttonSlotsDel[i].Click += ButtonSlotsDel_Click;
+                }
+                else
+                {
+                    buttonSlots[i].Enabled = false;
+                    buttonSlotsDel[i].Enabled = false;
+                }
             }
             buttonCancel = new Button(EnumScreenKey.Main, Language.T("gui.cancel"));
             InitButtonClick(buttonCancel);

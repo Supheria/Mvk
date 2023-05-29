@@ -28,6 +28,10 @@
         /// </summary>
         AtlasBlocks,
         /// <summary>
+        /// Атлас уникальных блоков без мапинга
+        /// </summary>
+        AtlasBlocksUnique,
+        /// <summary>
         /// Атлас предметов
         /// </summary>
         AtlasItems,

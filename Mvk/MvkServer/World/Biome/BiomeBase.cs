@@ -14,19 +14,19 @@ namespace MvkServer.World.Biome
         /// <summary>
         /// Высота уровня воды
         /// </summary>
-        public const int HEIGHT_WATER = 48;// 96;
+        public const int HEIGHT_WATER = 47;// 96;
         /// <summary>
         /// Высота воды -1
         /// </summary>
-        public const int HEIGHT_WATER_MINUS = 47;// 95;
+        public const int HEIGHT_WATER_MINUS = 46;// 95;
         /// <summary>
         /// Высота воды -2
         /// </summary>
-        public const int HEIGHT_WATER_MINUS_2 = 46;// 94;
+        public const int HEIGHT_WATER_MINUS_2 = 45;// 94;
         /// <summary>
         /// Высота воды +1
         /// </summary>
-        public const int HEIGHT_WATER_PLUS = 49;// 97;
+        public const int HEIGHT_WATER_PLUS = 48;// 97;
         /// <summary>
         /// Высота холмов, плюсует к высоте воды
         /// </summary>
@@ -50,7 +50,7 @@ namespace MvkServer.World.Biome
         /// <summary>
         /// Минимальная высота для декорации блинчиков
         /// </summary>
-        public const int HEIGHT_PANCAKE_MIN = 40;// 88;
+        public const int HEIGHT_PANCAKE_MIN = 36;// 88;
         /// <summary>
         /// Центр амплитуды пещер
         /// </summary>

@@ -222,7 +222,7 @@ namespace MvkClient.Gui
                 case EnumScreenKey.WorldBegin:
                     // Запуск загрузки мира
                     Exchange(new ScreenWorldLoading(ClientMain, e.Slot));
-                    ClientMain.LoadWorld(e.Slot);
+                    ClientMain.LoadWorld((byte)e.Slot);
                     break;
                 case EnumScreenKey.World: Delete(); break;
                 case EnumScreenKey.InGameMenu: InGameMenu(); break;

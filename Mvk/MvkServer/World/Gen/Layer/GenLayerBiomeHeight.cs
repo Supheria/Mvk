@@ -8,24 +8,24 @@
         /// <summary>
         /// Уровень земель над водой
         /// </summary>
-        public static int LevelEarth = 52;
+        public static int LevelEarth = 51;
         /// <summary>
         /// Масссив высоты для каждого биома /2
         /// 48 - уровень моря
         /// </summary>
         private readonly int[] level = new int[] {
-            12, // Sea
-            38, // River
+            11, // Sea
+            37, // River
             LevelEarth, // Plain
             LevelEarth, // Desert
-            48, // Beach
+            47, // Beach
             LevelEarth, // MixedForest
             LevelEarth, // ConiferousForest
             LevelEarth, // BirchForest
             LevelEarth, // Tropics
-            48, // Swamp
-            74, // Mountains 96
-            64  // MountainsDesert 72
+            47, // Swamp
+            73, // Mountains 96
+            63  // MountainsDesert 72
 
             //42, // Sea
             //44, // River

@@ -13,16 +13,8 @@ namespace MvkServer.World.Gen
 
         public override void Init()
         {
-            genPiece = new WorldGenPiece();
-            genPlants = new WorldGenPlants();
-            genCactus = new WorldGenCactus();
-            genOak = new WorldGenTreeOak();
-            genBirch = new WorldGenTreeBirch();
-            genSpruce = new WorldGenTreeSpruce();
-            genFruit = new WorldGenTreeFruit();
-            genPalm = new WorldGenTreePalm();
+            InitBase();
 
-            genBrol = new WorldGenBrol();
             genCoal = new WorldGenMinable(new BlockState(EnumBlock.OreCoal), 17);
             genIron = new WorldGenMinable(new BlockState(EnumBlock.OreIron), 9);
             genGold = new WorldGenMinable(new BlockState(EnumBlock.OreGold), 7); // 9
@@ -31,11 +23,6 @@ namespace MvkServer.World.Gen
             genGranite = new WorldGenMinable(new BlockState(EnumBlock.Granite), 33);
             genLimestone = new WorldGenMinable(new BlockState(EnumBlock.Limestone), 33);
             genOil = new WorldGenMinable(new BlockState(EnumBlock.Oil), 24);
-
-            genPancakeSand = new WorldGenPancake(EnumBlock.Sand, 9, 8);
-            gemPancakeGravel = new WorldGenPancake(EnumBlock.Gravel, 7, 6);
-            genPancakeClay = new WorldGenPancake(EnumBlock.Clay, 5, 4);
-            genPancakeDirt = new WorldGenPancake(EnumBlock.Dirt, 9, 7);
 
             oilPerChunk = 0;
             dirtPerChunk = 0;

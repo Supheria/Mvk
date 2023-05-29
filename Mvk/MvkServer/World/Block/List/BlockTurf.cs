@@ -34,6 +34,11 @@ namespace MvkServer.World.Block.List
         public override int Hardness(BlockState state) => 10;
 
         /// <summary>
+        /// Цвет блока для подмешенных для гуи
+        /// </summary>
+        public override vec3 ColorGui() => new vec3(.56f, .73f, .35f);
+
+        /// <summary>
         /// Коробки
         /// </summary>
         public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[(xc + zc + xb + zb) & 3];
@@ -52,7 +57,7 @@ namespace MvkServer.World.Block.List
                 boxes[i] = new Box[] {
                     new Box()
                     {
-                        Faces = new Face[] { new Face(Pole.Up, 65, true, colorGreen) }
+                        Faces = new Face[] { new Face(Pole.Up, 65, true, colorGreen).SetBiomeColor() }
                     },
                     new Box()
                     {
@@ -69,10 +74,10 @@ namespace MvkServer.World.Block.List
                     {
                         Faces = new Face[]
                         {
-                            new Face(Pole.East, 66, true, colorGreen),
-                            new Face(Pole.North, 66, true, colorGreen),
-                            new Face(Pole.South, 66, true, colorGreen),
-                            new Face(Pole.West, 66, true, colorGreen)
+                            new Face(Pole.East, 66, true, colorBrown).SetBiomeColor(),
+                            new Face(Pole.North, 66, true, colorBrown).SetBiomeColor(),
+                            new Face(Pole.South, 66, true, colorBrown).SetBiomeColor(),
+                            new Face(Pole.West, 66, true, colorBrown).SetBiomeColor()
                         }
                     }
                 };
@@ -119,7 +124,7 @@ namespace MvkServer.World.Block.List
                             // Дёрн
                             world.SetBlockState(blockPos2, new BlockState(EnumBlock.Turf), 12);
                         }
-                        else if (world.GetBiome(blockPos2) == Biome.EnumBiome.Swamp && random.Next(16) == 0
+                        else if (BlockTina.IsGrows(world, blockPos2) && random.Next(8) == 0
                             && enumBlock2 == EnumBlock.Water && blockState2up.lightSky >= 7
                             && blockState2up.IsAir())
                         {

@@ -43,11 +43,6 @@ namespace MvkServer
         public EntityPlayerServer test;
 
         /// <summary>
-        /// Поток генерации мира
-        /// </summary>
-        private bool threadGenLoop = false;
-
-        /// <summary>
         /// Устанавливается при появлении предупреждения «Не могу угнаться», которое срабатывает снова через 15 секунд. 
         /// </summary>
         protected long timeOfLastWarning;
@@ -107,11 +102,12 @@ namespace MvkServer
         /// Инициализация
         /// </summary>
         /// <returns>вёрнуть цифру тактов загрузки</returns>
-        public void Initialize(int slot)
+        public void Initialize(byte slot, long seed, string name)
         {
             Log = new Logger("");
             Log.Log("server.runing slot={0}", slot);
-            World = new WorldServer(this, slot);
+            if (seed == 0) seed = DateTime.Now.Ticks;
+            World = new WorldServer(this, slot, seed, name);
             packets = new ProcessServerPackets(this);
             frequencyMs = Stopwatch.Frequency / 1000;
             stopwatchTps.Start();
@@ -289,7 +285,6 @@ namespace MvkServer
             }
             finally
             {
-                threadGenLoop = false;
                 serverRunning = false;
                 StopServerLoop();
             }

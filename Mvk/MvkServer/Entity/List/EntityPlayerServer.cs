@@ -368,6 +368,15 @@ namespace MvkServer.Entity.List
             SendPlayerAbilities();
         }
 
+        /// <summary>
+        /// Изменить позицию игрока на стороне сервера
+        /// </summary>
+        public void SetPositionServer(vec3 position)
+        {
+            SetPosition(position);
+            SendPacket(new PacketS08PlayerPosLook(Position, RotationYawHead, RotationPitch));
+        }
+
         public override string ToString()
         {
             return "#" + Id + " " + name + "\r\n" + base.ToString();

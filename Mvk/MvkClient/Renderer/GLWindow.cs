@@ -172,6 +172,7 @@ namespace MvkClient.Renderer
                 float speedTick = 0;
                 if (tps > 0) speedTick = speedTickAll / tps;
                 Debug.SetTpsFps(fps, speedFrameAll / fps, tps, speedTick, countChunk, countChunkAlpha);
+                
                 timerSecond += 1000;
                 speedFrameAll = 0;
                 speedTickAll = 0;
@@ -181,7 +182,10 @@ namespace MvkClient.Renderer
             // ! Отключаем шейдерную программу
             //gl.UseProgram(0);
             Debug.DrawDebug();
-            speedFrameAll += (float)(stopwatch.ElapsedTicks - tickDraw) / MvkStatic.TimerFrequency;
+            float timeFrame = (float)(stopwatch.ElapsedTicks - tickDraw) / MvkStatic.TimerFrequency;
+            speedFrameAll += timeFrame;// (float)(stopwatch.ElapsedTicks - tickDraw) / MvkStatic.TimerFrequency;
+            Debug.FrizFps += timeFrame < 8 ? "." : timeFrame < 17 ? "," : timeFrame < 34 ? ":" : "|";
+            if (Debug.FrizFps.Length > 120) Debug.FrizFps = Debug.FrizFps.Substring(1);
         }
 
         #endregion

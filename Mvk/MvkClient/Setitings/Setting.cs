@@ -51,6 +51,10 @@ namespace MvkClient.Setitings
         /// Размер интерфеса с учётом размера окна
         /// </summary>
         public static int SizeInterface { get; private set; } = 1;
+        /// <summary>
+        /// Зерно случайного числа для мира
+        /// </summary>
+        public static long SeedBegin { get; set; } = 0;
 
         public static float ToFloatSoundVolume() => SoundVolume / 100f;
         public static float ToFloatMusicVolume() => MusicVolume / 100f;
@@ -111,6 +115,7 @@ namespace MvkClient.Setitings
                         else if (Check(vs, "IpAddress")) IpAddress = vs[1].ToString();
                         else if (Check(vs, "SmoothLighting")) SmoothLighting = int.Parse(vs[1]) == 1;
                         else if (Check(vs, "SizeInterface")) SetSizeInterface(int.Parse(vs[1]));
+                        else if (Check(vs, "SeedBegin")) SeedBegin = int.Parse(vs[1]);
                     }
                 }
             }
@@ -141,6 +146,7 @@ namespace MvkClient.Setitings
                 file.WriteLine("IpAddress: " + IpAddress.ToString());
                 file.WriteLine("SmoothLighting: " + (SmoothLighting ? "1" : "0"));
                 file.WriteLine("SizeInterface: " + SizeInterfaceOptions.ToString());
+                file.WriteLine("SeedBegin: " + SeedBegin.ToString());
                 file.Close();
             }
         }

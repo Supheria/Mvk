@@ -22,7 +22,7 @@ namespace MvkServer.World.Biome
         {
             base.InitDecorator(isRobinson);
             Decorator.cactiPerChunk = 1;
-            Decorator.palmPerChunk = 1;
+            Decorator.randomPalm = 4;
         }
     }
 }
