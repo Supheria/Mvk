@@ -15,14 +15,22 @@ namespace MvkServer.World.Block.List
             LightOpacity = (byte)(translucent ? 2 : 0);
             АmbientOcclusion = false;
             BlocksNotSame = false;
-            Color = color;
+            base.color = color;
             AllSideForcibly = true;
             UseNeighborBrightness = true;
             Particle = numberTexture;
             Resistance = .6f;
             Material = EnumMaterial.Glass;
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
-            InitBoxs(numberTexture, true, color);
+
+            quads = new QuadSide[][] { new QuadSide[] {
+                new QuadSide(4).SetTexture(numberTexture).SetSide(Pole.Up),
+                new QuadSide(4).SetTexture(numberTexture).SetSide(Pole.Down),
+                new QuadSide(4).SetTexture(numberTexture).SetSide(Pole.East),
+                new QuadSide(4).SetTexture(numberTexture).SetSide(Pole.West),
+                new QuadSide(4).SetTexture(numberTexture).SetSide(Pole.North),
+                new QuadSide(4).SetTexture(numberTexture).SetSide(Pole.South)
+            } };
         }
 
         /// <summary>

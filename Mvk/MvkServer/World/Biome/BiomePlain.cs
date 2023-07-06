@@ -15,7 +15,7 @@ namespace MvkServer.World.Biome
         public override void InitDecorator(bool isRobinson)
         {
             base.InitDecorator(isRobinson);
-            Decorator.grassPerChunk = 24;
+            Decorator.grassPerChunk = 64;
             Decorator.flowersPerChunk = 3;
             Decorator.fruitPerChunk = 1;
             Decorator.oakPerChunk = 1;

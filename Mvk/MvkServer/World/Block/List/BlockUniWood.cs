@@ -16,30 +16,20 @@ namespace MvkServer.World.Block.List
          */
 
         /// <summary>
-        /// Цвет торца
-        /// </summary>
-        private readonly vec3 colorButt;
-        /// <summary>
-        /// Цвет стороны
-        /// </summary>
-        private readonly vec3 colorSide;
-        /// <summary>
         /// Номер текстуры торца
         /// </summary>
-        private readonly int numberTextureButt;
+        protected readonly int numberTextureButt;
         /// <summary>
         /// Номер текстуры стороны
         /// </summary>
-        private readonly int numberTextureSide;
+        protected readonly int numberTextureSide;
         /// <summary>
         /// Параметр метданных вверх когда ставит игрок для бревна 3 для досок 0
         /// </summary>
         protected int metUp = 0;
 
-        public BlockUniWood(int numberTextureButt, int numberTextureSide, vec3 colorButt, vec3 colorSide)
+        public BlockUniWood(int numberTextureButt, int numberTextureSide)
         {
-            this.colorButt = colorButt;
-            this.colorSide = colorSide;
             this.numberTextureButt = numberTextureButt;
             this.numberTextureSide = numberTextureSide;
             Combustibility = true;
@@ -59,9 +49,9 @@ namespace MvkServer.World.Block.List
         public override int Hardness(BlockState state) => 20;
 
         /// <summary>
-        /// Коробки
+        /// Стороны целого блока для рендера 0 - 3 стороны
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met];
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) => quads[met];
 
         /// <summary>
         /// Действие перед размещеннием блока, для определения метданных
@@ -77,58 +67,33 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs()
+        protected virtual void InitBoxs()
         {
-            boxes = new Box[][] {
-                new Box[] {
-                    new Box()
-                    {
-                        Faces = new Face[]
-                        {
-                            new Face(Pole.Up, numberTextureButt, false, colorButt),
-                            new Face(Pole.Down, numberTextureButt, false, colorButt),
-                            new Face(Pole.East, numberTextureSide, false, colorSide),
-                            new Face(Pole.North, numberTextureSide, false, colorSide),
-                            new Face(Pole.South, numberTextureSide, false, colorSide),
-                            new Face(Pole.West, numberTextureSide, false, colorSide)
-                        }
-                    }
+            quads = new QuadSide[][]
+            {
+                new QuadSide[] {
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.Up),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.Down),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.East),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.West),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.North),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.South)
                 },
-                new Box[] {
-                    new Box()
-                    {
-                        RotateYawUV = 1,
-                        Faces = new Face[]
-                        {
-                            new Face(Pole.Up, numberTextureSide, false, colorSide),
-                            new Face(Pole.Down, numberTextureSide, false, colorSide),
-                            new Face(Pole.East, numberTextureButt, false, colorButt),
-                            new Face(Pole.North, numberTextureSide, false, colorSide),
-                            new Face(Pole.South, numberTextureSide, false, colorSide),
-                            new Face(Pole.West, numberTextureButt, false, colorButt)
-                        }
-                    }
+                new QuadSide[] {
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.Up),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.Down),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.East),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.West),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.North),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.South)
                 },
-                new Box[] {
-                    new Box()
-                    {
-                        RotateYawUV = 1,
-                        Faces = new Face[]
-                        {
-                            new Face(Pole.East, numberTextureSide, false, colorSide),
-                            new Face(Pole.North, numberTextureButt, false, colorButt),
-                            new Face(Pole.South, numberTextureButt, false, colorButt),
-                            new Face(Pole.West, numberTextureSide, false, colorSide)
-                        }
-                    },
-                    new Box()
-                    {
-                        Faces = new Face[]
-                        {
-                            new Face(Pole.Up, numberTextureSide, false, colorSide),
-                            new Face(Pole.Down, numberTextureSide, false, colorSide),
-                        }
-                    }
+                new QuadSide[] {
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.Up),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.Down),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.East),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.West),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.North),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.South)
                 }
             };
         }

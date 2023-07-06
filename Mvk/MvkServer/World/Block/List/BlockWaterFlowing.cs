@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Util;
+﻿using MvkServer.Util;
 using MvkServer.World.Biome;
 
 namespace MvkServer.World.Block.List
@@ -21,57 +20,15 @@ namespace MvkServer.World.Block.List
             BiomeColor = true;
             LightOpacity = 0;
             Material = EnumMaterial.Water;
-            faces = new Face[]
+            sideLiquids = new SideLiquid[]
             {
-                new Face(63, true).SetAnimation(32, 2).SetBiomeColor(),
-                new Face(62, true).SetAnimation(64, 1).SetBiomeColor()
+                new SideLiquid(0, 63, 3, 32, 2),
+                new SideLiquid(1, 63, 3, 32, 2),
+                new SideLiquid(2, 62, 3, 64, 1),
+                new SideLiquid(3, 62, 3, 64, 1),
+                new SideLiquid(4, 62, 3, 64, 1),
+                new SideLiquid(5, 62, 3, 64, 1)
             };
-            InitBoxs();
-        }
-
-        /// <summary>
-        /// Коробки для рендера 
-        /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met];
-
-        /// <summary>
-        /// Инициализация коробок
-        /// </summary>
-        protected void InitBoxs()
-        {
-            vec3 color = new vec3(0.24f, 0.45f, 0.88f);
-
-            boxes = new Box[16][];
-
-            for (int i = 0; i < 16; i++)
-            {
-                boxes[i] = new Box[] {
-                    new Box()
-                    {
-                        From = new vec3(0),
-                        To = new vec3(MvkStatic.Xy[16], MvkStatic.Xy[i + 1], MvkStatic.Xy[16]),
-                        Faces = new Face[]
-                        {
-                            new Face(Pole.Up, 63, true, color).SetAnimation(32, 2),
-                            new Face(Pole.Down, 63, true, color).SetAnimation(32, 2)
-                        }
-                    },
-                    new Box()
-                    {
-                        From = new vec3(0),
-                        To = new vec3(MvkStatic.Xy[16], MvkStatic.Xy[i + 1], MvkStatic.Xy[16]),
-                        UVFrom = new vec2(0, MvkStatic.Uv[16 - i]),
-                        UVTo = new vec2(MvkStatic.Uv[16], MvkStatic.Uv[16]),
-                        Faces = new Face[]
-                        {
-                            new Face(Pole.East, 62, true, color).SetAnimation(64, 1),
-                            new Face(Pole.North, 62, true, color).SetAnimation(64, 1),
-                            new Face(Pole.South, 62, true, color).SetAnimation(64, 1),
-                            new Face(Pole.West, 62, true, color).SetAnimation(64, 1)
-                        }
-                    }
-                };
-            }
         }
 
         /// <summary>

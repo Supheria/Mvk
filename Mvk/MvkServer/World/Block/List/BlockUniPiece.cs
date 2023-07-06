@@ -30,7 +30,7 @@ namespace MvkServer.World.Block.List
             SetUnique();
             IsReplaceable = true;
             Material = EnumMaterial.Piece;
-            InitBoxs();
+            InitQuads();
         }
 
         /// <summary>
@@ -44,9 +44,9 @@ namespace MvkServer.World.Block.List
         public override bool IsPassable(int met) => true;
 
         /// <summary>
-        /// Коробки
+        /// Стороны целого блока для рендера
         /// </summary>
-        //public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[(xc + zc + xb + zb) & 4];
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) => quads[met];
 
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
@@ -60,6 +60,30 @@ namespace MvkServer.World.Block.List
         public override AxisAlignedBB[] GetCollisionBoxesToList(BlockPos blockPos, int met)
         {
             vec3 pos = blockPos.ToVec3();
+            int index = met;
+            if (index > 4) index -= 5;
+            if (index > 4) index -= 5;
+
+            if (index == 1)
+            {
+                pos.x += .25f;
+                pos.z += .25f;
+            }
+            else if (index == 2)
+            {
+                pos.x -= .25f;
+                pos.z += .25f;
+            }
+            else if (index == 3)
+            {
+                pos.x += .25f;
+                pos.z -= .25f;
+            }
+            else if (index == 4)
+            {
+                pos.x -= .25f;
+                pos.z -= .25f;
+            }
             return new AxisAlignedBB[] { new AxisAlignedBB(pos + new vec3(MvkStatic.Xy[4],
                 0, MvkStatic.Xy[4]), pos + new vec3(MvkStatic.Xy[12], MvkStatic.Xy[4], MvkStatic.Xy[12])) };
         }
@@ -67,11 +91,11 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
             if (!CanBlockStay(worldIn, blockPos))
             {
-                DropBlockAsItem(worldIn, blockPos, state, 0);
+                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
                 worldIn.SetBlockToAir(blockPos, 30);
             }
         }
@@ -108,65 +132,36 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Проверка установи блока, можно ли его установить тут
         /// </summary>
-        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos) 
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met = 0) 
             => worldIn.GetBlockState(blockPos.OffsetDown()).GetBlock().FullBlock;
 
-        private Box[] B(vec3 offsetMet)
+        private void InitQuads()
         {
-            return new Box[] {
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[4], MvkStatic.Xy[0], MvkStatic.Xy[4]),
-                    To = new vec3(MvkStatic.Xy[12], MvkStatic.Xy[4], MvkStatic.Xy[12]),
-                    UVFrom = new vec2(MvkStatic.Uv[0], MvkStatic.Uv[0]),
-                    UVTo = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[8]),
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.Up, numberTexture),
-                        new Face(Pole.Down, numberTexture)
-                    },
-                    Translate = offsetMet
-                },
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[4], MvkStatic.Xy[0], MvkStatic.Xy[4]),
-                    To = new vec3(MvkStatic.Xy[12], MvkStatic.Xy[4], MvkStatic.Xy[12]),
-                    UVFrom = new vec2(MvkStatic.Uv[0], MvkStatic.Uv[0]),
-                    UVTo = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[4]),
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.North, numberTexture),
-                        new Face(Pole.South, numberTexture),
-                        new Face(Pole.East, numberTexture),
-                        new Face(Pole.West, numberTexture)
-                    },
-                    Translate = offsetMet
-                }
+            vec3[] offsetMet = new vec3[]
+            {
+                new vec3(0),
+                new vec3(.25f, 0, .25f),
+                new vec3(-.25f, 0, .25f),
+                new vec3(.25f, 0, -.25f),
+                new vec3(-.25f, 0, -.25f)
             };
+            float[] yaw = new float[] { 0, glm.pi45, glm.pi20 };
+            quads = new QuadSide[15][];
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    quads[i * 5 + j] = new QuadSide[]
+                    {
+                        new QuadSide(0).SetTexture(numberTexture, 0, 0, 8, 8).SetSide(Pole.Up, false, 4, 0, 4, 12, 4, 12).SetRotate(yaw[i]).SetTranslate(offsetMet[j]),
+                        new QuadSide(0).SetTexture(numberTexture, 0, 0, 8, 8).SetSide(Pole.Down, false, 4, 0, 4, 12, 4, 12).SetRotate(yaw[i]).SetTranslate(offsetMet[j]),
+                        new QuadSide(0).SetTexture(numberTexture, 0, 0, 8, 8).SetSide(Pole.East, false, 4, 0, 4, 12, 4, 12).SetRotate(yaw[i]).SetTranslate(offsetMet[j]),
+                        new QuadSide(0).SetTexture(numberTexture, 0, 0, 8, 8).SetSide(Pole.West, false, 4, 0, 4, 12, 4, 12).SetRotate(yaw[i]).SetTranslate(offsetMet[j]),
+                        new QuadSide(0).SetTexture(numberTexture, 0, 0, 8, 8).SetSide(Pole.North, false, 4, 0, 4, 12, 4, 12).SetRotate(yaw[i]).SetTranslate(offsetMet[j]),
+                        new QuadSide(0).SetTexture(numberTexture, 0, 0, 8, 8).SetSide(Pole.South, false, 4, 0, 4, 12, 4, 12).SetRotate(yaw[i]).SetTranslate(offsetMet[j])
+                    };
+                }
+            }
         }
-
-        /// <summary>
-        /// Инициализация коробок
-        /// </summary>
-        protected void InitBoxs()
-        {
-            boxes = new Box[1][];
-            boxes[0] = B(new vec3(0));
-            //vec3[] offsetMet = new vec3[]
-            //{
-            //    new vec3(0),
-            //    new vec3(.25f, 0, .25f),
-            //    new vec3(-.25f, 0, .25f),
-            //    new vec3(.25f, 0, -.25f),
-            //    new vec3(-.25f, 0, -.25f)
-            //};
-            //boxes = new Box[5][];
-            //for (int i = 0; i < 5; i++)
-            //{
-            //    boxes[i] = B(offsetMet[i]);
-            //}
-        }
-
-        
     }
 }

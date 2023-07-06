@@ -17,13 +17,19 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Блок длинной травы
         /// </summary>
-        public BlockTallGrass() : base(209, new vec3(.56f, .73f, .35f)) { }
+        public BlockTallGrass() : base(209) { }
 
         /// <summary>
-        /// Коробки
+        /// Блок который замедляет сущность в перемещении на ~30%
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) 
-            => boxes[((xc + zc + xb + zb) & 4) + met * 5];
+        public override bool IsSlow(BlockState state) => state.met == 0;
+
+        /// <summary>
+        /// Стороны целого блока для рендера 0 - 5 стороны
+        /// </summary>
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) 
+            => quads[((xc + zc + xb + zb) & 4) + met * 5];
+
 
         /// <summary>
         /// Передать список ограничительных рамок блока
@@ -38,7 +44,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected override void InitBoxs()
+        protected override void InitQuads()
         {
             vec3[] offsetMet = new vec3[]
             {
@@ -49,41 +55,17 @@ namespace MvkServer.World.Block.List
                 new vec3(-.1875f, 0, -.1875f)
             };
 
-            boxes = new Box[10][];
-            int idx;
-
-            for (int i = 0; i < 2; i++)
+            quads = new QuadSide[10][];
+            for (int i = 0; i < 5; i++)
             {
-                for (int j = 0; j < 5; j++)
-                {
-                    idx = j + i * 5;
-                    boxes[idx] = new Box[] {
-                        new Box()
-                        {
-                            From = new vec3(-.2f, 0, .5f),
-                            To = new vec3(1.2f, 1f, .5f),
-                            RotateYaw = glm.pi45,
-                            Faces = new Face[]
-                            {
-                                new Face(Pole.North, Particle + i, true, Color).SetBiomeColor(),
-                                new Face(Pole.South, Particle + i, true, Color).SetBiomeColor(),
-                            }
-                        },
-                        new Box()
-                        {
-                            From = new vec3(.5f, 0, -.2f),
-                            To = new vec3(.5f, 1f, 1.2f),
-                            RotateYaw = glm.pi45,
-                            Faces = new Face[]
-                            {
-                                new Face(Pole.East, Particle + i, true, Color).SetBiomeColor(),
-                                new Face(Pole.West, Particle + i, true, Color).SetBiomeColor()
-                            }
-                        }
-                    };
-                    boxes[idx][0].Translate = offsetMet[j];
-                    boxes[idx][1].Translate = offsetMet[j];
-                }
+                quads[i] = new QuadSide[] {
+                    new QuadSide(1).SetTexture(Particle).SetSide(Pole.North, true, -2, 0, 8, 18, 16, 8).SetRotate(glm.pi45).SetTranslate(offsetMet[i]),
+                    new QuadSide(1).SetTexture(Particle).SetSide(Pole.West, true, 8, 0, -2, 8, 16, 18).SetRotate(glm.pi45).SetTranslate(offsetMet[i])
+                };
+                quads[i + 5] = new QuadSide[] {
+                    new QuadSide(1).SetTexture(Particle + 1).SetSide(Pole.North, true, -2, 0, 8, 18, 16, 8).SetRotate(glm.pi45).SetTranslate(offsetMet[i]).Wind(),
+                    new QuadSide(1).SetTexture(Particle + 1).SetSide(Pole.West, true, 8, 0, -2, 8, 16, 18).SetRotate(glm.pi45).SetTranslate(offsetMet[i]).Wind()
+                };
             }
         }
 
@@ -101,7 +83,7 @@ namespace MvkServer.World.Block.List
         /// <summary> 
         /// Проверка установи блока, можно ли его установить тут
         /// </summary>
-        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos)
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met = 0)
         {
             EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
             return enumBlock == EnumBlock.TallGrass || enumBlock == EnumBlock.Turf;
@@ -110,7 +92,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
             if (!CanBlockStay(worldIn, blockPos))
             {

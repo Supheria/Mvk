@@ -1,6 +1,4 @@
-﻿using MvkServer.Entity.List;
-using MvkServer.Glm;
-using MvkServer.Item;
+﻿using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -13,33 +11,42 @@ namespace MvkServer.World.Block.List
     {
         /***
          * Met
-         * 0 - листва
-         * 1 - листва с плодом
+         * 0-5 сторона
+         * +6 второй вид
          */
 
         /// <summary>
         /// Может ли у этой листвы быть плод
         /// </summary>
         private readonly bool fetus;
+        /// <summary>
+        /// Блок древисины к которому принадлежит листва
+        /// </summary>
+        protected readonly EnumBlock eBlockLog;
 
-        public BlockUniLeaves(int numberTexture, bool fetus = false)
+        public BlockUniLeaves(int numberTexture, EnumBlock eBlockLog, bool fetus = false)
         {
             this.fetus = fetus;
+            this.eBlockLog = eBlockLog;
             Material = EnumMaterial.Leaves;
+            UseNeighborBrightness = true;
             IsCollidable = false;
             NeedsRandomTick = fetus;
-            SetUnique();
+            SetUnique(true);
             LightOpacity = 2;
-            BiomeColor = true;
-            Color = new vec3(.56f, .73f, .35f);
             Particle = numberTexture;
             Combustibility = true;
             IgniteOddsSunbathing = 30;
             BurnOdds = 60;
             Resistance = .2f;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
-            InitBoxs();
+            InitQuads();
         }
+
+        /// <summary>
+        /// Блок который замедляет сущность в перемещении на ~30%
+        /// </summary>
+        public override bool IsSlow(BlockState state) => true;
 
         /// <summary>
         /// Возвращает количество предметов, которые выпадают при разрушении блока.
@@ -49,144 +56,50 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Коробки для рендера 
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb)
-        {
-            if (fetus)
-            {
-                return boxes[met];
-            }
-
-            return boxes[0];
-            //return boxes[(xc + zc + xb + zb) & 4];
-        }
-
-        /// <summary>
-        /// Инициализация коробок
-        /// </summary>
-        protected void InitBoxs()
-        {
-            if (fetus)
-            {
-                boxes = new Box[][] {
-                    new Box[] {
-                        new Box(Particle, true, Color, true)
-                    },
-                    new Box[] {
-                        new Box(Particle, true, Color, true),
-                        new Box()
-                        {
-                            From = new vec3(0, 0, .5f),
-                            To = new vec3(1, 1, .5f),
-                            RotateYaw = glm.pi45,
-                            Faces = new Face[]
-                            {
-                                new Face(Pole.North, Particle + 2),
-                                new Face(Pole.South, Particle + 2),
-                            }
-                        },
-                        new Box()
-                        {
-                            From = new vec3(.5f, 0, 0),
-                            To = new vec3(.5f, 1, 1),
-                            RotateYaw = glm.pi45,
-                            Faces = new Face[]
-                            {
-                                new Face(Pole.East, Particle + 2),
-                                new Face(Pole.West, Particle + 2)
-                            }
-                        }
-                    }
-                };
-            }
-            else
-            {
-                boxes = new Box[][] {
-                    new Box[] {
-                        new Box(Particle, true, Color, true)
-                    }
-                };
-
-                //vec3[] offsetMet = new vec3[]
-                //{
-                //    new vec3(0, .7f, 0),
-                //    new vec3(.25f, .8f, .25f),
-                //    new vec3(-.25f, -.8f, .25f),
-                //    new vec3(.25f, .9f, -.25f),
-                //    new vec3(-.25f, -.9f, -.25f)
-                //};
-
-                //boxes = new Box[5][];
-                //for (int i = 0; i < 5; i++)
-                //{
-                //    boxes[i] = new Box[] 
-                //    {
-                //        new Box()
-                //        {
-                //            From = new vec3(-.5f, -.5f, .5f),
-                //            To = new vec3(1.5f, 1.5f, .5f),
-                //            UVTo = new vec2(MvkStatic.Uv[16] * 2, MvkStatic.Uv[16]),
-                //            RotateYaw = offsetMet[i].y,
-                //            RotatePitch = .5f,
-                //            Faces = new Face[]
-                //            {
-                //                new Face(Pole.North, Particle, true, Color).SetBiomeColor(),
-                //                new Face(Pole.South, Particle, true, Color).SetBiomeColor()
-                //            }
-                //        },
-                //        new Box()
-                //        {
-                //            From = new vec3(-.5f, -.5f, .5f),
-                //            To = new vec3(1.5f, 1.5f, .5f),
-                //            RotateYaw = -offsetMet[i].y,
-                //            RotatePitch = .5f,
-                //            Faces = new Face[]
-                //            {
-                //                new Face(Pole.North, Particle, true, Color).SetBiomeColor(),
-                //                new Face(Pole.South, Particle, true, Color).SetBiomeColor()
-                //            }
-                //        },
-                //        new Box()
-                //        {
-                //            From = new vec3(-.5f, .5f, -.5f),
-                //            To = new vec3(1.5f, .5f, 1.5f),
-                //            RotateYaw = offsetMet[i].y,
-                //            RotatePitch = .3f,
-                //            Faces = new Face[]
-                //            {
-                //                new Face(Pole.Down, Particle, true, Color).SetBiomeColor(),
-                //                new Face(Pole.Up, Particle, true, Color).SetBiomeColor()
-                //            }
-                //        },
-                //        //new Box()
-                //        //{
-                //        //    From = new vec3(.5f, -.4f, -.4f),
-                //        //    To = new vec3(.5f, 1.4f, 1.4f),
-                //        //    RotateYaw = glm.pi45,
-                //        //    RotatePitch = glm.pi45,
-                //        //    Faces = new Face[]
-                //        //    {
-                //        //        new Face(Pole.East, Particle, true, Color).SetBiomeColor(),
-                //        //        new Face(Pole.West, Particle, true, Color).SetBiomeColor()
-                //        //    }
-                //        //}
-
-
-                //        //    new Box(Particle, true, Color, true)
-                //        //    {
-                //        //        From = new vec3(-.2f),
-                //        //        To = new vec3(1.2f)
-                //        //    }
-                //    };
-                //    //boxes[i][0].Translate = offsetMet[i];
-                //    //boxes[i][1].Translate = offsetMet[i];
-                //}
-            }
-        }
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) => quads[met];
 
         /// <summary>
         /// Является ли блок проходимым, т.е. можно ли ходить через него
         /// </summary>
         public override bool IsPassable(int met) => true;
+
+        /// <summary>
+        /// Действие перед размещеннием блока, для определения метданных
+        /// </summary>
+        public override BlockState OnBlockPlaced(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing)
+        {
+            ushort met = (ushort)side;
+            if (side == Pole.Up || side == Pole.Down)
+            {
+                if (facing.x < .5f) met += 6;
+            }
+            else
+            {
+                if (facing.y < .5f) met += 6;
+            }
+            return state.NewMet(met);
+        }
+
+        /// <summary>
+        /// Смена соседнего блока
+        /// </summary>
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
+        {
+            if (!CanBlockStay(worldIn, blockPos, neighborState.met))
+            {
+                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
+                worldIn.SetBlockToAir(blockPos, 15);
+            }
+        }
+
+        /// <summary>
+        /// Проверка установи блока, можно ли его установить тут
+        /// </summary>
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met = 0)
+        {
+            if (met > 5) met -= 6;
+            return worldIn.GetBlockState(blockPos.OffsetBack(met)).GetEBlock() == eBlockLog;
+        }
 
         public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         {
@@ -194,22 +107,14 @@ namespace MvkServer.World.Block.List
             {
                 if (world.GetMoonPhase() == EnumMoonPhase.NewMoon && random.Next(16) == 0)
                 {
-                    if (EBlock == EnumBlock.LeavesFruit && world.GetTimeYear() == EnumTimeYear.Autumn)
+                    if (EBlock == EnumBlock.LeavesFruit && world.GetTimeYear() == EnumTimeYear.Summer)
                     {
-                        // Яблочки растут только осенью в полнолунию
-                        bool isAir = false;
-                        bool isFetus = false;
-                        BlockState blockState2;
-                        for (int i = 1; i < 6; i++)
+                        // Яблочки растут только летом в полнолунию
+                        BlockPos blockPosDown = blockPos.OffsetDown();
+                        if (world.GetBlockState(blockPosDown).IsAir())
                         {
-                            blockState2 = world.GetBlockState(blockPos.Offset(i));
-                            if (blockState2.IsAir()) isAir = true;
-                            if (blockState2.GetEBlock() == EBlock && blockState2.met == 1) isFetus = true;
-                        }
-                        if (isAir && !isFetus)
-                        {
-                            // появляется плод
-                            world.SetBlockStateMet(blockPos, 1);
+                            // появляется яблоко
+                            world.SetBlockState(blockPosDown, new BlockState(EnumBlock.Apple), 12);
                         }
                     }
                     else if (EBlock == EnumBlock.LeavesPalm)
@@ -234,22 +139,52 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Активация блока, клик правой клавишей мыши по блоку, true - был клик, false - нет такой возможности
+        /// Инициализация коробок
         /// </summary>
-        public override bool OnBlockActivated(WorldBase worldIn, EntityPlayer entityPlayer, BlockPos pos, BlockState state, Pole side, vec3 facing)
+        protected virtual void InitQuads()
         {
-            if (!fetus || state.met == 0) return false;
-            
-            if (!worldIn.IsRemote)
+            int texture1, texture2, index;
+            quads = new QuadSide[12][];
+            for (int i = 0; i < 2; i++)
             {
-                worldIn.SetBlockStateMet(pos, 0);
-                // Берём
-                entityPlayer.Inventory.AddItemStackToInventory(worldIn, entityPlayer,
-                    new ItemStack(Items.GetItemCache(EnumItem.Apple)));
-                // Чпок
-                worldIn.PlaySoundPop(pos.ToVec3() + .5f);
+                texture1 = Particle + i * 3;
+                texture2 = texture1 + 192;
+                index = i * 6;
+                // Up
+                quads[index] = new QuadSide[] {
+                    new QuadSide(0).SetTexture(texture1, 0, 0, 48, 48, 1).SetSide(Pole.East, true, 8, 0, -16, 8, 48, 32).SetRotate(-.7f, 0, -.26f).Wind(),
+                    new QuadSide(0).SetTexture(texture1, 0, 0, 48, 48, 1).SetSide(Pole.East, true, 8, 0, -16, 8, 48, 32).SetRotate(.8f, 0, .21f).Wind(),
+                };
+                // Down
+                quads[index + 1] = new QuadSide[] {
+                    new QuadSide(0).SetTexture(texture1, 0, 0, 48, 48, 3).SetSide(Pole.East, true, 8, -32, -16, 8, 16, 32).SetRotate(-.13f, 0, -.16f).Wind(2),
+                    new QuadSide(0).SetTexture(texture1, 0, 0, 48, 48, 3).SetSide(Pole.North, true, -16, -32, 8, 32, 16, 8).SetRotate(.12f, 0, .17f).Wind(2),
+                };
+                // East
+                quads[index + 2] = new QuadSide[] {
+                    new QuadSide(0).SetTexture(texture2, 0, 0, 48, 48).SetSide(Pole.South, true, 0, -16, 8, 48, 32, 8).SetRotate(-.42f, -.1f).Wind(),
+                    new QuadSide(0).SetTexture(texture2, 0, 0, 48, 48).SetSide(Pole.South, true, 0, -16, 8, 48, 32, 8).SetRotate(.42f, .1f).Wind(),
+                    new QuadSide(0).SetTexture(texture1, 0, 0, 48, 48).SetSide(Pole.Down, true, 0, 8, -16, 48, 8, 32).SetRotate(0, .3f).Wind()
+                };
+                // West
+                quads[index + 3] = new QuadSide[] {
+                    new QuadSide(0).SetTexture(texture2, 0, 0, 48, 48).SetSide(Pole.South, true, 0, -16, 8, 48, 32, 8).SetRotate(2.7f, -.08f).Wind(),
+                    new QuadSide(0).SetTexture(texture2, 0, 0, 48, 48).SetSide(Pole.South, true, 0, -16, 8, 48, 32, 8).SetRotate(3.58f, .08f).Wind(),
+                    new QuadSide(0).SetTexture(texture1, 0, 0, 48, 48).SetSide(Pole.Down, true, 0, 8, -16, 48, 8, 32).SetRotate(glm.pi, .3f).Wind()
+                };
+                // North
+                quads[index + 4] = new QuadSide[] {
+                    new QuadSide(0).SetTexture(texture2, 0, 0, 48, 48).SetSide(Pole.South, true, 0, -16, 8, 48, 32, 8).SetRotate(1.16f, -.1f).Wind(),
+                    new QuadSide(0).SetTexture(texture2, 0, 0, 48, 48).SetSide(Pole.South, true, 0, -16, 8, 48, 32, 8).SetRotate(2f, .1f).Wind(),
+                    new QuadSide(0).SetTexture(texture1, 0, 0, 48, 48).SetSide(Pole.Down, true, 0, 8, -16, 48, 8, 32).SetRotate(glm.pi90, .3f).Wind()
+                };
+                // South
+                quads[index + 5] = new QuadSide[] {
+                    new QuadSide(0).SetTexture(texture2, 0, 0, 48, 48).SetSide(Pole.South, true, 0, -16, 8, 48, 32, 8).SetRotate(4.28f, -.1f).Wind(),
+                    new QuadSide(0).SetTexture(texture2, 0, 0, 48, 48).SetSide(Pole.South, true, 0, -16, 8, 48, 32, 8).SetRotate(5.12f, .1f).Wind(),
+                    new QuadSide(0).SetTexture(texture1, 0, 0, 48, 48).SetSide(Pole.Down, true, 0, 8, -16, 48, 8, 32).SetRotate(glm.pi270, .3f).Wind()
+                };
             }
-            return true;
         }
     }
 }

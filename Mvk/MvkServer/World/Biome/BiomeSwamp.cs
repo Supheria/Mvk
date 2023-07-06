@@ -21,7 +21,7 @@ namespace MvkServer.World.Biome
             base.InitDecorator(isRobinson);
             Decorator.oakPerChunk = 1;
             Decorator.fruitPerChunk = 1;
-            Decorator.grassPerChunk = 8;
+            Decorator.grassPerChunk = 16;
             Decorator.sandPancakePerChunk = 1;
             Decorator.clayPancakePerChunk = 4;
             Decorator.tinaPerChunk = 96;

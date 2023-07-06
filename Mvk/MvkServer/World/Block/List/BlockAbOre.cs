@@ -7,18 +7,14 @@ namespace MvkServer.World.Block.List
     /// </summary>
     public abstract class BlockAbOre : BlockBase
     {
-        public BlockAbOre(int numberTexture, vec3 color)
+        public BlockAbOre(int numberTexture)
         {
             Material = EnumMaterial.Ore;
-            Color = color;
             Particle = numberTexture;
             Resistance = 5.0f;
-            InitBoxs();
+            InitQuads();
         }
 
-        protected virtual void InitBoxs()
-        {
-            InitBoxs(Particle, false, Color);
-        }
+        protected virtual void InitQuads() => InitQuads(Particle);
     }
 }

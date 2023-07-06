@@ -34,12 +34,12 @@ namespace MvkServer.World.Block.List
             this.numberTextureButt = numberTextureButt;
             this.numberTextureSide = numberTextureSide;
             SetUnique();
-            Color = color;
+            base.color = color;
             Particle = numberTextureSide;
             Resistance = .6f;
             Material = EnumMaterial.GlassPane;
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
-            InitBoxs();
+            InitQuads();
         }
 
         /// <summary>
@@ -50,11 +50,11 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Коробки для рендера 
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met];
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) => quads[met];
         /// <summary>
         /// Коробки для рендера 2д GUI
         /// </summary>
-        public override Box[] GetBoxesGui() => boxes[10];
+        public override QuadSide[] GetQuadsGui() => quads[10];
 
         /// <summary>
         /// Спавн предмета при разрушении этого блока
@@ -141,10 +141,10 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
             ushort met = MetUpdate(worldIn, blockPos);
-            if (met != state.met) worldIn.SetBlockStateMet(blockPos, met);
+            if (met != neighborState.met) worldIn.SetBlockStateMet(blockPos, met);
         }
 
         private ushort MetUpdate(WorldBase worldIn, BlockPos blockPos)
@@ -167,44 +167,23 @@ namespace MvkServer.World.Block.List
             return (block.IsNotTransparent() && block.FullBlock) || block.Material == EnumMaterial.Glass || block.Material == EnumMaterial.GlassPane;
         }
 
-        private Box B(int x1, int x2, int z1, int z2, int u1, int u2, int v1, int v2, Pole p1, Pole p2, int t)
-        {
-            return new Box()
-            {
-                From = new vec3(MvkStatic.Xy[x1], MvkStatic.Xy[0], MvkStatic.Xy[z1]),
-                To = new vec3(MvkStatic.Xy[x2], MvkStatic.Xy[16], MvkStatic.Xy[z2]),
-                UVFrom = new vec2(MvkStatic.Uv[u1], MvkStatic.Uv[v1]),
-                UVTo = new vec2(MvkStatic.Uv[u2], MvkStatic.Uv[v2]),
-                Faces = new Face[] { new Face(p1, t, true, Color), new Face(p2, t, true, Color), }
-            };
-        }
-
-        private Box B(int x1, int x2, int z1, int z2, int u1, int u2, int v1, int v2, Pole p, int t)
-        {
-            return new Box()
-            {
-                From = new vec3(MvkStatic.Xy[x1], MvkStatic.Xy[0], MvkStatic.Xy[z1]),
-                To = new vec3(MvkStatic.Xy[x2], MvkStatic.Xy[16], MvkStatic.Xy[z2]),
-                UVFrom = new vec2(MvkStatic.Uv[u1], MvkStatic.Uv[v1]),
-                UVTo = new vec2(MvkStatic.Uv[u2], MvkStatic.Uv[v2]),
-                Faces = new Face[] { new Face(p, t, true, Color) }
-            };
-        }
-
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs()
+        protected void InitQuads()
         {
-            int i, index;
+            int i, j, index;
             int[] ar;
             float[] angle;
-            boxes = new Box[16][];
+            quads = new QuadSide[16][];
             // Нет сторон
-            boxes[0] = new Box[3];
-            boxes[0][0] = B(7, 9, 7, 9, 7, 9, 7, 9, Pole.Up, Pole.Down, numberTextureButt);
-            boxes[0][1] = B(7, 9, 7, 9, 7, 9, 0, 16, Pole.North, Pole.South, numberTextureSide);
-            boxes[0][2] = B(7, 9, 7, 9, 7, 9, 0, 16, Pole.East, Pole.West, numberTextureSide);
+            quads[0] = new QuadSide[6];
+            quads[0][0] = QuadColor(7, 9, 7, 9, 7, 9, 7, 9, Pole.Up, numberTextureButt);
+            quads[0][1] = QuadColor(7, 9, 7, 9, 7, 9, 7, 9, Pole.Down, numberTextureButt);
+            quads[0][2] = QuadColor(7, 9, 7, 9, 7, 9, 0, 16, Pole.North, numberTextureSide);
+            quads[0][3] = QuadColor(7, 9, 7, 9, 7, 9, 0, 16, Pole.South, numberTextureSide);
+            quads[0][4] = QuadColor(7, 9, 7, 9, 7, 9, 0, 16, Pole.East, numberTextureSide);
+            quads[0][5] = QuadColor(7, 9, 7, 9, 7, 9, 0, 16, Pole.West, numberTextureSide);
 
             // одна сторона
             ar = new int[] { 1, 2, 4, 8 };
@@ -212,16 +191,16 @@ namespace MvkServer.World.Block.List
             for (i = 0; i < 4; i++)
             {
                 index = ar[i];
-                boxes[index] = new Box[4];
-                boxes[index][0] = B(7, 9, 7, 16, 7, 9, 0, 9, Pole.Up, Pole.Down, numberTextureButt);
-                boxes[index][0].RotateYaw = angle[i];
-                boxes[index][1] = B(7, 9, 7, 16, 7, 9, 0, 16, Pole.North, Pole.South, numberTextureButt);
-                boxes[index][1].RotateYaw = angle[i];
-                boxes[index][2] = B(7, 9, 7, 16, 0, 9, 0, 16, Pole.East, numberTextureSide);
-                boxes[index][2].RotateYaw = angle[i];
-                boxes[index][3] = B(7, 9, 7, 16, 7, 16, 0, 16, Pole.West, numberTextureSide);
-                boxes[index][3].RotateYaw = angle[i];
+                quads[index] = new QuadSide[6];
+                quads[index][0] = QuadColor(7, 9, 7, 16, 7, 9, 0, 9, Pole.Up, numberTextureButt);
+                quads[index][1] = QuadColor(7, 9, 7, 16, 7, 9, 0, 9, Pole.Down, numberTextureButt);
+                quads[index][2] = QuadColor(7, 9, 7, 16, 7, 9, 0, 16, Pole.North, numberTextureButt);
+                quads[index][3] = QuadColor(7, 9, 7, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
+                quads[index][4] = QuadColor(7, 9, 7, 16, 0, 9, 0, 16, Pole.East, numberTextureSide);
+                quads[index][5] = QuadColor(7, 9, 7, 16, 7, 16, 0, 16, Pole.West, numberTextureSide);
+                for (j = 0; j < 6; j++) quads[index][j].SetRotate(angle[i]);
             }
+
             // угол 2 стороны
             ar = new int[] { 3, 6, 12, 9 };
             angle = new float[] { 0, glm.pi90, glm.pi, glm.pi270 };
@@ -229,23 +208,22 @@ namespace MvkServer.World.Block.List
             for (i = 0; i < 4; i++)
             {
                 index = ar[i];
-                boxes[index] = new Box[8];
-                boxes[index][0] = B(7, 9, 7, 16, 7, 9, 0, 9, Pole.Up, Pole.Down, numberTextureButt);
-                boxes[index][0].RotateYaw = angle[i];
-                boxes[index][1] = B(7, 9, 9, 16, 7, 9, 0, 9, Pole.Up, Pole.Down, numberTextureButt);
-                boxes[index][1].RotateYaw = glm.pi90 + angle[i];
-                boxes[index][2] = B(7, 9, 7, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
-                boxes[index][2].RotateYaw = angle[i];
-                boxes[index][3] = B(7, 9, 7, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
-                boxes[index][3].RotateYaw = glm.pi90 + angle[i];
-                boxes[index][4] = B(7, 9, 7, 16, 7, 16, 0, 16, Pole.West, numberTextureSide);
-                boxes[index][4].RotateYaw = angle[i];
-                boxes[index][5] = B(7, 16, 7, 16, 0, 9, 0, 16, Pole.North, numberTextureSide);
-                boxes[index][5].RotateYaw = angle[i];
-                boxes[index][6] = B(7, 9, 9, 16, 0, 7, 0, 16, Pole.East, numberTextureSide);
-                boxes[index][6].RotateYaw = angle[i];
-                boxes[index][7] = B(9, 16, 7, 9, 9, 16, 0, 16, Pole.South, numberTextureSide);
-                boxes[index][7].RotateYaw = angle[i];
+                quads[index] = new QuadSide[10];
+                quads[index][0] = QuadColor(7, 9, 7, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
+                quads[index][0].SetRotate(glm.pi90 + angle[i]);
+                quads[index][1] = QuadColor(7, 9, 9, 16, 7, 9, 0, 9, Pole.Up, numberTextureButt);
+                quads[index][1].SetRotate(glm.pi90 + angle[i]);
+                quads[index][2] = QuadColor(7, 9, 9, 16, 7, 9, 0, 9, Pole.Down, numberTextureButt);
+                quads[index][2].SetRotate(glm.pi90 + angle[i]);
+
+                quads[index][3] = QuadColor(7, 9, 7, 16, 7, 9, 0, 9, Pole.Up, numberTextureButt);
+                quads[index][4] = QuadColor(7, 9, 7, 16, 7, 9, 0, 9, Pole.Down, numberTextureButt);
+                quads[index][5] = QuadColor(7, 9, 7, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
+                quads[index][6] = QuadColor(7, 9, 7, 16, 7, 16, 0, 16, Pole.West, numberTextureSide);
+                quads[index][7] = QuadColor(7, 16, 7, 16, 0, 9, 0, 16, Pole.North, numberTextureSide);
+                quads[index][8] = QuadColor(7, 9, 9, 16, 0, 7, 0, 16, Pole.East, numberTextureSide);
+                quads[index][9] = QuadColor(9, 16, 7, 9, 9, 16, 0, 16, Pole.South, numberTextureSide);
+                for (j = 3; j < 10; j++) quads[index][j].SetRotate(angle[i]);
             }
             // прямые 2 стороны
             ar = new int[] { 5, 10 };
@@ -253,13 +231,14 @@ namespace MvkServer.World.Block.List
             for (i = 0; i < 2; i++)
             {
                 index = ar[i];
-                boxes[index] = new Box[3];
-                boxes[index][0] = B(7, 9, 0, 16, 7, 9, 0, 16, Pole.Up, Pole.Down, numberTextureButt);
-                boxes[index][0].RotateYaw = angle[i];
-                boxes[index][1] = B(7, 9, 0, 16, 7, 9, 0, 16, Pole.North, Pole.South, numberTextureButt);
-                boxes[index][1].RotateYaw = angle[i];
-                boxes[index][2] = B(7, 9, 0, 16, 0, 16, 0, 16, Pole.East, Pole.West, numberTextureSide);
-                boxes[index][2].RotateYaw = angle[i];
+                quads[index] = new QuadSide[6];
+                quads[index][0] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.Up, numberTextureButt);
+                quads[index][1] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.Down, numberTextureButt);
+                quads[index][2] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.North, numberTextureButt);
+                quads[index][3] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
+                quads[index][4] = QuadColor(7, 9, 0, 16, 0, 16, 0, 16, Pole.East, numberTextureSide);
+                quads[index][5] = QuadColor(7, 9, 0, 16, 0, 16, 0, 16, Pole.West, numberTextureSide);
+                for (j = 0; j < 6; j++) quads[index][j].SetRotate(angle[i]);
             }
             // три стороны
             ar = new int[] { 7, 14, 13, 11 };
@@ -267,44 +246,44 @@ namespace MvkServer.World.Block.List
             for (i = 0; i < 4; i++)
             {
                 index = ar[i];
-                boxes[index] = new Box[7];
-                boxes[index][0] = B(7, 9, 9, 16, 7, 9, 0, 7, Pole.Up, Pole.Down, numberTextureButt);
-                boxes[index][0].RotateYaw = glm.pi90 + angle[i];
-                boxes[index][1] = B(7, 9, 9, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
-                boxes[index][1].RotateYaw = glm.pi90 + angle[i];
-                boxes[index][2] = B(7, 9, 9, 16, 0, 7, 0, 16, Pole.East, numberTextureSide);
-                boxes[index][2].RotateYaw = glm.pi90 + angle[i];
-                boxes[index][3] = B(7, 9, 9, 16, 9, 16, 0, 16, Pole.West, numberTextureSide);
-                boxes[index][3].RotateYaw = glm.pi90 + angle[i];
-                boxes[index][4] = B(7, 9, 0, 16, 7, 9, 0, 16, Pole.Up, Pole.Down, numberTextureButt);
-                boxes[index][4].RotateYaw = angle[i];
-                boxes[index][5] = B(7, 9, 0, 16, 7, 9, 0, 16, Pole.North, Pole.South, numberTextureButt);
-                boxes[index][5].RotateYaw = angle[i];
-                boxes[index][6] = B(7, 9, 0, 16, 0, 16, 0, 16, Pole.East, Pole.West, numberTextureSide);
-                boxes[index][6].RotateYaw = angle[i];
+                quads[index] = new QuadSide[11];
+                quads[index][0] = QuadColor(7, 9, 9, 16, 7, 9, 0, 7, Pole.Up, numberTextureButt);
+                quads[index][1] = QuadColor(7, 9, 9, 16, 7, 9, 0, 7, Pole.Down, numberTextureButt);
+                quads[index][2] = QuadColor(7, 9, 9, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
+                quads[index][3] = QuadColor(7, 9, 9, 16, 0, 7, 0, 16, Pole.East, numberTextureSide);
+                quads[index][4] = QuadColor(7, 9, 9, 16, 9, 16, 0, 16, Pole.West, numberTextureSide);
+                for (j = 0; j < 5; j++) quads[index][j].SetRotate(glm.pi90 + angle[i]);
+
+                quads[index][5] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.Up, numberTextureButt);
+                quads[index][6] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.Down, numberTextureButt);
+                quads[index][7] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.North, numberTextureButt);
+                quads[index][8] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
+                quads[index][9] = QuadColor(7, 9, 0, 16, 0, 16, 0, 16, Pole.East, numberTextureSide);
+                quads[index][10] = QuadColor(7, 9, 0, 16, 0, 16, 0, 16, Pole.West, numberTextureSide);
+                for (j = 5; j < 11; j++) quads[index][j].SetRotate(angle[i]);
             }
             // Все стороны
-            boxes[15] = new Box[11];
-            boxes[15][0] = B(7, 9, 9, 16, 7, 9, 0, 7, Pole.Up, Pole.Down, numberTextureButt);
-            boxes[15][0].RotateYaw = glm.pi90;
-            boxes[15][1] = B(7, 9, 9, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
-            boxes[15][1].RotateYaw = glm.pi90;
-            boxes[15][2] = B(7, 9, 9, 16, 0, 7, 0, 16, Pole.East, numberTextureSide);
-            boxes[15][2].RotateYaw = glm.pi90;
-            boxes[15][3] = B(7, 9, 9, 16, 9, 16, 0, 16, Pole.West, numberTextureSide);
-            boxes[15][3].RotateYaw = glm.pi90;
-            boxes[15][4] = B(7, 9, 9, 16, 7, 9, 0, 7, Pole.Up, Pole.Down, numberTextureButt);
-            boxes[15][4].RotateYaw = glm.pi270;
-            boxes[15][5] = B(7, 9, 9, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
-            boxes[15][5].RotateYaw = glm.pi270;
-            boxes[15][6] = B(7, 9, 9, 16, 0, 7, 0, 16, Pole.East, numberTextureSide);
-            boxes[15][6].RotateYaw = glm.pi270;
-            boxes[15][7] = B(7, 9, 9, 16, 9, 16, 0, 16, Pole.West, numberTextureSide);
-            boxes[15][7].RotateYaw = glm.pi270;
-            boxes[15][8] = B(7, 9, 0, 16, 7, 9, 0, 16, Pole.Up, Pole.Down, numberTextureButt);
-            boxes[15][9] = B(7, 9, 0, 16, 7, 9, 0, 16, Pole.North, Pole.South, numberTextureButt);
-            boxes[15][10] = B(7, 9, 0, 16, 0, 16, 0, 16, Pole.East, Pole.West, numberTextureSide);
+            quads[15] = new QuadSide[16];
+            quads[15][0] = QuadColor(7, 9, 9, 16, 7, 9, 0, 7, Pole.Up, numberTextureButt);
+            quads[15][1] = QuadColor(7, 9, 9, 16, 7, 9, 0, 7, Pole.Down, numberTextureButt);
+            quads[15][2] = QuadColor(7, 9, 9, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
+            quads[15][3] = QuadColor(7, 9, 9, 16, 0, 7, 0, 16, Pole.East, numberTextureSide);
+            quads[15][4] = QuadColor(7, 9, 9, 16, 9, 16, 0, 16, Pole.West, numberTextureSide);
+            for (j = 0; j < 5; j++) quads[15][j].SetRotate(glm.pi90);
 
+            quads[15][5] = QuadColor(7, 9, 9, 16, 7, 9, 0, 7, Pole.Up, numberTextureButt);
+            quads[15][6] = QuadColor(7, 9, 9, 16, 7, 9, 0, 7, Pole.Down, numberTextureButt);
+            quads[15][7] = QuadColor(7, 9, 9, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
+            quads[15][8] = QuadColor(7, 9, 9, 16, 0, 7, 0, 16, Pole.East, numberTextureSide);
+            quads[15][9] = QuadColor(7, 9, 9, 16, 9, 16, 0, 16, Pole.West, numberTextureSide);
+            for (j = 5; j < 10; j++) quads[15][j].SetRotate(glm.pi270);
+
+            quads[15][10] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.Up, numberTextureButt);
+            quads[15][11] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.Down, numberTextureButt);
+            quads[15][12] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.North, numberTextureButt);
+            quads[15][13] = QuadColor(7, 9, 0, 16, 7, 9, 0, 16, Pole.South, numberTextureButt);
+            quads[15][14] = QuadColor(7, 9, 0, 16, 0, 16, 0, 16, Pole.East, numberTextureSide);
+            quads[15][15] = QuadColor(7, 9, 0, 16, 0, 16, 0, 16, Pole.West, numberTextureSide);
         }
     }
 }

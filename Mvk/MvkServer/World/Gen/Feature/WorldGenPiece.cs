@@ -21,7 +21,7 @@ namespace MvkServer.World.Gen.Feature
             {
                 ChunkBase chunk = world.GetChunk(blockPos);
                 chunk.StorageArrays[blockPos.Y >> 4].SetData(
-                    (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15), id
+                    (blockPos.Y & 15) << 8 | (blockPos.Z & 15) << 4 | (blockPos.X & 15), id, (ushort)rand.Next(15)
                 );
                 return true;
             }

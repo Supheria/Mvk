@@ -1,4 +1,5 @@
 ﻿using MvkAssets;
+using MvkClient.Renderer.Block;
 using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.World;
@@ -24,7 +25,7 @@ namespace MvkClient.Entity.Particle
 
             BlockBase block = Blocks.GetBlockCache(eBlock);
             // пробуем цвет травы подкрасить
-            color *= block.Color;
+            color *= (block.IsBiomeColorGrass() ? BlockColorBiome.GrassDefault : block.GetColorGuiOrPartFX());
             int u = block.Particle % 64;
             int v = block.Particle / 64;
 

@@ -32,23 +32,8 @@ namespace MvkServer.World.Block.List
         /// 1 = 14; 2 = 7; вода 3 = 4; нефть 4 = 3; лава
         /// </summary>
         protected int stepWave = 2;
-        
-        public BlockAbLiquid()
-        {
-            FullBlock = false;
-            Liquid = true;
 
-            BlocksNotSame = false;
-            UseNeighborBrightness = true;
-            AllSideForcibly = true;
-            IsAction = false;
-            IsCollidable = false;
-            АmbientOcclusion = false;
-            Shadow = false;
-            IsReplaceable = true;
-            IsParticle = false;
-            Resistance = 100f;
-        }
+        public BlockAbLiquid() => SetLiquid();
 
         /// <summary>
         /// Действие блока после его установки
@@ -64,9 +49,9 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
-            if (!Mixing(worldIn, blockPos, state))
+            if (!Mixing(worldIn, blockPos, neighborState))
             {
                 worldIn.SetBlockTick(blockPos, tickRate);
             }

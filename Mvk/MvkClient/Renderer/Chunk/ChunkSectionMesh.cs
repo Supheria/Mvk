@@ -15,6 +15,16 @@
         public byte[] bufferData;
 
         /// <summary>
+        /// Объект буфера уникальных блоков
+        /// </summary>
+        public byte[] bufferDataUnique;
+
+        /// <summary>
+        /// Объект буфера уникальных блоков с прорисовкой с двух сторон
+        /// </summary>
+        public byte[] bufferDataUniqueBothSides;
+
+        /// <summary>
         /// Инициализировать объект
         /// </summary>
         public void Init() => Clear();
@@ -25,6 +35,8 @@
         public void Clear()
         {
             bufferData = new byte[] { };
+            bufferDataUnique = new byte[] { };
+            bufferDataUniqueBothSides = new byte[] { };
             isModifiedRender = false;
         }
     }

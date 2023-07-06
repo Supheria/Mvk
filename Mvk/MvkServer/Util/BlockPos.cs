@@ -47,6 +47,10 @@ namespace MvkServer.Util
         /// </summary>
         public BlockPos Offset(int i) => Plus(MvkStatic.ArraOne3d6[i]);
         /// <summary>
+        /// Позиция соседнего блока обратной стороны
+        /// </summary>
+        public BlockPos OffsetBack(int i) => Plus(MvkStatic.ArraOne3d6back[i]);
+        /// <summary>
         /// Позиция соседнего блока
         /// </summary>
         public BlockPos Offset(Pole pole) => Plus(EnumFacing.DirectionVec(pole));

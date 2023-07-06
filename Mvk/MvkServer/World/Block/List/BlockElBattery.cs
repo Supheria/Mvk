@@ -1,6 +1,5 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Util;
-using System.Collections.Generic;
 
 namespace MvkServer.World.Block.List
 {
@@ -22,7 +21,7 @@ namespace MvkServer.World.Block.List
         {
             IsAddMet = true;
             Resistance = 50;
-            InitBoxs();
+            InitQuads();
         }
 
         /// <summary>
@@ -37,30 +36,34 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Коробки
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb)
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb)
         {
             //int index = (met + 3) / 4; // 1-15
             int index = (met + 63) / 64; // 1-255
-            return boxes[index];
+            return quads[index];
         }
 
         /// <summary>
         /// Коробки для рендера 2д GUI
         /// </summary>
-        public override Box[] GetBoxesGui() => boxes[4];
+        public override QuadSide[] GetQuadsGui() => quads[4];
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs()
+        protected void InitQuads()
         {
-            boxes = new Box[][] {
-                new Box[] { new Box(392, false, new vec3(1)) },
-                new Box[] { new Box(391, false, new vec3(1)) },
-                new Box[] { new Box(390, false, new vec3(1)) },
-                new Box[] { new Box(389, false, new vec3(1)) },
-                new Box[] { new Box(388, false, new vec3(1)) }
-            };
+            quads = new QuadSide[5][];
+            int texture;
+            for (int i = 0; i < 5; i++)
+            {
+                texture = 392 - i;
+                quads[i] = new QuadSide[6];
+                for (int j = 0; j < 6; j++)
+                {
+                    quads[i][j] = new QuadSide(0).SetTexture(texture).SetSide((Pole)j);
+                }
+            }
         }
     }
 }

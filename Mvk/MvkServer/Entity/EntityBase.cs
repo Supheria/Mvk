@@ -146,9 +146,9 @@ namespace MvkServer.Entity
         /// </summary>
         private bool inOil;
         /// <summary>
-        /// Находится ли этот объект в настоящее время в тине
+        /// Находится ли этот объект в настоящее время в блоке с замедлением
         /// </summary>
-        private bool inTina;
+        private bool inSlow;
 
         public EntityBase(WorldBase world)
         {
@@ -345,23 +345,17 @@ namespace MvkServer.Entity
             float y0 = motion.y;
             float z0 = motion.z;
 
-            if (IsInTina() && IsSpeed​​Limit())
+            if (IsInSlow() && IsSpeed​​Limit())
             {
-                // Медленее в 4 раза
-                //x0 *= .25f;
-                //y0 *= .500001f;
-                //z0 *= .25f;
-                // медленее в 2 раза
-                x0 *= .5f;
-                y0 *= .7500001f;
-                z0 *= .5f;
+                // медленее чуть блоьше половины 
+                x0 *= .67f;
+                y0 *= .85f;
+                z0 *= .67f;
             }
 
             float x = x0;
             float y = y0;
             float z = z0;
-
-            
 
             bool isSneaking = false;
             if (this is EntityLiving entityLiving)
@@ -635,10 +629,10 @@ namespace MvkServer.Entity
         /// </summary>
         public virtual bool IsInOil() => inOil;
         /// <summary>
-        /// Проверяет, находится ли этот объект внутри тины (если поле inTina имеет значение 
+        /// Проверяет, находится ли этот объект внутри блоков которые тормозят (если поле inSlow имеет значение 
         /// true в результате HandleLiquidMovement()
         /// </summary>
-        public virtual bool IsInTina() => inTina;
+        public virtual bool IsInSlow() => inSlow;
 
         /// <summary>
         /// Возвращает, если этот объект находится в воде, и в конечном итоге 
@@ -669,8 +663,8 @@ namespace MvkServer.Entity
             inLava = liquid.IsLava();
             // Проверка в нефте
             inOil = liquid.IsOil();
-            // Проверка в тине
-            inTina = liquid.IsTina();
+            // Проверка замедления
+            inSlow = liquid.IsSlow();
 
             if (inOil || inWater)
             {

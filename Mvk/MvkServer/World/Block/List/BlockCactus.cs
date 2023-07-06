@@ -20,13 +20,20 @@ namespace MvkServer.World.Block.List
         public BlockCactus()
         {
             NeedsRandomTick = true;
-            Color = new vec3(.1f, .6f, .2f);
             SetUnique();
             Material = EnumMaterial.VegetableProtein;
             Particle = 193;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };
-            InitBoxs();
+            
+            quads = new QuadSide[][] { new QuadSide[] {
+                new QuadSide(0).SetTexture(194).SetSide(Pole.Up),
+                new QuadSide(0).SetTexture(192).SetSide(Pole.Down),
+                new QuadSide(0).SetTexture(193).SetSide(Pole.East, false, 1, 0, 0, 15, 16, 16),
+                new QuadSide(0).SetTexture(193).SetSide(Pole.West, false, 1, 0, 0, 15, 16, 16),
+                new QuadSide(0).SetTexture(193).SetSide(Pole.North, false, 0, 0, 1, 16, 16, 15),
+                new QuadSide(0).SetTexture(193).SetSide(Pole.South, false, 0, 0, 1, 16, 16, 15)
+            } };
         }
 
         /// <summary>
@@ -42,11 +49,11 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
             if (!CanBlockStay(worldIn, blockPos))
             {
-                DropBlockAsItem(worldIn, blockPos, state, 0);
+                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
                 worldIn.SetBlockToAir(blockPos, 30);
             }
         }
@@ -65,7 +72,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Проверка установи блока, можно ли его установить тут
         /// </summary>
-        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos)
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met = 0)
         {
             EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
             return (enumBlock == EnumBlock.Sand || enumBlock == EnumBlock.Cactus)
@@ -83,47 +90,6 @@ namespace MvkServer.World.Block.List
             return new AxisAlignedBB[] { new AxisAlignedBB(
                 new vec3(pos.X + .0625f, pos.Y, pos.Z + .0625f),
                 new vec3(pos.X + .9375f, pos.Y + 1f, pos.Z + .9375f)) };
-        }
-
-        /// <summary>
-        /// Инициализация коробок
-        /// </summary>
-        protected void InitBoxs()
-        {
-            boxes = new Box[][] { new Box[] {
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[0], MvkStatic.Xy[1]),
-                    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-                    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[1]),
-                    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[15]),
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 194, false, Color),
-                        new Face(Pole.Down, 192, false, Color)
-                    }
-                },
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[0], MvkStatic.Xy[0], MvkStatic.Xy[1]),
-                    To = new vec3(MvkStatic.Xy[16], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.North, 193, false, Color),
-                        new Face(Pole.South, 193, false, Color),
-                    }
-                },
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[0], MvkStatic.Xy[0]),
-                    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[16], MvkStatic.Xy[16]),
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.East, 193, false, Color),
-                        new Face(Pole.West, 193, false, Color)
-                    }
-                }
-            }};
         }
 
         /// <summary>

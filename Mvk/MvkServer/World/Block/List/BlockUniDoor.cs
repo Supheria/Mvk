@@ -71,7 +71,7 @@ namespace MvkServer.World.Block.List
             samplesStep = new AssetsSample[] { AssetsSample.StepWood1, AssetsSample.StepWood2, AssetsSample.StepWood3, AssetsSample.StepWood4 };
             Particle = numberTexture;
             Resistance = 5.0f;
-            InitBoxs();
+            InitQuads();
         }
 
         /// <summary>
@@ -186,9 +186,9 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
-            int met = state.met;
+            int met = neighborState.met;
             bool open = (met & 1) != 0;
             bool left = (met & 2) != 0;
             Pole pole = (Pole)(2 + (met >> 2 & 3));
@@ -198,8 +198,8 @@ namespace MvkServer.World.Block.List
 
             if (!IsCanDoorStay(worldIn, blockPos.Offset(-x, -level, -z), open, left, pole))
             {
-                OnBreakBlock(worldIn, blockPos, state);
-                DropBlockAsItem(worldIn, blockPos, state, 0);
+                OnBreakBlock(worldIn, blockPos, neighborState);
+                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
                 if (!worldIn.IsRemote) 
                 {
                     PlaySoundBreak(worldIn, blockPos);
@@ -252,7 +252,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Коробки для рендера 
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb)
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb)
         {
             bool open = (met & 1) != 0;
             bool left = (met & 2) != 0;
@@ -270,70 +270,46 @@ namespace MvkServer.World.Block.List
                 left = !left;
             }
 
-            if (pole == Pole.North && z == 0) return boxes[level + (left ? (x == 0 ? 12 : 8) : (x == 0 ? 0 : 4))];
-            if (pole == Pole.South && z == 1) return boxes[32 + level + (left ? (x == 0 ? 8 : 12) : (x == 0 ? 4 : 0))];
-            if (pole == Pole.West && x == 0) return boxes[16 + level + (left ? (z == 0 ? 8 : 12) : (z == 0 ? 4 : 0))];
-            if (pole == Pole.East && x == 1) return boxes[48 + level + (left ? (z == 0 ? 12 : 8) : (z == 0 ? 0 : 4))];
+            if (pole == Pole.North && z == 0) return quads[level + (left ? (x == 0 ? 12 : 8) : (x == 0 ? 0 : 4))];
+            if (pole == Pole.South && z == 1) return quads[32 + level + (left ? (x == 0 ? 8 : 12) : (x == 0 ? 4 : 0))];
+            if (pole == Pole.West && x == 0) return quads[16 + level + (left ? (z == 0 ? 8 : 12) : (z == 0 ? 4 : 0))];
+            if (pole == Pole.East && x == 1) return quads[48 + level + (left ? (z == 0 ? 12 : 8) : (z == 0 ? 0 : 4))];
 
-            return boxes[64];
+            return quads[64];
         }
 
-        #region InitBoxs
+        #region InitQuads
 
-        private Box B(int x1, int x2, int z1, int z2, int u1, int u2, int v1, int v2, Pole p1, Pole p2, int t)
-        {
-            return new Box()
-            {
-                From = new vec3(MvkStatic.Xy[x1], MvkStatic.Xy[0], MvkStatic.Xy[z1]),
-                To = new vec3(MvkStatic.Xy[x2], MvkStatic.Xy[16], MvkStatic.Xy[z2]),
-                UVFrom = new vec2(MvkStatic.Uv[u1], MvkStatic.Uv[v1]),
-                UVTo = new vec2(MvkStatic.Uv[u2], MvkStatic.Uv[v2]),
-                Faces = new Face[] { new Face(p1, t, true, Color), new Face(p2, t, true, Color), }
-            };
-        }
-
-        private Box B(int x1, int x2, int z1, int z2, int u1, int u2, int v1, int v2, Pole p, int t)
-        {
-            return new Box()
-            {
-                From = new vec3(MvkStatic.Xy[x1], MvkStatic.Xy[0], MvkStatic.Xy[z1]),
-                To = new vec3(MvkStatic.Xy[x2], MvkStatic.Xy[16], MvkStatic.Xy[z2]),
-                UVFrom = new vec2(MvkStatic.Uv[u1], MvkStatic.Uv[v1]),
-                UVTo = new vec2(MvkStatic.Uv[u2], MvkStatic.Uv[v2]),
-                Faces = new Face[] { new Face(p, t, true, Color) }
-            };
-        }
-
-        private Box[] Bs(bool up, bool upOrDown, int it, float angle, bool butt, bool rev, bool loop)
+        private QuadSide[] Bs(bool up, bool upOrDown, int it, float angle, bool butt, bool rev, bool loop)
         {
             int n0 = rev ? 16 : 0;
             int n16 = rev ? 0 : 16;
 
-            Box[] boxs = new Box[upOrDown ? 4 : 3];
-            boxs[0] = B(0, 16, 0, 3, n16, n0, 0, 16, Pole.North, numberTexture[it]);
-            boxs[0].RotateYaw = angle;
-            boxs[1] = B(0, 16, 0, 3, n0, n16, 0, 16, Pole.South, numberTexture[it]);
-            boxs[1].RotateYaw = angle;
-            boxs[2] = B(0, 16, 0, 3, loop ? 0 : 15, loop ? 1 : 16, 0, 16, butt ? Pole.West : Pole.East, numberTexture[it]);
-            boxs[2].RotateYaw = angle;
+            QuadSide[] sides = new QuadSide[upOrDown ? 4 : 3];
+            sides[0] = Quad(0, 16, 0, 3, n16, n0, 0, 16, Pole.North, numberTexture[it]);
+            sides[0].SetRotate(angle);
+            sides[1] = Quad(0, 16, 0, 3, n0, n16, 0, 16, Pole.South, numberTexture[it]);
+            sides[1].SetRotate(angle);
+            sides[2] = Quad(0, 16, 0, 3, loop ? 0 : 15, loop ? 1 : 16, 0, 16, butt ? Pole.West : Pole.East, numberTexture[it]);
+            sides[2].SetRotate(angle);
             if (upOrDown)
             {
-                boxs[3] = up ? B(0, 16, 0, 3, n16, n0, 0, 1, Pole.Up, numberTexture[it])
-                    : B(0, 16, 0, 3, n0, n16, 15, 16, Pole.Down, numberTexture[it]);
-                boxs[3].RotateYaw = angle;
+                sides[3] = up ? Quad(0, 16, 0, 3, n16, n0, 0, 1, Pole.Up, numberTexture[it])
+                    : Quad(0, 16, 0, 3, n0, n16, 15, 16, Pole.Down, numberTexture[it]);
+                sides[3].SetRotate(angle);
             }
-            return boxs;
+            return sides;
         }
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs()
+        protected void InitQuads()
         {
             int i, it;
             float[] angle;
-            boxes = new Box[65][];
-            boxes[64] = new Box[0];
+            quads = new QuadSide[65][];
+            quads[64] = new QuadSide[0];
             angle = new float[] { 0, glm.pi90, glm.pi, glm.pi270 };
 
             bool up, upOrDown;
@@ -346,15 +322,15 @@ namespace MvkServer.World.Block.List
                     upOrDown = up || i == 0;
                     it = 6 - i * 2;
                     // Петля
-                    boxes[j * 16 + i] = Bs(up, upOrDown, it, angle[j], true, false, true);
+                    quads[j * 16 + i] = Bs(up, upOrDown, it, angle[j], true, false, true);
                     // Петля реверс
-                    boxes[j * 16 + 8 + i] = Bs(up, upOrDown, it, angle[j], false, true, true);
+                    quads[j * 16 + 8 + i] = Bs(up, upOrDown, it, angle[j], false, true, true);
 
                     it = 7 - i * 2;
                     // Ручка
-                    boxes[j * 16 + 4 + i] = Bs(up, upOrDown, it, angle[j], false, false, false);
+                    quads[j * 16 + 4 + i] = Bs(up, upOrDown, it, angle[j], false, false, false);
                     // Ручка реверс
-                    boxes[j * 16 + 12 + i] = Bs(up, upOrDown, it, angle[j], true, true, false);
+                    quads[j * 16 + 12 + i] = Bs(up, upOrDown, it, angle[j], true, true, false);
                 }
             }
         }

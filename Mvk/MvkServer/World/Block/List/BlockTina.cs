@@ -18,15 +18,21 @@ namespace MvkServer.World.Block.List
         public BlockTina()
         {
             NeedsRandomTick = true;
-            Color = new vec3(.56f, .63f, .35f);
             IsCollidable = false;
-            SetUnique();
+            SetUnique(true);
             Material = EnumMaterial.Interior;
             Particle = 208;
             Resistance = .2f;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
-            InitBoxs();
+            quads = new QuadSide[][] { new QuadSide[] {
+                new QuadSide(1).SetTexture(Particle).SetSide(0, true, 0, 0, 0, 16, 0, 16),
+            }};
         }
+
+        /// <summary>
+        /// Блок который замедляет сущность в перемещении на ~30%
+        /// </summary>
+        public override bool IsSlow(BlockState state) => true;
 
         /// <summary>
         /// Разрушается ли блок от жидкости
@@ -44,14 +50,9 @@ namespace MvkServer.World.Block.List
         public override bool IsPassable(int met) => false;
 
         /// <summary>
-        /// Коробки
-        /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met];
-
-        /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
             if (!CanBlockStay(worldIn, blockPos))
             {
@@ -62,7 +63,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Проверка установи блока, можно ли его установить тут
         /// </summary>
-        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos) 
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met = 0) 
             => worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock() == EnumBlock.Water;
 
         /// <summary>
@@ -72,28 +73,6 @@ namespace MvkServer.World.Block.List
             => new AxisAlignedBB[] {
                 new AxisAlignedBB(new vec3(pos.X, pos.Y, pos.Z), new vec3(pos.X + 1, pos.Y + .125f, pos.Z + 1)),
             };
-
-        /// <summary>
-        /// Инициализация коробок
-        /// </summary>
-        private void InitBoxs()
-        {
-            boxes = new Box[][] {
-                new Box[]
-                {
-                    new Box()
-                    {
-                        From = new vec3(0),
-                        To = new vec3(MvkStatic.Xy[16], MvkStatic.Xy[0], MvkStatic.Xy[16]),
-                        Faces = new Face[]
-                        {
-                            new Face(Pole.Up, Particle),
-                            new Face(Pole.Down, Particle)
-                        }
-                    }
-                }
-            };
-        }
 
         /// <summary>
         /// Спавн предмета при разрушении этого блока

@@ -128,24 +128,26 @@ namespace MvkClient.Util
                             {
                                 index = ((y + y1) * w + x + x1) * 4;
                                 a1 = buffer[index + 3];
+                                a += a1;
                                 if (a1 > 0)
                                 {
                                     b += buffer[index + 0];
                                     g += buffer[index + 1];
                                     r += buffer[index + 2];
-                                    a += a1;
+                                    //a += a1;
                                     c++;
                                 }
                             }
                         }
                         index = ((y / 2) * w2 + x / 2) * 4;
-                        if (c > 0)
+                        if (c > 1)
                         {
                             buf[index + 0] = (byte)(b / c);
                             buf[index + 1] = (byte)(g / c);
                             buf[index + 2] = (byte)(r / c);
                             buf[index + 3] = (byte)(a / c);
                         }
+                        //buf[index + 3] = (byte)(a / 4);
                     }
                 }
                 list.Add(new BufImage(buf, w2));

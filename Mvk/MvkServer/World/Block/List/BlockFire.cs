@@ -2,7 +2,6 @@
 using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
-using System.Collections.Generic;
 
 namespace MvkServer.World.Block.List
 {
@@ -41,16 +40,14 @@ namespace MvkServer.World.Block.List
             // Затычка, для сортировки, и прорисовки из нутри когда к примеру блок стекла
             //Translucent = true; // Наложение на древесину, декали
             IsAddMet = true;
-            SetUnique();
+            SetUnique(true);
             IsCollidable = false;
-            NoSideDimming = true;
             IsReplaceable = true;
             LightValue = 15;
             IsParticle = false;
             Material = EnumMaterial.Fire;
             samplesStep = new AssetsSample[0];
             samplesBreak = new AssetsSample[] { AssetsSample.FireFizz };
-            //samplesStep = new AssetsSample[] { AssetsSample.LiquidSwim1, AssetsSample.LiquidSwim2, AssetsSample.LiquidSwim3, AssetsSample.LiquidSwim4 };
             InitBoxs();
         }
 
@@ -72,7 +69,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Проверка установи блока, можно ли его установить тут
         /// </summary>
-        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos)
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met = 0)
         {
             BlockPos blockPosDown = blockPos.OffsetDown();
             return worldIn.DoesBlockHaveSolidTopSurface(blockPosDown) 
@@ -97,12 +94,12 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
             if (CanBlockStay(worldIn, blockPos))
             {
-                ushort newMet = MetUpdate(worldIn, blockPos, state.met);
-                if (newMet != state.met) worldIn.SetBlockStateMet(blockPos, newMet);
+                ushort newMet = MetUpdate(worldIn, blockPos, neighborState.met);
+                if (newMet != neighborState.met) worldIn.SetBlockStateMet(blockPos, newMet);
             }
             else
             {
@@ -152,7 +149,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Коробки для рендера 
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met >> 4];
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) => quads[met >> 4];
 
         /// <summary>
         /// Передать список  ограничительных рамок блока
@@ -182,83 +179,33 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Сторона West
         /// </summary>
-        private Box[] BoxWest()
-        {
-            return new Box[] {
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[15], 0, 0),
-                    To = new vec3(MvkStatic.Xy[15], 1.25f, 1f),
-                    Faces = new Face[] { new Face(Pole.West, 54).SetAnimation(32, 1) }
-                }
-            };
-        }
+        private QuadSide QuadWest() 
+            => new QuadSide(0, 32, 1).SetTexture(54).SetSide(Pole.West, true, 15, 0, 0, 15, 20, 16);
+
         /// <summary>
         /// Сторона East
         /// </summary>
-        private Box[] BoxEast()
-        {
-            return new Box[] {
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[1], 0, 0),
-                    To = new vec3(MvkStatic.Xy[1], 1.25f, 1f),
-                    Faces = new Face[] { new Face(Pole.East, 54).SetAnimation(32, 1) }
-                }
-            };
-        }
+        private QuadSide QuadEast()
+            => new QuadSide(0, 32, 1).SetTexture(54).SetSide(Pole.East, true, 1, 0, 0, 1, 20, 16);
+
         /// <summary>
         /// Сторона South
         /// </summary>
-        private Box[] BoxSouth()
-        {
-            return new Box[] {
-                new Box()
-                {
-                    From = new vec3(0, 0, MvkStatic.Xy[1]),
-                    To = new vec3(1f, 1.25f, MvkStatic.Xy[1]),
-                    Faces = new Face[] { new Face(Pole.South, 54).SetAnimation(32, 1) }
-                },
-            };
-        }
+        private QuadSide QuadSouth()
+            => new QuadSide(0, 32, 1).SetTexture(54).SetSide(Pole.South, true, 0, 0, 1, 16, 20, 1);
+
         /// <summary>
         /// Сторона North
         /// </summary>
-        private Box[] BoxNorth()
-        {
-            return new Box[] {
-                new Box()
-                {
-                    From = new vec3(0, 0, MvkStatic.Xy[15]),
-                    To = new vec3(1f, 1.25f, MvkStatic.Xy[15]),
-                    Faces = new Face[] { new Face(Pole.North, 54).SetAnimation(32, 1) }
-                },
-            };
-        }
-        /// <summary>
-        /// Сторона Up
-        /// </summary>
-        private Box[] BoxUp()
-        {
-            return new Box[] {
-                new Box()
-                {
-                    From = new vec3(0, .9375f, -.05f),
-                    To = new vec3(1, .9375f, 1.125f),
-                    RotatePitch = .1f,
-                    Faces = new Face[] { new Face(Pole.Down, 54).SetAnimation(32, 1) }
-                },
-                new Box()
-                {
-                    From = new vec3(0, .9375f, -.05f),
-                    To = new vec3(1, .9375f, 1.125f),
-                    RotatePitch = .1f,
-                    RotateYaw = glm.pi,
-                    Faces = new Face[] { new Face(Pole.Down, 54).SetAnimation(32, 1) }
-                }
-            };
-        }
+        private QuadSide QuadNorth()
+            => new QuadSide(0, 32, 1).SetTexture(54).SetSide(Pole.North, true, 0, 0, 15, 16, 20, 15);
 
+        /// <summary>
+        /// Сторона Up y=0 p=.1 || y=pi p=.1
+        /// </summary>
+        private QuadSide QuadUp(float yaw, float pitch)
+            => new QuadSide(0, 32, 1).SetTexture(54).SetSide(Pole.Down, true, 0, 15, -1, 16, 15, 18).SetRotate(yaw, pitch);
+        
         #endregion
 
         #region Collisions
@@ -296,85 +243,56 @@ namespace MvkServer.World.Block.List
         /// </summary>
         protected void InitBoxs()
         {
+            InitQuads(Particle);
             collisions = new AxisAlignedBB[32][];
-            boxes = new Box[32][];
+            quads = new QuadSide[32][];
 
             // На весь блок
             collisions[0] = new AxisAlignedBB[] { new AxisAlignedBB(0, 0, 0, 1, 0, 1) };
-            boxes[0] = new Box[] {
-                new Box()
-                {
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.East, 54).SetAnimation(32, 1),
-                        new Face(Pole.North, 54).SetAnimation(32, 1),
-                        new Face(Pole.South, 54).SetAnimation(32, 1),
-                        new Face(Pole.West, 54).SetAnimation(32, 1)
-                    }
-                },
-                new Box()
-                {
-                    From = new vec3(0, -.0625f, .5f),
-                    To = new vec3(1f, 1.25f, .5f),
-                    RotatePitch = .5f,
-                    Faces = new Face[] { new Face(Pole.North, 2102).SetAnimation(32, 1) }
-                },
-                new Box()
-                {
-                    From = new vec3(0, -.0625f, .5f),
-                    To = new vec3(1f, 1.25f, .5f),
-                    RotatePitch = -.5f,
-                    Faces = new Face[] { new Face(Pole.South, 2102).SetAnimation(32, 1) }
-                },
-                new Box()
-                {
-                    From = new vec3(0, -.0625f, .5f),
-                    To = new vec3(1f, 1.25f, .5f),
-                    RotatePitch = .5f,
-                    RotateYaw = glm.pi90,
-                    Faces = new Face[] { new Face(Pole.North, 2102).SetAnimation(32, 1) }
-                },
-                new Box()
-                {
-                    From = new vec3(0, -.0625f, .5f),
-                    To = new vec3(1f, 1.25f, .5f),
-                    RotatePitch = -.5f,
-                    RotateYaw = glm.pi90,
-                    Faces = new Face[] { new Face(Pole.South, 2102).SetAnimation(32, 1) }
-                }
-            };
+            quads[0] = new QuadSide[] {
+                new QuadSide(0, 32, 1).SetTexture(54).SetSide(Pole.East, true),
+                new QuadSide(0, 32, 1).SetTexture(54).SetSide(Pole.West, true),
+                new QuadSide(0, 32, 1).SetTexture(54).SetSide(Pole.North, true),
+                new QuadSide(0, 32, 1).SetTexture(54).SetSide(Pole.South, true),
 
-            ListMvk<Box> listB = new ListMvk<Box>(6);
+                new QuadSide(0, 32, 1).SetTexture(2102).SetSide(Pole.North, true, 0, -1, 8, 16, 20, 8).SetRotate(0, .5f),
+                new QuadSide(0, 32, 1).SetTexture(2102).SetSide(Pole.South, true, 0, -1, 8, 16, 20, 8).SetRotate(0, -.5f),
+                new QuadSide(0, 32, 1).SetTexture(2102).SetSide(Pole.North, true, 0, -1, 8, 16, 20, 8).SetRotate(glm.pi90, .5f),
+                new QuadSide(0, 32, 1).SetTexture(2102).SetSide(Pole.South, true, 0, -1, 8, 16, 20, 8).SetRotate(glm.pi90, -.5f)
+            };
+            
+            ListMvk<QuadSide> listB = new ListMvk<QuadSide>(6);
             ListMvk<AxisAlignedBB> listC = new ListMvk<AxisAlignedBB>(5);
             for (int i = 1; i < 32; i++)
             {
                 if ((i & 1) != 0)
                 {
-                    listB.AddRange(BoxNorth());
+                    listB.Add(QuadNorth());
                     listC.AddRange(CollisionsNorth());
                 }
                 if ((i & 2) != 0)
                 {
-                    listB.AddRange(BoxWest());
+                    listB.Add(QuadWest());
                     listC.AddRange(CollisionsWest());
                 }
                 if ((i & 4) != 0)
                 {
-                    listB.AddRange(BoxSouth());
+                    listB.Add(QuadSouth());
                     listC.AddRange(CollisionsSouth());
 
                 }
                 if ((i & 8) != 0)
                 {
-                    listB.AddRange(BoxEast());
+                    listB.Add(QuadEast());
                     listC.AddRange(CollisionsEast());
                 }
                 if ((i & 16) != 0)
                 {
-                    listB.AddRange(BoxUp());
+                    listB.Add(QuadUp(0, .1f));
+                    listB.Add(QuadUp(glm.pi, .1f));
                     listC.AddRange(CollisionsUp());
                 }
-                boxes[i] = listB.ToArray();
+                quads[i] = listB.ToArray();
                 listB.Clear();
                 collisions[i] = listC.ToArray();
                 listC.Clear();

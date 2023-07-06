@@ -17,6 +17,6 @@ namespace MvkServer.World.Block.List
         /// Генерация дерева
         /// </summary>
         protected override void GenefateTree(WorldBase world, Rand rand, BlockPos blockPos)
-            => new WorldGenTreeFruit().GenefateTree(world, rand, blockPos);
+            => new WorldGenTreeFruit2().GenefateTree(world, rand, blockPos);
     }
 }

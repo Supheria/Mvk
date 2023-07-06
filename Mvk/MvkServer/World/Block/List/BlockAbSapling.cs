@@ -12,14 +12,11 @@ namespace MvkServer.World.Block.List
     {
         protected bool biomeColor;
 
-        public BlockAbSapling(int numberTexture) : this(numberTexture, new vec3(1)) { }
-        protected BlockAbSapling(int numberTexture, vec3 color, bool biomeColor = false)
+        public BlockAbSapling(int numberTexture, bool biomeColor = false)
         {
-            Color = color;
             Material = EnumMaterial.Sapling;
             Particle = numberTexture;
-            SetUnique();
-            NoSideDimming = true;
+            SetUnique(true);
             IsCollidable = false;
             Combustibility = true;
             this.biomeColor = biomeColor;
@@ -27,7 +24,7 @@ namespace MvkServer.World.Block.List
             BurnOdds = 100;
             Resistance = 0f;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
-            InitBoxs();
+            InitQuads();
         }
 
         /// <summary>
@@ -38,16 +35,16 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
             if (!CanBlockStay(worldIn, blockPos))
             {
-                DropBlockAsItem(worldIn, blockPos, state, 0);
+                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
                 worldIn.SetBlockToAir(blockPos);
             }
         }
 
-        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos)
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met = 0)
         {
             EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
             return /*enumBlock == EnumBlock.Dirt ||*/ enumBlock == EnumBlock.Turf;
@@ -66,32 +63,12 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected virtual void InitBoxs()
+        protected virtual void InitQuads()
         {
-            boxes = new Box[][] { new Box[] {
-                new Box()
-                {
-                    From = new vec3(0, 0, .5f),
-                    To = new vec3(1f, 1f, .5f),
-                    RotateYaw = glm.pi45,
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.North, Particle),
-                        new Face(Pole.South, Particle),
-                    }
-                },
-                new Box()
-                {
-                    From = new vec3(.5f, 0, 0),
-                    To = new vec3(.5f, 1f, 1f),
-                    RotateYaw = glm.pi45,
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.East, Particle),
-                        new Face(Pole.West, Particle)
-                    }
-                }
-            }};
+            quads = new QuadSide[][] { new QuadSide[] {
+                new QuadSide(0).SetTexture(Particle).SetSide(Pole.South, true, 0, 0, 8, 16, 16, 8).SetRotate(glm.pi45).Wind(),
+                new QuadSide(0).SetTexture(Particle).SetSide(Pole.East, true, 8, 0, 0, 8, 16, 16).SetRotate(glm.pi45).Wind()
+            } };
         }
 
         /// <summary>

@@ -81,8 +81,11 @@ namespace MvkServer.Util
         public void Combine(T[] items)
         {
             int count = items.Length;
-            Buffer.BlockCopy(items, 0, buffer, this.count, count);
-            this.count += count;
+            if (count > 0)
+            {
+                Buffer.BlockCopy(items, 0, buffer, this.count, count);
+                this.count += count;
+            }
         }
 
         //public void Sort() => Array.Sort(buffer);

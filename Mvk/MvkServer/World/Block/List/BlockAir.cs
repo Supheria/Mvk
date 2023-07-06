@@ -13,15 +13,8 @@ namespace MvkServer.World.Block.List
         /// <param name="collidable">Выбрать может ли блок сталкиваться</param>
         public BlockAir(bool collidable = false)
         {
-            FullBlock = false;
-            IsAir = true;
-            IsAction = false;
+            SetAir();
             IsCollidable = collidable;
-            IsParticle = false;
-            АmbientOcclusion = false;
-            Shadow = false;
-            IsReplaceable = true;
-            LightOpacity = 0;
         }
 
         /// <summary>

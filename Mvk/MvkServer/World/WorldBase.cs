@@ -548,7 +548,7 @@ namespace MvkServer.World
                         side = sidez;
                         norm.z = -stepz;
                     }
-                    moving = new MovingObjectPosition(blockState, blockPos, side, blockPos.ToVec3() - end, norm, end);
+                    moving = new MovingObjectPosition(blockState, blockPos, side, end - blockPos.ToVec3(), norm, end);
                     break;
                 }
                 if (txMax < tyMax)
@@ -1096,14 +1096,14 @@ namespace MvkServer.World
                             liquid.Water(block.ModifyAcceleration(this, blockPos, liquid.GetVecWater()));
                         }
                         else if (material == EnumMaterial.Lava) liquid.Lava();
-                        else if (block.EBlock == EnumBlock.Tina)
+                        else if (block.IsSlow(blockState))
                         {
                             // Дополнительно проверяем кализию по блоку
                             foreach (AxisAlignedBB aabbBlock in block.GetCollisionBoxesToList(blockPos, blockState.met))
                             {
                                 if (aabbBlock.IntersectsWith(aabb))
                                 {
-                                    liquid.Tina();
+                                    liquid.Slow();
                                     break;
                                 }
                             }

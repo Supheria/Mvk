@@ -1,6 +1,5 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Item;
-using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
@@ -17,27 +16,6 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected override void InitBoxs(int numberTexture, bool isColor, vec3 color) => InitBoxs(color);
-
-        /// <summary>
-        /// Инициализация коробок
-        /// </summary>
-        private void InitBoxs(vec3 color)
-        {
-            boxes = new Box[][] { new Box[] {
-                new Box()
-                {
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 10, color),
-                        new Face(Pole.Down, 10, color),
-                        new Face(Pole.East, 11, color),
-                        new Face(Pole.North, 11, color),
-                        new Face(Pole.South, 11, color),
-                        new Face(Pole.West, 11, color)
-                    }
-                }
-            }};
-        }
+        protected override void InitQuads() => InitQuads(10, 10, 11, 11, 11, 11);
     }
 }

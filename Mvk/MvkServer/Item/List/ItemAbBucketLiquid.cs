@@ -39,10 +39,10 @@ namespace MvkServer.Item.List
             }
             if (CanPlaceBlockOnSide(stack, playerIn, worldIn, blockPos, BlockLiquid, side, facing))
             {
-                if (BlockLiquid.CanBlockStay(worldIn, blockPos))
+                BlockState blockState = BlockLiquid.OnBlockPlaced(worldIn, blockPos, new BlockState(BlockLiquid.EBlock), side, facing);
+                if (BlockLiquid.CanBlockStay(worldIn, blockPos, blockState.met))
                 {
                     BlockState blockStateOld = worldIn.GetBlockState(blockPos);
-                    BlockState blockState = BlockLiquid.OnBlockPlaced(worldIn, blockPos, new BlockState(BlockLiquid.EBlock), side, facing);
                     bool result = worldIn.SetBlockState(blockPos, blockState, 15);
                     if (result)
                     {

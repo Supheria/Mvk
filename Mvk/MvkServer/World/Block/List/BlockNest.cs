@@ -22,7 +22,6 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockNest()
         {
-            Color = new vec3(.95f, .91f, .73f);
             SetUnique();
             Material = EnumMaterial.Interior;
             Particle = 960;
@@ -86,7 +85,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Коробки
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met];
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) => quads[met];
 
         /// <summary>
         /// Передать список ограничительных рамок блока
@@ -109,158 +108,69 @@ namespace MvkServer.World.Block.List
         /// </summary>
         private void InitBoxs()
         {
-            boxes = new Box[5][];
+            quads = new QuadSide[5][];
 
-            boxes[0] = new Box[] {
-                new Box()
-                {
-                    From = new vec3(0),
-                    To = new vec3(MvkStatic.Xy[16], MvkStatic.Xy[6], MvkStatic.Xy[16]),
-                    UVFrom = new vec2(MvkStatic.Uv[0], MvkStatic.Uv[10]),
-                    UVTo = new vec2(MvkStatic.Uv[16], MvkStatic.Uv[16]),
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.East, 960, Color),
-                        new Face(Pole.North, 960, Color),
-                        new Face(Pole.South, 960, Color),
-                        new Face(Pole.West, 960, Color)
-                    }
-                },
-                new Box()
-                {
-                    From = new vec3(0),
-                    To = new vec3(MvkStatic.Xy[16], MvkStatic.Xy[6], MvkStatic.Xy[16]),
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 961, Color),
-                        new Face(Pole.Down, 960, Color)
-                    }
-                },
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[3], MvkStatic.Xy[4], MvkStatic.Xy[3]),
-                    To = new vec3(MvkStatic.Xy[13], MvkStatic.Xy[4], MvkStatic.Xy[13]),
-                    UVFrom = new vec2(MvkStatic.Uv[3], MvkStatic.Uv[3]),
-                    UVTo = new vec2(MvkStatic.Uv[13], MvkStatic.Uv[13]),
-                    Faces = new Face[] { new Face(Pole.Up, 960, Color) }
-                },
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[13], MvkStatic.Xy[4], MvkStatic.Xy[3]),
-                    To = new vec3(MvkStatic.Xy[13], MvkStatic.Xy[6], MvkStatic.Xy[13]),
-                    UVFrom = new vec2(MvkStatic.Uv[3], MvkStatic.Uv[10]),
-                    UVTo = new vec2(MvkStatic.Uv[13], MvkStatic.Uv[12]),
-                    Faces = new Face[] { new Face(Pole.West, 960, Color) }
-                },
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[3], MvkStatic.Xy[4], MvkStatic.Xy[3]),
-                    To = new vec3(MvkStatic.Xy[3], MvkStatic.Xy[6], MvkStatic.Xy[13]),
-                    UVFrom = new vec2(MvkStatic.Uv[3], MvkStatic.Uv[10]),
-                    UVTo = new vec2(MvkStatic.Uv[13], MvkStatic.Uv[12]),
-                    Faces = new Face[] { new Face(Pole.East, 960, Color) }
-                },
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[3], MvkStatic.Xy[4], MvkStatic.Xy[3]),
-                    To = new vec3(MvkStatic.Xy[13], MvkStatic.Xy[6], MvkStatic.Xy[3]),
-                    UVFrom = new vec2(MvkStatic.Uv[3], MvkStatic.Uv[10]),
-                    UVTo = new vec2(MvkStatic.Uv[13], MvkStatic.Uv[12]),
-                    Faces = new Face[] { new Face(Pole.South, 960, Color)}
-                },
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[3], MvkStatic.Xy[4], MvkStatic.Xy[13]),
-                    To = new vec3(MvkStatic.Xy[13], MvkStatic.Xy[6], MvkStatic.Xy[13]),
-                    UVFrom = new vec2(MvkStatic.Uv[3], MvkStatic.Uv[10]),
-                    UVTo = new vec2(MvkStatic.Uv[13], MvkStatic.Uv[12]),
-                    Faces = new Face[] { new Face(Pole.North, 960, Color)}
-                }
+            quads[0] = new QuadSide[]
+            {
+                new QuadSide(0).SetTexture(960).SetSide(Pole.Down),
+                new QuadSide(0).SetTexture(960, 0, 10, 16, 16).SetSide(Pole.East, false, 0, 0, 0, 16, 6, 16),
+                new QuadSide(0).SetTexture(960, 0, 10, 16, 16).SetSide(Pole.North, false, 0, 0, 0, 16, 6, 16),
+                new QuadSide(0).SetTexture(960, 0, 10, 16, 16).SetSide(Pole.South, false, 0, 0, 0, 16, 6, 16),
+                new QuadSide(0).SetTexture(960, 0, 10, 16, 16).SetSide(Pole.West, false, 0, 0, 0, 16, 6, 16),
+
+                new QuadSide(0).SetTexture(960, 3, 3, 13, 13).SetSide(Pole.Up, false, 3, 4, 3, 13, 4, 13),
+                new QuadSide(0).SetTexture(960, 3, 10, 13, 12).SetSide(Pole.West, false, 13, 4, 3, 13, 6, 13),
+                new QuadSide(0).SetTexture(960, 3, 10, 13, 12).SetSide(Pole.East, false, 3, 4, 3, 3, 6, 13),
+                new QuadSide(0).SetTexture(960, 3, 10, 13, 12).SetSide(Pole.South, false, 3, 4, 3, 13, 6, 3),
+                new QuadSide(0).SetTexture(960, 3, 10, 13, 12).SetSide(Pole.North, false, 3, 4, 13, 13, 6, 13),
+
+                new QuadSide(0).SetTexture(961).SetSide(Pole.Up, false, 0, 0, 0, 16, 6, 16)
             };
 
-            boxes[1] = new Box[boxes[0].Length + 1];
-            for (int i = 0; i < boxes[0].Length; i++)
+            int i;
+            quads[1] = new QuadSide[quads[0].Length + 5];
+            for (i = 0; i < quads[0].Length; i++)
             {
-                boxes[1][i] = boxes[0][i];
+                quads[1][i] = quads[0][i];
             }
-            boxes[1][boxes[0].Length] = new Box()
-            {
-                From = new vec3(MvkStatic.Xy[6], MvkStatic.Xy[4], MvkStatic.Xy[5]),
-                To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[6], MvkStatic.Xy[7]),
-                UVFrom = new vec2(MvkStatic.Uv[0], MvkStatic.Uv[0]),
-                UVTo = new vec2(MvkStatic.Uv[2], MvkStatic.Uv[2]),
-                Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 962, Color),
-                        new Face(Pole.East, 962, Color),
-                        new Face(Pole.North, 962, Color),
-                        new Face(Pole.South, 962, Color),
-                        new Face(Pole.West, 962, Color)
-                    }
-            };
+            quads[1][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 2).SetSide(Pole.Up, false, 6, 4, 5, 8, 6, 7);
+            quads[1][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 2).SetSide(Pole.East, false, 6, 4, 5, 8, 6, 7);
+            quads[1][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 2).SetSide(Pole.North, false, 6, 4, 5, 8, 6, 7);
+            quads[1][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 2).SetSide(Pole.South, false, 6, 4, 5, 8, 6, 7);
+            quads[1][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 2).SetSide(Pole.West, false, 6, 4, 5, 8, 6, 7);
 
-            boxes[2] = new Box[boxes[1].Length + 1];
-            for (int i = 0; i < boxes[1].Length; i++)
+            quads[2] = new QuadSide[quads[1].Length + 5];
+            for (i = 0; i < quads[1].Length; i++)
             {
-                boxes[2][i] = boxes[1][i];
+                quads[2][i] = quads[1][i];
             }
-            boxes[2][boxes[1].Length] = new Box()
-            {
-                From = new vec3(MvkStatic.Xy[9], MvkStatic.Xy[3], MvkStatic.Xy[4]),
-                To = new vec3(MvkStatic.Xy[11], MvkStatic.Xy[5], MvkStatic.Xy[6]),
-                UVFrom = new vec2(MvkStatic.Uv[0], MvkStatic.Uv[0]),
-                UVTo = new vec2(MvkStatic.Uv[2], MvkStatic.Uv[2]),
-                Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 962, Color),
-                        new Face(Pole.East, 962, Color),
-                        new Face(Pole.North, 962, Color),
-                        new Face(Pole.South, 962, Color),
-                        new Face(Pole.West, 962, Color)
-                    }
-            };
+            quads[2][i++] = new QuadSide(0).SetTexture(962, 0, 0, 3, 2).SetSide(Pole.Up, false, 9, 4, 4, 12, 5, 6);
+            quads[2][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 1).SetSide(Pole.East, false, 9, 4, 4, 12, 5, 6);
+            quads[2][i++] = new QuadSide(0).SetTexture(962, 0, 0, 3, 1).SetSide(Pole.North, false, 9, 4, 4, 12, 5, 6);
+            quads[2][i++] = new QuadSide(0).SetTexture(962, 0, 0, 3, 1).SetSide(Pole.South, false, 9, 4, 4, 12, 5, 6);
+            quads[2][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 1).SetSide(Pole.West, false, 9, 4, 4, 12, 5, 6);
 
-            boxes[3] = new Box[boxes[2].Length + 1];
-            for (int i = 0; i < boxes[2].Length; i++)
+            quads[3] = new QuadSide[quads[2].Length + 5];
+            for (i = 0; i < quads[2].Length; i++)
             {
-                boxes[3][i] = boxes[2][i];
+                quads[3][i] = quads[2][i];
             }
-            boxes[3][boxes[2].Length] = new Box()
-            {
-                From = new vec3(MvkStatic.Xy[4], MvkStatic.Xy[3], MvkStatic.Xy[8]),
-                To = new vec3(MvkStatic.Xy[6], MvkStatic.Xy[5], MvkStatic.Xy[10]),
-                UVFrom = new vec2(MvkStatic.Uv[0], MvkStatic.Uv[0]),
-                UVTo = new vec2(MvkStatic.Uv[2], MvkStatic.Uv[2]),
-                Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 962, Color),
-                        new Face(Pole.East, 962, Color),
-                        new Face(Pole.North, 962, Color),
-                        new Face(Pole.South, 962, Color),
-                        new Face(Pole.West, 962, Color)
-                    }
-            };
+            quads[3][i++] = new QuadSide(0).SetTexture(962, 0, 0, 3, 2).SetSide(Pole.Up, false, 4, 4, 8, 7, 5, 10);
+            quads[3][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 1).SetSide(Pole.East, false, 4, 4, 8, 7, 5, 10);
+            quads[3][i++] = new QuadSide(0).SetTexture(962, 0, 0, 3, 1).SetSide(Pole.North, false, 4, 4, 8, 7, 5, 10);
+            quads[3][i++] = new QuadSide(0).SetTexture(962, 0, 0, 3, 1).SetSide(Pole.South, false, 4, 4, 8, 7, 5, 10);
+            quads[3][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 1).SetSide(Pole.West, false, 4, 4, 8, 7, 5, 10);
 
-            boxes[4] = new Box[boxes[3].Length + 1];
-            for (int i = 0; i < boxes[3].Length; i++)
+            quads[4] = new QuadSide[quads[3].Length + 5];
+            for (i = 0; i < quads[3].Length; i++)
             {
-                boxes[4][i] = boxes[3][i];
+                quads[4][i] = quads[3][i];
             }
-            boxes[4][boxes[3].Length] = new Box()
-            {
-                From = new vec3(MvkStatic.Xy[10], MvkStatic.Xy[3], MvkStatic.Xy[8]),
-                To = new vec3(MvkStatic.Xy[12], MvkStatic.Xy[5], MvkStatic.Xy[10]),
-                UVFrom = new vec2(MvkStatic.Uv[0], MvkStatic.Uv[0]),
-                UVTo = new vec2(MvkStatic.Uv[2], MvkStatic.Uv[2]),
-                Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 962, Color),
-                        new Face(Pole.East, 962, Color),
-                        new Face(Pole.North, 962, Color),
-                        new Face(Pole.South, 962, Color),
-                        new Face(Pole.West, 962, Color)
-                    }
-            };
+            quads[4][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 3).SetSide(Pole.Up, false, 9, 4, 8, 11, 5, 11);
+            quads[4][i++] = new QuadSide(0).SetTexture(962, 0, 0, 3, 1).SetSide(Pole.East, false, 9, 4, 8, 11, 5, 11);
+            quads[4][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 1).SetSide(Pole.North, false, 9, 4, 8, 11, 5, 11);
+            quads[4][i++] = new QuadSide(0).SetTexture(962, 0, 0, 2, 1).SetSide(Pole.South, false, 9, 4, 8, 11, 5, 11);
+            quads[4][i++] = new QuadSide(0).SetTexture(962, 0, 0, 3, 1).SetSide(Pole.West, false, 9, 4, 8, 11, 5, 11);
         }
     }
 }

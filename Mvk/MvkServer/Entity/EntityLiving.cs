@@ -2075,7 +2075,7 @@ namespace MvkServer.Entity
                 IsInLava() ? "[L]" : "", // 20
                 IsInOil() ? "[O]" : "", // 21
                 EnumFacing.IsFromAngleLeft(RotationYawHead, pole), // 22
-                IsInTina() ? "[T]" : "" // 23
+                IsInSlow() ? "[Ж]" : "" // 23
                 );
         }
     }

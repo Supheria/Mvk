@@ -35,11 +35,19 @@ namespace MvkServer.Util
         /// Область в один блок c центром, 9 блоков
         /// </summary>
         public static vec2i[] AreaOne9 { get; private set; }
-
+        /// <summary>
+        /// Область в один блок c центром, 9 блоков по приоритету чанков xz, для Populate
+        /// </summary>
+        public static vec2i[][] AreaOne9priority { get; private set; }
+        
         /// <summary>
         /// 3д область в один блок без центра, 6 блоков
         /// </summary>
         public static vec3i[] ArraOne3d6 { get; private set; }
+        /// <summary>
+        /// 3д область в один блок без центра, 6 блоков напротив ArraOne3d6
+        /// </summary>
+        public static vec3i[] ArraOne3d6back { get; private set; }
 
         /// <summary>
         /// Параметр [0]=0 .. [16]=0.015625f
@@ -88,6 +96,11 @@ namespace MvkServer.Util
         public static EnumMoonPhase[] GrowingMoonPhase { get; private set; }
 
         /// <summary>
+        /// Затемнение стороны от стороны блока
+        /// </summary>
+        public static float[] LightPoles = new float[] { 1, .6f, .7f, .7f, .85f, .85f };
+
+        /// <summary>
         /// Инициализация, запускаем при старте
         /// </summary>
         public static void Initialized()
@@ -104,14 +117,47 @@ namespace MvkServer.Util
                 new vec2i(0, 1), new vec2i(1, 1), new vec2i(1, 0), new vec2i(1, -1),
                 new vec2i(0, -1), new vec2i(-1, -1), new vec2i(-1, 0), new vec2i(-1, 1)
             };
-            AreaOne9  = new vec2i[] { new vec2i(0, 0),
+            AreaOne9 = new vec2i[] { new vec2i(0, 0),
                 new vec2i(0, 1), new vec2i(1, 1), new vec2i(1, 0), new vec2i(1, -1),
                 new vec2i(0, -1), new vec2i(-1, -1), new vec2i(-1, 0), new vec2i(-1, 1)
             };
+            AreaOne9priority = new vec2i[][]
+            {
+                new vec2i[]
+                {
+                    new vec2i(0, 0), new vec2i(-1, 0), new vec2i(1, 0),
+                    new vec2i(0, -1), new vec2i(0, 1), new vec2i(-1, -1),
+                    new vec2i(1, -1), new vec2i(-1, 1), new vec2i(1, 1)
+                },
+                new vec2i[]
+                {
+                    new vec2i(-1, 0), new vec2i(1, 0), new vec2i(0, 0),
+                    new vec2i(-1, -1), new vec2i(1, -1), new vec2i(-1, 1),
+                    new vec2i(1, 1), new vec2i(0, -1), new vec2i(0, 1)
+                },
+                new vec2i[]
+                {
+                    new vec2i(0, -1), new vec2i(0, 1), new vec2i(-1, -1),
+                    new vec2i(1, -1), new vec2i(-1, 1), new vec2i(1, 1),
+                    new vec2i(0, 0), new vec2i(-1, 0), new vec2i(1, 0)
+                },
+                new vec2i[]
+                {
+                    new vec2i(-1, -1), new vec2i(1, -1), new vec2i(-1, 1),
+                    new vec2i(1, 1), new vec2i(0, -1), new vec2i(0, 1),
+                    new vec2i(-1, 0), new vec2i(1, 0), new vec2i(0, 0)
+                }
+            };
+
             ArraOne3d6 = new vec3i[]
             {
                 new vec3i(0, 1, 0), new vec3i(0, -1, 0), new vec3i(1, 0, 0),
                 new vec3i(-1, 0, 0), new vec3i(0, 0, -1), new vec3i(0, 0, 1)
+            };
+            ArraOne3d6back = new vec3i[]
+            {
+                new vec3i(0, -1, 0), new vec3i(0, 1, 0), new vec3i(-1, 0, 0),
+                new vec3i(1, 0, 0), new vec3i(0, 0, 1), new vec3i(0, 0, -1)
             };
             TimerFrequency = Stopwatch.Frequency / 1000;
             TimerFrequencyTps = Stopwatch.Frequency / 20;

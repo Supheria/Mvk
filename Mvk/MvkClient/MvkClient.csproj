@@ -115,14 +115,14 @@
     <Compile Include="Loading.cs" />
     <Compile Include="Network\ProcessClientPackets.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Renderer\Block\BlockAlphaRender.cs" />
     <Compile Include="Renderer\Block\BlockColorBiome.cs" />
     <Compile Include="Renderer\Block\BlockGuiRender.cs" />
+    <Compile Include="Renderer\Block\BlockRenderLiquid.cs" />
+    <Compile Include="Renderer\Block\BlockRenderBase.cs" />
+    <Compile Include="Renderer\Block\BlockRenderUnique.cs" />
+    <Compile Include="Renderer\Block\BlockRenderFull.cs" />
     <Compile Include="Renderer\Block\BlockSide.cs" />
-    <Compile Include="Renderer\Block\BlockFaceUV.cs" />
-    <Compile Include="Renderer\Block\BlockRender.cs" />
     <Compile Include="Renderer\Block\BlockBuffer.cs" />
-    <Compile Include="Renderer\Block\BlockVertex.cs" />
     <Compile Include="Renderer\Chunk\ChunkMesh.cs" />
     <Compile Include="Renderer\Chunk\ChunkRender.cs" />
     <Compile Include="Renderer\Chunk\ChunkSectionMesh.cs" />
@@ -166,6 +166,8 @@
     <Compile Include="Renderer\RenderBlockCursor.cs" />
     <Compile Include="Renderer\Shaders\ShaderItems.cs" />
     <Compile Include="Renderer\Shaders\ShaderVE.cs" />
+    <Compile Include="Renderer\Shaders\ShaderVoxelWave.cs" />
+    <Compile Include="Renderer\Shaders\ShaderVoxelWind.cs" />
     <Compile Include="Renderer\Shaders\ShaderVoxel.cs" />
     <Compile Include="Renderer\TextureLightMap.cs" />
     <Compile Include="Renderer\TextureMap.cs" />

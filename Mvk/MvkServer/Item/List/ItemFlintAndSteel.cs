@@ -46,10 +46,10 @@ namespace MvkServer.Item.List
             if (worldIn.GetBlockState(blockPos).IsAir() 
                 && CanPlaceBlockOnSide(stack, playerIn, worldIn, blockPos, blockFire, side, facing))
             {
-                if (blockFire.CanBlockStay(worldIn, blockPos))
+                BlockState blockState = blockFire.OnBlockPlaced(worldIn, blockPos, new BlockState(blockFire.EBlock), side, facing);
+                if (blockFire.CanBlockStay(worldIn, blockPos, blockState.met))
                 {
                     BlockState blockStateOld = worldIn.GetBlockState(blockPos);
-                    BlockState blockState = blockFire.OnBlockPlaced(worldIn, blockPos, new BlockState(blockFire.EBlock), side, facing);
                     bool result = worldIn.SetBlockState(blockPos, blockState, 15);
                     if (result)
                     {

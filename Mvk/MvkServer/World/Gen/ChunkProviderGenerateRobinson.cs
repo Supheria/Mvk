@@ -1,4 +1,5 @@
-﻿using MvkServer.Util;
+﻿using MvkServer.Glm;
+using MvkServer.Util;
 using MvkServer.World.Biome;
 using MvkServer.World.Chunk;
 using MvkServer.World.Gen.Layer;
@@ -57,11 +58,11 @@ namespace MvkServer.World.Gen
          //   return;
             BiomeBase biome;
             ChunkBase chunkSpawn;
-
+            vec2i[] array = MvkStatic.AreaOne9priority[chunk.Position.x % 2 == 0 ? 0 : 1 + chunk.Position.y % 2 == 0 ? 0 : 2];
             // Декорация областей которые могу выйти за 1 чанк
             for (int i = 0; i < 9; i++)
             {
-                chunkSpawn = World.GetChunk(MvkStatic.AreaOne9[i] + chunk.Position);
+                chunkSpawn = World.GetChunk(array[i] + chunk.Position);
                 biome = biomes[(int)chunkSpawn.biome[136]];
                 biome.Decorator.GenDecorationsArea(World, this, chunk, chunkSpawn);
             }

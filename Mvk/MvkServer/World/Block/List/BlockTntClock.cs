@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Util;
+﻿using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
@@ -20,24 +19,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected override void InitBoxs()
-        {
-            vec3 color = new vec3(.95f, .4f, .4f);
-            boxes = new Box[][] { new Box[] {
-                new Box()
-                {
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 515, color),
-                        new Face(Pole.Down, 512, color),
-                        new Face(Pole.East, 513, color),
-                        new Face(Pole.North, 513, color),
-                        new Face(Pole.South, 513, color),
-                        new Face(Pole.West, 513, color)
-                    }
-                }
-            }};
-        }
+        protected override void InitQuads() => InitQuads(515, 512, 513, 513, 513, 513);
 
         public override void OnBlockAdded(WorldBase worldIn, BlockPos blockPos, BlockState state)
         {

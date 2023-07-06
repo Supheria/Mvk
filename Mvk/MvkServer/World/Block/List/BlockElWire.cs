@@ -1,4 +1,4 @@
-﻿using MvkServer.Glm;
+﻿using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
@@ -18,28 +18,35 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockElWire() : base(384)
         {
-            InitBoxs();
+            InitQuads();
         }
 
         /// <summary>
         /// Коробки
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[met == 0 ? 0 : 1];
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) => quads[met == 0 ? 0 : 1];
 
         /// <summary>
         /// Коробки для рендера 2д GUI
         /// </summary>
-        public override Box[] GetBoxesGui() => boxes[1];
+        public override QuadSide[] GetQuadsGui() => quads[1];
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs()
+        protected void InitQuads()
         {
-            boxes = new Box[][] {
-                new Box[] { new Box(385, false, new vec3(1)) },
-                new Box[] { new Box(384, false, new vec3(1)) }
-            };
+            quads = new QuadSide[2][];
+            int texture;
+            for (int i = 0; i < 2; i++)
+            {
+                texture = 385 - i;
+                quads[i] = new QuadSide[6];
+                for (int j = 0; j < 6; j++)
+                {
+                    quads[i][j] = new QuadSide(0).SetTexture(texture).SetSide((Pole)j);
+                }
+            }
         }
     }
 }

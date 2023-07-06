@@ -308,7 +308,11 @@
         /// <summary>
         /// Кокос
         /// </summary>
-        Coconut = 74
+        Coconut = 74,
+        /// <summary>
+        /// Яблоко
+        /// </summary>
+        Apple = 75
     }
 
     /// <summary>
@@ -316,6 +320,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 74;
+        public const int COUNT = 75;
     }
 }

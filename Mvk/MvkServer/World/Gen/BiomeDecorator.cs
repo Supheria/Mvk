@@ -14,11 +14,11 @@ namespace MvkServer.World.Gen
         protected WorldGenPlants genPlants;
         protected WorldGenTina genTina;
         protected WorldGenCactus genCactus;
-        protected WorldGenTree genPalm;
-        protected WorldGenTree genOak;
-        protected WorldGenTree genBirch;
-        protected WorldGenTree genSpruce;
-        protected WorldGenTree genFruit;
+        protected WorldGenerator genPalm;
+        protected WorldGenerator genOak;
+        protected WorldGenerator genBirch;
+        protected WorldGenerator genSpruce;
+        protected WorldGenerator genFruit;
 
         protected WorldGenBrol genBrol;
 
@@ -169,11 +169,11 @@ namespace MvkServer.World.Gen
             genTina = new WorldGenTina();
             genPlants = new WorldGenPlants();
             genCactus = new WorldGenCactus();
-            genOak = new WorldGenTreeOak();
-            genBirch = new WorldGenTreeBirch();
-            genSpruce = new WorldGenTreeSpruce();
-            genFruit = new WorldGenTreeFruit();
-            genPalm = new WorldGenTreePalm();
+            genOak = new WorldGenTreeOak2();
+            genBirch = new WorldGenTreeBirch2();
+            genSpruce = new WorldGenTreeSpruce2();
+            genFruit = new WorldGenTreeFruit2();
+            genPalm = new WorldGenTreePalm2();
 
             genPancakeSand = new WorldGenPancake(EnumBlock.Sand, 9, 8);
             gemPancakeGravel = new WorldGenPancake(EnumBlock.Gravel, 7, 6);
@@ -306,7 +306,7 @@ namespace MvkServer.World.Gen
             }
         }
 
-        protected void GenTree(int count, WorldGenTree worldGenTree)
+        protected void GenTree(int count, WorldGenerator worldGenTree)
         {
             if (count > 0)
             {

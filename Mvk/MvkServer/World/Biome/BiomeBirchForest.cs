@@ -16,7 +16,7 @@ namespace MvkServer.World.Biome
         {
             base.InitDecorator(isRobinson);
             Decorator.birchPerChunk = 4;
-            Decorator.grassPerChunk = 8;
+            Decorator.grassPerChunk = 32;
             Decorator.flowersPerChunk = 5;
             Decorator.randomThicketsGrass = 4;
         }

@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Util;
+﻿using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
@@ -13,7 +12,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockElLampOff() : base(387)
         {
-            InitBoxs(387, false, new vec3(1));
+            InitQuads(387);
         }
 
         /// <summary>

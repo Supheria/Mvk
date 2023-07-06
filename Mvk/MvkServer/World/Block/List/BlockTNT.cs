@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Util;
+﻿using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
@@ -17,30 +16,13 @@ namespace MvkServer.World.Block.List
         public BlockTnt() : base(513)
         {
             CanDropFromExplosion = false;
-            InitBoxs();
+            InitQuads();
         }
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected virtual void InitBoxs()
-        {
-            vec3 color = new vec3(.95f, .4f, .4f);
-            boxes = new Box[][] { new Box[] {
-                new Box()
-                {
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 514, color),
-                        new Face(Pole.Down, 512, color),
-                        new Face(Pole.East, 513, color),
-                        new Face(Pole.North, 513, color),
-                        new Face(Pole.South, 513, color),
-                        new Face(Pole.West, 513, color)
-                    }
-                }
-            }};
-        }
+        protected virtual void InitQuads() => InitQuads(514, 512, 513, 513, 513, 513);
 
         /// <summary>
         /// Действие блока после его установки
@@ -91,11 +73,11 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public override void NeighborBlockChange(WorldBase worldIn, BlockPos pos, BlockState state, BlockBase neighborBlock)
+        public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
             if (neighborBlock.EBlock == EnumBlock.Fire || neighborBlock.Material == EnumMaterial.Lava)
             {
-                Explosion(worldIn, pos);
+                Explosion(worldIn, blockPos);
             }
         }
 

@@ -12,10 +12,30 @@ namespace MvkServer.World.Block
     /// </summary>
     public abstract class BlockBase
     {
+        // У блока может быть один из параметров true FullBlock || Liquid || IsUnique || IsAir
+
         /// <summary>
         /// Ограничительная рамка занимает весь блок, для оптимизации, без проверки AABB блока
         /// </summary>
-        public bool FullBlock { get; protected set; } = true;
+        public bool FullBlock { get; private set; } = true;
+        /// <summary>
+        /// Блок жидкости: вода, лава, нефть
+        /// </summary>
+        public bool Liquid { get; private set; } = false;
+        /// <summary>
+        /// Является ли эта модель не блоком, со всеми сторонами и прозрачной
+        /// </summary>
+        public bool IsUnique { get; private set; } = false;
+        /// <summary>
+        /// Явлыется ли блок небом
+        /// </summary>
+        public bool IsAir { get; private set; } = false;
+
+        /// <summary>
+        /// Прорисовка возможно с обеих сторон, для уникальных блоков, типа трава, листва и подобное
+        /// </summary>
+        public bool BothSides { get; private set; } = false;
+
         /// <summary>
         /// Сколько света вычитается для прохождения этого блока Air = 0
         /// В VoxelEngine он в public static byte GetBlockLightOpacity(EnumBlock eblock)
@@ -30,21 +50,15 @@ namespace MvkServer.World.Block
         /// Полупрозрачный, альфа блок, вода, стекло...
         /// </summary>
         public bool Translucent { get; protected set; } = false;
-
         /// <summary>
         /// Флаг, если блок должен использовать самое яркое значение соседнего света как свое собственное
-        /// Пример: трава, вода, стекло, но только не лава и нефть
-        /// VE LightingYourself
+        /// Пример: листва, вода, стекло
         /// </summary>
         public bool UseNeighborBrightness { get; protected set; } = false;
         /// <summary>
         /// Все стороны принудительно, пример: трава, стекло, вода, лава
         /// </summary>
         public bool AllSideForcibly { get; protected set; } = false;
-        /// <summary>
-        /// Блок жидкости: вода, лава, нефть
-        /// </summary>
-        public bool Liquid { get; protected set; } = false;
         /// <summary>
         /// Обрабатывается блок эффектом АmbientOcclusion
         /// </summary>
@@ -53,10 +67,6 @@ namespace MvkServer.World.Block
         /// Обрабатывается блок эффектом Плавного перехода цвета между биомами
         /// </summary>
         public bool BiomeColor { get; protected set; } = false;
-        /// <summary>
-        /// Нет бокового затемнения, пример: трава, цветы
-        /// </summary>
-        public bool NoSideDimming { get; protected set; } = false;
         /// <summary>
         /// При значении flase у AllSideForcibly + обнотипные блоков не будет между собой сетки, пример: вода, блок стекла
         /// </summary>
@@ -96,10 +106,6 @@ namespace MvkServer.World.Block
         /// </summary>
         public EnumBlock EBlock { get; protected set; }
         /// <summary>
-        /// Явлыется ли блок небом
-        /// </summary>
-        public bool IsAir { get; protected set; } = false;
-        /// <summary>
         /// Можно ли выбирать блок
         /// </summary>
         public bool IsAction { get; protected set; } = true;
@@ -107,11 +113,7 @@ namespace MvkServer.World.Block
         /// Может ли блок сталкиваться
         /// </summary>
         public bool IsCollidable { get; protected set; } = true;
-        /// <summary>
-        /// Цвет блока по умолчани, биом потом заменит
-        /// Для частички
-        /// </summary>
-        public vec3 Color { get; protected set; } = new vec3(1);
+        
         /// <summary>
         /// Индекс картинки частички
         /// </summary>
@@ -128,10 +130,7 @@ namespace MvkServer.World.Block
         /// Имеет ли блок дополнительные данные свыше 4 bit
         /// </summary>
         public bool IsAddMet { get; protected set; } = false;
-        /// <summary>
-        /// Является ли эта модель не блоком, со всеми сторонами и прозрачной
-        /// </summary>
-        public bool IsUnique { get; private set; } = false;
+        
         /// <summary>
         /// Горючесть материала
         /// </summary>
@@ -152,14 +151,18 @@ namespace MvkServer.World.Block
         public byte BurnOdds { get; protected set; } = 0;
 
         /// <summary>
-        /// Коробки для прорисовки блока
+        /// Цвет блока по умолчани, биом потом заменит
+        /// Для частички
         /// </summary>
-        protected Box[][] boxes;
+        protected vec3 color = new vec3(1);
         /// <summary>
-        /// Сторона для прорисовки жидкого блока
+        /// Стороны для прорисовки жидкого блока
         /// </summary>
-        protected Face[] faces;
-
+        protected SideLiquid[] sideLiquids;
+        /// <summary>
+        /// Стороны целого блока для прорисовки блока quads
+        /// </summary>
+        protected QuadSide[][] quads = new QuadSide[][] { new QuadSide[] { new QuadSide(0) } };
         /// <summary>
         /// Семплы сломоного блока
         /// </summary>
@@ -185,42 +188,94 @@ namespace MvkServer.World.Block
         public EnumMaterial Material { get; protected set; } = EnumMaterial.Air;
 
         /// <summary>
-        /// Цвет блока для подмешенных для гуи
+        /// Цвет для подмешевания блока, для гуи или частичек
         /// </summary>
-        public virtual vec3 ColorGui() => Color;
+        public vec3 GetColorGuiOrPartFX() => color;
 
         /// <summary>
-        /// Коробки для рендера 
+        /// Получить сторону для прорисовки жидкого блока
         /// </summary>
-        public virtual Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[0];
+        public SideLiquid GetSideLiquid(int index) => sideLiquids[index];
+
+        #region Quad
+
+        /// <summary>
+        /// Стороны целого блока для рендера
+        /// </summary>
+        public virtual QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) => quads[0];
 
         /// <summary>
         /// Коробки для рендера 2д GUI
         /// </summary>
-        public virtual Box[] GetBoxesGui() => boxes != null ? boxes[0] : new Box[0];
+        public virtual QuadSide[] GetQuadsGui() => quads[0];// quads != null ? quads[0] : new QuadSide[0];
+        /// <summary>
+        /// Имеется ли у блока смена цвета травы от биома из первого квадра
+        /// </summary>
+        public bool IsBiomeColorGrass() => quads[0][0].IsBiomeColorGrass();
 
         /// <summary>
-        /// Получить сторону для жидкого блока, index = 0 up/down, 1 = бок
+        /// Инициализация коробок всех одной текстурой с параметром Нет бокового затемнения, пример: трава, цветы
         /// </summary>
-        public Face GetFace(int index) => faces[index];
+        protected void InitQuads(int numberTexture, bool noSideDimming = false)
+        {
+            quads = new QuadSide[][] { new QuadSide[] {
+                new QuadSide(0).SetTexture(numberTexture).SetSide(Pole.Up, noSideDimming),
+                new QuadSide(0).SetTexture(numberTexture).SetSide(Pole.Down, noSideDimming),
+                new QuadSide(0).SetTexture(numberTexture).SetSide(Pole.East, noSideDimming),
+                new QuadSide(0).SetTexture(numberTexture).SetSide(Pole.West, noSideDimming),
+                new QuadSide(0).SetTexture(numberTexture).SetSide(Pole.North, noSideDimming),
+                new QuadSide(0).SetTexture(numberTexture).SetSide(Pole.South, noSideDimming)
+            } };
+        }
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs(int numberTexture) 
-            => boxes = new Box[][] { new Box[] { new Box(numberTexture) } };
-
+        protected void InitQuads(int t1, int t2, int t3, int t4, int t5, int t6, bool noSideDimming = false)
+        {
+            quads = new QuadSide[][] { new QuadSide[] {
+                new QuadSide(0).SetTexture(t1).SetSide(Pole.Up, noSideDimming),
+                new QuadSide(0).SetTexture(t2).SetSide(Pole.Down, noSideDimming),
+                new QuadSide(0).SetTexture(t3).SetSide(Pole.East, noSideDimming),
+                new QuadSide(0).SetTexture(t4).SetSide(Pole.West, noSideDimming),
+                new QuadSide(0).SetTexture(t5).SetSide(Pole.North, noSideDimming),
+                new QuadSide(0).SetTexture(t6).SetSide(Pole.South, noSideDimming)
+            } };
+        }
 
         /// <summary>
-        /// Инициализация коробок
+        /// Получить прямоугольник стороны
         /// </summary>
-        protected virtual void InitBoxs(int numberTexture, bool isColor, vec3 color)
-            => boxes = new Box[][] { new Box[] { new Box(numberTexture, isColor, color) } };
+        protected QuadSide Quad(int x1, int x2, int z1, int z2, int u1, int u2, int v1, int v2, Pole pole, int texture)
+            => new QuadSide(0).SetTexture(texture, u1, v1, u2, v2).SetSide(pole, false, x1, 0, z1, x2, 16, z2);
+
+        /// <summary>
+        /// Получить прямоугольник стороны с подержкой цвета
+        /// </summary>
+        protected QuadSide QuadColor(int x1, int x2, int z1, int z2, int u1, int u2, int v1, int v2, Pole pole, int texture)
+            => new QuadSide(4).SetTexture(texture, u1, v1, u2, v2).SetSide(pole, false, x1, 0, z1, x2, 16, z2);
+
+        #endregion
+
+        /// <summary>
+        /// Задать блок воздуха
+        /// </summary>
+        protected void SetAir()
+        {
+            IsAir = true;
+            FullBlock = false;
+            IsAction = false;
+            IsParticle = false;
+            АmbientOcclusion = false;
+            Shadow = false;
+            IsReplaceable = true;
+            LightOpacity = 0;
+        }
 
         /// <summary>
         /// Задать уникальную прозрачную модель не целого блока
         /// </summary>
-        protected void SetUnique()
+        protected void SetUnique(bool bothSides = false)
         {
             IsUnique = true;
             FullBlock = false;
@@ -228,6 +283,23 @@ namespace MvkServer.World.Block
             LightOpacity = 0;
             АmbientOcclusion = false;
             Shadow = false;
+            BothSides = bothSides;
+        }
+
+        protected void SetLiquid()
+        {
+            Liquid = true;
+            FullBlock = false;
+            AllSideForcibly = true;
+            BlocksNotSame = false;
+            UseNeighborBrightness = true;
+            IsAction = false;
+            IsCollidable = false;
+            АmbientOcclusion = false;
+            Shadow = false;
+            IsReplaceable = true;
+            IsParticle = false;
+            Resistance = 100f;
         }
 
         /// <summary>
@@ -418,7 +490,7 @@ namespace MvkServer.World.Block
         /// <summary> 
         /// Проверка установи блока, можно ли его установить тут
         /// </summary>
-        public virtual bool CanBlockStay(WorldBase worldIn, BlockPos blockPos) => true;
+        public virtual bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met = 0) => true;
 
         /// <summary>
         /// Семпл сломанного блока
@@ -480,7 +552,7 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Смена соседнего блока
         /// </summary>
-        public virtual void NeighborBlockChange(WorldBase worldIn, BlockPos pos, BlockState state, BlockBase neighborBlock) { }
+        public virtual void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock) { }
 
         /// <summary>
         /// Вызывается при столкновении объекта с блоком
@@ -507,6 +579,10 @@ namespace MvkServer.World.Block
         /// Имеется ли у блока разрядка к электроэнергии
         /// </summary>
         public virtual bool IsUnitDischargeToElectricity() => false;
+        /// <summary>
+        /// Блок который замедляет сущность в перемещении на ~30%
+        /// </summary>
+        public virtual bool IsSlow(BlockState state) => false;
 
         /// <summary>
         /// Строка

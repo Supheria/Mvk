@@ -1,6 +1,7 @@
 ﻿using MvkAssets;
 using MvkClient.Entity;
 using MvkClient.Gui;
+using MvkClient.Renderer.Block;
 using MvkClient.Renderer.Chunk;
 using MvkClient.Renderer.Shaders;
 using MvkClient.Util;
@@ -42,25 +43,65 @@ namespace MvkClient.Renderer
         /// </summary>
         public readonly ArrayMvk<byte> bufferHeight = new ArrayMvk<byte>(66060288);
         /// <summary>
-        /// Буфер сплошных блоков всего ряда (8)
+        /// Буфер уникальных блоков всего ряда (8)
         /// </summary>
         public readonly ArrayMvk<byte> bufferHeightUnique = new ArrayMvk<byte>(66060288);
         /// <summary>
-        /// Буфер сплошных блоков всего ряда
+        /// Буфер уникальных блоков с обоих сторон всего ряда (8)
         /// </summary>
-        public readonly ArrayMvk<byte> buffer = new ArrayMvk<byte>(4128768);
+        public readonly ArrayMvk<byte> bufferHeightUniqueBothSides = new ArrayMvk<byte>(66060288);
         /// <summary>
-        /// Буфер уникальных блоков всего ряда
+        /// Буфер альфа блоков одного сектора
+        /// </summary>
+        public readonly ArrayMvk<byte> bufferAlpha = new ArrayMvk<byte>(4128768);
+        /// <summary>
+        /// Буфер сплошных блоков одного сектора
+        /// </summary>
+        public readonly ArrayMvk<byte> bufferDense = new ArrayMvk<byte>(4128768);
+        /// <summary>
+        /// Буфер уникальных блоков одного сектора
         /// </summary>
         public readonly ArrayMvk<byte> bufferUnique = new ArrayMvk<byte>(4128768);
         /// <summary>
-        /// Буфер сплошных блоков кэш
+        /// Буфер уникальных блоков с обоих сторон одного сектора
+        /// </summary>
+        public readonly ArrayMvk<byte> bufferUniqueBothSides = new ArrayMvk<byte>(4128768);
+        /// <summary>
+        /// Буфер одного кэш блока
         /// </summary>
         public readonly ArrayMvk<byte> bufferCache = new ArrayMvk<byte>(6048);
         /// <summary>
-        /// Буефр одного альфа блока
+        /// Буефр одного альфа кэш блока
         /// </summary>
         public readonly ArrayMvk<byte> bufferAlphaCache = new ArrayMvk<byte>(4032);
+        /// <summary>
+        /// Объект рендера целого блока с эффектом размытия (Mipmap)
+        /// </summary>
+        public readonly BlockRenderFull blockRenderFull = new BlockRenderFull();
+        /// <summary>
+        /// Объект рендера уникального блока с эффектом контраста (Not Mipmap)
+        /// </summary>
+        public readonly BlockRenderUnique blockRenderUnique = new BlockRenderUnique();
+        /// <summary>
+        /// Объект рендера уникального блока с эффектом контраста c двух сторон (Not Mipmap && Disable(GL_CULL_FACE))
+        /// </summary>
+        public readonly BlockRenderUnique blockRenderUniqueBothSides = new BlockRenderUnique();
+        /// <summary>
+        /// Объект рендера жидкого блока с эффектом контраста (Not Mipmap)
+        /// </summary>
+        public readonly BlockRenderLiquid blockRenderLiquid = new BlockRenderLiquid();
+        /// <summary>
+        /// Объект рендера целого Alpha блока с эффектом контраста (Not Mipmap)
+        /// </summary>
+        public readonly BlockRenderFull blockAlphaRenderFull = new BlockRenderFull();
+        /// <summary>
+        /// Объект рендера уникального Alpha блока с эффектом контраста (Not Mipmap)
+        /// </summary>
+        public readonly BlockRenderUnique blockAlphaRenderUnique = new BlockRenderUnique();
+        /// <summary>
+        /// Объект рендера жидкого Alpha блока с эффектом контраста (Not Mipmap)
+        /// </summary>
+        public readonly BlockRenderLiquid blockAlphaRenderLiquid = new BlockRenderLiquid();
 
         /// <summary>
         /// Дополнительный счётчик, для повторной проверки, если камера не двигается, а чанки догружаются
@@ -122,13 +163,30 @@ namespace MvkClient.Renderer
         /// Массив очередей чанков для рендера альфа
         /// </summary>
         private readonly DoubleList<ChunkRender> renderAlphaQueues = new DoubleList<ChunkRender>();
+        /// <summary>
+        /// Метод чанков для прорисовки
+        /// </summary>
+        private readonly ArrayMvk<ChunkRender> arrayChunkRender = new ArrayMvk<ChunkRender>(6000);
 
         public WorldRenderer(WorldClient world)
         {
             World = world;
             ClientMain = world.ClientMain;
             ScreenGame = new ScreenInGame(ClientMain);
-            //renderAim = new RenderAim();
+
+            // Инициализация буффер массивов для рендера блоков
+            blockRenderFull.blockUV.buffer = blockRenderLiquid.blockUV.buffer = bufferDense;
+            blockRenderUnique.blockUV.buffer = bufferUnique;
+            blockRenderUniqueBothSides.blockUV.buffer = bufferUniqueBothSides;
+
+            blockAlphaRenderFull.blockUV.buffer = blockAlphaRenderUnique.blockUV.buffer 
+                = blockAlphaRenderLiquid.blockUV.buffer = bufferAlphaCache;
+
+            blockRenderFull.blockUV.bufferCache = blockRenderUnique.blockUV.bufferCache 
+                = blockRenderUniqueBothSides.blockUV.bufferCache = blockRenderLiquid.blockUV.bufferCache 
+                = blockAlphaRenderFull.blockUV.bufferCache = blockAlphaRenderUnique.blockUV.bufferCache 
+                = blockAlphaRenderLiquid.blockUV.bufferCache = bufferCache;
+
             renderBlockCursor = new RenderBlockCursor(ClientMain);
             renderChunkCursor = new RenderChunkCursor { IsHidden = true };
 
@@ -159,6 +217,27 @@ namespace MvkClient.Renderer
             // Запускаем отдельный поток для рендера
             renderLoopRunning = true;
             new Thread(RenderLoop).Start();
+        }
+
+        /// <summary>
+        /// Инициализация объектов генерации блоков
+        /// </summary>
+        public void InitChunkRender(ChunkRender chunkRender)
+        {
+            blockRenderFull.InitChunk(chunkRender);
+            blockRenderUnique.InitChunk(chunkRender);
+            blockRenderUniqueBothSides.InitChunk(chunkRender);
+            blockRenderLiquid.InitChunk(chunkRender);
+        }
+
+        /// <summary>
+        /// Инициализация объектов генерации альфа блоков
+        /// </summary>
+        public void InitChunkRenderAlpha(ChunkRender chunkRender)
+        {
+            blockAlphaRenderFull.InitChunk(chunkRender);
+            blockAlphaRenderUnique.InitChunk(chunkRender);
+            blockAlphaRenderLiquid.InitChunk(chunkRender);
         }
 
         /// <summary>
@@ -230,14 +309,17 @@ namespace MvkClient.Renderer
             // Небо
             DrawSky(timeIndex);
 
-            // Воксели VBO
-            List<ChunkRender> chunks = DrawVoxel(timeIndex);
+            // Биндим чанки вокселей и готовим массив чанков
+            BindChunkVoxel();
 
+            // Рисуем воксели сплошных блоков VBO
+            DrawVoxelDense(timeIndex);
             DrawVoxelUnique(timeIndex);
+            DrawVoxelUniqueBothSides(timeIndex);
 
             GLRender.BlendEnable();
             // Сущности DisplayList
-            DrawEntities(chunks, timeIndex);
+            DrawEntities(timeIndex);
 
             GLRender.TextureLightmapDisable();
 
@@ -257,7 +339,7 @@ namespace MvkClient.Renderer
             // Облака
             DrawClouds(timeIndex);
 
-            // Воксели альфа VBO
+            // Рисуем воксели альфа VBO
             DrawVoxelAlpha(timeIndex);
 
             // Прорисовка руки
@@ -282,31 +364,19 @@ namespace MvkClient.Renderer
         public void ChunkCursorHiddenShow() => renderChunkCursor.IsHidden = !renderChunkCursor.IsHidden;
 
         /// <summary>
-        /// Прорисовка вокселей VBO
+        /// Связывание чанки вокселей и готовим массив чанков
         /// </summary>
-        private List<ChunkRender> DrawVoxel(float timeIndex)
+        private void BindChunkVoxel()
         {
-            if (Debug.IsDrawVoxelLine)
-            {
-                GLWindow.gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
-                GLRender.CullDisable();
-            }
-            else
-            {
-                GLRender.CullEnable();
-                GLWindow.gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_FILL);
-            }
-
-            ShaderVoxel shader = VoxelsBegin(timeIndex);
-            List<ChunkRender> chunks = new List<ChunkRender>();
+            arrayChunkRender.Clear();
             FrustumStruct[] fss = ClientMain.Player.ChunkFC;
-            int count = fss.Length - 1;
+            int count = fss.Length;
             int i;
             FrustumStruct fs;
             ChunkRender chunk;
 
             // Пробегаем по всем чанкам которые видим FrustumCulling
-            for (i = 0; i <= count; i++)
+            for (i = 0; i < count; i++)
             {
                 fs = fss[i];
                 if (fs.IsChunk())
@@ -318,7 +388,7 @@ namespace MvkClient.Renderer
                     if (chunk.IsModifiedRender() && renderQueues.CountForward < MvkGlobal.COUNT_RENDER_CHUNK_FRAME)
                     {
                         // Проверяем занят ли чанк уже рендером
-                        if (chunk.IsMeshDenseWait() && chunk.IsMeshAlphaWait() && chunk.IsMeshUniqueWait())
+                        if (chunk.IsMeshDenseWait() && chunk.IsMeshAlphaWait())
                         {
                             // Обновление рендера псевдочанка
                             Debug.CountUpdateChunck++;
@@ -326,27 +396,31 @@ namespace MvkClient.Renderer
                             renderQueues.Add(chunk);
                         }
                     }
+                    // Проверяем надо ли рендер для псевдо чанка, и возможно ли по времени
+                    else if (chunk.IsModifiedRenderAlpha() && renderAlphaQueues.CountForward < MvkGlobal.COUNT_RENDER_CHUNK_FRAME_ALPHA)
+                    {
+                        // Проверяем занят ли чанк уже рендером
+                        if (chunk.IsMeshDenseWait() && chunk.IsMeshAlphaWait())
+                        {
+                            // Обновление рендера псевдочанка
+                            Debug.CountUpdateChunckAlpha++;
+                            chunk.StartRenderingAlpha();
+                            renderAlphaQueues.Add(chunk);
+                        }
+                    }
 
                     // Занести буфер сплошных блоков псевдо чанка если это требуется
                     if (chunk.IsMeshDenseBinding()) chunk.BindBufferDense();
-                    // Занести буфер уникальных блоков псевдо чанка если это требуется
-                    if (chunk.IsMeshUniqueBinding()) chunk.BindBufferUnique();
+                    // Занести буфер альфа блоков псевдо чанка если это требуется
+                    if (chunk.IsMeshAlphaBinding()) chunk.BindBufferAlpha();
 
-                    // Прорисовка сплошных блоков псевдо чанка
-                    if (chunk.NotNullMeshDense())
-                    {
-                        VoxelsShaderChunk(shader, chunk.Position);
-                        chunk.DrawDense();
-                    }
-                    chunks.Add(chunk);
+                    arrayChunkRender.Add(chunk);
                 }
                 else
                 {
                     addInitFrustumCulling++;
                 }
             }
-
-            shader.Unbind(GLWindow.gl);
 
             // Если хоть один чанк не догружен, то продолжаем счётчик
             if (addInitFrustumCulling > 0) addInitFrustumCulling++;
@@ -356,15 +430,107 @@ namespace MvkClient.Renderer
                 addInitFrustumCulling = 0;
                 ClientMain.Player.CheckChunkFrustumCulling();
             }
+        }
 
+        /// <summary>
+        /// Рисуем воксели сплошных блоков
+        /// </summary>
+        private void DrawVoxelDense(float timeIndex)
+        {
+            if (Debug.IsDrawVoxelLine)
+            {
+                GLWindow.gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
+                GLRender.CullDisable();
+            }
+            else
+            {
+                GLRender.CullEnable();
+                GLWindow.gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_FILL);
+            }
+            ShaderVoxel shader = VoxelsBegin(timeIndex, GLWindow.Shaders.ShVoxel);
+            GLRender.BlendEnable();
+
+            int count = arrayChunkRender.count;
+            int i;
+            ChunkRender chunk;
+
+            // Пробегаем по всем чанкам которые видим FrustumCulling
+            for (i = 0; i < count; i++)
+            {
+                chunk = arrayChunkRender[i];
+                // Прорисовка сплошных блоков псевдо чанка
+                if (chunk.NotNullMeshDense())
+                {
+                    VoxelsShaderChunk(shader, chunk.Position);
+                    chunk.DrawDense();
+                }
+            }
+
+            shader.Unbind(GLWindow.gl);
             if (Debug.IsDrawVoxelLine)
             {
                 // Дебаг должен прорисовать текстуру по этому сетка тут не уместна
                 GLRender.CullEnable();
                 GLWindow.gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_FILL);
             }
+        }
 
-            return chunks;
+        /// <summary>
+        /// Рисуем воксели уникальных блоков
+        /// </summary>
+        private void DrawVoxelUnique(float timeIndex)
+        {
+            GLRender.CullEnable();
+            //GLRender.CullDisable();
+            ShaderVoxel shader = VoxelsBegin(timeIndex, GLWindow.Shaders.ShVoxel, true);
+            GLRender.DepthEnable();
+            GLRender.BlendEnable();
+
+            int count = arrayChunkRender.count;
+            int i;
+            ChunkRender chunk;
+
+            // Пробегаем по всем чанкам которые видим FrustumCulling
+            for (i = 0; i < count; i++)
+            {
+                chunk = arrayChunkRender[i];
+                // Прорисовка сплошных блоков псевдо чанка
+                if (chunk.NotNullMeshUnique())
+                {
+                    VoxelsShaderChunk(shader, chunk.Position);
+                    chunk.DrawUnique();
+                }
+            }
+
+            shader.Unbind(GLWindow.gl);
+        }
+
+        /// <summary>
+        /// Рисуем воксели уникальных блоков
+        /// </summary>
+        private void DrawVoxelUniqueBothSides(float timeIndex)
+        {
+            GLRender.CullDisable();
+            ShaderVoxel shader = VoxelsBegin(timeIndex, GLWindow.Shaders.ShVoxelWind, true, true);
+            GLRender.DepthEnable();
+            GLRender.BlendEnable();
+
+            int count = arrayChunkRender.count;
+            int i;
+            ChunkRender chunk;
+            for (i = 0; i < count; i++)
+            {
+                chunk = arrayChunkRender[i];
+                // Прорисовка сплошных блоков псевдо чанка
+                if (chunk.NotNullMeshUniqueBothSides())
+                {
+                    VoxelsShaderChunk(shader, chunk.Position);
+                    chunk.DrawUniqueBothSides();
+                }
+            }
+
+            shader.Unbind(GLWindow.gl);
+            GLRender.CullEnable();
         }
 
         /// <summary>
@@ -373,97 +539,51 @@ namespace MvkClient.Renderer
         private void DrawVoxelAlpha(float timeIndex)
         {
             GLRender.CullEnable();
-            ShaderVoxel shader = VoxelsBegin(timeIndex);
+            ShaderVoxel shader = VoxelsBegin(timeIndex, GLWindow.Shaders.ShVoxelWave, false, false, true);
             GLRender.DepthEnable();
             GLRender.BlendEnable();
 
-            int count = ClientMain.Player.ChunkFC.Length - 1;
+            int count = arrayChunkRender.count - 1;
             int i;
-            FrustumStruct fs;
             ChunkRender chunk;
-            
-            // Пробегаем по всем чанкам которые видим FrustumCulling в обратном порядке, с далека и ближе
+
+            // Пробегаем по всем чанкам которые видим FrustumCulling
             for (i = count; i >= 0; i--)
             {
-                fs = ClientMain.Player.ChunkFC[i];
-                if (fs.IsChunk())
+                chunk = arrayChunkRender[i];
+                // Прорисовка альфа блоков псевдо чанка
+                if (chunk.NotNullMeshAlpha())
                 {
-                    chunk = fs.GetChunk();
-                    
-                    // Проверяем надо ли рендер для псевдо чанка, и возможно ли по времени
-                    if (chunk.IsModifiedRenderAlpha() && renderAlphaQueues.CountForward < MvkGlobal.COUNT_RENDER_CHUNK_FRAME_ALPHA)
-                    {
-                        // Проверяем занят ли чанк уже рендером
-                        if (chunk.IsMeshDenseWait() && chunk.IsMeshAlphaWait() && chunk.IsMeshUniqueWait())
-                        {
-                            // Обновление рендера псевдочанка
-                            Debug.CountUpdateChunckAlpha++;
-                            chunk.StartRenderingAlpha();
-                            renderAlphaQueues.Add(chunk);
-                        }
-                    }
-
-                    // Занести буфер альфа блоков псевдо чанка если это требуется
-                    if (chunk.IsMeshAlphaBinding()) chunk.BindBufferAlpha();
-                    
-                    // Прорисовка альфа блоков псевдо чанка
-                    if (chunk.NotNullMeshAlpha())
-                    {
-                        VoxelsShaderChunk(shader, chunk.Position);
-                        chunk.DrawAlpha();
-                    }
+                    VoxelsShaderChunk(shader, chunk.Position);
+                    chunk.DrawAlpha();
                 }
             }
+
             shader.Unbind(GLWindow.gl);
-        }
-
-        /// <summary>
-        /// Прорисовка вокселей альфа цвета
-        /// </summary>
-        private void DrawVoxelUnique(float timeIndex)
-        {
-            GLRender.CullEnable();
-            //GLRender.CullDisable();
-            ShaderVoxel shader = VoxelsBegin(timeIndex, true);
-            GLRender.DepthEnable();
-            GLRender.BlendEnable();
-
-            int count = ClientMain.Player.ChunkFC.Length - 1;
-            int i;
-            FrustumStruct fs;
-            ChunkRender chunk;
-
-            // Пробегаем по всем чанкам которые видим FrustumCulling в обратном порядке, с далека и ближе
-            for (i = 0; i <= count; i++)
-            {
-                fs = ClientMain.Player.ChunkFC[i];
-                if (fs.IsChunk())
-                {
-                    chunk = fs.GetChunk();
-
-                    // Прорисовка уникальных блоков
-                    if (chunk.NotNullMeshUnique())
-                    {
-                        VoxelsShaderChunk(shader, chunk.Position);
-                        chunk.DrawUnique();
-                    }
-                }
-            }
-            shader.Unbind(GLWindow.gl);
-            //GLRender.CullEnable();
         }
 
         /// <summary>
         /// Запуск шейдеров и текстуры для прорисовки вокселей
         /// </summary>
         /// <returns></returns>
-        private ShaderVoxel VoxelsBegin(float timeIndex, bool isUnique = false)
+        private ShaderVoxel VoxelsBegin(float timeIndex, ShaderVoxel shader, bool isUnique = false, bool isWind = false, bool isWave = false)
         {
-            ShaderVoxel shader = GLWindow.Shaders.ShVoxel;
             shader.Bind(GLWindow.gl);
             shader.SetUniformMatrix4(GLWindow.gl, "view", ClientMain.Player.View);
             shader.SetUniform1(GLWindow.gl, "takt", ClientMain.TickCounter); // & 31
-            
+            if (isWind)
+            {
+                // Ветер, значение от -1 до 1
+                int wind = (int)ClientMain.TickCounter & 0x7F;
+                shader.SetUniform1(GLWindow.gl, "wind", glm.cos((wind + timeIndex) * .049f) * .16f);
+            }
+            if (isWave)
+            {
+                // Ветер, значение от -1 до 1
+                int wind = (int)ClientMain.TickCounter & 0xFF;
+                shader.SetUniform1(GLWindow.gl, "wind", glm.cos((wind + timeIndex) * .0245f) * .08f);
+            }
+
             float overview;
             vec3 cfog;
 
@@ -538,14 +658,17 @@ namespace MvkClient.Renderer
         /// <summary>
         /// Прорисовка сущностей DisplayList
         /// </summary>
-        private void DrawEntities(List<ChunkRender> chunks, float timeIndex)
+        private void DrawEntities(float timeIndex)
         {
             World.CountEntitiesShowBegin();
 
-            // Остальные сущности
-            foreach (ChunkRender chunk in chunks)
+            int count = arrayChunkRender.count;
+            int i;
+
+            // Пробегаем по всем чанкам которые видим FrustumCulling
+            for (i = 0; i < count; i++)
             {
-                DrawEntities2(chunk.ListEntities, timeIndex);
+                DrawEntities2(arrayChunkRender[i].ListEntities, timeIndex);
             }
 
             // Основной игрок, вид сзади или спереди

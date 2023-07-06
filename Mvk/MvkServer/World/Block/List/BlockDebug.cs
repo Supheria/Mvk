@@ -15,7 +15,7 @@ namespace MvkServer.World.Block.List
         {
             //Boxes = new Box[] { new Box(1) };
             Particle = 1;
-            FullBlock = false;
+            //FullBlock = false;
             АmbientOcclusion = false;
             Shadow = false;
             AllSideForcibly = true;
@@ -25,7 +25,7 @@ namespace MvkServer.World.Block.List
             LightOpacity = 0;
             //LightValue = 15;
             Material = EnumMaterial.Debug;
-            InitBoxs();
+            //InitBoxs();
         }
 
         /// <summary>
@@ -76,202 +76,202 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Коробки
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb)
-        {
-            if (met == 0) return boxes[0];
+        //public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb)
+        //{
+        //    if (met == 0) return boxes[0];
 
-            //=> boxes[0];
-            return boxes[2];
-        }
+        //    //=> boxes[0];
+        //    return boxes[2];
+        //}
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs()
-        {
-            boxes = new Box[4][];
+        //protected void InitBoxs()
+        //{
+        //    boxes = new Box[4][];
 
-            //boxes[0] = new Box[] {
-            //    new Box()
-            //    {
-            //        From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
-            //        To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
-            //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[1]),
-            //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[15]),
-            //        Faces = new Face[] { new Face(Pole.Down, 1) }
-            //    },
-            //    new Box()
-            //    {
-            //        From = new vec3(MvkStatic.Xy[8], 0, MvkStatic.Xy[1]),
-            //        To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
-            //        UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[1]),
-            //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[15]),
-            //        Faces = new Face[] { new Face(Pole.Up, 1) }
-            //    },
-            //    new Box()
-            //    {
-            //        From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
-            //        To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-            //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[1]),
-            //        UVTo = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[15]),
-            //        Faces = new Face[] { new Face(Pole.Up, 1) }
-            //    },
-            //    new Box()
-            //    {
-            //        From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
-            //        To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
-            //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[8]),
-            //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[16]),
-            //        Faces = new Face[]
-            //        {
-            //            new Face(Pole.North, 1),
-            //            new Face(Pole.South, 1),
-            //            new Face(Pole.East, 1)
-            //        }
-            //    },
-            //    new Box()
-            //    {
-            //        From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
-            //        To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-            //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[0]),
-            //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[16]),
-            //        Faces = new Face[] { new Face(Pole.West, 1) }
-            //    },
-            //    new Box()
-            //    {
-            //        From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]),
-            //        To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-            //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[0]),
-            //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
-            //        Faces = new Face[] { new Face(Pole.East, 1) }
-            //    },
-            //    new Box()
-            //    {
-            //        From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]),
-            //        To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-            //        UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[0]),
-            //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
-            //        Faces = new Face[]
-            //        {
-            //            new Face(Pole.North, 1),
-            //            new Face(Pole.South, 1)
-            //        }
-            //    }
-            //};
+        //    //boxes[0] = new Box[] {
+        //    //    new Box()
+        //    //    {
+        //    //        From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
+        //    //        To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
+        //    //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[1]),
+        //    //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[15]),
+        //    //        Faces = new Face[] { new Face(Pole.Down, 1) }
+        //    //    },
+        //    //    new Box()
+        //    //    {
+        //    //        From = new vec3(MvkStatic.Xy[8], 0, MvkStatic.Xy[1]),
+        //    //        To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
+        //    //        UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[1]),
+        //    //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[15]),
+        //    //        Faces = new Face[] { new Face(Pole.Up, 1) }
+        //    //    },
+        //    //    new Box()
+        //    //    {
+        //    //        From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
+        //    //        To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
+        //    //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[1]),
+        //    //        UVTo = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[15]),
+        //    //        Faces = new Face[] { new Face(Pole.Up, 1) }
+        //    //    },
+        //    //    new Box()
+        //    //    {
+        //    //        From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
+        //    //        To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
+        //    //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[8]),
+        //    //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[16]),
+        //    //        Faces = new Face[]
+        //    //        {
+        //    //            new Face(Pole.North, 1),
+        //    //            new Face(Pole.South, 1),
+        //    //            new Face(Pole.East, 1)
+        //    //        }
+        //    //    },
+        //    //    new Box()
+        //    //    {
+        //    //        From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
+        //    //        To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[16], MvkStatic.Xy[15]),
+        //    //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[0]),
+        //    //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[16]),
+        //    //        Faces = new Face[] { new Face(Pole.West, 1) }
+        //    //    },
+        //    //    new Box()
+        //    //    {
+        //    //        From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]),
+        //    //        To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
+        //    //        UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[0]),
+        //    //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
+        //    //        Faces = new Face[] { new Face(Pole.East, 1) }
+        //    //    },
+        //    //    new Box()
+        //    //    {
+        //    //        From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]),
+        //    //        To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
+        //    //        UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[0]),
+        //    //        UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
+        //    //        Faces = new Face[]
+        //    //        {
+        //    //            new Face(Pole.North, 1),
+        //    //            new Face(Pole.South, 1)
+        //    //        }
+        //    //    }
+        //    //};
 
-            boxes[0] = new Box[] {
-                //new Box()
-                //{
-                //    From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
-                //    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
-                //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[1]),
-                //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[15]),
-                //    Faces = new Face[] { new Face(Pole.Down, 1) }
-                //},
-                //new Box()
-                //{
-                //    From = new vec3(MvkStatic.Xy[8], 0, MvkStatic.Xy[1]),
-                //    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
-                //    UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[1]),
-                //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[15]),
-                //    Faces = new Face[] { new Face(Pole.Up, 1) }
-                //},
-                //new Box()
-                //{
-                //    From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
-                //    To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-                //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[1]),
-                //    UVTo = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[15]),
-                //    Faces = new Face[] { new Face(Pole.Up, 1) }
-                //},
-                //new Box()
-                //{
-                //    From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
-                //    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
-                //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[8]),
-                //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[16]),
-                //    Faces = new Face[]
-                //    {
-                //        new Face(Pole.North, 1),
-                //        new Face(Pole.South, 1),
-                //        new Face(Pole.East, 1),
-                //        new Face(Pole.Down, 1),
-                //         new Face(Pole.Up, 1)
-                //    }
-                //},
-                //new Box()
-                //{
-                //    From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
-                //    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-                //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[0]),
-                //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[16]),
-                //    Faces = new Face[] { new Face(Pole.West, 1) }
-                //},
-                //new Box()
-                //{
-                //    From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]),
-                //    To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-                //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[0]),
-                //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
-                //    Faces = new Face[] { new Face(Pole.East, 1) }
-                //},
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]),
-                    To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-                    UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[0]),
-                    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 2),
-                        new Face(Pole.North, 2),
-                        new Face(Pole.South, 2),
-                        new Face(Pole.East, 2),
-                        new Face(Pole.West, 2)
-                    }
-                }
-            };
+        //    boxes[0] = new Box[] {
+        //        //new Box()
+        //        //{
+        //        //    From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
+        //        //    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
+        //        //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[1]),
+        //        //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[15]),
+        //        //    Faces = new Face[] { new Face(Pole.Down, 1) }
+        //        //},
+        //        //new Box()
+        //        //{
+        //        //    From = new vec3(MvkStatic.Xy[8], 0, MvkStatic.Xy[1]),
+        //        //    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
+        //        //    UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[1]),
+        //        //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[15]),
+        //        //    Faces = new Face[] { new Face(Pole.Up, 1) }
+        //        //},
+        //        //new Box()
+        //        //{
+        //        //    From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
+        //        //    To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
+        //        //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[1]),
+        //        //    UVTo = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[15]),
+        //        //    Faces = new Face[] { new Face(Pole.Up, 1) }
+        //        //},
+        //        //new Box()
+        //        //{
+        //        //    From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
+        //        //    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[8], MvkStatic.Xy[15]),
+        //        //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[8]),
+        //        //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[16]),
+        //        //    Faces = new Face[]
+        //        //    {
+        //        //        new Face(Pole.North, 1),
+        //        //        new Face(Pole.South, 1),
+        //        //        new Face(Pole.East, 1),
+        //        //        new Face(Pole.Down, 1),
+        //        //         new Face(Pole.Up, 1)
+        //        //    }
+        //        //},
+        //        //new Box()
+        //        //{
+        //        //    From = new vec3(MvkStatic.Xy[1], 0, MvkStatic.Xy[1]),
+        //        //    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[16], MvkStatic.Xy[15]),
+        //        //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[0]),
+        //        //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[16]),
+        //        //    Faces = new Face[] { new Face(Pole.West, 1) }
+        //        //},
+        //        //new Box()
+        //        //{
+        //        //    From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]),
+        //        //    To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
+        //        //    UVFrom = new vec2(MvkStatic.Uv[1], MvkStatic.Uv[0]),
+        //        //    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
+        //        //    Faces = new Face[] { new Face(Pole.East, 1) }
+        //        //},
+        //        new Box()
+        //        {
+        //            From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[1]),
+        //            To = new vec3(MvkStatic.Xy[8], MvkStatic.Xy[16], MvkStatic.Xy[15]),
+        //            UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[0]),
+        //            UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
+        //            Faces = new Face[]
+        //            {
+        //                new Face(Pole.Up, 2),
+        //                new Face(Pole.North, 2),
+        //                new Face(Pole.South, 2),
+        //                new Face(Pole.East, 2),
+        //                new Face(Pole.West, 2)
+        //            }
+        //        }
+        //    };
 
-            boxes[2] = new Box[] {
-                new Box()
-                {
-                    From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[8]),
-                    To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[16], MvkStatic.Xy[15]),
-                    UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[0]),
-                    UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
-                    Faces = new Face[]
-                        {
-                            new Face(Pole.Up, 1),
-                            new Face(Pole.North, 1),
-                            new Face(Pole.South, 1),
-                            new Face(Pole.East, 1),
-                            new Face(Pole.West, 1)
-                        }
-                }
-            };
+        //    boxes[2] = new Box[] {
+        //        new Box()
+        //        {
+        //            From = new vec3(MvkStatic.Xy[1], MvkStatic.Xy[8], MvkStatic.Xy[8]),
+        //            To = new vec3(MvkStatic.Xy[15], MvkStatic.Xy[16], MvkStatic.Xy[15]),
+        //            UVFrom = new vec2(MvkStatic.Uv[8], MvkStatic.Uv[0]),
+        //            UVTo = new vec2(MvkStatic.Uv[15], MvkStatic.Uv[8]),
+        //            Faces = new Face[]
+        //                {
+        //                    new Face(Pole.Up, 1),
+        //                    new Face(Pole.North, 1),
+        //                    new Face(Pole.South, 1),
+        //                    new Face(Pole.East, 1),
+        //                    new Face(Pole.West, 1)
+        //                }
+        //        }
+        //    };
 
-            boxes[1] = new Box[boxes[0].Length];
+        //    boxes[1] = new Box[boxes[0].Length];
 
-            int i = 0;
+        //    int i = 0;
 
-            //foreach (Box box in boxes[0])
-            //{
-            //    Face[] faces = new Face[box.Faces.Length];
-            //    for (int f = 0; f < box.Faces.Length; f++)
-            //    {
-            //        faces[f] = new Face(Rotate(box.Faces[f].GetSide()), box.Faces[f].GetNumberTexture());
-            //    }
-            //    boxes[1][i] = new Box()
-            //    {
-            //        From = Rotate(box.From),
-            //        To = Rotate(box.To),
-            //        UVFrom = box.UVFrom,
-            //        UVTo = box.UVTo,
-            //        Faces = faces
-            //    };
-            //    i++;
-            //}
-        }
+        //    //foreach (Box box in boxes[0])
+        //    //{
+        //    //    Face[] faces = new Face[box.Faces.Length];
+        //    //    for (int f = 0; f < box.Faces.Length; f++)
+        //    //    {
+        //    //        faces[f] = new Face(Rotate(box.Faces[f].GetSide()), box.Faces[f].GetNumberTexture());
+        //    //    }
+        //    //    boxes[1][i] = new Box()
+        //    //    {
+        //    //        From = Rotate(box.From),
+        //    //        To = Rotate(box.To),
+        //    //        UVFrom = box.UVFrom,
+        //    //        UVTo = box.UVTo,
+        //    //        Faces = faces
+        //    //    };
+        //    //    i++;
+        //    //}
+        //}
 
         //private vec3 Rotate(vec3 pos)
         //{

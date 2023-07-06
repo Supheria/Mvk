@@ -29,35 +29,15 @@ namespace MvkServer.World.Block.List
             samplesStep = new AssetsSample[0];
             samplesBreak = new AssetsSample[] { AssetsSample.BucketEmptyLava1, AssetsSample.BucketEmptyLava2, AssetsSample.BucketEmptyLava3 };
             samplesPut = new AssetsSample[] { AssetsSample.BucketFillLava1, AssetsSample.BucketFillLava2, AssetsSample.BucketFillLava3 };
-            faces = new Face[]
+            sideLiquids = new SideLiquid[]
             {
-                new Face(60).SetAnimation(32, 4),
-                new Face(59).SetAnimation(64, 1)
+                new SideLiquid(0, 60, 0, 32, 4),
+                new SideLiquid(1, 60, 0, 32, 4),
+                new SideLiquid(2, 59, 0, 64, 1),
+                new SideLiquid(3, 59, 0, 64, 1),
+                new SideLiquid(4, 59, 0, 64, 1),
+                new SideLiquid(5, 59, 0, 64, 1)
             };
-            InitBoxs();
-        }
-
-        /// <summary>
-        /// Инициализация коробок
-        /// </summary>
-        protected void InitBoxs()
-        {
-           // vec3 color = new vec3(0.24f, 0.45f, 0.88f);
-
-            boxes = new Box[][] { new Box[] {
-                new Box()
-                {
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 60).SetAnimation(32, 4),
-                        new Face(Pole.Down, 60).SetAnimation(32, 4),
-                        new Face(Pole.East, 59).SetAnimation(32, 1),
-                        new Face(Pole.North, 59).SetAnimation(32, 1),
-                        new Face(Pole.South, 59).SetAnimation(32, 1),
-                        new Face(Pole.West, 59).SetAnimation(32, 1)
-                    }
-                }
-            }};
         }
 
         /// <summary>

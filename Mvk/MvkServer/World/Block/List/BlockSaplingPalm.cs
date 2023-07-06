@@ -13,13 +13,13 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockSaplingPalm() : base(161) => NeedsRandomTick = true;
 
-        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos) 
+        public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met) 
             => worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock() == EnumBlock.Sand;
 
         /// <summary>
         /// Генерация дерева
         /// </summary>
         protected override void GenefateTree(WorldBase world, Rand rand, BlockPos blockPos)
-            => new WorldGenTreePalm().GenefateTree(world, rand, blockPos);
+            => new WorldGenTreePalm2().GenefateTree(world, rand, blockPos);
     }
 }

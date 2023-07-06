@@ -17,23 +17,19 @@ namespace MvkServer.World.Block.List
          * 6 - вверх, генерация, нижний блок для пня
          */
 
-        protected EnumBlock leaves;
-        protected int idLeaves;
-        // ширина кроны
-        protected readonly int crownWidth;
-        // высота дерева
-        protected readonly int heightTree;
+        
+        /// <summary>
+        /// Длинна максимальной ветки
+        /// </summary>
+        private readonly int stepBranchMax = 8;
 
-        public BlockUniLog(int numberTextureButt, int numberTextureSide, vec3 colorButt, vec3 colorSide, EnumBlock leaves, int heightTree = 15, int crownWidth = 3) 
-            : base(numberTextureButt, numberTextureSide, colorButt, colorSide)
+        public BlockUniLog(int numberTextureButt, int numberTextureSide, int stepBranchMax = 1) 
+            : base(numberTextureButt, numberTextureSide)
         {
-            this.crownWidth = crownWidth;
-            this.heightTree = heightTree;
+            this.stepBranchMax = stepBranchMax;
             Combustibility = true;
             IgniteOddsSunbathing = 5;
             BurnOdds = 10;
-            this.leaves = leaves;
-            idLeaves = (int)leaves;
             metUp = 3;
         }
 
@@ -43,17 +39,20 @@ namespace MvkServer.World.Block.List
         public override int Hardness(BlockState state) => state.met == 6 ? 100 : 30;
 
         /// <summary>
-        /// Коробки
+        /// Стороны целого блока для рендера 0 - 5 стороны
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb)
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb)
         {
+            if (met == 6) return quads[3];
             // gen 0 up; 1 e||w; 2 s||n; 
             // play 3 up; 4 e||w; 5 s||n;
             // gen down 6 up;
             if (met > 2) met -= 3;
-            if (met > 2) met -= 3;
-            return boxes[met];
+            //if (met > 2) met -= 3;
+            return quads[met];
         }
+
+        #region Break
 
         /// <summary>
         /// Действие блока после его удаления
@@ -61,132 +60,256 @@ namespace MvkServer.World.Block.List
         public override void OnBreakBlock(WorldBase worldIn, BlockPos blockPos, BlockState state)
         {
             int met = state.met;
-            if (met == 0 || met == 6)
+            if (met == 1 || met == 2)
             {
-                EnumBlock enumBlock;
-                BlockPos bPos = new BlockPos();
-                BlockState blockState;
-                BlockBase block;
-                int x, y, z, x1, z1;
-                int bx = blockPos.X;
-                int by = blockPos.Y;
-                int bz = blockPos.Z;
-                int size = crownWidth;
-                int checkSize = size * size + 1;
-                int y0;
+                // Ветка!
+                Branch(worldIn, blockPos, state.id, state.met);
+            }
+            else if (met == 0 || met == 6)
+            {
+                // Ствол!
+                Trunk(worldIn, blockPos, state);
+            }
+        }
 
-                for (y0 = 0; y0 <= heightTree; ++y0)
+        /// <summary>
+        /// Ствол со смещением
+        /// </summary>
+        private void Trunk(WorldBase worldIn, BlockPos blockPos, BlockState state)
+        {
+            ushort id = state.id;
+            // Удаление веток тикущего блока
+            TrunkBranchBreaks(worldIn, blockPos, id);
+            // Разрушение строго ровного ствола!!!
+            while (true)
+            {
+                blockPos.Y++;
+                if (!TrunkCheck(worldIn, blockPos, id))
                 {
-                    y = y0 + blockPos.Y;
-                    bPos.X = blockPos.X;
-                    bPos.Y = y;
-                    bPos.Z = blockPos.Z;
-                    blockState = worldIn.GetBlockState(bPos);
-                    met = blockState.met;
-                    enumBlock = blockState.GetEBlock();
-                    if ((enumBlock == EBlock && met == 0) || enumBlock == leaves)
+                    blockPos.X++;
+                    if (!TrunkCheck(worldIn, blockPos, id))
                     {
-                        block = blockState.GetBlock();
-                        block.DropBlockAsItem(worldIn, bPos, blockState, 0);
-                        worldIn.SetBlockToAir(bPos);
-                    }
-                    for (x = bx - size; x <= bx + size; ++x)
-                    {
-                        x1 = x - bx;
-                        for (z = bz - size; z <= bz + size; ++z)
+                        blockPos.X -= 2;
+                        if (!TrunkCheck(worldIn, blockPos, id))
                         {
-                            z1 = z - bz;
-                            if (x1 * x1 + z1 * z1 <= checkSize)
+                            blockPos.X++;
+                            blockPos.Z++;
+                            if (!TrunkCheck(worldIn, blockPos, id))
                             {
-                                if (x != blockPos.X || z != blockPos.Z)
+                                blockPos.Z -= 2;
+                                if (!TrunkCheck(worldIn, blockPos, id))
                                 {
-                                    bPos.X = x;
-                                    bPos.Y = y;
-                                    bPos.Z = z;
-                                    blockState = worldIn.GetBlockState(bPos);
-                                    enumBlock = blockState.GetEBlock();
-                                    met = blockState.met;
-                                    if ((enumBlock == EBlock && (met == 1 || met == 2)) || enumBlock == leaves)
-                                    {
-                                        block = blockState.GetBlock();
-                                        block.DropBlockAsItem(worldIn, bPos, blockState, 0);
-                                        worldIn.SetBlockToAir(bPos);
-                                    }
+                                    break;
                                 }
                             }
                         }
                     }
                 }
+                // Удаление веток
+                TrunkBranchBreaks(worldIn, blockPos, id);
+                // Разрушаем блок ствола
+                DropBlockAsItem(worldIn, blockPos, new BlockState(EBlock), 0);
+                worldIn.SetBlockToAir(blockPos);
             }
         }
 
         /// <summary>
-        /// Смена соседнего блока
+        /// Удаление веток тикущего ствола
         /// </summary>
-        //public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState state, BlockBase neighborBlock)
-        //{
-        //    EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
-        //    if (enumBlock == EnumBlock.Air)
-        //    {
-        //        BlockPos bPos = new BlockPos();
-        //        BlockState blockState;
-        //        int x, y, z, x1, z1;
-        //        int bx = blockPos.X;
-        //        int by = blockPos.Y;
-        //        int bz = blockPos.Z;
-        //        int size = 5;
-        //        int checkSize = size * size + 1;
-        //        int y0;
+        private void TrunkBranchBreaks(WorldBase worldIn, BlockPos blockPos, ushort id)
+        {
+            BranchBreakFromTrunk(worldIn, blockPos, new vec2i(1, 0), id, 1);
+            BranchBreakFromTrunk(worldIn, blockPos, new vec2i(-1, 0), id, 1);
+            BranchBreakFromTrunk(worldIn, blockPos, new vec2i(0, 1), id, 2);
+            BranchBreakFromTrunk(worldIn, blockPos, new vec2i(0, -1), id, 2);
+        }
+        /// <summary>
+        /// Проверка ствола
+        /// </summary>
+        private bool TrunkCheck(WorldBase worldIn, BlockPos blockPos, ushort id)
+        {
+            BlockState state = worldIn.GetBlockState(blockPos);
+            if (id == state.id && state.met == 0) return true;
+            return false;
+        }
 
+        /// <summary>
+        /// Проверка присутствует ли в этом направлении ствол
+        /// </summary>
+        private bool BranchCheck(WorldBase worldIn, BlockPos blockPos, vec2i vec, ushort id, ushort met, int step)
+        {
+            BlockPos pos = blockPos.Offset(vec.x, 0, vec.y);
+            int result = BranchCheckState(worldIn, pos, id, met);
+            if (result == 2) return true;
+            if (result == -1)
+            {
+                pos = blockPos.Offset(vec.x, 1, vec.y);
+                result = BranchCheckState(worldIn, pos, id, met);
+                if (result == 2) return true;
+                if (result == -1)
+                {
+                    pos = blockPos.Offset(vec.x, -1, vec.y);
+                    result = BranchCheckState(worldIn, pos, id, met);
+                    if (result == 2) return true;
+                    if (result == -1)
+                    {
+                        pos = blockPos.Offset(vec.x == 0 ? 1 : vec.x, 0, vec.y == 0 ? 1 : vec.y);
+                        result = BranchCheckState(worldIn, pos, id, met);
+                        if (result == 2) return true;
+                        if (result == -1)
+                        {
+                            pos = blockPos.Offset(vec.x == 0 ? -1 : vec.x, 0, vec.y == 0 ? -1 : vec.y);
+                            result = BranchCheckState(worldIn, pos, id, met);
+                            if (result == 2) return true;
+                            if (result == -1) return false;
+                        }
+                    }
+                }
+            }
+            // продолжение ветки
+            if (step >= stepBranchMax) return false;
+            return BranchCheck(worldIn, pos, vec, id, met, step++);
+        }
 
-        //        for (y0 = 0; y0 < 16; ++y0)
-        //        {
-        //            y = y0 + blockPos.Y;
-        //            bPos.X = blockPos.X;
-        //            bPos.Y = y;
-        //            bPos.Z = blockPos.Z;
-        //            blockState = worldIn.GetBlockState(bPos);
-        //            enumBlock = blockState.GetEBlock();
-        //            if (enumBlock != EBlock && enumBlock != leaves)
-        //            {
-        //                //break;
-        //            }
-        //            else
-        //            {
-        //                blockState.GetBlock().DropBlockAsItem(worldIn, bPos, blockState, 0);
-        //                worldIn.SetBlockState(bPos, new BlockState(EnumBlock.Air), 12);
-        //            }
-        //            for (x = bx - size; x <= bx + size; ++x)
-        //            {
-        //                x1 = x - bx;
-        //                for (z = bz - size; z <= bz + size; ++z)
-        //                {
-        //                    z1 = z - bz;
-        //                    if (x1 * x1 + z1 * z1 <= checkSize)
-        //                    {
-        //                        if (x != blockPos.X || z != blockPos.Z)
-        //                        {
-        //                            bPos.X = x;
-        //                            bPos.Y = y;
-        //                            bPos.Z = z;
-        //                            blockState = worldIn.GetBlockState(bPos);
-        //                            enumBlock = blockState.GetEBlock();
-        //                            if ((enumBlock == EBlock && blockState.Met() != 0) || enumBlock == leaves)
-        //                            {
-        //                                blockState.GetBlock().DropBlockAsItem(worldIn, bPos, blockState, 0);
-        //                                worldIn.SetBlockState(bPos, new BlockState(EnumBlock.Air), 12);
-        //                            }
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    //if (!CanBlockStay(worldIn, blockPos))
-        //    //{
-        //    //    DropBlockAsItem(worldIn, blockPos, state, 0);
-        //    //    worldIn.SetBlockState(blockPos, new BlockState(EnumBlock.Air), 14);
-        //    //}
-        //}
+        /// <summary>
+        /// Удаление ветки, если не известно откуда идёт ствол
+        /// </summary>
+        private void BranchBreak(WorldBase worldIn, BlockPos blockPos, vec2i vec, ushort id, ushort met, int step)
+        {
+            BlockPos pos = blockPos.Offset(vec.x, 0, vec.y);
+            int result = BranchCheckState(worldIn, pos, id, met);
+            if (result != 1)
+            {
+                pos = blockPos.Offset(vec.x, 1, vec.y);
+                result = BranchCheckState(worldIn, pos, id, met);
+                if (result != 1)
+                {
+                    pos = blockPos.Offset(vec.x, -1, vec.y);
+                    result = BranchCheckState(worldIn, pos, id, met);
+                    if (result != 1)
+                    {
+                        pos = blockPos.Offset(vec.x == 0 ? 1 : vec.x, 0, vec.y == 0 ? 1 : vec.y);
+                        result = BranchCheckState(worldIn, pos, id, met);
+                        if (result != 1)
+                        {
+                            pos = blockPos.Offset(vec.x == 0 ? -1 : vec.x, 0, vec.y == 0 ? -1 : vec.y);
+                            result = BranchCheckState(worldIn, pos, id, met);
+                            if (result != 1) return;
+                        }
+                    }
+                }
+            }
+            // Разрушаем блок ветки
+            DropBlockAsItem(worldIn, pos, new BlockState(EBlock), 0);
+            worldIn.SetBlockToAir(pos);
+            if (step < stepBranchMax)
+            {
+                // Продолжаем разрушать ветку
+                BranchBreak(worldIn, pos, vec, id, met, step++);
+            }
+        }
+
+        /// <summary>
+        /// Разрушение ветки от ствола
+        /// </summary>
+        private void BranchBreakFromTrunk(WorldBase worldIn, BlockPos blockPos, vec2i vec, ushort id, ushort met)
+        {
+            BlockPos pos = blockPos.Offset(vec.x, 0, vec.y);
+            if (BranchCheckState(worldIn, pos, id, met) == 1)
+            {
+                // Разрушаем блок ветки
+                DropBlockAsItem(worldIn, pos, new BlockState(EBlock), 0);
+                worldIn.SetBlockToAir(pos);
+                // Продолжаем разрушать ветку
+                BranchBreak(worldIn, pos, vec, id, met, 1);
+            }
+        }
+
+        /// <summary>
+        /// Проверка блока является ли тем же блоком и какой поворот (ствол или ветка)
+        /// </summary>
+        private int BranchCheckState(WorldBase worldIn, BlockPos blockPos, ushort id, ushort met)
+        {
+            BlockState state = worldIn.GetBlockState(blockPos);
+            if (state.id == id)
+            {
+                // Ветка
+                if (state.met == met) return 1;
+                // Ствол
+                if (state.met == 0) return 2;
+            }
+            // Пусто или другой блок не этого типа
+            return -1;
+        }
+
+        /// <summary>
+        /// Работа с ветками
+        /// </summary>
+        private void Branch(WorldBase worldIn, BlockPos blockPos, ushort id, ushort met)
+        {
+            bool b;
+            if (met == 1)
+            {
+                b = BranchCheck(worldIn, blockPos, new vec2i(1, 0), id, met, 0);
+                if (!b) BranchBreak(worldIn, blockPos, new vec2i(1, 0), id, met, 0);
+                b = BranchCheck(worldIn, blockPos, new vec2i(-1, 0), id, met, 0);
+                if (!b) BranchBreak(worldIn, blockPos, new vec2i(-1, 0), id, met, 0);
+            }
+            else
+            {
+                b = BranchCheck(worldIn, blockPos, new vec2i(0, 1), id, met, 0);
+                if (!b) BranchBreak(worldIn, blockPos, new vec2i(0, 1), id, met, 0);
+                b = BranchCheck(worldIn, blockPos, new vec2i(0, -1), id, met, 0);
+                if (!b) BranchBreak(worldIn, blockPos, new vec2i(0, -1), id, met, 0);
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Инициализация коробок
+        /// </summary>
+        protected override void InitBoxs()
+        {
+            quads = new QuadSide[][]
+            {
+                new QuadSide[] {
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.Up),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.Down),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.East),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.West),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.North),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.South)
+                },
+                new QuadSide[] {
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.Up),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.Down),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.East),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.West),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.North),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.South)
+                },
+                new QuadSide[] {
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.Up),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.Down),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.East),
+                    new QuadSide(0).SetTexture(numberTextureSide, 1).SetSide(Pole.West),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.North),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.South)
+                },
+                new QuadSide[] {
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.Up),
+                    new QuadSide(0).SetTexture(numberTextureButt).SetSide(Pole.Down),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.East),
+                    new QuadSide(1).SetTexture(66, 2).SetSide(Pole.East),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.West),
+                    new QuadSide(1).SetTexture(66, 2).SetSide(Pole.West),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.North),
+                    new QuadSide(1).SetTexture(66, 2).SetSide(Pole.North),
+                    new QuadSide(0).SetTexture(numberTextureSide).SetSide(Pole.South),
+                    new QuadSide(1).SetTexture(66, 2).SetSide(Pole.South)
+                },
+            };
+        }
     }
 }

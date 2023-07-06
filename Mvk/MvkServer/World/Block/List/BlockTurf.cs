@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Item;
+﻿using MvkServer.Item;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -21,11 +20,10 @@ namespace MvkServer.World.Block.List
             NeedsRandomTick = true;
             Particle = 64;
             BiomeColor = true;
-            Color = new vec3(1);
             Material = EnumMaterial.Loose;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };
-            InitBoxs();
+            InitQuads();
         }
 
         /// <summary>
@@ -34,57 +32,31 @@ namespace MvkServer.World.Block.List
         public override int Hardness(BlockState state) => 10;
 
         /// <summary>
-        /// Цвет блока для подмешенных для гуи
+        /// Стороны целого блока для рендера 0 - 5 стороны
         /// </summary>
-        public override vec3 ColorGui() => new vec3(.56f, .73f, .35f);
-
-        /// <summary>
-        /// Коробки
-        /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb) => boxes[(xc + zc + xb + zb) & 3];
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb) => quads[(xc + zc + xb + zb) & 3];
 
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs()
+        private void InitQuads()
         {
-            vec3 colorGreen = new vec3(.56f, .73f, .35f);
-            vec3 colorBrown = new vec3(.62f, .44f, .37f);
-
-            boxes = new Box[4][];
+            quads = new QuadSide[4][];
             for (int i = 0; i < 4; i++)
             {
-                boxes[i] = new Box[] {
-                    new Box()
-                    {
-                        Faces = new Face[] { new Face(Pole.Up, 65, true, colorGreen).SetBiomeColor() }
-                    },
-                    new Box()
-                    {
-                        Faces = new Face[]
-                        {
-                            new Face(Pole.Down, 64, colorBrown),
-                            new Face(Pole.East, 67),
-                            new Face(Pole.North, 67),
-                            new Face(Pole.South, 67),
-                            new Face(Pole.West, 67)
-                        }
-                    },
-                    new Box()
-                    {
-                        Faces = new Face[]
-                        {
-                            new Face(Pole.East, 66, true, colorBrown).SetBiomeColor(),
-                            new Face(Pole.North, 66, true, colorBrown).SetBiomeColor(),
-                            new Face(Pole.South, 66, true, colorBrown).SetBiomeColor(),
-                            new Face(Pole.West, 66, true, colorBrown).SetBiomeColor()
-                        }
-                    }
+                quads[i] = new QuadSide[] {
+                    new QuadSide(0).SetTexture(64).SetSide(Pole.Down),
+                    new QuadSide(1).SetTexture(65, i).SetSide(Pole.Up),
+                    new QuadSide(0).SetTexture(67).SetSide(Pole.East),
+                    new QuadSide(1).SetTexture(66).SetSide(Pole.East),
+                    new QuadSide(0).SetTexture(67).SetSide(Pole.West),
+                    new QuadSide(1).SetTexture(66).SetSide(Pole.West),
+                    new QuadSide(0).SetTexture(67).SetSide(Pole.North),
+                    new QuadSide(1).SetTexture(66).SetSide(Pole.North),
+                    new QuadSide(0).SetTexture(67).SetSide(Pole.South),
+                    new QuadSide(1).SetTexture(66).SetSide(Pole.South)
                 };
             }
-            boxes[1][0].RotateYawUV = 1;
-            boxes[2][0].RotateYawUV = 2;
-            boxes[3][0].RotateYawUV = 3;
         }
 
         public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)

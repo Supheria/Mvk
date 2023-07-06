@@ -769,8 +769,6 @@ namespace MvkServer.World.Chunk
                 block.OnBlockAdded(World, blockPos, blockState);
             }
 
-            if (storage.countBlock == 0 || (storage.data[index]) != (ushort)block.EBlock) return new BlockState();
-
             // Звуковое сопровождение сломанного блока
             if (isSound && !World.IsRemote && World is WorldServer worldServer)
             {
@@ -779,6 +777,7 @@ namespace MvkServer.World.Chunk
                     new PacketS29SoundEffect(blockOld.SampleBreak(worldServer), pos, 1f, blockOld.SampleBreakPitch(worldServer.Rnd)));
             }
 
+            if (storage.countBlock != 0 && (storage.data[index]) != (ushort)block.EBlock) return new BlockState();
 
             //if (heightMapUp)
             //{

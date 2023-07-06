@@ -19,8 +19,10 @@ namespace MvkServer.World.Block.List
             Material = EnumMaterial.Solid;
             Particle = numberTexture;
             Resistance = resistance;
-            InitBoxs(numberTexture, false, color);
+            InitQuads();
         }
+
+        protected virtual void InitQuads() => InitQuads(Particle);
 
         /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)

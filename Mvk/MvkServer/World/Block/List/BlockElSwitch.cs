@@ -31,22 +31,22 @@ namespace MvkServer.World.Block.List
         public BlockElSwitch() : base(394)
         {
             IsAddMet = true;
-            InitBoxs();
+            InitQuads();
         }
 
         /// <summary>
         /// Коробки
         /// </summary>
-        public override Box[] GetBoxes(int met, int xc, int zc, int xb, int zb)
+        public override QuadSide[] GetQuads(int met, int xc, int zc, int xb, int zb)
         {
             int index = (met & 0xF) == 0 ? 0 : (met >> 4) + 1;
-            return boxes[index];
+            return quads[index];
         }
 
         /// <summary>
         /// Коробки для рендера 2д GUI
         /// </summary>
-        public override Box[] GetBoxesGui() => boxes[2];
+        public override QuadSide[] GetQuadsGui() => quads[2];
 
         /// <summary>
         /// Активация блока, клик правой клавишей мыши по блоку, true - был клик, false - нет такой возможности
@@ -73,13 +73,19 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected void InitBoxs()
+        protected void InitQuads()
         {
-            boxes = new Box[][] {
-                new Box[] { new Box(395, false, new vec3(1)) },
-                new Box[] { new Box(394, false, new vec3(1)) },
-                new Box[] { new Box(393, false, new vec3(1)) }
-            };
+            quads = new QuadSide[3][];
+            int texture;
+            for (int i = 0; i < 3; i++)
+            {
+                texture = 395 - i;
+                quads[i] = new QuadSide[6];
+                for (int j = 0; j < 6; j++)
+                {
+                    quads[i][j] = new QuadSide(0).SetTexture(texture).SetSide((Pole)j);
+                }
+            }
         }
 
         //public override void UpdateTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)

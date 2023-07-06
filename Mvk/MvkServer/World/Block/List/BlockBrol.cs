@@ -12,7 +12,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Блок брол, автор Вероника
         /// </summary>
-        public BlockBrol() : base(261, new vec3(1f))
+        public BlockBrol() : base(261)
         {
             LightValue = 15;
             АmbientOcclusion = false;
@@ -27,23 +27,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected override void InitBoxs()
-        { 
-            boxes = new Box[][] { new Box[] {
-                new Box()
-                {
-                    Faces = new Face[]
-                    {
-                        new Face(Pole.Up, 259),
-                        new Face(Pole.Down, 260),
-                        new Face(Pole.East, 261),
-                        new Face(Pole.North, 261),
-                        new Face(Pole.South, 261),
-                        new Face(Pole.West, 261)
-                    }
-                }
-            }};
-        }
+        protected override void InitQuads() => InitQuads(259, 260, 261, 261, 261, 261);
 
         /// <summary>
         /// Случайный эффект частички и/или звука на блоке только для клиента

@@ -8,10 +8,21 @@ namespace MvkServer.World.Block.List
     /// </summary>
     public class BlockLogPalm : BlockUniLog
     {
+        protected EnumBlock leaves;
+        protected int idLeaves;
+        // ширина кроны
+        protected readonly int crownWidth = 4;
+        // высота дерева
+        protected readonly int heightTree = 15;
+
         /// <summary>
         /// Блок бревна пальмы
         /// </summary>
-        public BlockLogPalm() : base(158, 157, new vec3(.8f, .62f, .5f), new vec3(.5f, .35f, .2f), EnumBlock.LeavesPalm, 15, 4) { }
+        public BlockLogPalm() : base(158, 157)
+        {
+            leaves = EnumBlock.LeavesPalm;
+            idLeaves = (int)leaves;
+        }
 
         /// <summary>
         /// Действие блока после его удаления

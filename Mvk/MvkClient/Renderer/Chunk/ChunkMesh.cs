@@ -62,7 +62,6 @@ namespace MvkClient.Renderer.Chunk
         /// </summary>
         public void SetModifiedRender() => IsModifiedRender = true;
         
-
         /// <summary>
         /// Буфер внесён
         /// </summary>
@@ -70,9 +69,6 @@ namespace MvkClient.Renderer.Chunk
         {
             countPoligon = buffer.Length / 84;
             countVertices = buffer.Length / 28;
-            //ByteBuffer byteBuffer = new ByteBuffer();
-            //byteBuffer.ArrayFloat(buffer);
-            //bufferData.ConvertByte(byteBuffer.ToArray());
             bufferData.ConvertByte(buffer);
             Status = StatusMesh.Binding;
         }
@@ -101,44 +97,18 @@ namespace MvkClient.Renderer.Chunk
             gl.BindVertexArray(vao[0]);
             gl.GenBuffers(1, vbo);
             gl.BindBuffer(OpenGL.GL_ARRAY_BUFFER, vbo[0]);
-
-            gl.BufferData(OpenGL.GL_ARRAY_BUFFER, bufferData.size, bufferData.data, OpenGL.GL_STATIC_DRAW);
-            int stride = 28;//  vertexSize * sizeof(float);
-
-            EnableVertex(0, 3, OpenGL.GL_FLOAT, stride, 0);
-            EnableVertex(1, 2, OpenGL.GL_FLOAT, stride, 12);
-            EnableVertexI(2, 1, OpenGL.GL_INT, stride, 20);
-            EnableVertexI(3, 1, OpenGL.GL_INT, stride, 24);
-            //EnableVertexI(2, 1, OpenGL.GL_BYTE, stride, 20);
-            //EnableVertexI(3, 1, OpenGL.GL_BYTE, stride, 21);
-            //EnableVertexI(4, 1, OpenGL.GL_BYTE, stride, 22);
-            //EnableVertexI(5, 1, OpenGL.GL_BYTE, stride, 23);
-            //    EnableVertexI(6, 1, OpenGL.GL_BYTE, stride, 24);
-
+            gl.BufferData(OpenGL.GL_ARRAY_BUFFER, bufferData.size, bufferData.data, OpenGL.GL_DYNAMIC_DRAW);
+            gl.VertexAttribPointer(0, 3, OpenGL.GL_FLOAT, false, 28, new IntPtr(0));
+            gl.EnableVertexAttribArray(0);
+            gl.VertexAttribPointer(1, 2, OpenGL.GL_FLOAT, false, 28, new IntPtr(12));
+            gl.EnableVertexAttribArray(1);
+            gl.VertexAttribIPointer(2, 1, OpenGL.GL_INT, 28, new IntPtr(20));
+            gl.EnableVertexAttribArray(2);
+            gl.VertexAttribIPointer(3, 1, OpenGL.GL_INT, 28, new IntPtr(24));
+            gl.EnableVertexAttribArray(3);
             gl.BindVertexArray(0);
             empty = false;
         }
-
-        /// <summary>
-        /// Внести атрибуту в сетку
-        /// </summary>
-        /// <param name="i">номер атрибуты начинается с 0</param>
-        /// <param name="size">количество переменный OpenGL.GL_FLOAT</param>
-        /// <param name="type">тип</param>
-        /// <param name="stride">максимальное количества байт на все атрибуты вершины</param>
-        /// <param name="offset">откуда начинается значение в массиве в байтах</param>
-        private void EnableVertex(uint i, int size, uint type, int stride, int offset)
-        {
-            gl.VertexAttribPointer(i, size, type, false, stride, new IntPtr(offset));
-            gl.EnableVertexAttribArray(i);
-        }
-
-        private void EnableVertexI(uint i, int size, uint type, int stride, int offset)
-        {
-            gl.VertexAttribIPointer(i, size, type, stride, new IntPtr(offset));
-            gl.EnableVertexAttribArray(i);
-        }
-
 
         /// <summary>
         /// Перезаписать полигоны, не создавая и не меняя длинну одной точки
@@ -147,7 +117,11 @@ namespace MvkClient.Renderer.Chunk
         {
             gl.BindVertexArray(vao[0]);
             gl.BindBuffer(OpenGL.GL_ARRAY_BUFFER, vbo[0]);
-            gl.BufferData(OpenGL.GL_ARRAY_BUFFER, bufferData.size, bufferData.data, OpenGL.GL_STATIC_DRAW);
+            // https://habr.com/ru/articles/311808/
+            // GL_STATIC_DRAW: данные либо никогда не будут изменяться, либо будут изменяться очень редко;
+            // GL_DYNAMIC_DRAW: данные будут меняться довольно часто;
+            // GL_STREAM_DRAW: данные будут меняться при каждой отрисовке.
+            gl.BufferData(OpenGL.GL_ARRAY_BUFFER, bufferData.size, bufferData.data, OpenGL.GL_DYNAMIC_DRAW);
         }
 
         /// <summary>

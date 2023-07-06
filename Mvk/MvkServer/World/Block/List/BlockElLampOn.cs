@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Util;
+﻿using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
 {
@@ -15,7 +14,7 @@ namespace MvkServer.World.Block.List
         {
             LightValue = 15;
             tickRate = 50;
-            InitBoxs(386, false, new vec3(1));
+            InitQuads(386);
         }
 
         public override void OnBlockAdded(WorldBase worldIn, BlockPos blockPos, BlockState state)

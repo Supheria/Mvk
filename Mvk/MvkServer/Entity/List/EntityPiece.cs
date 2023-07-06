@@ -22,6 +22,7 @@ namespace MvkServer.Entity.List
             {
                 if (moving.IsCollision())
                 {
+                    // TODO::2023-05-29 EntityPiece-OnImpact-IsCollision Всё тут мне ненравиться, надо как-то разделить на корректность методов, чтоб вызывались при определённой связи к примеру на что ударили, и кем ударили
                     EnumItem eItem = (EnumItem)MetaData.GetWatchableObjectInt(10);
                     ItemBase item = Items.GetItemCache(eItem);
                     float power = item.GetImpactStrength();
@@ -54,17 +55,19 @@ namespace MvkServer.Entity.List
                                     // Разбивается кокос на две половинки
                                     itemStack = new ItemStack(Items.GetItemCache(EnumItem.HalfCoconut), 2);
                                     World.PlaySoundPop(pos);
+                                    World.SetBlockState(moving.BlockPosition.Offset(moving.Norm), new BlockState(EnumBlock.WaterFlowing, 7), 14);
                                 }
                                 else
                                 {
                                     // Спавним этот же предмет, но не как метательную сущность
+                                    isBreak = false;
                                     itemStack = new ItemStack(Items.GetItemCache(eItem));
                                 }
                                 // Траекторию полёта в зависимости в какую сторону блока ударили
                                 vec3 motion = new vec3(Motion.x * .2f, Motion.y * .4f, Motion.z * .2f);
                                 Pole side = moving.Side;
                                 if (side == Pole.Up) motion.y = -motion.y;
-                                else if (side == Pole.Down) pos.y -= Height; 
+                                else if (side == Pole.Down) pos.y -= Height;
                                 else if (side == Pole.East || side == Pole.West)
                                 {
                                     motion.x = -motion.x;
@@ -97,8 +100,9 @@ namespace MvkServer.Entity.List
                                     }
                                 }
                             }
+                            else if (!isBreak) isBreak = true;
                         }
-                        if (!isBreak || isLiquid) isBreak = true;
+                        else if (!isBreak) isBreak = true;
                     }
                     else if (moving.IsEntity())
                     {

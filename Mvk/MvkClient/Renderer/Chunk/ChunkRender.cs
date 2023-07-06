@@ -18,32 +18,32 @@ namespace MvkClient.Renderer.Chunk
         /// <summary>
         /// Клиентский объект мира
         /// </summary>
-        public WorldClient ClientWorld { get; protected set; }
+        public WorldClient ClientWorld { get; private set; }
 
         /// <summary>
         /// Сетка чанка сплошных блоков
         /// </summary>
-        private ChunkMesh meshDense = new ChunkMesh();
+        private readonly ChunkMesh meshDense = new ChunkMesh();
         /// <summary>
         /// Сетка чанков уникальных блоков
         /// </summary>
-        private ChunkMesh meshUnique = new ChunkMesh();
+        private readonly ChunkMesh meshUnique = new ChunkMesh();
+        /// <summary>
+        /// Сетка чанков уникальных блоков
+        /// </summary>
+        private readonly ChunkMesh meshUniqueBothSides = new ChunkMesh();
+        /// <summary>
+        /// Сетка чанка альфа блоков
+        /// </summary>
+        private readonly ChunkMesh meshAlpha = new ChunkMesh();
         /// <summary>
         /// Буфер сетки секций чанков сплошных блоков
         /// </summary>
         private readonly ChunkSectionMesh[] meshSectionDense = new ChunkSectionMesh[COUNT_HEIGHT];
         /// <summary>
-        /// Буфер сетки секций чанков уникальных блоков
-        /// </summary>
-        private readonly ChunkSectionMesh[] meshSectionUnique = new ChunkSectionMesh[COUNT_HEIGHT];
-        /// <summary>
         /// Массив какие секции сплошных чанков надо рендерить, для потока где идёт рендер
         /// </summary>
         private readonly bool[] isRenderingSectionDense = new bool[COUNT_HEIGHT];
-        /// <summary>
-        /// Сетка чанка альфа блоков
-        /// </summary>
-        private readonly ChunkMesh meshAlpha = new ChunkMesh();
         /// <summary>
         /// Массив блоков которые разрушаются
         /// </summary>
@@ -92,7 +92,6 @@ namespace MvkClient.Renderer.Chunk
         /// </summary>
         public bool ModifiedToRenderAlpha(int y)
         {
-            //if (countAlpha > 0)
             if (y >= 0 && y < COUNT_HEIGHT && countSectionAlpha[y] > 0)
             {
                 meshAlpha.SetModifiedRender();
@@ -111,8 +110,9 @@ namespace MvkClient.Renderer.Chunk
         /// </summary>
         public void MeshDelete()
         {
-            meshDense.Delete();
             meshUnique.Delete();
+            meshUniqueBothSides.Delete();
+            meshDense.Delete();
             meshAlpha.Delete();
             countAlpha = 0;
             for (int y = 0; y < COUNT_HEIGHT; y++)
@@ -129,12 +129,10 @@ namespace MvkClient.Renderer.Chunk
         public void StartRendering()
         {
             meshDense.StatusRendering();
-            meshUnique.StatusRendering();
             for (int y = 0; y < COUNT_HEIGHT; y++)
             {
                 isRenderingSectionDense[y] = meshSectionDense[y].isModifiedRender;
                 meshSectionDense[y].isModifiedRender = false;
-                meshSectionUnique[y].isModifiedRender = false;
             }
             meshAlpha.StatusRendering();
         }
@@ -183,141 +181,170 @@ namespace MvkClient.Renderer.Chunk
                 ushort data, id, met;
                 int cbX = Position.x << 4;
                 int cbZ = Position.y << 4;
-                int cbY, realY, realZ, i, yb;
+                int cbY, realY, realZ, index, yb, x, z;
 
                 BlockBase block;
-                BlockAlphaRender blockAlphaRender = new BlockAlphaRender(this);
-                BlockRender blockRender = new BlockRender(this);
-                BlockRender blockUniqueRender = new BlockRender(this);
-                blockAlphaRender.blockUV.buffer = ClientWorld.WorldRender.bufferAlphaCache;
-                blockRender.blockUV.buffer = ClientWorld.WorldRender.buffer;
-                blockUniqueRender.blockUV.buffer = ClientWorld.WorldRender.bufferUnique;
-                blockUniqueRender.blockUV.bufferCache = blockAlphaRender.blockUV.bufferCache = blockRender.blockUV.bufferCache
-                    = ClientWorld.WorldRender.bufferCache;
-                bool isDense2;
-                int cAlpha = 0;
-                try
+                BlockRenderBase blockRender;
+                if (isDense)
                 {
-                    for (cbY = 0; cbY < COUNT_HEIGHT; cbY++)
-                    //for (cbY = 4; cbY < COUNT_HEIGHT; cbY++)
+                    ClientWorld.WorldRender.InitChunkRender(this);
+                }
+                ClientWorld.WorldRender.InitChunkRenderAlpha(this);
+
+                // Флаг нужен ли в сплошных блоках в текущей секции рендер
+                bool isDenseSection;
+                int cAlpha = 0;
+
+                for (cbY = 0; cbY < COUNT_HEIGHT; cbY++)
+                {
+                    isDenseSection = isRenderingSectionDense[cbY] && isDense;
+                    if (isDenseSection || countSectionAlpha[cbY] > 0)
                     {
-                        isDense2 = isRenderingSectionDense[cbY];
-                        if (isDense2 || countSectionAlpha[cbY] > 0)
+                        // Нужен ли в текущей секции рендер, от сплошных или альфа блоков
+                        chunkStorage = StorageArrays[cbY];
+                        if (chunkStorage.data != null && !chunkStorage.IsEmptyData())
                         {
-                            chunkStorage = StorageArrays[cbY];
-                            if (chunkStorage.data != null && !chunkStorage.IsEmptyData())
+                            // Имекется хоть один блок
+                            for (yb = 0; yb < 16; yb++)
                             {
-                                for (yb = 0; yb < 16; yb++)
+                                realY = cbY << 4 | yb;
+                                for (z = 0; z < 16; z++)
                                 {
-                                    realY = cbY << 4 | yb;
-
-                                    for (int z = 0; z < 16; z++)
+                                    for (x = 0; x < 16; x++)
                                     {
+                                        index = yb << 8 | z << 4 | x;
+                                        data = chunkStorage.data[index];
+                                        // Если блок воздуха, то пропускаем рендер сразу
+                                        if (data == 0 || data == 4096) continue;
+                                        // Определяем id блока
+                                        id = (ushort)(data & 0xFFF);
+                                        // Определяем met блока
+                                        met = Blocks.blocksAddMet[id] ? chunkStorage.addMet[(ushort)index] : (ushort)(data >> 12);
+                                        // Определяем объект блока
+                                        block = Blocks.blocksInt[id];
 
-                                        for (int x = 0; x < 16; x++)
+                                        if (block.Translucent)
                                         {
-                                            i = yb << 8 | z << 4 | x;
-                                            data = chunkStorage.data[i];
-                                            if (data == 0 || data == 4096) continue;
-                                            id = (ushort)(data & 0xFFF);
-                                            met = Blocks.blocksAddMet[id] ? chunkStorage.addMet[(ushort)i] : (ushort)(data >> 12);
-
-                                            block = Blocks.blocksInt[id];
-
-                                            if (block.Translucent)
+                                            // Рендер альфа блоков
+                                            if (block.IsUnique)
                                             {
-                                                // Альфа!
-                                                blockAlphaRender.blockState.id = id;
-                                                blockAlphaRender.met = blockAlphaRender.blockState.met = met;
-                                                blockAlphaRender.blockState.lightBlock = chunkStorage.lightBlock[i];
-                                                blockAlphaRender.blockState.lightSky = chunkStorage.lightSky[i];
-                                                blockAlphaRender.posChunkX = x;
-                                                blockAlphaRender.posChunkY = realY;
-                                                blockAlphaRender.posChunkY0 = realY;
-                                                blockAlphaRender.posChunkZ = z;
-                                                blockAlphaRender.block = block;
-                                                blockAlphaRender.RenderMesh();
-                                                if (blockAlphaRender.blockUV.buffer.count > 0)
-                                                {
-                                                    cAlpha++;
-                                                    realZ = cbZ | z;
-                                                    alphas.Add(new BlockBuffer()
-                                                    {
-                                                        buffer = blockAlphaRender.blockUV.buffer.ToArray(),
-                                                        distance = glm.distance(posPlayer, new vec3i(cbX | x, realY, realZ))
-                                                    });
-                                                    blockAlphaRender.blockUV.buffer.Clear();
-                                                }
+                                                // Уникальный блок
+                                                blockRender = ClientWorld.WorldRender.blockAlphaRenderUnique;
                                             }
-                                            else if (isDense)
+                                            else if (block.FullBlock)
                                             {
-                                                if (block.IsUnique && block.Material != EnumMaterial.Leaves)
-                                                {
-                                                    // Уникальный блок
-                                                    blockUniqueRender.blockState.id = id;
-                                                    blockUniqueRender.met = blockUniqueRender.blockState.met = met;
-                                                    blockUniqueRender.blockState.lightBlock = chunkStorage.lightBlock[i];
-                                                    blockUniqueRender.blockState.lightSky = chunkStorage.lightSky[i];
-                                                    blockUniqueRender.posChunkX = x;
-                                                    blockUniqueRender.posChunkY0 = realY;
-                                                    blockUniqueRender.posChunkY = realY;
-                                                    blockUniqueRender.posChunkZ = z;
-                                                    blockUniqueRender.block = block;
-                                                    blockUniqueRender.RenderMeshUnique();
-                                                }
-                                                else
-                                                {
-                                                    // Сплошной блок
-                                                    blockRender.blockState.id = id;
-                                                    blockRender.met = blockRender.blockState.met = met;
-                                                    blockRender.blockState.lightBlock = chunkStorage.lightBlock[i];
-                                                    blockRender.blockState.lightSky = chunkStorage.lightSky[i];
-                                                    blockRender.posChunkX = x;
-                                                    blockRender.posChunkY0 = realY;
-                                                    blockRender.posChunkY = realY;
-                                                    blockRender.posChunkZ = z;
-                                                    blockRender.block = block;
-                                                    blockRender.RenderMeshDense();
-                                                }
+                                                // Сплошной блок
+                                                blockRender = ClientWorld.WorldRender.blockAlphaRenderFull;
                                             }
+                                            else
+                                            {
+                                                // Жидкость
+                                                blockRender = ClientWorld.WorldRender.blockAlphaRenderLiquid;
+                                            }
+                                            blockRender.blockState.id = id;
+                                            blockRender.met = blockRender.blockState.met = met;
+                                            blockRender.blockState.lightBlock = chunkStorage.lightBlock[index];
+                                            blockRender.blockState.lightSky = chunkStorage.lightSky[index];
+                                            blockRender.posChunkX = x;
+                                            blockRender.posChunkY = realY;
+                                            blockRender.posChunkZ = z;
+                                            blockRender.block = block;
+                                            blockRender.RenderMesh();
+
+                                            if (ClientWorld.WorldRender.bufferAlphaCache.count > 0)
+                                            {
+                                                // Если имеются данные значит имеются альфа блоки
+                                                cAlpha++;
+                                                realZ = cbZ | z;
+                                                alphas.Add(new BlockBuffer()
+                                                {
+                                                    buffer = ClientWorld.WorldRender.bufferAlphaCache.ToArray(),
+                                                    distance = glm.distance(posPlayer, new vec3i(cbX | x, realY, realZ))
+                                                });
+                                                ClientWorld.WorldRender.bufferAlphaCache.Clear();
+                                            }
+                                        }
+                                        else if (isDense)
+                                        {
+                                            // Рендер сплошных, не прозрачных блоков
+                                            if (block.IsUnique)
+                                            {
+                                                // Уникальный блок
+                                                blockRender = block.BothSides 
+                                                    ? ClientWorld.WorldRender.blockRenderUniqueBothSides
+                                                    : ClientWorld.WorldRender.blockRenderUnique;
+                                            }
+                                            else if (block.FullBlock)
+                                            {
+                                                // Сплошной блок
+                                                blockRender = ClientWorld.WorldRender.blockRenderFull;
+                                            }
+                                            else
+                                            {
+                                                // Жидкость
+                                                blockRender = ClientWorld.WorldRender.blockRenderLiquid;
+                                            }
+                                            blockRender.blockState.id = id;
+                                            blockRender.met = blockRender.blockState.met = met;
+                                            blockRender.blockState.lightBlock = chunkStorage.lightBlock[index];
+                                            blockRender.blockState.lightSky = chunkStorage.lightSky[index];
+                                            blockRender.posChunkX = x;
+                                            blockRender.posChunkY = realY;
+                                            blockRender.posChunkZ = z;
+                                            blockRender.block = block;
+                                            blockRender.RenderMesh();
                                         }
                                     }
                                 }
                             }
-                            if (isDense2 && isDense)
+                            if (isDense)
                             {
+                                // Если работаем со сплашными блоками, обновляем буферы секций
                                 countSectionAlpha[cbY] = cAlpha;
-                                meshSectionDense[cbY].bufferData = ClientWorld.WorldRender.buffer.ToArray();
-                                ClientWorld.WorldRender.buffer.Clear();
-                                meshSectionUnique[cbY].bufferData = ClientWorld.WorldRender.bufferUnique.ToArray();
+                                if (isDenseSection)
+                                {
+                                    countSectionAlpha[cbY] = cAlpha;
+                                    meshSectionDense[cbY].bufferData = ClientWorld.WorldRender.bufferDense.ToArray();
+                                    meshSectionDense[cbY].bufferDataUnique = ClientWorld.WorldRender.bufferUnique.ToArray();
+                                    meshSectionDense[cbY].bufferDataUniqueBothSides = ClientWorld.WorldRender.bufferUniqueBothSides.ToArray();
+                                }
+                                ClientWorld.WorldRender.bufferDense.Clear();
                                 ClientWorld.WorldRender.bufferUnique.Clear();
+                                ClientWorld.WorldRender.bufferUniqueBothSides.Clear();
                             }
                         }
-                        cAlpha = 0;
-                        if (isDense)
+                        else
                         {
-                            ClientWorld.WorldRender.bufferHeight.Combine(meshSectionDense[cbY].bufferData);
-                            ClientWorld.WorldRender.bufferHeightUnique.Combine(meshSectionUnique[cbY].bufferData);
+                            // Нет блоков, все блоки воздуха очищаем буфера
+                            meshSectionDense[cbY].bufferData = meshSectionDense[cbY].bufferDataUnique 
+                                = meshSectionDense[cbY].bufferDataUniqueBothSides = new byte[0];
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    string s = ex.Message;
+                    cAlpha = 0;
+                    if (isDense)
+                    {
+                        // Если работаем со сплашными блоками, клеим секции
+                        ClientWorld.WorldRender.bufferHeight.Combine(meshSectionDense[cbY].bufferData);
+                        ClientWorld.WorldRender.bufferHeightUnique.Combine(meshSectionDense[cbY].bufferDataUnique);
+                        ClientWorld.WorldRender.bufferHeightUniqueBothSides.Combine(meshSectionDense[cbY].bufferDataUniqueBothSides);
+                    }
                 }
 
                 if (isDense)
                 {
-                    meshDense.SetBuffer(ClientWorld.WorldRender.bufferHeight.ToArray());
-                    ClientWorld.WorldRender.bufferHeight.Clear();
+                    // Если работаем со сплашными блоками, вносим буфер
                     meshUnique.SetBuffer(ClientWorld.WorldRender.bufferHeightUnique.ToArray());
                     ClientWorld.WorldRender.bufferHeightUnique.Clear();
+                    meshUniqueBothSides.SetBuffer(ClientWorld.WorldRender.bufferHeightUniqueBothSides.ToArray());
+                    ClientWorld.WorldRender.bufferHeightUniqueBothSides.Clear();
+                    meshDense.SetBuffer(ClientWorld.WorldRender.bufferHeight.ToArray());
+                    ClientWorld.WorldRender.bufferHeight.Clear();
                 }
-                
+                // Вносим буфер для альфа
                 countAlpha = alphas.Count;
                 ToBufferAlphaY(alphas);
-                meshAlpha.SetBuffer(ClientWorld.WorldRender.buffer.ToArray());
-                ClientWorld.WorldRender.buffer.Clear();
+                meshAlpha.SetBuffer(ClientWorld.WorldRender.bufferAlpha.ToArray());
+                ClientWorld.WorldRender.bufferAlpha.Clear();
 
                 // Для отладочной статистики
                 float time = (GLWindow.stopwatch.ElapsedTicks - timeBegin) / (float)MvkStatic.TimerFrequency;
@@ -347,7 +374,7 @@ namespace MvkClient.Renderer.Chunk
                 alphas.Sort();
                 for (int i = count - 1; i >= 0; i--)
                 {
-                    ClientWorld.WorldRender.buffer.Combine(alphas[i].buffer);
+                    ClientWorld.WorldRender.bufferAlpha.Combine(alphas[i].buffer);
                 }
             }
         }
@@ -361,6 +388,10 @@ namespace MvkClient.Renderer.Chunk
         /// </summary>
         public void DrawUnique() => meshUnique.Draw();
         /// <summary>
+        /// Прорисовка уникальных блоков псевдо чанка
+        /// </summary>
+        public void DrawUniqueBothSides() => meshUniqueBothSides.Draw();
+        /// <summary>
         /// Прорисовка альфа блоков псевдо чанка
         /// </summary>
         public void DrawAlpha() => meshAlpha.Draw();
@@ -368,11 +399,12 @@ namespace MvkClient.Renderer.Chunk
         /// <summary>
         /// Занести буфер сплошных блоков псевдо чанка если это требуется
         /// </summary>
-        public void BindBufferDense() => meshDense.BindBuffer();
-        /// <summary>
-        /// Занести буфер уникальных блоков псевдо чанка если это требуется
-        /// </summary>
-        public void BindBufferUnique() => meshUnique.BindBuffer();
+        public void BindBufferDense()
+        {
+            meshUnique.BindBuffer();
+            meshUniqueBothSides.BindBuffer();
+            meshDense.BindBuffer();
+        }
         //// <summary>
         /// Занести буфер альфа блоков псевдо чанка если это требуется
         /// </summary>
@@ -453,10 +485,6 @@ namespace MvkClient.Renderer.Chunk
         /// </summary>
         public bool IsMeshDenseWait() => meshDense.Status == ChunkMesh.StatusMesh.Wait || meshDense.Status == ChunkMesh.StatusMesh.Null;
         /// <summary>
-        /// Статсус возможности для рендера уникальных блоков
-        /// </summary>
-        public bool IsMeshUniqueWait() => meshUnique.Status == ChunkMesh.StatusMesh.Wait || meshUnique.Status == ChunkMesh.StatusMesh.Null;
-        /// <summary>
         /// Статсус возможности для рендера альфа блоков
         /// </summary>
         public bool IsMeshAlphaWait() => meshAlpha.Status == ChunkMesh.StatusMesh.Wait || meshAlpha.Status == ChunkMesh.StatusMesh.Null;
@@ -464,10 +492,6 @@ namespace MvkClient.Renderer.Chunk
         /// Статсус связывания сетки с OpenGL для рендера сплошных блоков
         /// </summary>
         public bool IsMeshDenseBinding() => meshDense.Status == ChunkMesh.StatusMesh.Binding;
-        /// <summary>
-        /// Статсус связывания сетки с OpenGL для рендера уникальных блоков
-        /// </summary>
-        public bool IsMeshUniqueBinding() => meshUnique.Status == ChunkMesh.StatusMesh.Binding;
         /// <summary>
         /// Статсус связывания сетки с OpenGL для рендера альфа блоков
         /// </summary>
@@ -480,6 +504,10 @@ namespace MvkClient.Renderer.Chunk
         /// Статсус не пустой для рендера уникальных блоков
         /// </summary>
         public bool NotNullMeshUnique() => meshUnique.Status != ChunkMesh.StatusMesh.Null;
+        /// <summary>
+        /// Статсус не пустой для рендера уникальных блоков
+        /// </summary>
+        public bool NotNullMeshUniqueBothSides() => meshUniqueBothSides.Status != ChunkMesh.StatusMesh.Null;
         /// <summary>
         /// Статсус не пустой для рендера альфа блоков
         /// </summary>
