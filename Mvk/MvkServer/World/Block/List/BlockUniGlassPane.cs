@@ -37,7 +37,8 @@ namespace MvkServer.World.Block.List
             base.color = color;
             Particle = numberTextureSide;
             Resistance = .6f;
-            Material = EnumMaterial.GlassPane;
+            canDropPresent = false;
+            Material = Materials.GetMaterialCache(EnumMaterial.GlassPane);
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
             InitQuads();
         }
@@ -55,11 +56,6 @@ namespace MvkServer.World.Block.List
         /// Коробки для рендера 2д GUI
         /// </summary>
         public override QuadSide[] GetQuadsGui() => quads[10];
-
-        /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
 
         /// <summary>
         /// Передать список  ограничительных рамок блока
@@ -164,7 +160,7 @@ namespace MvkServer.World.Block.List
         {
             BlockState blockState = worldIn.GetBlockState(blockPos);
             BlockBase block = blockState.GetBlock();
-            return (block.IsNotTransparent() && block.FullBlock) || block.Material == EnumMaterial.Glass || block.Material == EnumMaterial.GlassPane;
+            return (block.IsNotTransparent() && block.FullBlock) || block.Material.Glass;
         }
 
         /// <summary>

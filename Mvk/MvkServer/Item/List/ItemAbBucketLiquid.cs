@@ -16,10 +16,9 @@ namespace MvkServer.Item.List
         /// </summary>
         public BlockBase BlockLiquid { get; protected set; }
 
-        public ItemAbBucketLiquid()
+        public ItemAbBucketLiquid(EnumItem enumItem, int numberTexture) : base(enumItem, numberTexture, 1)
         {
             MaxDamage = 0;
-            MaxStackSize = 1;
         }
 
         /// <summary>
@@ -48,7 +47,7 @@ namespace MvkServer.Item.List
                     {
                         if (!playerIn.IsCreativeMode)
                         {
-                            blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld, 0);
+                            blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld);
                             if (stack.Item != null)
                             {
                                 playerIn.Inventory.SetCurrentItem(new ItemStack(new ItemBucket()));

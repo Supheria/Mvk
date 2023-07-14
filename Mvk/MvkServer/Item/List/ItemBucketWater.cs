@@ -7,12 +7,9 @@ namespace MvkServer.Item.List
     /// </summary>
     public class ItemBucketWater : ItemAbBucketLiquid
     {
-        public ItemBucketWater() : base()
+        public ItemBucketWater() : base(EnumItem.BucketWater, 97)
         {
             BlockLiquid = Blocks.GetBlockCache(EnumBlock.Water);
-            EItem = EnumItem.BucketWater;
-            NumberTexture = 97;
-            UpId();
         }
     }
 }

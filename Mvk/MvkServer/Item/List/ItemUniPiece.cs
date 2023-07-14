@@ -1,6 +1,7 @@
 ﻿using MvkServer.Entity.List;
 using MvkServer.Sound;
 using MvkServer.World;
+using MvkServer.World.Block;
 
 namespace MvkServer.Item.List
 {
@@ -11,19 +12,11 @@ namespace MvkServer.Item.List
     {
         private readonly float power;
 
-        public ItemUniPiece(EnumItem enumItem, int numberTexture, float power = 0)
+        public ItemUniPiece(EnumItem enumItem, int numberTexture, float power = 0) : base(enumItem, numberTexture, 128)
         {
-            EItem = enumItem;
-            NumberTexture = numberTexture;
-            MaxStackSize = 128;
             this.power = power;
-            UpId();
+            ItemUseAction = EnumItemAction.Throw;
         }
-
-        /// <summary>
-        /// Вернуть тип действия предмета
-        /// </summary>
-        public override EnumItemAction GetItemUseAction(ItemStack stack) => EnumItemAction.Throw;
 
         /// <summary>
         /// Вызывается всякий раз, когда этот предмет экипирован и нажата правая кнопка мыши.
@@ -57,6 +50,17 @@ namespace MvkServer.Item.List
             EntityPiece entity = new EntityPiece(worldIn, playerIn);
             entity.SetItem(enumItem);
             worldIn.SpawnEntityInWorld(entity);
+        }
+
+        /// <summary>
+        /// Может ли блок быть разрушен тикущим предметом
+        /// </summary>
+        /// <param name="block">блок который разрушаем</param>
+        public override bool CanDestroyedBlock(BlockBase block)
+        {
+            MaterialBase material = block.Material;
+            EnumMaterial eMaterial = material.EMaterial;
+            return power > .3f && (material.Glass || block.EBlock == EnumBlock.Brol);
         }
     }
 }

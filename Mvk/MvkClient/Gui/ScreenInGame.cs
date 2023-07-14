@@ -243,6 +243,7 @@ namespace MvkClient.Gui
             int h = -size - 8;
             vec4 colorText = new vec4(1);
             FontSize fontSize = FontSize.Font12;
+            FontRenderer.ResetFont();
 
             for (int i = 0; i < 8; i++)
             {

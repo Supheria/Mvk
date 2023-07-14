@@ -1,6 +1,7 @@
 ﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -66,7 +67,7 @@ namespace MvkServer.World.Block.List
             Combustibility = true;
             IgniteOddsSunbathing = 10;
             BurnOdds = 20;
-            Material = EnumMaterial.Door;
+            Material = Materials.GetMaterialCache(EnumMaterial.Door);
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigWood1, AssetsSample.DigWood2, AssetsSample.DigWood3, AssetsSample.DigWood4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepWood1, AssetsSample.StepWood2, AssetsSample.StepWood3, AssetsSample.StepWood4 };
             Particle = numberTexture;
@@ -82,12 +83,12 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
-        public override int Hardness(BlockState state) => 1;
+        public override int Hardness(BlockState state) => 20;
 
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
         /// </summary>
-        public override ItemBase GetItemDropped(BlockState state, Rand rand, int fortune)
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool)
             => Items.GetItemCache(itemDoor);
 
         /// <summary>
@@ -199,7 +200,7 @@ namespace MvkServer.World.Block.List
             if (!IsCanDoorStay(worldIn, blockPos.Offset(-x, -level, -z), open, left, pole))
             {
                 OnBreakBlock(worldIn, blockPos, neighborState);
-                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
+                DropBlockAsItem(worldIn, blockPos, neighborState);
                 if (!worldIn.IsRemote) 
                 {
                     PlaySoundBreak(worldIn, blockPos);

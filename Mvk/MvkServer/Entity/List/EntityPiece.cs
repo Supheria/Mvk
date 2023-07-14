@@ -43,14 +43,14 @@ namespace MvkServer.Entity.List
                             {
                                 // блок разрушаем
                                 BlockState blockState = World.GetBlockState(moving.BlockPosition);
-                                blockState.GetBlock().DropBlockAsItem(World, moving.BlockPosition, blockState, 0);
+                                blockState.GetBlock().DropBlockAsItem(World, moving.BlockPosition, blockState);
                                 World.SetBlockToAir(moving.BlockPosition, 15);
                             }
                             if (eItem == EnumItem.Coconut)
                             {
                                 ItemStack itemStack;
                                 vec3 pos = moving.RayHit;
-                                if (!isBreak && blockBase.Material == EnumMaterial.Solid)
+                                if (!isBreak && blockBase.Material.EMaterial == EnumMaterial.Solid)
                                 {
                                     // Разбивается кокос на две половинки
                                     itemStack = new ItemStack(Items.GetItemCache(EnumItem.HalfCoconut), 2);

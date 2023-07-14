@@ -1,9 +1,11 @@
 ﻿using MvkServer.Entity.List;
 using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.NBT;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 using MvkServer.World;
+using MvkServer.World.Block;
 using System;
 
 namespace MvkServer.Inventory
@@ -430,6 +432,95 @@ namespace MvkServer.Inventory
                 }
             }
         }
+
+        /// <summary>
+        /// Может ли блок быть разрушен тикущим предметом
+        /// </summary>
+        /// <param name="block">блок который разрушаем</param>
+        public bool CanDestroyedBlock(BlockBase block)
+        {
+            if (Player.IsCreativeMode || block.Material.RequiresNoTool) return true;
+            ItemStack itemStack = GetStackInSlot(CurrentItem);
+            return itemStack != null ? itemStack.Item.CanDestroyedBlock(block) : false;
+        }
+
+        /// <summary>
+        /// Может ли выпасть предмет после разрушения блока тикущим предметом
+        /// </summary>
+        /// <param name="block">блок который разрушаем</param>
+        public bool CanHarvestBlock(BlockBase block)
+        {
+            if (block.Material.RequiresNoTool) return true;
+            ItemStack itemStack = GetStackInSlot(CurrentItem);
+            return itemStack != null ? itemStack.Item.CanHarvestBlock(block) : false;
+        }
+
+        /// <summary>
+        /// Вызывается, когда блок уничтожается с помощью этого предмета блок
+        /// </summary>
+        public void OnBlockDestroyed(WorldBase worldIn, BlockBase blockIn, BlockPos blockPos)
+        {
+            ItemStack stack = GetStackInSlot(CurrentItem);
+            if (stack != null)
+            {
+                if (stack.Item.OnBlockDestroyed(stack, worldIn, blockIn, blockPos, Player))
+                {
+                    //if (!world.IsRemote)
+                    //{
+                    // Статистика    
+                    //playerIn.triggerAchievement(StatList.objectUseStats[Item.getIdFromItem(this.item)]);
+                    //}
+                }
+            }
+        }
+
+        /// <summary>
+        /// Вызывается, когда происходит удар по блоку с помощью этого предмета, вернёт true если сломался инструмент
+        /// </summary>
+        /// <param name="damage">сила урона на инструмент</param>
+        public bool OnHitOnBlock(WorldBase worldIn, BlockBase blockIn, BlockPos blockPos, int damage)
+        {
+            ItemStack stack = GetStackInSlot(CurrentItem);
+            return stack != null ? stack.Item.OnHitOnBlock(stack, worldIn, blockIn, blockPos, Player, damage) : false;
+        }
+
+        /// <summary>
+        /// Получить силу против блока со всем нюансами игрока
+        /// </summary>
+        public float GetStrVsBlock(BlockBase block)
+        {
+            ItemStack stack = GetStackInSlot(CurrentItem);
+            float force = stack != null ? stack.Item.GetStrVsBlock(block) : 1f;
+            if (Player.IsInWater()) force *= .2f;
+            if (!Player.OnGround) force *= .2f;
+            return force;
+        }
+
+        /// <summary>
+        /// Получить урон для атаки предметом который в руке со всеми нюансами игрока
+        /// </summary>
+        public float GetDamageToAttack(WorldBase worldIn)
+        {
+            ItemStack stack = GetStackInSlot(CurrentItem);
+            float damage = stack != null ? stack.Item.GetDamageToAttack() : 1f;
+            if (Player.IsInWater()) damage *= .75f;
+            if (!Player.OnGround) damage *= 1.1f;
+            return damage;
+        }
+
+        /// <summary>
+        /// Время паузы между разрушениями блоков в тактах
+        /// </summary>
+        public int PauseTimeBetweenBlockDestruction()
+        {
+            ItemStack stack = GetStackInSlot(CurrentItem);
+            return stack != null ? stack.Item.PauseTimeBetweenBlockDestruction() : 6;
+        }
+
+        /// <summary>
+        /// Получить предмет инструмента
+        /// </summary>
+        public ItemAbTool GetItemTool() => GetStackInSlot(CurrentItem)?.Item.GetTool();
 
         public override string ToString()
         {

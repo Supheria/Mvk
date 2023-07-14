@@ -26,23 +26,36 @@ namespace MvkServer.Command
                 return ChatStyle.Red + "commands.tp.notPlayer";
             }
             string[] commandParams = sender.GetCommandParams();
-            if (commandParams.Length < 3)
+            if (commandParams.Length == 1)
             {
-                return ChatStyle.Red + "commands.tp.notParams";
+                // Пробуем телепортироваться к игроку если это его имя
+                EntityPlayerServer entity = (EntityPlayerServer)world.GetPlayerToName(commandParams[0]);
+                if (entity == null)
+                {
+                    return ChatStyle.Red + "commands.tp.notPlayer [" + commandParams[0] + "]";
+                }
+                player.SetPositionServer(entity.Position);
             }
-            int[] param = new int[3];
-            for (int i = 0; i < 3; i++)
+            else
             {
-                try
+                if (commandParams.Length < 3)
                 {
-                    param[i] = int.Parse(commandParams[i]);
+                    return ChatStyle.Red + "commands.tp.notParams";
                 }
-                catch
+                int[] param = new int[3];
+                for (int i = 0; i < 3; i++)
                 {
-                    return ChatStyle.Red + "commands.tp.errorParmas";
+                    try
+                    {
+                        param[i] = int.Parse(commandParams[i]);
+                    }
+                    catch
+                    {
+                        return ChatStyle.Red + "commands.tp.errorParmas";
+                    }
                 }
+                player.SetPositionServer(new vec3(param[0], param[1], param[2]));
             }
-            player.SetPositionServer(new vec3(param[0], param[1], param[2]));
             return ChatStyle.Gray + "commands.tp";
         }
     }

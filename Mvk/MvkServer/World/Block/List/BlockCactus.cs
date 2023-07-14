@@ -21,7 +21,7 @@ namespace MvkServer.World.Block.List
         {
             NeedsRandomTick = true;
             SetUnique();
-            Material = EnumMaterial.VegetableProtein;
+            Material = Materials.GetMaterialCache(EnumMaterial.VegetableProtein);
             Particle = 193;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };
@@ -53,7 +53,7 @@ namespace MvkServer.World.Block.List
         {
             if (!CanBlockStay(worldIn, blockPos))
             {
-                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
+                DropBlockAsItem(worldIn, blockPos, neighborState);
                 worldIn.SetBlockToAir(blockPos, 30);
             }
         }

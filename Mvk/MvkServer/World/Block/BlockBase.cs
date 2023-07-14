@@ -2,6 +2,7 @@
 using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -151,6 +152,10 @@ namespace MvkServer.World.Block
         public byte BurnOdds { get; protected set; } = 0;
 
         /// <summary>
+        /// Присутствует дроп у блока
+        /// </summary>
+        protected bool canDropPresent = true;
+        /// <summary>
         /// Цвет блока по умолчани, биом потом заменит
         /// Для частички
         /// </summary>
@@ -185,7 +190,7 @@ namespace MvkServer.World.Block
         /// <summary>
         /// Материал блока
         /// </summary>
-        public EnumMaterial Material { get; protected set; } = EnumMaterial.Air;
+        public MaterialBase Material { get; protected set; }
 
         /// <summary>
         /// Цвет для подмешевания блока, для гуи или частичек
@@ -262,6 +267,7 @@ namespace MvkServer.World.Block
         /// </summary>
         protected void SetAir()
         {
+            Material = Materials.GetMaterialCache(EnumMaterial.Air);
             IsAir = true;
             FullBlock = false;
             IsAction = false;
@@ -270,6 +276,7 @@ namespace MvkServer.World.Block
             Shadow = false;
             IsReplaceable = true;
             LightOpacity = 0;
+            canDropPresent = false;
         }
 
         /// <summary>
@@ -300,6 +307,7 @@ namespace MvkServer.World.Block
             IsReplaceable = true;
             IsParticle = false;
             Resistance = 100f;
+            canDropPresent = false;
         }
 
         /// <summary>
@@ -369,12 +377,15 @@ namespace MvkServer.World.Block
         /// </summary>
         public int GetPlayerRelativeBlockHardness(EntityPlayer playerIn, BlockState blockState)
         {
-            if (playerIn.IsCreativeMode) return 0;
-            //return 0; // креатив
-            return Hardness(blockState); // выживание
-
-            //return Hardness / 3; // выживание
-            //return hardness < 0.0F ? 0.0F : (!playerIn.canHarvestBlock(this) ? playerIn.func_180471_a(this) / hardness / 100.0F : playerIn.func_180471_a(this) / hardness / 30.0F);
+            if (playerIn.IsCreativeMode)
+            {
+                // креатив
+                return 0;
+            }
+            // выживание
+            int hardness = Hardness(blockState);
+            if (hardness == 0) return 0;
+            return playerIn.ToolForcePerBlock(blockState.GetBlock(), hardness);
         }
 
         /// <summary>
@@ -409,33 +420,73 @@ namespace MvkServer.World.Block
             }
         }
 
-        /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        /// <param name="fortune">Чара удачи</param>
-        public void DropBlockAsItem(WorldBase worldIn, BlockPos blockPos, BlockState state, int fortune)
-            => DropBlockAsItemWithChance(worldIn, blockPos, state, 1.0f, fortune);
+        #region Drop
 
         /// <summary>
         /// Спавн предмета при разрушении этого блока
+        /// </summary>
+        public void DropBlockAsItem(WorldBase worldIn, BlockPos blockPos, BlockState state, ItemAbTool itemTool = null)
+        {
+            if (!worldIn.IsRemote && canDropPresent)
+            {
+                ItemBase item;
+                int i, count;
+                // Основной
+                count = QuantityDroppedWithBonus(itemTool, worldIn.Rnd);
+                for (i = 0; i < count; i++)
+                {
+                    item = GetItemDropped(state, worldIn.Rnd, itemTool);
+                    if (item != null)
+                    {
+                        SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDropped(state)));
+                    }
+                }
+                // Дополнительный
+                count = QuantityDroppedWithBonusAdditional(itemTool, worldIn.Rnd);
+                for (i = 0; i < count; i++)
+                {
+                    item = GetItemDroppedAdditional(state, worldIn.Rnd, itemTool);
+                    if (item != null)
+                    {
+                        SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDroppedAdditional(state)));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Спавн предмета при разрушении этого блока, используется для взрыва
         /// </summary>
         /// <param name="chance">Вероятность выпадении предмета 1.0 всегда, 0.0 никогда</param>
-        /// <param name="fortune">Чара удачи</param>
-        public virtual void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune)
+        public void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance)
         {
-            if (!worldIn.IsRemote)
+            if (!worldIn.IsRemote && canDropPresent)
             {
-                int count = QuantityDroppedWithBonus(fortune, worldIn.Rnd);
-
-                for (int i = 0; i < count; i++)
+                ItemBase item;
+                int i, count;
+                // Основной
+                count = QuantityDroppedWithBonus(null, worldIn.Rnd);
+                for (i = 0; i < count; i++)
                 {
-                    if (worldIn.Rnd.NextFloat() <= chance)
+                    if (chance == 1 || worldIn.Rnd.NextFloat() <= chance)
                     {
-                        ItemBase item = GetItemDropped(state, worldIn.Rnd, fortune);
-
+                        item = GetItemDropped(state, worldIn.Rnd, null);
                         if (item != null)
                         {
                             SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDropped(state)));
+                        }
+                    }
+                }
+                // Дополнительный
+                count = QuantityDroppedWithBonusAdditional(null, worldIn.Rnd);
+                for (i = 0; i < count; i++)
+                {
+                    if (chance == 1 || worldIn.Rnd.NextFloat() <= chance)
+                    {
+                        item = GetItemDroppedAdditional(state, worldIn.Rnd, null);
+                        if (item != null)
+                        {
+                            SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDroppedAdditional(state)));
                         }
                     }
                 }
@@ -443,28 +494,44 @@ namespace MvkServer.World.Block
         }
 
         /// <summary>
+        /// Получите предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        protected virtual ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool) => Items.GetItemCache(state.id);
+        /// <summary>
+        /// Возвращает количество предметов, которые выпадают при разрушении блока.
+        /// </summary>
+        protected virtual int QuantityDropped(Rand random) => 1;
+        /// <summary>
+        /// Получите количество выпавших на основе данного уровня удачи
+        /// </summary>
+        protected virtual int QuantityDroppedWithBonus(ItemAbTool itemTool, Rand random) => QuantityDropped(random);
+        /// <summary>
         /// Получите значение урона, которое должен упасть этот блок
         /// </summary>
-        public virtual int DamageDropped(BlockState state) => 0;
+        protected virtual int DamageDropped(BlockState state) => 0;
+        /// <summary>
+        /// Получите ДОПОЛНИТЕЛЬНЫЙ предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        protected virtual ItemBase GetItemDroppedAdditional(BlockState state, Rand rand, ItemAbTool itemTool) => null;
+        /// <summary>
+        /// Возвращает количество ДОПОЛНИТЕЬНЫХ предметов, которые выпадают при разрушении блока.
+        /// </summary>
+        protected virtual int QuantityDroppedAdditional(Rand random) => 0;
+        /// <summary>
+        /// Получите количество ДОПОЛНИТЕЛЬНЫХ предметов выпавших на основе данного уровня удачи
+        /// </summary>
+        protected virtual int QuantityDroppedWithBonusAdditional(ItemAbTool itemTool, Rand random) => QuantityDroppedAdditional(random);
+        /// <summary>
+        /// Получите значение урона, которое должен упасть этот ДОПОЛНИТЕЛЬНЫЙ блок
+        /// </summary>
+        protected virtual int DamageDroppedAdditional(BlockState state) => 0;
+
+        #endregion
+
         /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
         public virtual int Hardness(BlockState state) => 0;
-
-        /// <summary>
-        /// Получите предмет, который должен выпасть из этого блока при сборе.
-        /// </summary>
-        public virtual ItemBase GetItemDropped(BlockState state, Rand rand, int fortune) => Items.GetItemCache(state.id);
-
-        /// <summary>
-        /// Возвращает количество предметов, которые выпадают при разрушении блока.
-        /// </summary>
-        public virtual int QuantityDropped(Rand random) => 1;
-
-        /// <summary>
-        /// Получите количество выпавших на основе данного уровня удачи
-        /// </summary>
-        public virtual int QuantityDroppedWithBonus(int fortune, Rand random) => QuantityDropped(random);
 
         /// <summary>
         /// Действие перед размещеннием блока, для определения метданных

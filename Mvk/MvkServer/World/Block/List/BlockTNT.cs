@@ -75,7 +75,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public override void NeighborBlockChange(WorldBase worldIn, BlockPos blockPos, BlockState neighborState, BlockBase neighborBlock)
         {
-            if (neighborBlock.EBlock == EnumBlock.Fire || neighborBlock.Material == EnumMaterial.Lava)
+            if (neighborBlock.Material.Ignites)
             {
                 Explosion(worldIn, blockPos);
             }

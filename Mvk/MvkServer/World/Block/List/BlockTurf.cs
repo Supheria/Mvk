@@ -1,4 +1,5 @@
 ﻿using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -20,7 +21,7 @@ namespace MvkServer.World.Block.List
             NeedsRandomTick = true;
             Particle = 64;
             BiomeColor = true;
-            Material = EnumMaterial.Loose;
+            Material = Materials.GetMaterialCache(EnumMaterial.Loose);
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepGrass1, AssetsSample.StepGrass2, AssetsSample.StepGrass3, AssetsSample.StepGrass4 };
             InitQuads();
@@ -64,7 +65,7 @@ namespace MvkServer.World.Block.List
             BlockPos blockPosUp = blockPos.OffsetUp();
             BlockState blockStateUp = world.GetBlockState(blockPosUp);
             BlockBase blockUp = blockStateUp.GetBlock();
-            if (!(blockUp.IsAir || blockUp.Material == EnumMaterial.Sapling || blockUp.Material == EnumMaterial.Piece) || blockStateUp.lightSky < 7 || blockUp.LightOpacity > 2)
+            if (!blockUp.Material.TurfDoesNotDry || blockStateUp.lightSky < 7 || blockUp.LightOpacity > 2)
             {
                 // Засыхание дёрна
                 world.SetBlockState(blockPos, new BlockState(EnumBlock.Dirt), 14);
@@ -73,35 +74,51 @@ namespace MvkServer.World.Block.List
             {
                 if (blockStateUp.lightSky >= 9)
                 {
-                    // Распространение дёрна
-                    BlockPos blockPos2;
-                    EnumBlock enumBlock2;
-                    BlockState blockState2;
-                    BlockState blockState2up;
-                    BlockBase blockBase2up;
-                    BlockPos blockPos2up;
-
-                    for (int i = 0; i < 4; i++)
+                    EnumTimeYear enumTimeYear = world.GetTimeYear();
+                    if (enumTimeYear == EnumTimeYear.Summer)
                     {
-                        blockPos2 = blockPos.Offset(random.Next(3) - 1, random.Next(5) - 3, random.Next(3) - 1);
-                        blockPos2up = blockPos2.OffsetUp();
-                        blockState2up = world.GetBlockState(blockPos2up);
-                        blockBase2up = blockState2up.GetBlock();
-                        blockState2 = world.GetBlockState(blockPos2);
-                        enumBlock2 = blockState2.GetEBlock();
-
-                        if (enumBlock2 == EnumBlock.Dirt 
-                            && blockState2up.lightSky >= 7 && blockBase2up.LightOpacity <= 2)
+                        if (blockStateUp.IsAir() && world.GetMoonPhase() == EnumMoonPhase.NewMoon && random.Next(12) == 0)
                         {
-                            // Дёрн
-                            world.SetBlockState(blockPos2, new BlockState(EnumBlock.Turf), 12);
+                            // Только летом в новолунее растёт трава 
+                            int rnd = random.Next(20);
+                            EnumBlock enumBlock = EnumBlock.Grass;
+                            if (rnd == 0) enumBlock = EnumBlock.FlowerClover;
+                            else if (rnd == 1) enumBlock = EnumBlock.FlowerDandelion;
+                            world.SetBlockState(blockPosUp, new BlockState(enumBlock), 12);
                         }
-                        else if (BlockTina.IsGrows(world, blockPos2) && random.Next(8) == 0
-                            && enumBlock2 == EnumBlock.Water && blockState2up.lightSky >= 7
-                            && blockState2up.IsAir())
+                        if (enumTimeYear == EnumTimeYear.Spring)
                         {
-                            // Тина
-                            world.SetBlockState(blockPos2up, new BlockState(EnumBlock.Tina), 12);
+                            // Распространение дёрна
+                            BlockPos blockPos2;
+                            EnumBlock enumBlock2;
+                            BlockState blockState2;
+                            BlockState blockState2up;
+                            BlockBase blockBase2up;
+                            BlockPos blockPos2up;
+
+                            for (int i = 0; i < 4; i++)
+                            {
+                                blockPos2 = blockPos.Offset(random.Next(3) - 1, random.Next(5) - 3, random.Next(3) - 1);
+                                blockPos2up = blockPos2.OffsetUp();
+                                blockState2up = world.GetBlockState(blockPos2up);
+                                blockBase2up = blockState2up.GetBlock();
+                                blockState2 = world.GetBlockState(blockPos2);
+                                enumBlock2 = blockState2.GetEBlock();
+
+                                if (enumBlock2 == EnumBlock.Dirt
+                                    && blockState2up.lightSky >= 7 && blockBase2up.LightOpacity <= 2)
+                                {
+                                    // Дёрн
+                                    world.SetBlockState(blockPos2, new BlockState(EnumBlock.Turf), 12);
+                                }
+                                else if (BlockTina.IsGrows(world, blockPos2) && random.Next(8) == 0
+                                    && enumBlock2 == EnumBlock.Water && blockState2up.lightSky >= 7
+                                    && blockState2up.IsAir())
+                                {
+                                    // Тина
+                                    world.SetBlockState(blockPos2up, new BlockState(EnumBlock.Tina), 12);
+                                }
+                            }
                         }
                     }
                 }
@@ -111,7 +128,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
         /// </summary>
-        public override ItemBase GetItemDropped(BlockState state, Rand rand, int fortune)
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool)
             => Items.GetItemCache(EnumItem.PieceDirt);
     }
 }

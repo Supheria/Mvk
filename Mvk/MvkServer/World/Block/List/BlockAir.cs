@@ -18,11 +18,6 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
-
-        /// <summary>
         /// Является ли блок проходимым, т.е. можно ли ходить через него
         /// </summary>
         public override bool IsPassable(int met) => true;

@@ -17,7 +17,7 @@ namespace MvkClient.Renderer.Block
         /// <summary>
         /// Материал тикущего блока
         /// </summary>
-        private EnumMaterial material; 
+        private EnumMaterial materialLiquid;
 
         private int y;
         private float u1, u2, u3, u4, v1, v2, v3, v4;
@@ -77,7 +77,7 @@ namespace MvkClient.Renderer.Block
         private void RenderMeshBlockLiquid()
         {
             // TODO::2023-06-16 Моря сильно грузят рендер можно попробовать оптимизировать!
-            material = blockState.GetBlock().Material;
+            materialLiquid = blockState.GetBlock().Material.EMaterial;
             y = posChunkY + 1;
             // Получаем данные вверхнего уровня блока, в облости 3*3
             up00 = GetLiquidBlock(posChunkX - 1, y, posChunkZ - 1, true);
@@ -473,8 +473,9 @@ namespace MvkClient.Renderer.Block
             }
 
             blockCheck = Blocks.blocksInt[id];
-            if ((material != EnumMaterial.Lava && (blockCheck.Material == EnumMaterial.Oil || blockCheck.Material == EnumMaterial.Water))
-                || (material == EnumMaterial.Lava && blockCheck.Material == EnumMaterial.Lava))
+            EnumMaterial eMaterial = blockCheck.Material.EMaterial;
+            if ((materialLiquid != EnumMaterial.Lava && (eMaterial == EnumMaterial.Oil || eMaterial == EnumMaterial.Water))
+                || (materialLiquid == EnumMaterial.Lava && eMaterial == EnumMaterial.Lava))
             {
                 if (id == 13 || id == 15 || id == 17)
                 {

@@ -12,13 +12,9 @@ namespace MvkServer.Item.List
     /// </summary>
     public class ItemBucket : ItemBase
     {
-        public ItemBucket() 
+        public ItemBucket() : base(EnumItem.Bucket, 96, 16)
         {
             MaxDamage = 0;
-            MaxStackSize = 16;
-            EItem = EnumItem.Bucket;
-            NumberTexture = 96;
-            UpId();
         }
 
         /// <summary>

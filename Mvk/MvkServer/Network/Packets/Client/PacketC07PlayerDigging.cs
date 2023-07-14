@@ -53,7 +53,11 @@ namespace MvkServer.Network.Packets.Client
             /// <summary>
             /// Мгновенное разрушение
             /// </summary>
-            Destroy = 3
+            Destroy = 3,
+            /// <summary>
+            /// Удар перед разрушениями, и может быть в холостую
+            /// </summary>
+            Hit = 4
         }
     }
 }

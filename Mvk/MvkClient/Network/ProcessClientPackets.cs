@@ -248,7 +248,6 @@ namespace MvkClient.Network
                 if (entity == null) entity = ClientMain.Player;
 
                 ClientMain.Sample.PlaySound(AssetsSample.MobChickenPlop, .2f);
-                // HACK::2022-04-04 надо как-то вынести в игровой поток, а то ошибка вылетает
                 ClientMain.World.RemoveEntityFromWorld(packet.GetItemId());
             }
         }
@@ -424,6 +423,10 @@ namespace MvkClient.Network
         private void Handle2FSetSlot(PacketS2FSetSlot packet)
         {
             ClientMain.Player.Inventory.SetInventorySlotContents(packet.GetSlot(), packet.GetItemStack());
+            if (packet.GetSlot() == ClientMain.Player.Inventory.CurrentItem)
+            {
+                ClientMain.Player.ItemInWorldManagerDestroyAbout();
+            }
         }
 
         private void Handle30WindowItems(PacketS30WindowItems packet)

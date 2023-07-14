@@ -125,9 +125,9 @@ namespace MvkServer.World.Block.List
         /// </summary>
         protected virtual bool MixingDown(WorldBase world, BlockPos blockPos, BlockState state, BlockPos blockPosDown, BlockState blockStateDown)
         {
-            if (material == EnumMaterial.Lava)
+            if (materialLiquid == EnumMaterial.Lava)
             {
-                EnumMaterial eMaterial = blockStateDown.GetBlock().Material;
+                EnumMaterial eMaterial = blockStateDown.GetBlock().Material.EMaterial;
                 if (eMaterial == EnumMaterial.Water)
                 {
                     world.SetBlockState(blockPosDown, new BlockState(EnumBlock.Basalt), 14);

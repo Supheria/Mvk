@@ -57,7 +57,7 @@ namespace MvkServer.World.Block.List
 
         public BlockAbElectricity(int numberTexture)
         {
-            Material = EnumMaterial.Electricity;
+            Material = Materials.GetMaterialCache(EnumMaterial.Electricity);
             Particle = numberTexture;
         }
 
@@ -207,7 +207,7 @@ namespace MvkServer.World.Block.List
                             temp[x, y, z] = true;
                             blockState = world.GetBlockState(blockPosBeside);
                             block = blockState.GetBlock();
-                            if (block.Material == EnumMaterial.Electricity)
+                            if (block.Material.EMaterial == EnumMaterial.Electricity)
                             {
                                 cellsDischargeCache.Add(blockPosBeside);
                             }

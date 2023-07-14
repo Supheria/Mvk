@@ -1,4 +1,6 @@
-﻿using MvkServer.Glm;
+﻿using MvkServer.Entity.List;
+using MvkServer.Glm;
+using MvkServer.Item;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -16,6 +18,7 @@ namespace MvkServer.World.Block.List
         {
             LightValue = 15;
             АmbientOcclusion = false;
+            canDropPresent = false;
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
         }
 
@@ -44,8 +47,20 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Спавн предмета при разрушении этого блока
+        /// Активация блока, клик правой клавишей мыши по блоку, true - был клик, false - нет такой возможности
         /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
+        public override bool OnBlockActivated(WorldBase worldIn, EntityPlayer entityPlayer, BlockPos pos, BlockState state, Pole side, vec3 facing)
+        {
+            worldIn.SetBlockToAir(pos);
+            if (!worldIn.IsRemote)
+            {
+                // Берём брол
+                entityPlayer.Inventory.AddItemStackToInventory(worldIn, entityPlayer,
+                    new ItemStack(Items.GetItemCache(EBlock)));
+                // Чпок
+                worldIn.PlaySoundPop(pos.ToVec3() + .5f);
+            }
+            return true;
+        }
     }
 }

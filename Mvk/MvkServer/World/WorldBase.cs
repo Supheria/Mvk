@@ -179,11 +179,6 @@ namespace MvkServer.World
             // Удаляем 
             while (entityRemove.Count > 0)
             {
-
-                if (IsRemote)
-                {
-                    bool b = true;
-                }
                 EntityBase entity = entityRemove.FirstRemove();
                 if (entity.AddedToChunk && ChunkPr.IsChunkLoaded(entity.PositionChunk))
                 {
@@ -198,40 +193,30 @@ namespace MvkServer.World
 
         protected virtual void UpdateEntity(EntityBase entity)
         {
-            
-            //byte var5 = 32;
-
-            // Проверка о наличии соседних чанков
-            //if (IsAreaLoaded(x - var5, 0, z - var5, x + var5, 0, z + var5, true))
+            if (entity.AddedToChunk)
             {
-                if (entity.AddedToChunk)
+                entity.Update();
+            }
+
+            // Добавление сущности в чанк или выгрузка
+            vec2i posCh = entity.GetChunkPos();
+            if (!entity.AddedToChunk || !posCh.Equals(entity.PositionChunk) || entity.GetChunkY() != entity.PositionChunkY)
+            {
+                if (entity.AddedToChunk && ChunkPr.IsChunkLoaded(entity.PositionChunk))
                 {
-                    entity.Update();
+                    // Удаляем из старого псевдо чанка
+                    GetChunk(entity.PositionChunk).RemoveEntityAtIndex(entity, entity.PositionChunkY);
                 }
-
-                vec2i posCh = entity.GetChunkPos();
-
-                //posCh = entity.GetChunkPos();
-                float y = entity.GetChunkY(); 
-
-                if (!entity.AddedToChunk || !posCh.Equals(entity.PositionChunk) || y != entity.PositionChunkY)
+                if (ChunkPr.IsChunkLoaded(posCh))
                 {
-                    if (entity.AddedToChunk && ChunkPr.IsChunkLoaded(entity.PositionChunk))
-                    {
-                        // Удаляем из старого псевдо чанка
-                        GetChunk(entity.PositionChunk).RemoveEntityAtIndex(entity, entity.PositionChunkY);
-                    }
-                    if (ChunkPr.IsChunkLoaded(posCh))
-                    {
-                        // Добавляем в новый псевдочанк
-                        entity.AddedToChunk = true;
-                        GetChunk(posCh).AddEntity(entity);
-                    }
-                    else
-                    {
-                        // Если нет чанка помечаем что сущность без чанка
-                        entity.AddedToChunk = false;
-                    }
+                    // Добавляем в новый псевдочанк
+                    entity.AddedToChunk = true;
+                    GetChunk(posCh).AddEntity(entity);
+                }
+                else
+                {
+                    // Если нет чанка помечаем что сущность без чанка
+                    entity.AddedToChunk = false;
                 }
             }
         }
@@ -266,7 +251,7 @@ namespace MvkServer.World
             if (entity is EntityPlayer)
             {
                 PlayerEntities.Remove(entity);
-                // Флаг сна всех игроков
+                //TODO::2023-07-07 Флаг сна всех игроков
                 //UpdateAllPlayersSleepingFlag();
                 OnEntityRemoved(entity);
             }
@@ -278,52 +263,14 @@ namespace MvkServer.World
         public virtual void SpawnEntityInWorld(EntityBase entity)
         {
             vec2i posCh = entity.GetChunkPos();
-           // bool flagSpawn = entity.FlagSpawn;
-
-           // if (entity is EntityPlayer) flagSpawn = true;
-
-            //ChunkBase chunk = null;
-           // bool isChunk = false;
-            //if (this is WorldServer)
-            //{
-            //    chunk = ((WorldServer)this).ChunkPrServ.LoadChunk(posCh);
-            //    isChunk = chunk != null;
-            //}
-            //else
-            //{
-               // isChunk = ChunkPr.IsChunk(posCh);
-           // }
-            
-            //if (!flagSpawn && !isChunk)
-            //{
-            //    return false;
-            //}
-            //else
+            if (entity is EntityPlayer entityPlayer)
             {
-                if (entity is EntityPlayer entityPlayer)
-                {
-                    PlayerEntities.Add(entityPlayer);
-                    // Флаг сна всех игроков
-                    //UpdateAllPlayersSleepingFlag();
-                }
-
-                ChunkBase chunk;
-                //if (!isChunk)\
-                //if (this is WorldServer worldServer)
-                //{
-                //    chunk = worldServer.ChunkPrServ.LoadChunk(posCh);
-                //} else {
-                    chunk = GetChunk(posCh);
-                //}
-                if (chunk != null) chunk.AddEntity(entity);
-                else
-                {
-                    
-                   // return false;
-                }
-                LoadedEntityList.Add(entity);
-                OnEntityAdded(entity);
+                PlayerEntities.Add(entityPlayer);
+                //TODO::2023-07-07 Флаг сна всех игроков
+                //UpdateAllPlayersSleepingFlag();
             }
+            LoadedEntityList.Add(entity);
+            OnEntityAdded(entity);
         }
 
         /// <summary>
@@ -516,8 +463,8 @@ namespace MvkServer.World
                 blockState = GetBlockState(blockPos);
                 block = blockState.GetBlock();
                 enumBlock = blockState.GetEBlock();
-
-                if (isLiquid && !liquid && (enumBlock == EnumBlock.Water || enumBlock == EnumBlock.Lava || enumBlock == EnumBlock.Oil))
+                
+                if (isLiquid && !liquid && block.Material.IsLiquid)
                 {
                     liquid = true;
                     blockPosLiquid.X = blockPos.X;
@@ -1006,7 +953,7 @@ namespace MvkServer.World
                     for (int z = min.z; z <= max.z; z++)
                     {
                         BlockBase block = GetBlockState(new BlockPos(x, y, z)).GetBlock();
-                        if (block.Material == EnumMaterial.Water) return true;
+                        if (block.Material.EMaterial == EnumMaterial.Water) return true;
                     }
                 }
             }
@@ -1090,7 +1037,7 @@ namespace MvkServer.World
                         blockPos.Z = z;
                         blockState = GetBlockState(blockPos);
                         block = blockState.GetBlock();
-                        material = block.Material;
+                        material = block.Material.EMaterial;
                         if (material == EnumMaterial.Water)
                         {
                             liquid.Water(block.ModifyAcceleration(this, blockPos, liquid.GetVecWater()));

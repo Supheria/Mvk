@@ -13,11 +13,10 @@ namespace MvkServer.Item.List
     {
         public BlockBase Block { get; private set; }
 
-        public ItemBlock(BlockBase block)
+        public ItemBlock(BlockBase block, EnumItem enumItem, int numberTexture, int maxStackSize) : base(numberTexture, maxStackSize)
         {
             Block = block;
-            EItem = EnumItem.Block;
-            UpId();
+            SetEnumItem(enumItem);
         }
 
         public override string GetName() => "block." + Block.EBlock;
@@ -50,7 +49,7 @@ namespace MvkServer.Item.List
 
                         if (!playerIn.IsCreativeMode)
                         {
-                            blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld, 0);
+                            blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld);
                             if (stack.Item != null)
                             {
                                 playerIn.Inventory.DecrStackSize(playerIn.Inventory.CurrentItem, 1);

@@ -24,19 +24,12 @@ namespace MvkServer.Item.List
         protected bool alwaysEdible = true;
 
         public ItemUniFood(EnumItem enumItem, int numberTexture, int amount = 1, int duration = 32, int maxStackSize = 16)
+            : base(enumItem, numberTexture, maxStackSize)
         {
-            EItem = enumItem;
-            NumberTexture = numberTexture;
             this.amount = amount;
             this.duration = duration;
-            MaxStackSize = maxStackSize;
-            UpId();
+            ItemUseAction = EnumItemAction.Eat;
         }
-
-        /// <summary>
-        /// Вернуть тип действия предмета
-        /// </summary>
-        public override EnumItemAction GetItemUseAction(ItemStack stack) => EnumItemAction.Eat;
 
         /// <summary>
         /// Сколько времени требуется, чтобы использовать или потреблять предмет

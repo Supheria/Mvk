@@ -22,6 +22,14 @@
         /// </summary>
         Throw,
         /// <summary>
+        /// Топор
+        /// </summary>
+        Axe,
+        /// <summary>
+        /// Лопата
+        /// </summary>
+        Shovel
+        /// <summary>
         /// Ставим блок
         /// </summary>
         //Block,

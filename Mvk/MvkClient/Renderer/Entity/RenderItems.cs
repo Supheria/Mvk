@@ -1,7 +1,6 @@
 ﻿using MvkServer.Item;
 using MvkServer.Item.List;
 using MvkServer.World.Block;
-using System.Collections.Generic;
 
 namespace MvkClient.Renderer.Entity
 {
@@ -11,13 +10,27 @@ namespace MvkClient.Renderer.Entity
     public class RenderItems
     {
         /// <summary>
-        /// Карта всех блоков
+        /// Массив всех блоков
         /// </summary>
-        private readonly Dictionary<EnumBlock, RenderBlock> blocks = new Dictionary<EnumBlock, RenderBlock>();
+        private readonly RenderBlock[] blocks;
         /// <summary>
-        /// Карта всех предметов
+        /// Массив всех предметов
         /// </summary>
-        private readonly Dictionary<EnumItem, RenderItem> items = new Dictionary<EnumItem, RenderItem>();
+        private readonly RenderItem[] items;
+
+        public RenderItems()
+        {
+            blocks = new RenderBlock[BlocksCount.COUNT + 1];
+            for (int i = 0; i <= BlocksCount.COUNT; i++)
+            {
+                blocks[i] = new RenderBlock((EnumBlock)i);
+            }
+            items = new RenderItem[ItemsCount.COUNT + 1];
+            for (int i = 1; i <= ItemsCount.COUNT; i++)
+            {
+                items[i] = new RenderItem((EnumItem)i);
+            }
+        }
 
         public void Render(ItemStack stack) => Render(stack.Item);
         public void Render(ItemBase item)
@@ -26,46 +39,13 @@ namespace MvkClient.Renderer.Entity
 
             if (item.EItem == EnumItem.Block && item is ItemBlock itemBlock)
             {
-                RenderBlock renderBlock = GetRenderBlock(itemBlock.Block.EBlock);
+                RenderBlock renderBlock = blocks[(int)itemBlock.Block.EBlock];
                 renderBlock.Render();
             }
             else
             {
-                RenderItem renderItem = GetRenderItem(item.EItem);
+                RenderItem renderItem = items[(int)item.EItem];
                 renderItem.Render();
-            }
-        }
-
-        /// <summary>
-        /// Получить рендер блока, если его ещё не создавали, создать
-        /// </summary>
-        private RenderBlock GetRenderBlock(EnumBlock enumBlock)
-        {
-            if (blocks.ContainsKey(enumBlock))
-            {
-                return blocks[enumBlock];
-            }
-            else
-            {
-                RenderBlock renderBlock = new RenderBlock(enumBlock);
-                blocks.Add(enumBlock, renderBlock);
-                return renderBlock;
-            }
-        }
-        /// <summary>
-        /// Получить рендер блока, если его ещё не создавали, создать
-        /// </summary>
-        private RenderItem GetRenderItem(EnumItem enumItem)
-        {
-            if (items.ContainsKey(enumItem))
-            {
-                return items[enumItem];
-            }
-            else
-            {
-                RenderItem renderItem = new RenderItem(enumItem);
-                items.Add(enumItem, renderItem);
-                return renderItem;
             }
         }
     }

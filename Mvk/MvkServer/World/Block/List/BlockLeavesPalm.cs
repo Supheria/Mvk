@@ -14,7 +14,7 @@ namespace MvkServer.World.Block.List
          * 8-15 второй радиус вида стороны
          */
 
-        public BlockLeavesPalm() : base (1048, EnumBlock.LogPalm, true) { }
+        public BlockLeavesPalm() : base (1048, EnumBlock.LogPalm, EnumBlock.SaplingPalm, true) { }
 
         /// <summary>
         /// Действие перед размещеннием блока, для определения метданных

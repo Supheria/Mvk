@@ -5,13 +5,14 @@ using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
+using MvkServer.World.Item;
 
 namespace MvkServer.Item
 {
     /// <summary>
     ///  Базовый объект предметов
     /// </summary>
-    public abstract class ItemBase
+    public class ItemBase
     {
         /// <summary>
         /// Максимальное количество однотипный вещей в одной ячейке
@@ -33,11 +34,46 @@ namespace MvkServer.Item
         /// Номер текстуры
         /// </summary>
         public int NumberTexture { get; protected set; } = 0;
+        /// <summary>
+        /// Предмет имеет рендер через QuadSide
+        /// </summary>
+        public bool IsRenderQuadSide { get; protected set; } = false;
+        /// <summary>
+        /// Квадраты для объёмного рендера
+        /// </summary>
+        public ItemQuadSide[] Quads { get; protected set; }
+        /// <summary>
+        /// Вернуть тип действия предмета
+        /// </summary>
+        public EnumItemAction ItemUseAction { get; protected set; } = EnumItemAction.None;
+
+        public ItemBase(EnumItem enumItem, int numberTexture, int maxStackSize)
+        {
+            EItem = enumItem;
+            NumberTexture = numberTexture;
+            if (maxStackSize != -1) MaxStackSize = maxStackSize;
+            UpId();
+        }
+
+        public ItemBase(int numberTexture, int maxStackSize)
+        {
+            NumberTexture = numberTexture;
+            if (maxStackSize != -1) MaxStackSize = maxStackSize;
+        }
+
+        /// <summary>
+        /// Задать тип предмета
+        /// </summary>
+        protected void SetEnumItem(EnumItem enumItem)
+        {
+            EItem = enumItem;
+            UpId();
+        }
 
         /// <summary>
         /// Обновить id
         /// </summary>
-        protected void UpId() => Id = GetIdFromItem(this);
+        private void UpId() => Id = GetIdFromItem(this);
 
         public virtual void Update()
         {
@@ -95,10 +131,42 @@ namespace MvkServer.Item
         public virtual void OnPlayerStoppedUsing(ItemStack stack, WorldBase worldIn, EntityPlayer playerIn, int timeLeft) { }
 
         /// <summary>
-        /// Вызывается, когда игрок заканчивает использовать этот предмет (например, заканчивает есть). 
-        /// Не вызывается, когда игрок перестает использовать предмет до завершения действия.
+        /// Вызывается, когда игрок заканчивает использовать этот предмет (например, заканчивает есть)
+        /// Не вызывается, когда игрок перестает использовать предмет до завершения действия
         /// </summary>
         public virtual ItemStack OnItemUseFinish(ItemStack stack, WorldBase worldIn, EntityPlayer playerIn) => stack;
+
+        /// <summary>
+        /// Вызывается, когда блок уничтожается с помощью этого предмета
+        /// Верните true, чтобы активировать статистику «Использовать предмет»
+        /// </summary>
+        public virtual bool OnBlockDestroyed(ItemStack stack, WorldBase worldIn, BlockBase blockIn, BlockPos pos, EntityPlayer playerIn) => false;
+
+        /// <summary>
+        /// Вызывается, когда происходит удар по блоку с помощью этого предмета, вернёт true если сломался инструмент
+        /// </summary>
+        /// <param name="damage">сила урона на инструмент</param>
+        public virtual bool OnHitOnBlock(ItemStack stack, WorldBase worldIn, BlockBase blockIn, BlockPos pos, EntityPlayer playerIn, int damage) => false;
+
+        /// <summary>
+        /// Получить силу против блока
+        /// </summary>
+        public virtual float GetStrVsBlock(BlockBase block) => 1f;
+
+        /// <summary>
+        /// Получить урон для атаки предметом который в руке
+        /// </summary>
+        public virtual float GetDamageToAttack() => 1f;
+
+        /// <summary>
+        /// Время паузы между разрушениями блоков в тактах
+        /// </summary>
+        public virtual int PauseTimeBetweenBlockDestruction() => 6;
+
+        /// <summary>
+        /// Получить объект инструмента, если не инструмент тогда null
+        /// </summary>
+        public ItemAbTool GetTool() => this is ItemAbTool ? (ItemAbTool)this : null;
 
         /// <summary>
         /// Проверка, может ли блок устанавливаться в этом месте
@@ -151,9 +219,16 @@ namespace MvkServer.Item
         public virtual float GetImpactStrength() => 0;
 
         /// <summary>
-        /// Вернуть тип действия предмета
+        /// Может ли блок быть разрушен тикущим предметом
         /// </summary>
-        public virtual EnumItemAction GetItemUseAction(ItemStack stack) => EnumItemAction.None;
+        /// <param name="block">блок который разрушаем</param>
+        public virtual bool CanDestroyedBlock(BlockBase block) => false;
+
+        /// <summary>
+        /// Может ли выпасть предмет после разрушения блока тикущим предметом
+        /// </summary>
+        /// <param name="block">блок который разрушаем</param>
+        public virtual bool CanHarvestBlock(BlockBase block) => false;
 
         public override string ToString() => Id.ToString();
 

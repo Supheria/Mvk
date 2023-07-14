@@ -2,6 +2,9 @@
 using MvkClient.Util;
 using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.Util;
+using MvkServer.World.Block;
+using MvkServer.World.Item;
 
 namespace MvkClient.Renderer.Entity
 {
@@ -20,8 +23,54 @@ namespace MvkClient.Renderer.Entity
         protected override void DoRender()
         {
             ItemBase item = Items.GetItemCache(enumItem);
-            if (item == null) return;
-            
+            if (item != null)
+            {
+                if (item.IsRenderQuadSide)
+                {
+                    RenderQuadSide(item);
+                }
+                else
+                {
+                    RenderFlat(item);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Рендер предмета из прямоугольников
+        /// </summary>
+        private void RenderQuadSide(ItemBase item)
+        {
+            ItemQuadSide quad;
+            ItemQuadSide[] quads = item.Quads;
+            TextureStruct ts = GLWindow.Texture.GetData(AssetsTexture.AtlasItems);
+            GLWindow.Texture.BindTexture(ts.GetKey());
+            GLRender.Texture2DEnable();
+            GLRender.BeginTriangles();
+            for (int i = 0; i < quads.Length; i++)
+            {
+                quad = quads[i];
+                RenderVertex(quad.vertex[0], quad.lightPole);
+                RenderVertex(quad.vertex[1], quad.lightPole);
+                RenderVertex(quad.vertex[2], quad.lightPole);
+                RenderVertex(quad.vertex[0], quad.lightPole);
+                RenderVertex(quad.vertex[2], quad.lightPole);
+                RenderVertex(quad.vertex[3], quad.lightPole);
+            }
+            GLRender.End();
+        }
+
+        private void RenderVertex(Vertex vertex, float lightPole)
+        {
+            GLRender.Color(1f - lightPole);
+            GLRender.VertexWithUV(vertex.x, vertex.y, vertex.z, vertex.u, vertex.v);
+        }
+
+        /// <summary>
+        /// Рендер плоского предмета
+        /// </summary>
+        private void RenderFlat(ItemBase item)
+        {
             int ntu = item.NumberTexture % 32;
             int ntv = item.NumberTexture / 32;
             float x1 = -.5f;

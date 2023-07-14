@@ -20,7 +20,8 @@ namespace MvkServer.World.Block.List
             UseNeighborBrightness = true;
             Particle = numberTexture;
             Resistance = .6f;
-            Material = EnumMaterial.Glass;
+            canDropPresent = false;
+            Material = Materials.GetMaterialCache(EnumMaterial.Glass);
             samplesBreak = new AssetsSample[] { AssetsSample.DigGlass1, AssetsSample.DigGlass2, AssetsSample.DigGlass3 };
 
             quads = new QuadSide[][] { new QuadSide[] {
@@ -37,11 +38,6 @@ namespace MvkServer.World.Block.List
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
         public override int Hardness(BlockState state) => 10;
-
-        /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
 
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.

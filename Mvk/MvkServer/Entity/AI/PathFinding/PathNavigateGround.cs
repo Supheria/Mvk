@@ -66,7 +66,7 @@ namespace MvkServer.Entity.AI.PathFinding
 
                 do
                 {
-                    if (block.Material != EnumMaterial.Water)
+                    if (block.Material.EMaterial != EnumMaterial.Water)
                     {
                         return y;
                     }
@@ -214,7 +214,7 @@ namespace MvkServer.Entity.AI.PathFinding
                     z2 = z + .5f - pos.z;
                     if (x2 * vecX + z2 * vecZ >= 0.0f)
                     {
-                        EnumMaterial material = world.GetBlockState(new BlockPos(x, posY - 1, z)).GetBlock().Material;
+                        EnumMaterial material = world.GetBlockState(new BlockPos(x, posY - 1, z)).GetBlock().Material.EMaterial;
 
                         if (material == EnumMaterial.Air
                             || (material == EnumMaterial.Water && !theEntity.IsInWater())

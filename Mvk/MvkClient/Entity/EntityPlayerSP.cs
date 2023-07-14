@@ -391,7 +391,7 @@ namespace MvkClient.Entity
             if (isPos && isLook)
             {
                 ClientWorld.ClientMain.TrancivePacket(new PacketC06PlayerPosLook(
-                    Position, RotationYawHead, RotationPitch, IsSneaking(), IsSprinting()
+                    Position, RotationYawHead, RotationPitch, IsSneaking(), IsSprinting(), OnGround
                 ));
             }
             else if (isLook)
@@ -400,7 +400,7 @@ namespace MvkClient.Entity
             }
             else if (isPos || isSS)
             {
-                ClientWorld.ClientMain.TrancivePacket(new PacketC04PlayerPosition(Position, IsSneaking(), IsSprinting()));
+                ClientWorld.ClientMain.TrancivePacket(new PacketC04PlayerPosition(Position, IsSneaking(), IsSprinting(), OnGround));
             }
             ActionNone();
         }
@@ -481,15 +481,17 @@ namespace MvkClient.Entity
                     chunk.GetDebugAllSegment(),
                     MovingObject.IsLiquid ? string.Format(" {0} {1}", MovingObject.EBlockLiquid, MovingObject.BlockLiquidPosition) : ""
                 );
-                //Debug.DStr = "";
             }
             else if (MovingObject.IsLiquid)
             {
-                Debug.BlockFocus = string.Format("Liquid:{0} {1}", MovingObject.EBlockLiquid, MovingObject.BlockLiquidPosition);
+                Debug.BlockFocus = string.Format("Liquid:{0} {1}\r\n", MovingObject.EBlockLiquid, MovingObject.BlockLiquidPosition);
+            }
+            else if (MovingObject.IsEntity())
+            {
+                Debug.BlockFocus = MovingObject.Entity.GetName() + "\r\n";
             }
             else
             {
-               // Debug.DStr = moving.ToString();
                 Debug.BlockFocus = "";
             }
         }
@@ -597,7 +599,7 @@ namespace MvkClient.Entity
                 BlockPos blockPos = new BlockPos(posCam);
                 BlockState blockState = World.GetBlockState(blockPos);
                 BlockBase block = blockState.GetBlock();
-                switch (block.Material)
+                switch (block.Material.EMaterial)
                 {
                     case EnumMaterial.Lava: WhereEyesEff = WhereEyes.Lava; break;
                     case EnumMaterial.Oil: WhereEyesEff = WhereEyes.Oil; break;
@@ -772,7 +774,7 @@ namespace MvkClient.Entity
             EntityBase entityHit = null;
             vec3 rayHit = new vec3(0);
             EntityBase entity;
-            float distance = 0;
+            float distance = moving.IsBlock() ? glm.distance(pos, moving.RayHit) : 0;
             for (int i = 0; i < list.Count; i++)
             {
                 entity = list[i];
@@ -819,7 +821,7 @@ namespace MvkClient.Entity
                     {
                         // Отмена разбитие блока, сменился блок
                         ClientMain.TrancivePacket(new PacketC07PlayerDigging(itemInWorldManager.BlockPosDestroy, PacketC07PlayerDigging.EnumDigging.About));
-                        itemInWorldManager.DestroyAbout();
+                        ItemInWorldManagerDestroyAbout();
                     }
                     else if (itemInWorldManager.IsDestroyingBlock)
                     {
@@ -895,6 +897,7 @@ namespace MvkClient.Entity
         private void HandActionRightStart(MovingObjectPosition moving, bool start)
         {
             bool click = false;
+            ItemStack itemStack;
             if (start && moving.IsBlock() && !IsSneaking())
             {
                 // клик по блоку
@@ -903,10 +906,21 @@ namespace MvkClient.Entity
                 {
                     ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(moving.BlockPosition));
                 }
+                else
+                {
+                    itemStack = Inventory.GetCurrentItem();
+                    if (itemStack == null)
+                    {
+                        // нужна проверка, на инструмент или кулак, сейчас кулак. И проверка твёрдого блока
+                        //TODO::2023-07-09 Открываем верстак выживания
+                        ClientMain.Screen.InGameConteiner();
+                        return;
+                    }
+                }
             }
             if (!click)
             {
-                ItemStack itemStack = Inventory.GetCurrentItem();
+                itemStack = Inventory.GetCurrentItem();
                 if (itemStack != null)
                 {
                     // В стаке блок, и по лучу можем устанавливать блок
@@ -944,25 +958,37 @@ namespace MvkClient.Entity
                 BlockState blockState = World.GetBlockState(moving.BlockPosition);
                 BlockBase block = blockState.GetBlock();
 
-                if (block.GetPlayerRelativeBlockHardness(this, blockState) == 0)
+                if (itemInWorldManager.CanDestroy(block))
                 {
-                    // Ломаем мгновенно, без захода в тик
-                    ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Destroy));
-                    itemInWorldManager.InstantDestroy(moving.BlockPosition);
+                    int hardness = block.GetPlayerRelativeBlockHardness(this, blockState);
+                    if (hardness == 0)
+                    {
+                        // Ломаем мгновенно, без захода в тик
+                        ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Destroy));
+                        itemInWorldManager.InstantDestroy(moving.BlockPosition);
+                        if (start) blankShot = true;
+                    }
+                    else
+                    {
+                        // Ломаем через тик
+                        if (itemInWorldManager.CheckInitialDamage(hardness))
+                        {
+                            itemInWorldManager.HitOnBlock(moving.BlockPosition, block, true);
+                            ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Hit));
+                        }
+                        // Начало разбитие блока
+                        ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Start));
+                        itemInWorldManager.DestroyStart(moving.BlockPosition, hardness);
+                    }
+                }
+                else if (start)
+                {
+                    itemInWorldManager.HitOnBlock(moving.BlockPosition, block, true);
+                    ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Hit));
                     blankShot = true;
                 }
-                else
-                {
-                    // Ломаем через тик
-                    // Начало разбитие блока
-                    ClientWorld.ClientMain.TrancivePacket(new PacketC07PlayerDigging(moving.BlockPosition, PacketC07PlayerDigging.EnumDigging.Start));
-                    itemInWorldManager.DestroyStart(moving.BlockPosition);
-                }
             }
-            else if (start)
-            {
-                blankShot = true;
-            }
+            else if (start) blankShot = true;
         }
 
         /// <summary>
@@ -973,7 +999,7 @@ namespace MvkClient.Entity
             if (itemInWorldManager.IsDestroyingBlock)
             {
                 ClientMain.TrancivePacket(new PacketC07PlayerDigging(itemInWorldManager.BlockPosDestroy, PacketC07PlayerDigging.EnumDigging.About));
-                itemInWorldManager.DestroyAbout();
+                ItemInWorldManagerDestroyAbout();
             }
             handAction = ActionHand.None;
         }
@@ -1037,6 +1063,9 @@ namespace MvkClient.Entity
             {
                 currentPlayerItem = currentItem;
                 ClientMain.TrancivePacket(new PacketC09HeldItemChange(currentPlayerItem));
+                // Отмена разрушения блока если было смена предмета в руке
+                ClientMain.TrancivePacket(new PacketC07PlayerDigging(itemInWorldManager.BlockPosDestroy, PacketC07PlayerDigging.EnumDigging.About));
+                ItemInWorldManagerDestroyAbout();
             }
         }
 
@@ -1082,6 +1111,11 @@ namespace MvkClient.Entity
             DisableDamage = packet.IsDisableDamage();
             //SetInvisible()Invisible = packet.IsInvisible();
         }
+
+        /// <summary>
+        /// В менеджере работы с разрушениями блока, делаем отмену разрушения
+        /// </summary>
+        public void ItemInWorldManagerDestroyAbout() => itemInWorldManager.DestroyAbout();
 
         #region Frame
 

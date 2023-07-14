@@ -497,6 +497,34 @@ namespace MvkServer.Entity.List
         public override bool CanBePushed() => IsInvisible() ? false : base.CanBePushed();
 
         /// <summary>
+        /// Сила инструмента на блок
+        /// </summary>
+        /// <param name="hardness">твёрдость блока, выше 0</param>
+        /// <returns>вёрнём новое значение твёрдости блока</returns>
+        public int ToolForcePerBlock(BlockBase block, int hardness)
+        {
+            float svb = Inventory.GetStrVsBlock(block);
+            // Если предмет не выпадает этим инструментом, то двёрдость увеличиваем в 3 раза
+            if (!Inventory.CanHarvestBlock(block)) hardness *= 3;
+            return (int)(hardness / svb);
+        }
+
+        /// <summary>
+        /// Время паузы между разрушениями блоков в тактах
+        /// </summary>
+        public override int PauseTimeBetweenBlockDestruction() 
+            => IsCreativeMode ? 6 : Inventory.PauseTimeBetweenBlockDestruction();
+
+        /// <summary>
+        /// Вернуть тип действия предмета
+        /// </summary>
+        public override EnumItemAction GetItemUseAction()
+        {
+            ItemStack itemStack = Inventory.GetCurrentItem();
+            return itemStack != null ? itemStack.GetItemUseAction() : EnumItemAction.None;
+        }
+
+        /// <summary>
         /// Либо запишите эту сущность в указанный тег NBT и верните true, либо верните false, ничего не делая.
         /// Если это возвращает false объект не сохраняется на диске.
         /// </summary>

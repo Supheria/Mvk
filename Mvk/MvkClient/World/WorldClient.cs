@@ -463,7 +463,7 @@ namespace MvkClient.World
                 if (progress >= 0 && progress < 10)
                 {
                     chunk.DestroyBlockSet(breakerId, blockPos, progress);
-                    ParticleDiggingBlock(GetBlockState(blockPos).GetBlock(), blockPos, 1);
+                    ParticleDiggingBlock(GetBlockState(blockPos).GetBlock(), blockPos, 4);
                 }
                 else
                 {

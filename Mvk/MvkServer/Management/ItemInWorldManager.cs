@@ -1,6 +1,7 @@
 ﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.Network.Packets.Client;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
@@ -84,24 +85,24 @@ namespace MvkServer.Management
         /// <summary>
         /// Начато разрушение
         /// </summary>
-        public void DestroyStart(BlockPos blockPos)
+        public void DestroyStart(BlockPos blockPos, int hardness = -1)
         {
             BlockState blockState = world.GetBlockState(blockPos);
             BlockBase block = blockState.GetBlock();
-            if (!block.IsAir)
+            if (!block.IsAir && entityPlayer.Inventory.CanDestroyedBlock(block))
             {
                 BlockPosDestroy = blockPos;
                 IsDestroyingBlock = true;
                 curblockDamage = 0;
-                initialDamage = block.GetPlayerRelativeBlockHardness(entityPlayer, blockState);
+                initialDamage = hardness == -1 ? block.GetPlayerRelativeBlockHardness(entityPlayer, blockState) : hardness;
                 durabilityRemainingOnBlock = GetProcess();
                 if (durabilityRemainingOnBlock < 0)
                 {
                     // При старте нельзя помечать как стоп (-2) это должно быть в игровом такте
                     durabilityRemainingOnBlock = 0;
                 }
-                pause = entityPlayer.GetArmSwingAnimationEnd();
-            } 
+                pause = entityPlayer.PauseTimeBetweenBlockDestruction();
+            }
         }
 
         /// <summary>
@@ -113,6 +114,29 @@ namespace MvkServer.Management
         /// Окончено разрушение, блок сломан
         /// </summary>
         public void DestroyStop() => status = Status.Stop;
+
+        /// <summary>
+        /// Можно ли разрушить блок
+        /// </summary>
+        public bool CanDestroy(BlockBase block) => !block.IsAir && entityPlayer.Inventory.CanDestroyedBlock(block);
+
+        /// <summary>
+        /// Удар по блоку
+        /// </summary>
+        /// <param name="isFirst">Первый удар</param>
+        public void HitOnBlock(BlockPos blockPos, BlockBase block, bool isFirst)
+        {
+            world.PlaySound(entityPlayer, block.SampleBreak(world), blockPos.ToVec3() + .5f, isFirst ? .4f : 1f, block.SampleBreakPitch(world.Rnd) * .8f);
+            if (entityPlayer.Inventory.OnHitOnBlock(world, block, blockPos, 1))
+            {
+                DestroyAbout();
+            }
+        }
+
+        /// <summary>
+        /// Проверка на начальный урон для дополнительного удара по блоку
+        /// </summary>
+        public bool CheckInitialDamage(int hardness) => hardness > 3;
 
         /// <summary>
         /// Мгновенное разрушение блока
@@ -128,19 +152,17 @@ namespace MvkServer.Management
             BlockState blockState = world.GetBlockState(blockPos);
             BlockBase block = blockState.GetBlock();
 
-            if (world is WorldServer worldServer)
+            if (!entityPlayer.IsCreativeMode)
             {
-                if (!entityPlayer.IsCreativeMode)
+                if (!world.IsRemote && entityPlayer.Inventory.CanHarvestBlock(block))
                 {
-                    block.DropBlockAsItemWithChance(world, blockPos, blockState, 1.0f, 0);
+                    block.DropBlockAsItem(world, blockPos, blockState, entityPlayer.Inventory.GetItemTool());
                 }
-                worldServer.SetBlockToAir(blockPos, 31);
+                // Действия уничтожения блока для предметов
+                entityPlayer.Inventory.OnBlockDestroyed(world, block, blockPos);
             }
-            else
-            {
-                world.SetBlockToAir(blockPos);
-            }
-            pause = entityPlayer.GetArmSwingAnimationEnd();
+            world.SetBlockToAir(blockPos, world.IsRemote ? 14 : 31);
+            pause = entityPlayer.PauseTimeBetweenBlockDestruction();
         }
 
         /// <summary>
@@ -230,7 +252,7 @@ namespace MvkServer.Management
                             ItemStack itemStack = entityPlayer.Inventory.GetStackInSlot(slotPut);
                             if (itemStack != null && itemStack.ItemUse(entityPlayer, world, BlockPosDestroy, side, facing))
                             {
-                                entityPlayer.Inventory.SendSetSlotPlayer();
+                                // Было действие!
                             }
                         }
                     }
@@ -249,10 +271,21 @@ namespace MvkServer.Management
                         statusUpdate = StatusAnimation.None;
                     }
 
+                    if (curblockDamage % 4 == 0 && CheckInitialDamage(initialDamage - curblockDamage))
+                    {
+                        // Удар по блоку
+                        HitOnBlock(BlockPosDestroy, world.GetBlockState(BlockPosDestroy).GetBlock(), false);
+                    }
+
                     if (process != durabilityRemainingOnBlock)
                     {
                         durabilityRemainingOnBlock = process;
                         world.SendBlockBreakProgress(entityPlayer.Id, BlockPosDestroy, durabilityRemainingOnBlock);
+                        //// Звук удара
+                        //entityPlayer.PlaySound(world.GetBlockState(BlockPosDestroy).GetBlock().SampleBreak(world), 1f, .8f);
+                        //this.mc.getSoundHandler().playSound(new PositionedSoundRecord(new ResourceLocation(var6.stepSound.getBreakSound()), 
+                        //(var6.stepSound.getVolume() + 1.0F) / 2.0F, var6.stepSound.getFrequency() * 0.8F, 
+                        // (float)p_180439_3_.getX() + 0.5F, (float)p_180439_3_.getY() + 0.5F, (float)p_180439_3_.getZ() + 0.5F));
                     }
                 }
             }

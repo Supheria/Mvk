@@ -68,7 +68,7 @@ namespace MvkServer.Entity.AI.PathFinding
                 {
                     for (int z = posZ; z < posZ + sizeXZ; ++z)
                     {
-                        if (world.GetBlockState(new BlockPos(x, y, z)).GetBlock().Material != material) return 0;
+                        if (world.GetBlockState(new BlockPos(x, y, z)).GetBlock().Material.EMaterial != material) return 0;
                     }
                 }
             }

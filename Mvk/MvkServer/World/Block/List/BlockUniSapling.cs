@@ -2,24 +2,29 @@
 using MvkServer.Glm;
 using MvkServer.Sound;
 using MvkServer.Util;
+using MvkServer.World.Gen.Feature;
 
 namespace MvkServer.World.Block.List
 {
     /// <summary>
     /// Абстрактный объект саженцев и прочих растений
     /// </summary>
-    public abstract class BlockAbSapling : BlockBase
+    public class BlockUniSapling : BlockBase
     {
-        protected bool biomeColor;
+        /// <summary>
+        /// Объект для генерации дерева
+        /// </summary>
+        private readonly WorldGenTree2 worldGenTree;
 
-        public BlockAbSapling(int numberTexture, bool biomeColor = false)
+        public BlockUniSapling(int numberTexture, WorldGenTree2 worldGenTree)
         {
-            Material = EnumMaterial.Sapling;
+            this.worldGenTree = worldGenTree;
+            NeedsRandomTick = true;
+            Material = Materials.GetMaterialCache(EnumMaterial.Sapling);
             Particle = numberTexture;
             SetUnique(true);
             IsCollidable = false;
             Combustibility = true;
-            this.biomeColor = biomeColor;
             IgniteOddsSunbathing = 60;
             BurnOdds = 100;
             Resistance = 0f;
@@ -39,7 +44,7 @@ namespace MvkServer.World.Block.List
         {
             if (!CanBlockStay(worldIn, blockPos))
             {
-                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
+                DropBlockAsItem(worldIn, blockPos, neighborState);
                 worldIn.SetBlockToAir(blockPos);
             }
         }
@@ -47,7 +52,7 @@ namespace MvkServer.World.Block.List
         public override bool CanBlockStay(WorldBase worldIn, BlockPos blockPos, int met = 0)
         {
             EnumBlock enumBlock = worldIn.GetBlockState(blockPos.OffsetDown()).GetEBlock();
-            return /*enumBlock == EnumBlock.Dirt ||*/ enumBlock == EnumBlock.Turf;
+            return EBlock == EnumBlock.SaplingPalm ? enumBlock == EnumBlock.Sand : enumBlock == EnumBlock.Turf;
         }
 
         /// <summary>
@@ -63,7 +68,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Инициализация коробок
         /// </summary>
-        protected virtual void InitQuads()
+        protected void InitQuads()
         {
             quads = new QuadSide[][] { new QuadSide[] {
                 new QuadSide(0).SetTexture(Particle).SetSide(Pole.South, true, 0, 0, 8, 16, 16, 8).SetRotate(glm.pi45).Wind(),
@@ -76,16 +81,11 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public override void UpdateTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         {
-            if (blockState.lightSky > 9 && random.Next(14) == 0 && world.IsAreaLoaded(blockPos, 6))
+            if (blockState.lightSky > 9 && random.Next(14) == 0 && world.IsAreaLoaded(blockPos, 12))
             {
-                GenefateTree(world, random, blockPos);
+                worldGenTree.GenefateTree(world, random, blockPos);
             }
         }
-
-        /// <summary>
-        /// Генерация дерева
-        /// </summary>
-        protected virtual void GenefateTree(WorldBase world, Rand rand, BlockPos blockPos) { }
 
         /// <summary>
         /// Является ли блок проходимым, т.е. можно ли ходить через него
@@ -98,7 +98,10 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public override bool OnBlockActivated(WorldBase worldIn, EntityPlayer entityPlayer, BlockPos pos, BlockState state, Pole side, vec3 facing)
         {
-            if (!worldIn.IsRemote) GenefateTree(worldIn, worldIn.Rnd, pos);
+            if (!worldIn.IsRemote)
+            {
+                worldGenTree.GenefateTree(worldIn, worldIn.Rnd, pos);
+            }
             return true;
         }
     }

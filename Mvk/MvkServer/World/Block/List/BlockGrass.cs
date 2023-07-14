@@ -1,4 +1,6 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
@@ -27,11 +29,6 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
-
-        /// <summary>
         /// Инициализация коробок
         /// </summary>
         protected override void InitQuads()
@@ -54,5 +51,21 @@ namespace MvkServer.World.Block.List
                 };
             }
         }
+
+        #region Drop
+
+        /// <summary>
+        /// Получите количество выпавших на основе данного уровня удачи
+        /// </summary>
+        protected override int QuantityDroppedWithBonus(ItemAbTool itemTool, Rand random)
+            => (itemTool != null && itemTool.EItem == EnumItem.AxeSteel) || random.Next(10) == 0 ? 1 : 0;
+
+        /// <summary>
+        /// Получите предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool)
+            => Items.GetItemCache(EnumItem.DryGrass);
+
+        #endregion
     }
 }

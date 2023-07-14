@@ -13,7 +13,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Материал жидкости
         /// </summary>
-        protected EnumMaterial material = EnumMaterial.Water;
+        protected EnumMaterial materialLiquid = EnumMaterial.Water;
         /// <summary>
         /// Блок стоячей жидкости
         /// </summary>
@@ -62,11 +62,11 @@ namespace MvkServer.World.Block.List
         /// </summary>
         protected virtual bool Mixing(WorldBase world, BlockPos blockPos, BlockState state)
         {
-            EnumMaterial mBlock = state.GetBlock().Material;
+            EnumMaterial mBlock = state.GetBlock().Material.EMaterial;
 
             if (mBlock == EnumMaterial.Oil)
             {
-                if (world.GetBlockState(blockPos.OffsetDown()).GetBlock().Material == EnumMaterial.Lava)
+                if (world.GetBlockState(blockPos.OffsetDown()).GetBlock().Material.EMaterial == EnumMaterial.Lava)
                 {
                     world.SetBlockState(blockPos, new BlockState(EnumBlock.Fire), 14);
                     EffectMixingOil(world, blockPos);
@@ -82,7 +82,7 @@ namespace MvkServer.World.Block.List
                 {
                     if (i != 1)
                     {
-                        eMaterial = world.GetBlockState(blockPos.Offset(i)).GetBlock().Material;
+                        eMaterial = world.GetBlockState(blockPos.Offset(i)).GetBlock().Material.EMaterial;
                         if (eMaterial == EnumMaterial.Water)
                         {
                             water = true;
@@ -128,17 +128,11 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
-
-
-        /// <summary>
         /// Случайный эффект частички и/или звука на блоке только для клиента
         /// </summary>
         public override void RandomDisplayTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         {
-            if (material == EnumMaterial.Water)
+            if (materialLiquid == EnumMaterial.Water)
             {
                 if (EBlock == EnumBlock.WaterFlowing)
                 {
@@ -154,9 +148,9 @@ namespace MvkServer.World.Block.List
                         new vec3(blockPos.X + .5f, blockPos.Y + .5f, blockPos.Z + .5f), new vec3(1f), 0);
                 }
             }
-            else if (material == EnumMaterial.Lava || material == EnumMaterial.Oil)
+            else if (materialLiquid == EnumMaterial.Lava || materialLiquid == EnumMaterial.Oil)
             {
-                if (material == EnumMaterial.Lava && random.Next(100) == 0)
+                if (materialLiquid == EnumMaterial.Lava && random.Next(100) == 0)
                 {
                     vec3 pos = new vec3(blockPos.X + random.NextFloat(), blockPos.Y + 1, blockPos.Z + random.NextFloat());
                     world.SpawnParticle(EnumParticle.BlockPart, 3, pos, new vec3(.25f, 1, .25f), 1, (int)EnumBlock.Lava);
@@ -292,13 +286,13 @@ namespace MvkServer.World.Block.List
         protected bool CheckCan(BlockState state)
         {
             BlockBase block = state.GetBlock();
-            EnumMaterial eMaterial = block.Material;
+            EnumMaterial eMaterial = block.Material.EMaterial;
             return block.IsAir || block.IsLiquidDestruction() || IsFire(eMaterial)
-                || block.Material == material
+                || eMaterial == materialLiquid
                 // Взаимодействие лавы с водой и нефтью
-                || (material == EnumMaterial.Lava && (block.Material == EnumMaterial.Oil || block.Material == EnumMaterial.Water))
+                || (materialLiquid == EnumMaterial.Lava && (eMaterial == EnumMaterial.Oil || eMaterial == EnumMaterial.Water))
                 // Взаимодействие воды и нефти с лавой
-                || (block.Material == EnumMaterial.Lava && (material == EnumMaterial.Oil || material == EnumMaterial.Water));
+                || (eMaterial == EnumMaterial.Lava && (materialLiquid == EnumMaterial.Oil || materialLiquid == EnumMaterial.Water));
         }
 
         /// <summary>
@@ -312,7 +306,7 @@ namespace MvkServer.World.Block.List
         protected bool CheckCanNotMaterial(WorldBase world, BlockPos pos)
         {
             BlockBase block = world.GetBlockState(pos).GetBlock();
-            EnumMaterial eMaterial = block.Material;
+            EnumMaterial eMaterial = block.Material.EMaterial;
             return block.IsAir || block.IsLiquidDestruction() || IsFire(eMaterial)
                 || block.EBlock == eBlockFlowing;
         }
@@ -325,9 +319,9 @@ namespace MvkServer.World.Block.List
             // Дроп
             BlockState blockState = world.GetBlockState(blockPos);
             BlockBase block = blockState.GetBlock();
-            if (!block.IsAir && block.Material != material)
+            if (!block.IsAir && block.Material.EMaterial != materialLiquid)
             {
-                block.DropBlockAsItem(world, blockPos, blockState, 0);
+                block.DropBlockAsItem(world, blockPos, blockState);
                 world.SetBlockToAir(blockPos, 30);
 
                 // Затухание огня
@@ -428,12 +422,10 @@ namespace MvkServer.World.Block.List
             }
             BlockBase block = blockState.GetBlock();
             if (block.IsAir) return 0;
-            EnumMaterial eMaterial = block.Material;
+            MaterialBase material = block.Material;
             return (block.IsLiquidDestruction()
-                || eMaterial == EnumMaterial.Fire
-                || eMaterial == EnumMaterial.Water
-                || eMaterial == EnumMaterial.Lava
-                || eMaterial == EnumMaterial.Oil) ? 0 : -1;
+                || material.IsLiquid
+                || material.EMaterial == EnumMaterial.Fire) ? 0 : -1;
         }
 
         /// <summary>

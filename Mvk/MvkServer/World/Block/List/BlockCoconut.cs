@@ -1,5 +1,6 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -20,7 +21,7 @@ namespace MvkServer.World.Block.List
             Combustibility = true;
             IgniteOddsSunbathing = 5;
             BurnOdds = 10;
-            Material = EnumMaterial.VegetableProtein;
+            Material = Materials.GetMaterialCache(EnumMaterial.VegetableProtein);
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigWood1, AssetsSample.DigWood2, AssetsSample.DigWood3, AssetsSample.DigWood4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepWood1, AssetsSample.StepWood2, AssetsSample.StepWood3, AssetsSample.StepWood4 };
             InitQuads(Particle);
@@ -34,7 +35,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
         /// </summary>
-        public override ItemBase GetItemDropped(BlockState state, Rand rand, int fortune) 
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool) 
             => Items.GetItemCache(EnumItem.Coconut);
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace MvkServer.World.Block.List
                 if (worldIn.Rnd.Next(2) == 0)
                 {
                     // 50% шанса, что дропнется кокос при разрушении листвы
-                    DropBlockAsItem(worldIn, blockPos, neighborState, 0);
+                    DropBlockAsItem(worldIn, blockPos, neighborState);
                 }
                 worldIn.SetBlockToAir(blockPos, 15);
             }

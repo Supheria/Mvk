@@ -11,7 +11,7 @@
         public BlockBedrock()
         {
             Particle = 1;
-            Material = EnumMaterial.Bedrock;
+            Material = Materials.GetMaterialCache(EnumMaterial.Bedrock);
             Resistance = 6000000;
             InitQuads(1);
         }

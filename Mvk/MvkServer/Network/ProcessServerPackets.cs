@@ -159,10 +159,9 @@ namespace MvkServer.Network
                 // Урон
                 if (packet.GetAction() == PacketC03UseEntity.EnumAction.Attack)
                 {
-                    float damage = 1f;
                     vec3 vec = packet.GetVec() * .9f;
                     vec.y *= .2f;
-                    entity.AttackEntityFrom(EnumDamageSource.Player, damage, vec, entityPlayer);
+                    entity.AttackEntityFrom(EnumDamageSource.Player, entityPlayer.Inventory.GetDamageToAttack(ServerMain.World), vec, entityPlayer);
                 }
             }
         }
@@ -177,6 +176,7 @@ namespace MvkServer.Network
             {
                 entityPlayer.SetSneakingSprinting(packet.IsSneaking(), packet.IsSprinting());
                 entityPlayer.SetPosition(packet.GetPos());
+                entityPlayer.SetOnGroundServer(packet.OnGround());
                 entityPlayer.MarkPlayerActive();
             }
         }
@@ -206,6 +206,7 @@ namespace MvkServer.Network
                 entityPlayer.SetSneakingSprinting(packet.IsSneaking(), packet.IsSprinting());
                 entityPlayer.SetPosition(packet.GetPos());
                 entityPlayer.SetRotationHead(packet.GetYaw(), packet.GetPitch());
+                entityPlayer.SetOnGroundServer(packet.OnGround());
                 entityPlayer.MarkPlayerActive();
             }
         }
@@ -229,6 +230,12 @@ namespace MvkServer.Network
                 {
                     // Начато разрушение
                     entityPlayer.TheItemInWorldManager.DestroyStart(packet.GetBlockPos());
+                }
+                else if (packet.GetDigging() == PacketC07PlayerDigging.EnumDigging.Hit)
+                {
+                    // Первый удар
+                    entityPlayer.TheItemInWorldManager.HitOnBlock(packet.GetBlockPos(),
+                        ServerMain.World.GetBlockState(packet.GetBlockPos()).GetBlock(), true);
                 }
                 else
                 {

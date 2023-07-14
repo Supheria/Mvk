@@ -63,7 +63,7 @@ namespace MvkServer.Entity.AI.PathFinding
                 y = (int)entity.BoundingBox.Min.y;
 
                 for (BlockBase block = world.GetBlockState(new BlockPos(Mth.Floor(entity.Position.x), y, Mth.Floor(entity.Position.z))).GetBlock(); 
-                    block.Material == EnumMaterial.Water;
+                    block.Material.EMaterial == EnumMaterial.Water;
                     block = world.GetBlockState(new BlockPos(Mth.Floor(entity.Position.x), y, Mth.Floor(entity.Position.z))).GetBlock())
                 {
                     ++y;
@@ -186,7 +186,8 @@ namespace MvkServer.Entity.AI.PathFinding
         {
             BlockState blockState;
             BlockBase block;
-            EnumMaterial material;
+            MaterialBase material;
+            EnumMaterial eMaterial;
 
             for (int x = posX; x < posX + sizeXZ; ++x)
             {
@@ -199,23 +200,24 @@ namespace MvkServer.Entity.AI.PathFinding
                         {
                             block = blockState.GetBlock();
                             material = block.Material;
+                            eMaterial = material.EMaterial;
 
                             if ((isCollision && block.IsCollidable) || (!isCollision && !block.IsPassable(blockState.met))) 
                             {
                                 // столкновении с любым сплошным блоком и дверь если надо
                                 return true;
                             }
-                            if (material == EnumMaterial.Water && avoidsWater)
+                            if (eMaterial == EnumMaterial.Water && avoidsWater)
                             {
                                 // столкновении с водой (если избегает воды)
                                 return true;
                             }
-                            if (avoidsLavaOrFire && (material == EnumMaterial.Lava || material == EnumMaterial.Fire))
+                            if (avoidsLavaOrFire && material.Ignites)
                             {
                                 // столкновении с лавой или огнём
                                 return true;
                             }
-                            if (material == EnumMaterial.Oil)
+                            if (eMaterial == EnumMaterial.Oil)
                             {
                                 // столкновении с нефтью
                                 return true;
@@ -240,7 +242,8 @@ namespace MvkServer.Entity.AI.PathFinding
         {
             BlockState blockState;
             BlockBase block;
-            EnumMaterial material;
+            MaterialBase material;
+            EnumMaterial eMaterial;
             // имеется блок воды
             bool isWater = false;
             // имеется блок нефти
@@ -257,18 +260,19 @@ namespace MvkServer.Entity.AI.PathFinding
                     {
                         block = blockState.GetBlock();
                         material = block.Material;
+                        eMaterial = material.EMaterial;
 
-                        if (material == EnumMaterial.Water)
+                        if (eMaterial == EnumMaterial.Water)
                         {
                             // столкновении с водой
                             isWater = true;
                         }
-                        else if (material == EnumMaterial.Oil)
+                        else if (eMaterial == EnumMaterial.Oil)
                         {
                             // столкновении с нефтью
                             isOil = true;
                         }
-                        else if (material == EnumMaterial.Lava || material == EnumMaterial.Fire)
+                        else if (material.Ignites)
                         {
                             // столкновении с лавой или огнём
                             isLavaOrFile = true;

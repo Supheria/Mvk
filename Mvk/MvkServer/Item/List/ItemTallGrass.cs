@@ -9,12 +9,8 @@ namespace MvkServer.Item.List
     /// </summary>
     public class ItemTallGrass : ItemBlock
     {
-        public ItemTallGrass(EnumItem enumItem, int numberTexture) : base(Blocks.GetBlockCache(EnumBlock.TallGrass))
-        {
-            EItem = enumItem;
-            NumberTexture = numberTexture;
-            UpId();
-        }
+        public ItemTallGrass(EnumItem enumItem, int numberTexture)
+            : base(Blocks.GetBlockCache(EnumBlock.TallGrass), enumItem, numberTexture, -1) { }
 
         public override string GetName() => "item." + EItem;
 

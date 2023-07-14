@@ -1,4 +1,6 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
@@ -6,7 +8,7 @@ namespace MvkServer.World.Block.List
     /// <summary>
     /// Блок длинной травы
     /// </summary>
-    public class BlockTallGrass : BlockAbSapling
+    public class BlockTallGrass : BlockAbPlants
     {
         /***
          * Met
@@ -70,11 +72,6 @@ namespace MvkServer.World.Block.List
         }
 
         /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
-
-        /// <summary>
         /// Действие перед размещеннием блока, для определения метданных
         /// </summary>
         public override BlockState OnBlockPlaced(WorldBase worldIn, BlockPos blockPos, BlockState state, Pole side, vec3 facing) 
@@ -104,5 +101,21 @@ namespace MvkServer.World.Block.List
                 worldIn.SetBlockStateMet(blockPos, 1);
             }
         }
+
+        #region Drop
+
+        /// <summary>
+        /// Получите количество выпавших на основе данного уровня удачи
+        /// </summary>
+        protected override int QuantityDroppedWithBonus(ItemAbTool itemTool, Rand random) 
+            => (itemTool != null && itemTool.EItem == EnumItem.AxeSteel) || random.Next(10) == 0 ? 1 : 0;
+
+        /// <summary>
+        /// Получите предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool) 
+            => Items.GetItemCache(EnumItem.DryGrass);
+
+        #endregion
     }
 }

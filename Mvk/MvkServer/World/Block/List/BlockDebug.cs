@@ -24,7 +24,7 @@ namespace MvkServer.World.Block.List
             IsReplaceable = true;
             LightOpacity = 0;
             //LightValue = 15;
-            Material = EnumMaterial.Debug;
+            Material = Materials.GetMaterialCache(EnumMaterial.Debug);
             //InitBoxs();
         }
 

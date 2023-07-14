@@ -20,9 +20,10 @@ namespace MvkServer.World.Block.List
             NeedsRandomTick = true;
             IsCollidable = false;
             SetUnique(true);
-            Material = EnumMaterial.Interior;
+            Material = Materials.GetMaterialCache(EnumMaterial.VegetableProtein);
             Particle = 208;
             Resistance = .2f;
+            canDropPresent = false;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             quads = new QuadSide[][] { new QuadSide[] {
                 new QuadSide(1).SetTexture(Particle).SetSide(0, true, 0, 0, 0, 16, 0, 16),
@@ -78,11 +79,6 @@ namespace MvkServer.World.Block.List
         /// Спавн предмета при разрушении этого блока
         /// </summary>
         //public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
-
-        /// <summary>
-        /// Возвращает количество предметов, которые выпадают при разрушении блока.
-        /// </summary>
-        public override int QuantityDropped(Rand random) => 0;
 
         public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
         {

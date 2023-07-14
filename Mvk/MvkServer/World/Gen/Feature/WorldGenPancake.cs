@@ -40,14 +40,14 @@ namespace MvkServer.World.Gen.Feature
             // Центр блинчика от точки старта
             int center = rand.Next(h);
 
-            if (world.GetBlockState(blockPos).GetBlock().Material != EnumMaterial.Water)
+            if (world.GetBlockState(blockPos).GetBlock().Material.EMaterial != EnumMaterial.Water)
             {
                 return false;
             }
             while(true)
             {
                 blockPos = blockPos.OffsetDown();
-                if (world.GetBlockState(blockPos).GetBlock().Material != EnumMaterial.Water)
+                if (world.GetBlockState(blockPos).GetBlock().Material.EMaterial != EnumMaterial.Water)
                 {
                     break;
                 }

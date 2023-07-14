@@ -1,5 +1,6 @@
 ﻿using MvkServer.Entity;
 using MvkServer.Glm;
+using MvkServer.Item;
 
 namespace MvkClient.Renderer.Model
 {
@@ -22,51 +23,52 @@ namespace MvkClient.Renderer.Model
         protected override void SetRotationAngles(EntityLiving entity, float limbSwing,
             float limbSwingAmount, float ageInTicks, float headYaw, float headPitch, float scale)
         {
+            BoxArmRight.RotateAngleX = 4;
+            BoxArmRight.RotateAngleY = 0;
             BoxArmRight.RotationPointZ = 0;
-            BoxArmRight.RotateAngleX = glm.pi270;
+            BoxArmRight.RotationPointX = 0;
+            BoxArmRight.RotationPointY = 0;
 
             if (entity.IsEating())
             {
                 // Принимает пищу
-                BoxArmRight.RotateAngleX -= .673f;
-                BoxArmRight.RotationPointX = -4; 
-                BoxArmRight.RotationPointY = -4;
-                BoxArmRight.RotationPointX += glm.cos(ageInTicks * 0.9f) * 0.3f + 0.3f;
+                BoxArmRight.RotationPointY = -2;
+                BoxArmRight.RotationPointX = -2 - glm.cos(ageInTicks * 0.9f) * 0.3f + 0.3f;
+                BoxArmRight.RotateAngleX = 3.6875f;
+                BoxArmRight.RotateAngleZ = .25f;
+                BoxArmRight.RotateAngleY = -.75f;
             }
             else if (SwingProgress > 0)
             {
-                // Удар правой руки
-                //float inv = 1.0f - SwingProgress;
-                //float sp = 1.0f - inv * inv;
-                //float s1 = glm.sin(sp * glm.pi);
-                //float s2 = glm.sin(SwingProgress * glm.pi);
-                //boxArmRight.RotateAngleX -= s1 * .6f + s2;
-                //boxArmRight.RotateAngleZ = glm.pi45 * inv;
-                //boxArmRight.RotationPointX = -4 * inv;
-                //boxArmRight.RotationPointY = -6 * inv;
-
-                // Удар правой руки
-
-                float inv = 1.0f - SwingProgress;
-                float sp = inv * inv;
+                float sp = 1 - SwingProgress;
                 sp *= sp;
-                float s1 = glm.sin(sp);
+                sp *= sp;
+                float s1 = glm.sin(sp) * .8f;
                 float s2 = glm.sin(SwingProgress);
-                BoxArmRight.RotateAngleX -= s1 * .8f;// + s2 * .5f;
-                //boxArmRight.RotateAngleY = glm.sin(Mth.Sqrt(sp) * glm.pi) * .4f;
-                //boxArmRight.RotateAngleZ = s2 * -.4f;
-                BoxArmRight.RotationPointX = -4 * sp; // -6
-                BoxArmRight.RotationPointY = -4 * sp; // -6
+                // Удар правой руки
+                if (entity.GetItemUseAction() == EnumItemAction.Shovel)
+                {
+                    float sp2 = SwingProgress - .3f;
+                    BoxArmRight.RotateAngleX += s1;
+                    BoxArmRight.RotateAngleY = s2 * -.8f;
+                    BoxArmRight.RotationPointZ = sp2 * -16;
+                    BoxArmRight.RotationPointY = 4;
+                }
+                else
+                {
+                    BoxArmRight.RotateAngleX += s1;
+                    BoxArmRight.RotateAngleZ = s1;
+                }
             }
             else
             {
-                BoxArmRight.RotateAngleY = glm.pi45;
-                BoxArmRight.RotateAngleZ = 0f;
-                BoxArmRight.RotationPointX = 0;
-                BoxArmRight.RotationPointY = 0;
+                if (entity.GetItemUseAction() == EnumItemAction.Shovel)
+                {
+                    BoxArmRight.RotationPointY = 4;
+                }
 
                 // Движение рук от дыхания
-                BoxArmRight.RotateAngleZ += glm.cos(ageInTicks * 0.09f) * 0.05f + 0.05f;
+                BoxArmRight.RotateAngleZ = glm.cos(ageInTicks * 0.09f) * 0.05f + 0.05f;
                 BoxArmRight.RotateAngleX += glm.sin(ageInTicks * 0.067f) * 0.05f;
             }
         }

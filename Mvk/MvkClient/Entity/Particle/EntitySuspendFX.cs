@@ -27,7 +27,7 @@ namespace MvkClient.Entity.Particle
             // Проверка столкновения
             MoveEntity(Motion);
 
-            if (World.GetBlockState(new BlockPos(Position)).GetBlock().Material != EnumMaterial.Water
+            if (World.GetBlockState(new BlockPos(Position)).GetBlock().Material.EMaterial != EnumMaterial.Water
                 || particleAge++ >= particleMaxAge) SetDead();
         }
     }

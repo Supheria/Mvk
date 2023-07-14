@@ -18,7 +18,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Блок бревна пальмы
         /// </summary>
-        public BlockLogPalm() : base(158, 157)
+        public BlockLogPalm() : base(158, 157, null)
         {
             leaves = EnumBlock.LeavesPalm;
             idLeaves = (int)leaves;
@@ -53,7 +53,7 @@ namespace MvkServer.World.Block.List
                     if ((enumBlock == EBlock && blockState.met == 0))
                     {
                         block = blockState.GetBlock();
-                        block.DropBlockAsItem(worldIn, bPos, blockState, 0);
+                        block.DropBlockAsItem(worldIn, bPos, blockState);
                         worldIn.SetBlockToAir(bPos);
                     }
                     else
@@ -76,7 +76,7 @@ namespace MvkServer.World.Block.List
                         if ((enumBlock == EBlock && blockState.met == 0) || enumBlock == leaves)
                         {
                             block = blockState.GetBlock();
-                            block.DropBlockAsItem(worldIn, bPos, blockState, 0);
+                            block.DropBlockAsItem(worldIn, bPos, blockState);
                             worldIn.SetBlockToAir(bPos);
                         }
                     }
@@ -100,7 +100,7 @@ namespace MvkServer.World.Block.List
                                     if ((enumBlock == EBlock && blockState.met == 0) || enumBlock == leaves)
                                     {
                                         block = blockState.GetBlock();
-                                        block.DropBlockAsItem(worldIn, bPos, blockState, 0);
+                                        block.DropBlockAsItem(worldIn, bPos, blockState);
                                         worldIn.SetBlockToAir(bPos);
                                     }
                                 }

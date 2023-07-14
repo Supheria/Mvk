@@ -238,7 +238,7 @@ namespace MvkServer.World
                         {
                             if (block.CanDropFromExplosion)
                             {
-                                block.DropBlockAsItemWithChance(world, blockPos, blockState, 1f / strength, 0);
+                                block.DropBlockAsItemWithChance(world, blockPos, blockState, 1f / strength);
                             }
                             world.SetBlockToAir(blockPos);
                         }

@@ -73,7 +73,7 @@ namespace MvkClient.Actions
             else if (key == 114) keyF3 = true; // F3
             else if (key == 27 || key == 18) World.ClientMain.Screen.InGameMenu(); // Esc или Alt
             else if (key == 116) ClientMain.Player.ViewCameraNext(); // F5
-            else if (key == 117) Debug.ScreenFileBiomeArea(World); // F6
+            //else if (key == 117) Debug.ScreenFileBiomeArea(World); // F6
             else if (key == 118)
             {
                 if (++Debug.IsDrawOrto > 5) Debug.IsDrawOrto = 0; // F7

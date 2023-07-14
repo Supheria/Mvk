@@ -35,7 +35,7 @@ namespace MvkClient.Entity.Particle
             MoveEntity(motion);
             motion = Motion * .85f;
 
-            if (World.GetBlockState(new BlockPos(GetBlockPos())).GetBlock().Material != EnumMaterial.Water
+            if (World.GetBlockState(new BlockPos(GetBlockPos())).GetBlock().Material.EMaterial != EnumMaterial.Water
                 || particleAge-- <= 0)
             {
                 SetDead();

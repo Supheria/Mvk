@@ -377,6 +377,11 @@ namespace MvkServer.Entity.List
             SendPacket(new PacketS08PlayerPosLook(Position, RotationYawHead, RotationPitch));
         }
 
+        /// <summary>
+        /// Задаём положение игрока на земле ли для сервера
+        /// </summary>
+        public void SetOnGroundServer(bool onGround) => OnGround = onGround;
+
         public override string ToString()
         {
             return "#" + Id + " " + name + "\r\n" + base.ToString();

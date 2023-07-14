@@ -230,6 +230,7 @@ namespace MvkClient.Renderer
         public static void LineWidth(float width) => gl.LineWidth(width);
 
         public static void Begin(uint mode) => gl.Begin(mode);
+        public static void BeginTriangles() => gl.Begin(OpenGL.GL_TRIANGLES);
         public static void End() => gl.End();
 
         /// <summary>

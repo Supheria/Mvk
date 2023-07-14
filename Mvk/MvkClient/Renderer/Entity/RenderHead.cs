@@ -35,7 +35,6 @@ namespace MvkClient.Renderer.Entity
                 GLRender.PushMatrix();
                 {
                     GLRender.CullEnable();
-                    GLRender.DepthDisable();
                     vec4 color = new vec4(1);
                     GLRender.Color(color);
                     GLWindow.Texture.BindTexture(texture);
@@ -47,13 +46,10 @@ namespace MvkClient.Renderer.Entity
                         GLRender.Translate(0, -eye, 0);
                         GLRender.Rotate(glm.degrees(renderManager.CameraRotationYaw), 0, 1, 0);
                         GLRender.Rotate(glm.degrees(-renderManager.CameraRotationPitch), 1, 0, 0);
-
                         GLWindow.gl.PushMatrix();
-                        {                        
+                        {
                             // Смещение руки примерно чтоб при ударе не виден разрыв, и в пасиве не сильно мешала
                             GLWindow.gl.Translate(-0.5f, 1.01f, -0.5f);
-                            // Руку поворачиваем чтоб видеи ребро
-                            GLRender.Rotate(65, 0, 0, 1);
                             RenderModel(entityLiving, limbSwing, limbSwingAmount, ageInTicks, yawHead, headPitch, .0625f);
                             // доп слой
                             LayerRenders(entityLiving, limbSwing, limbSwingAmount, timeIndex, ageInTicks, yawHead, headPitch, .0625f);
@@ -61,7 +57,6 @@ namespace MvkClient.Renderer.Entity
                         GLWindow.gl.PopMatrix();
                     }
                     GLRender.PopMatrix();
-                    GLRender.DepthEnable();
                 }
                 GLRender.PopMatrix();
             }

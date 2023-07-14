@@ -1,5 +1,6 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
@@ -16,7 +17,7 @@ namespace MvkServer.World.Block.List
         {
             this.hardness = hardness;
             this.dropItem = dropItem;
-            Material = EnumMaterial.Solid;
+            Material = Materials.GetMaterialCache(EnumMaterial.Solid);
             Particle = numberTexture;
             Resistance = resistance;
             InitQuads();
@@ -32,11 +33,11 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
         /// </summary>
-        public override ItemBase GetItemDropped(BlockState state, Rand rand, int fortune)
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool)
         {
             if (dropItem == EnumItem.Block)
             {
-                return base.GetItemDropped(state, rand, fortune);
+                return base.GetItemDropped(state, rand, itemTool);
             }
             return Items.GetItemCache(dropItem);
         }

@@ -35,7 +35,7 @@ namespace MvkClient.Renderer.Entity.Layers
             {
                 GLRender.PushMatrix();
                 ItemBase item = itemStack.Item;
-                if (entity.IsSneaking()) GLRender.Translate(0, .2f, 0);
+                if (!fromEyes && entity.IsSneaking()) GLRender.Translate(0, .2f, 0);
 
                 // Дублирование поворотов и смещения модели
                 modelRender.PostRender(.0625f);
@@ -44,10 +44,20 @@ namespace MvkClient.Renderer.Entity.Layers
                 if (item.EItem == EnumItem.Block && item is ItemBlock)
                 {
                     // Блок
-                    GLRender.Translate(0, .1875f, -.3125f);
-                    GLRender.Rotate(20, 1, 0, 0);
-                    GLRender.Rotate(45, 0, 1, 0);
-                    if (fromEyes) GLRender.Rotate(90, 1, 0, 0);
+                    if (fromEyes)
+                    {
+                        GLRender.Translate(.1f, .25f, -.3125f);
+                        GLRender.Rotate(30, 0, 0, 1);
+                        GLRender.Rotate(90, 1, 0, 0);
+                        GLRender.Rotate(75, 0, 1, 0);
+                    }
+                    else
+                    {
+                        GLRender.Translate(0, .1875f, -.3125f);
+                        GLRender.Rotate(20, 1, 0, 0);
+                        GLRender.Rotate(30, 1, 0, 0);
+                        GLRender.Rotate(45, 0, 1, 0);
+                    }
                     float size = .375f;
                     GLRender.Scale(-size, -size, size);
                 }
@@ -58,11 +68,27 @@ namespace MvkClient.Renderer.Entity.Layers
                     if (fromEyes)
                     {
                         // Режим с глаз
-                        GLRender.Translate(0, .25f, -.3125f);
-                        GLRender.Rotate(30, 0, 0, 1);
-                        GLRender.Rotate(180, 1, 0, 0);
-                        GLRender.Rotate(-20, 0, 1, 0);
-                        size = .675f;
+                        if (item.ItemUseAction == EnumItemAction.Axe)
+                        {
+                            GLRender.Translate(.08f, .26f, -.3125f);
+                            GLRender.Rotate(110, 1, 0, 0);
+                            GLRender.Rotate(-20, 0, 1, 0);
+                        }
+                        else if (item.ItemUseAction == EnumItemAction.Shovel)
+                        {
+                            GLRender.Scale(2);
+                            GLRender.Translate(.026f, .1f, -.15f);
+                            GLRender.Rotate(170, 1, 0, 0);
+                            GLRender.Rotate(30, 0, 1, 0);
+                        }
+                        else
+                        {
+                            GLRender.Translate(.12f, .25f, -.3125f);
+                            GLRender.Rotate(30, 0, 0, 1);
+                            GLRender.Rotate(135, 1, 0, 0);
+                            GLRender.Rotate(45, 0, 1, 0);
+                        }
+                        size = .5f;
                     }
                     else
                     {

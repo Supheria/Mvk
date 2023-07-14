@@ -17,12 +17,9 @@ namespace MvkServer.Item.List
         /// </summary>
         private readonly BlockUniDoor blockDoor;
 
-        public ItemDoor(EnumItem enumItem, int numberTexture, EnumBlock enumBlock)
+        public ItemDoor(EnumItem enumItem, int numberTexture, EnumBlock enumBlock) : base(enumItem, numberTexture, -1)
         {
-            EItem = enumItem;
-            NumberTexture = numberTexture;
             blockDoor = (BlockUniDoor)Blocks.GetBlockCache(enumBlock);
-            UpId();
         }
 
         /// <summary>
@@ -93,7 +90,7 @@ namespace MvkServer.Item.List
                             {
                                 if (!playerIn.IsCreativeMode)
                                 {
-                                    blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld, 0);
+                                    blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld);
                                 }
                             }
                         }

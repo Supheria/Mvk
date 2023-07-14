@@ -45,7 +45,8 @@ namespace MvkServer.World.Block.List
             IsReplaceable = true;
             LightValue = 15;
             IsParticle = false;
-            Material = EnumMaterial.Fire;
+            canDropPresent = false;
+            Material = Materials.GetMaterialCache(EnumMaterial.Fire);
             samplesStep = new AssetsSample[0];
             samplesBreak = new AssetsSample[] { AssetsSample.FireFizz };
             InitBoxs();
@@ -55,11 +56,6 @@ namespace MvkServer.World.Block.List
         /// Является ли блок проходимым, т.е. можно ли ходить через него
         /// </summary>
         public override bool IsPassable(int met) => true;
-
-        /// <summary>
-        /// Спавн предмета при разрушении этого блока
-        /// </summary>
-        public override void DropBlockAsItemWithChance(WorldBase worldIn, BlockPos blockPos, BlockState state, float chance, int fortune) { }
 
         /// <summary>
         /// Тон сэмпла сломанного блока,
@@ -444,7 +440,7 @@ namespace MvkServer.World.Block.List
                 BlockPos blockPosUp = blockPos.OffsetUp();
                 BlockState blockStateUp = world.GetBlockState(blockPosUp);
                 BlockBase blockUp = blockStateUp.GetBlock();
-                if (blockUp.Material == EnumMaterial.Sapling)
+                if (blockUp.Material.EMaterial == EnumMaterial.Sapling)
                 {
                     world.SetBlockToAir(blockPosUp);
                     if (CanBlockStay(world, blockPosUp))

@@ -13,7 +13,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockOil() : base()
         {
-            material = EnumMaterial.Oil;
+            materialLiquid = EnumMaterial.Oil;
             eBlock = EnumBlock.Oil;
             eBlockFlowing = EnumBlock.OilFlowing;
             tickRate = 15;
@@ -25,7 +25,7 @@ namespace MvkServer.World.Block.List
             IgniteOddsSunbathing = 100;
             BurnOdds = 100;
             LightOpacity = 1;
-            Material = EnumMaterial.Oil;
+            Material = Materials.GetMaterialCache(EnumMaterial.Oil);
             samplesStep = new AssetsSample[0];
             samplesBreak = new AssetsSample[] { AssetsSample.BucketEmptyLava1, AssetsSample.BucketEmptyLava2, AssetsSample.BucketEmptyLava3 };
             samplesPut = new AssetsSample[] { AssetsSample.BucketFillLava1, AssetsSample.BucketFillLava2, AssetsSample.BucketFillLava3 };

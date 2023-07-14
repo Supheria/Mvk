@@ -127,7 +127,7 @@ namespace MvkServer.Entity.AI
         /// Проверка нахождении нужного блока
         /// </summary>
         protected virtual bool Check(int x, int y, int z) 
-            => isSapling ? entity.World.GetBlockState(new BlockPos(x, y, z)).GetBlock().Material == EnumMaterial.Sapling
+            => isSapling ? entity.World.GetBlockState(new BlockPos(x, y, z)).GetBlock().Material.EMaterial == EnumMaterial.Sapling
                 : entity.World.GetBlockState(new BlockPos(x, y - 1, z)).GetEBlock() == EnumBlock.Turf;
 
         /// <summary>
@@ -166,7 +166,7 @@ namespace MvkServer.Entity.AI
         /// </summary>
         private void Action(BlockPos blockPos)
         {
-            if (entity.World.GetBlockState(blockPos).GetBlock().Material == EnumMaterial.Sapling)
+            if (entity.World.GetBlockState(blockPos).GetBlock().Material.EMaterial == EnumMaterial.Sapling)
             {
                 entity.World.SetBlockToAir(blockPos, 31);
                 Eat();

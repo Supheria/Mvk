@@ -1,4 +1,6 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -23,12 +25,17 @@ namespace MvkServer.World.Block.List
         /// Блок древисины к которому принадлежит листва
         /// </summary>
         protected readonly EnumBlock eBlockLog;
+        /// <summary>
+        /// Блок саженца к которому принадлежит листва
+        /// </summary>
+        protected readonly EnumBlock eBlockSapling;
 
-        public BlockUniLeaves(int numberTexture, EnumBlock eBlockLog, bool fetus = false)
+        public BlockUniLeaves(int numberTexture, EnumBlock eBlockLog, EnumBlock eBlockSapling, bool fetus = false)
         {
             this.fetus = fetus;
             this.eBlockLog = eBlockLog;
-            Material = EnumMaterial.Leaves;
+            this.eBlockSapling = eBlockSapling;
+            Material = Materials.GetMaterialCache(EnumMaterial.Leaves);
             UseNeighborBrightness = true;
             IsCollidable = false;
             NeedsRandomTick = fetus;
@@ -48,10 +55,38 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public override bool IsSlow(BlockState state) => true;
 
+        #region Drop
+
         /// <summary>
-        /// Возвращает количество предметов, которые выпадают при разрушении блока.
+        /// Получите количество ДОПОЛНИТЕЛЬНЫХ предметов выпавших на основе данного уровня удачи
         /// </summary>
-        public override int QuantityDropped(Rand random) => 0;
+        protected override int QuantityDroppedWithBonusAdditional(ItemAbTool itemTool, Rand random) 
+            => (itemTool == null ? 0 : itemTool.Level) > 0 ? random.Next(2) : 0;
+
+        /// <summary>
+        /// Получите предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool)
+        {
+            if (rand.Next(10) == 0) return Items.GetItemCache(EnumItem.Stick);
+            return null;
+        }
+
+        /// <summary>
+        /// Получите ДОПОЛНИТЕЛЬНЫЙ предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        protected override ItemBase GetItemDroppedAdditional(BlockState state, Rand rand, ItemAbTool itemTool)
+        {
+            int levelTool = itemTool == null ? 0 : itemTool.Level;
+            return levelTool > 0 ? rand.Next(50 - levelTool * 10) == 0 ? Items.GetItemCache(eBlockSapling) : Items.GetItemCache(EnumItem.Stick) : null;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
+        /// </summary>
+        //public override int Hardness(BlockState state) => 2;
 
         /// <summary>
         /// Коробки для рендера 
@@ -87,7 +122,7 @@ namespace MvkServer.World.Block.List
         {
             if (!CanBlockStay(worldIn, blockPos, neighborState.met))
             {
-                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
+                DropBlockAsItem(worldIn, blockPos, neighborState);
                 worldIn.SetBlockToAir(blockPos, 15);
             }
         }

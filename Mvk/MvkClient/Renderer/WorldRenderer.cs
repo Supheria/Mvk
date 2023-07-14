@@ -122,13 +122,13 @@ namespace MvkClient.Renderer
         /// </summary>
         private uint dlStar = 0;
         /// <summary>
-        /// Карта всех блоков для GUI
+        /// Массив всех блоков для GUI
         /// </summary>
-        private readonly Dictionary<EnumBlock, RenderBlockGui> mapBlocksGui = new Dictionary<EnumBlock, RenderBlockGui>();
+        private readonly RenderBlockGui[] arrayBlocksGui;
         /// <summary>
-        /// Карта всех предметов для GUI
+        /// Массив всех предметов для GUI
         /// </summary>
-        private readonly Dictionary<EnumItem, RenderItemGui> mapItemsGui = new Dictionary<EnumItem, RenderItemGui>();
+        private readonly RenderItemGui[] arrayItemsGui;
 
         /// <summary>
         /// Угол солнца
@@ -190,21 +190,22 @@ namespace MvkClient.Renderer
             renderBlockCursor = new RenderBlockCursor(ClientMain);
             renderChunkCursor = new RenderChunkCursor { IsHidden = true };
 
+            arrayBlocksGui = new RenderBlockGui[BlocksCount.COUNT + 1];
             for (int i = 0; i <= BlocksCount.COUNT; i++)
             {
                 EnumBlock enumBlock = (EnumBlock)i;
                 RenderBlockGui renderBlock = new RenderBlockGui(enumBlock);
-                mapBlocksGui.Add(enumBlock, renderBlock);
+                arrayBlocksGui[i] = renderBlock;
                 renderBlock.Render();
             }
+            arrayItemsGui = new RenderItemGui[ItemsCount.COUNT + 1];
             for (int i = 1; i <= ItemsCount.COUNT; i++)
             {
                 EnumItem enumItem = (EnumItem)i;
                 RenderItemGui renderItem = new RenderItemGui(enumItem);
-                mapItemsGui.Add(enumItem, renderItem);
+                arrayItemsGui[i] = renderItem;
                 renderItem.Render();
             }
-
             
             // Отладочный блок
             //  mapBlocksGui.Add(EnumBlock.Debug, new RenderBlockGui(EnumBlock.Debug));
@@ -346,7 +347,8 @@ namespace MvkClient.Renderer
             if (!ClientMain.Player.IsInvisible() && ClientMain.Player.ViewCamera == EnumViewCamera.Eye)
             {
                 // Матрица камеры
-                ClientMain.Player.MatrixProjection(0);
+                ClientMain.Player.MatrixProjection(-.2f);
+                GLRender.DepthEnable();
                 World.RenderEntityManager.RenderEntity(ClientMain.Player, timeIndex);
             }
             GLRender.TextureLightmapDisable();
@@ -952,12 +954,12 @@ namespace MvkClient.Renderer
         /// <summary>
         /// Получить рендовый объект блока для GUI
         /// </summary>
-        public RenderBlockGui GetBlockGui(EnumBlock enumBlock) => mapBlocksGui[enumBlock];
+        public RenderBlockGui GetBlockGui(EnumBlock enumBlock) => arrayBlocksGui[(int)enumBlock];
 
         /// <summary>
         /// Получить рендовый объект предмета для GUI
         /// </summary>
-        public RenderItemGui GetItemGui(EnumItem enumItem) => mapItemsGui[enumItem];
+        public RenderItemGui GetItemGui(EnumItem enumItem) => arrayItemsGui[(int)enumItem];
 
         /// <summary>
         /// Рендер и прорисовка курсора выбранного блока по AABB

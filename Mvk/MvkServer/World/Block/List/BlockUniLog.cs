@@ -1,5 +1,8 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Util;
+using MvkServer.World.Gen.Feature;
 
 namespace MvkServer.World.Block.List
 {
@@ -16,17 +19,22 @@ namespace MvkServer.World.Block.List
          * 4/5 - бок, игрок
          * 6 - вверх, генерация, нижний блок для пня
          */
-
         
         /// <summary>
         /// Длинна максимальной ветки
         /// </summary>
         private readonly int stepBranchMax = 8;
+        /// <summary>
+        /// Объект для генерации дерева
+        /// </summary>
+        private readonly WorldGenTree2 worldGenTree;
 
-        public BlockUniLog(int numberTextureButt, int numberTextureSide, int stepBranchMax = 1) 
+        public BlockUniLog(int numberTextureButt, int numberTextureSide, WorldGenTree2 worldGenTree, int stepBranchMax = 1) 
             : base(numberTextureButt, numberTextureSide)
         {
+            this.worldGenTree = worldGenTree;
             this.stepBranchMax = stepBranchMax;
+            NeedsRandomTick = worldGenTree != null;
             Combustibility = true;
             IgniteOddsSunbathing = 5;
             BurnOdds = 10;
@@ -37,6 +45,37 @@ namespace MvkServer.World.Block.List
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
         public override int Hardness(BlockState state) => state.met == 6 ? 100 : 30;
+
+        #region Drop
+
+        /// <summary>
+        /// Получите количество выпавших на основе данного уровня удачи
+        /// </summary>
+        protected override int QuantityDroppedWithBonus(ItemAbTool itemTool, Rand random) 
+            => itemTool != null ? itemTool.Level == 0 ? 0 : 1 : 0;
+
+        /// <summary>
+        /// Получите количество ДОПОЛНИТЕЛЬНЫХ предметов выпавших на основе данного уровня удачи
+        /// </summary>
+        protected override int QuantityDroppedWithBonusAdditional(ItemAbTool itemTool, Rand random) => random.Next(2);
+
+        /// <summary>
+        /// Получите предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool)
+        {
+            // 3 = 60%, 2 = 40%, 1 = 20%, 0 = 0%
+            if (rand.Next(5) < (itemTool == null ? 0 : itemTool.Level)) return Items.GetItemCache(state.id);
+            return Items.GetItemCache(rand.Next(2) == 0 ? EnumItem.WoodChips : EnumItem.Stick);
+        }
+
+        /// <summary>
+        /// Получите ДОПОЛНИТЕЛЬНЫЙ предмет, который должен выпасть из этого блока при сборе.
+        /// </summary>
+        protected override ItemBase GetItemDroppedAdditional(BlockState state, Rand rand, ItemAbTool itemTool) 
+            => Items.GetItemCache(rand.Next((itemTool == null ? 0 : itemTool.Level) + 5) < 4 ? EnumItem.WoodChips : EnumItem.Stick);
+
+        #endregion
 
         /// <summary>
         /// Стороны целого блока для рендера 0 - 5 стороны
@@ -108,7 +147,7 @@ namespace MvkServer.World.Block.List
                 // Удаление веток
                 TrunkBranchBreaks(worldIn, blockPos, id);
                 // Разрушаем блок ствола
-                DropBlockAsItem(worldIn, blockPos, new BlockState(EBlock), 0);
+                DropBlockAsItem(worldIn, blockPos, new BlockState(EBlock));
                 worldIn.SetBlockToAir(blockPos);
             }
         }
@@ -200,7 +239,7 @@ namespace MvkServer.World.Block.List
                 }
             }
             // Разрушаем блок ветки
-            DropBlockAsItem(worldIn, pos, new BlockState(EBlock), 0);
+            DropBlockAsItem(worldIn, pos, new BlockState(EBlock));
             worldIn.SetBlockToAir(pos);
             if (step < stepBranchMax)
             {
@@ -218,7 +257,7 @@ namespace MvkServer.World.Block.List
             if (BranchCheckState(worldIn, pos, id, met) == 1)
             {
                 // Разрушаем блок ветки
-                DropBlockAsItem(worldIn, pos, new BlockState(EBlock), 0);
+                DropBlockAsItem(worldIn, pos, new BlockState(EBlock));
                 worldIn.SetBlockToAir(pos);
                 // Продолжаем разрушать ветку
                 BranchBreak(worldIn, pos, vec, id, met, 1);
@@ -265,6 +304,69 @@ namespace MvkServer.World.Block.List
         }
 
         #endregion
+
+        public override void RandomTick(WorldBase world, BlockPos blockPos, BlockState blockState, Rand random)
+        {
+            if (random.Next(16) == 0)
+            {
+                EnumTimeYear enumTimeYear = world.GetTimeYear();
+                if (enumTimeYear == EnumTimeYear.Spring && enumTimeYear == EnumTimeYear.Summer)
+                {
+                    int met = blockState.met;
+                    int side = 0;
+                    bool growth = false;
+                    if (met == 1)
+                    {
+                        blockPos.X++;
+                        BlockState blockStateSide = world.GetBlockState(blockPos);
+                        if (blockStateSide.IsAir() && blockStateSide.lightSky > 10)
+                        {
+                            side = 1;
+                            blockPos.X--;
+                            growth = true;
+                        }
+                        if (!growth)
+                        {
+                            blockPos.X -= 2;
+                            blockStateSide = world.GetBlockState(blockPos);
+                            if (blockStateSide.IsAir() && blockStateSide.lightSky > 10)
+                            {
+                                side = 3;
+                                blockPos.X++;
+                                growth = true;
+                            }
+                        }
+                    }
+                    else if (met == 2)
+                    {
+                        blockPos.Z++;
+                        BlockState blockStateSide = world.GetBlockState(blockPos);
+                        if (blockStateSide.IsAir() && blockStateSide.lightSky > 10)
+                        {
+                            side = 0;
+                            blockPos.Z--;
+                            growth = true;
+                        }
+                        if (!growth)
+                        {
+                            blockPos.Z -= 2;
+                            blockStateSide = world.GetBlockState(blockPos);
+                            if (blockStateSide.IsAir() && blockStateSide.lightSky > 10)
+                            {
+                                side = 2;
+                                blockPos.Z++;
+                                growth = true;
+                            }
+                        }
+                    }
+                    if (growth)
+                    {
+                        // Рост веток
+                        worldGenTree.GenerateFoliageBranch(world, blockPos, side);
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Инициализация коробок

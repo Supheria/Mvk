@@ -13,7 +13,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockLava() : base()
         {
-            material = EnumMaterial.Lava;
+            materialLiquid = EnumMaterial.Lava;
             eBlock = EnumBlock.Lava;
             eBlockFlowing = EnumBlock.LavaFlowing;
             tickRate = 30;
@@ -25,7 +25,7 @@ namespace MvkServer.World.Block.List
             // Translucent = true; 
             // LightOpacity = 4;
             LightValue = 15;
-            Material = EnumMaterial.Lava;
+            Material = Materials.GetMaterialCache(EnumMaterial.Lava);
             samplesStep = new AssetsSample[0];
             samplesBreak = new AssetsSample[] { AssetsSample.BucketEmptyLava1, AssetsSample.BucketEmptyLava2, AssetsSample.BucketEmptyLava3 };
             samplesPut = new AssetsSample[] { AssetsSample.BucketFillLava1, AssetsSample.BucketFillLava2, AssetsSample.BucketFillLava3 };

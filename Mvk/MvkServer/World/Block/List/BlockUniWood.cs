@@ -35,7 +35,7 @@ namespace MvkServer.World.Block.List
             Combustibility = true;
             IgniteOddsSunbathing = 10;
             BurnOdds = 20;
-            Material = EnumMaterial.Wood;
+            Material = Materials.GetMaterialCache(EnumMaterial.Wood);
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigWood1, AssetsSample.DigWood2, AssetsSample.DigWood3, AssetsSample.DigWood4 };
             samplesStep = new AssetsSample[] { AssetsSample.StepWood1, AssetsSample.StepWood2, AssetsSample.StepWood3, AssetsSample.StepWood4 };
             Particle = numberTextureButt;

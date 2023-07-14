@@ -1,75 +1,86 @@
 ﻿namespace MvkServer.World.Block
 {
     /// <summary>
-    /// Фигня! ... заменить
+    /// Объект материала блока
     /// </summary>
-    //public struct MaterialBase
-    //{
-    //    public static MaterialBase Air() => new MaterialBase(true, true, false, false);
-    //    public static MaterialBase Water() => new MaterialBase(true, true, false, true);
-    //    public static MaterialBase Test() => new MaterialBase(true, true, true, false);
-    //    public static MaterialBase Stone() => new MaterialBase(false, false, false, false);
-    //    public static MaterialBase Dirt() => new MaterialBase(false, false, true, false);
-    //    public static MaterialBase Turf() => new MaterialBase(false, false, true, false);
-    //    public static MaterialBase Glass() => new MaterialBase(false, true, false, false);
+    public class MaterialBase
+    {
+        /// <summary>
+        /// Получить тип материала
+        /// </summary>
+        public EnumMaterial EMaterial { get; protected set; }
+        /// <summary>
+        /// Возвращает, если блоки этих материалов являются жидкостями
+        /// </summary>
+        public bool IsLiquid { get; protected set; } = false;
+        /// <summary>
+        /// Не требует инструмента для разрушения блока
+        /// </summary>
+        public bool RequiresNoTool { get; protected set; } = false;
+        /// <summary>
+        /// Является ли блок стеклянным, блок или панель
+        /// </summary>
+        public bool Glass { get; protected set; } = false;
+        /// <summary>
+        /// Дёрн не сохнет, под этим блоком
+        /// </summary>
+        public bool TurfDoesNotDry { get; protected set; } = false;
+        /// <summary>
+        /// Воспламеняет (лава или огонь)
+        /// </summary>
+        public bool Ignites { get; protected set; } = false;
+        
 
-    //    /// <summary>
-    //    /// Определяет, могут ли блоки с этим материалом быть «переписаны» другими блоками при размещении — например, снегом, лианами и высокой травой
-    //    /// </summary>
-    //    private readonly bool replaceable;
-    //    /// <summary>
-    //    /// Указывает, является ли материал прозрачным
-    //    /// </summary>
-    //    private readonly bool isTranslucent;
-    //    /// <summary>
-    //    /// Определяет, можно ли собрать материал без инструмента (или с неправильным инструментом)
-    //    /// </summary>
-    //    private readonly bool requiresNoTool;
-    //    /// <summary>
-    //    /// Возвращает, если блоки этих материалов являются жидкостями
-    //    /// </summary>
-    //    private readonly bool isLiquid;
+        public MaterialBase(EnumMaterial enumMaterial) => EMaterial = enumMaterial;
 
-    //    /// <summary>
-    //    /// Индекс цвета, используемый для рисования блоков этого материала на картах.
-    //    /// </summary>
-    //    //private final MapColor materialMapColor;
-    //    /// <summary>
-    //    /// Логическое определение, может ли блок гореть или нет
-    //    /// </summary>
-    //    //private bool canBurn;
+        /// <summary>
+        /// Задать материал жидкостью
+        /// </summary>
+        public MaterialBase Liquid()
+        {
+            IsLiquid = true;
+            return this;
+        }
 
+        /// <summary>
+        /// Задать Не требует инструмента для разрушения блока
+        /// </summary>
+        public MaterialBase SetRequiresNoTool()
+        {
+            RequiresNoTool = true;
+            return this;
+        }
 
-    //    /// <summary>
-    //    /// Флаг информации о мобильности. 0 указывает, что этот блок нормальный, 
-    //    /// 1 указывает, что он не может толкать другие блоки, 2 указывает, что его нельзя толкать.
-    //    /// </summary>
-    //    //private int mobilityFlag;
-    //    //private bool isAdventureModeExempt;
+        /// <summary>
+        /// Задать Является ли блок стеклянным, блок или панель
+        /// </summary>
+        public MaterialBase SetGlass()
+        {
+            Glass = true;
+            return this;
+        }
 
-    //    private MaterialBase(bool replaceable, bool isTranslucent, bool requiresNoTool, bool isLiquid)
-    //    {
-    //        this.replaceable = replaceable;
-    //        this.isTranslucent = isTranslucent;
-    //        this.requiresNoTool = requiresNoTool;
-    //        this.isLiquid = isLiquid;
-    //    }
+        /// <summary>
+        /// Задать Дёрн не сохнет, под этим блоком
+        /// </summary>
+        public MaterialBase SetTurfDoesNotDry()
+        {
+            TurfDoesNotDry = true;
+            return this;
+        }
 
-    //    /// <summary>
-    //    /// Определяет, могут ли блоки с этим материалом быть «переписаны» другими блоками при размещении — например, снегом, лианами и высокой травой
-    //    /// </summary>
-    //    public bool Replaceable() => replaceable;
-    //    /// <summary>
-    //    /// Указывает, является ли материал прозрачным
-    //    /// </summary>
-    //    public bool IsTranslucent() => isTranslucent;
-    //    /// <summary>
-    //    /// Определяет, можно ли собрать материал без инструмента (или с неправильным инструментом)
-    //    /// </summary>
-    //    public bool RequiresNoTool() => requiresNoTool;
-    //    /// <summary>
-    //    /// Возвращает, если блоки этих материалов являются жидкостями
-    //    /// </summary>
-    //    public bool IsLiquid() => isLiquid;
-    //}
+        /// <summary>
+        /// Задать воспламенение (огонь или лава)
+        /// </summary>
+        public MaterialBase SetIgnites()
+        {
+            Ignites = true;
+            return this;
+        }
+
+        /// <summary>
+        /// Строка
+        /// </summary>
+        public override string ToString() => EMaterial.ToString();
+    }
 }

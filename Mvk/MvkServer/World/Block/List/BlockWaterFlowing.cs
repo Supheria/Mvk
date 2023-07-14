@@ -19,7 +19,7 @@ namespace MvkServer.World.Block.List
             Translucent = true;
             BiomeColor = true;
             LightOpacity = 0;
-            Material = EnumMaterial.Water;
+            Material = Materials.GetMaterialCache(EnumMaterial.Water);
             sideLiquids = new SideLiquid[]
             {
                 new SideLiquid(0, 63, 3, 32, 2),

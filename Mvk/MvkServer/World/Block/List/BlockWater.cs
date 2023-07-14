@@ -15,7 +15,7 @@ namespace MvkServer.World.Block.List
             Translucent = true;
             BiomeColor = true;
             LightOpacity = 1;
-            Material = EnumMaterial.Water;
+            Material = Materials.GetMaterialCache(EnumMaterial.Water);
             samplesBreak = new AssetsSample[] { AssetsSample.BucketEmptyWater1, AssetsSample.BucketEmptyWater2, AssetsSample.BucketEmptyWater3 };
             samplesPut = new AssetsSample[] { AssetsSample.BucketFillWater1, AssetsSample.BucketFillWater2, AssetsSample.BucketFillWater3 };
 

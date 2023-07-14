@@ -17,14 +17,10 @@ namespace MvkServer.Item.List
         /// </summary>
         protected BlockBase blockFire;
 
-        public ItemFlintAndSteel()
+        public ItemFlintAndSteel() : base(EnumItem.FlintAndSteel, 100, 1)
         {
             blockFire = Blocks.GetBlockCache(EnumBlock.Fire);
-            EItem = EnumItem.FlintAndSteel;
-            NumberTexture = 100;
             MaxDamage = 5;
-            MaxStackSize = 1;
-            UpId();
         }
 
         /// <summary>
@@ -55,10 +51,10 @@ namespace MvkServer.Item.List
                     {
                         if (!playerIn.IsCreativeMode)
                         {
-                            blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld, 0);
+                            blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld);
                             if (stack.Item != null)
                             {
-                                stack.DamageItem(1, playerIn, blockPos);
+                                stack.DamageItem(worldIn, 1, playerIn, blockPos);
                             }
                         }
                         worldIn.PlaySound(playerIn, AssetsSample.FireIgnite, blockPos.ToVec3() + .5f, 1f, worldIn.Rnd.NextFloat() * .4f + .8f);

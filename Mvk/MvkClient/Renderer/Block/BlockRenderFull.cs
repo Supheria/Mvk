@@ -146,8 +146,9 @@ namespace MvkClient.Renderer.Block
             {
                 if (!(!blockCheck.BlocksNotSame && blockCheck.Material == block.Material))
                 {
+                    EnumMaterial material = blockCheck.Material.EMaterial;
                     return (storage.lightBlock[i] << 4 | storage.lightSky[i] & 0xF)
-                        + ((block.Material == EnumMaterial.Water && (blockCheck.Material == EnumMaterial.Glass || blockCheck.Material == EnumMaterial.Oil)) ? 1024 : 0);
+                        + ((block.Material.EMaterial == EnumMaterial.Water && (material == EnumMaterial.Glass || material == EnumMaterial.Oil)) ? 1024 : 0);
                 }
             }
             return -1;
@@ -380,7 +381,7 @@ namespace MvkClient.Renderer.Block
             if (chunkCheck == null || !chunkCheck.IsChunkPresent)
             {
                 aoLight.lightSky = 15;
-                aoLight.color = colorWhite;
+                aoLight.color = color;
                 aoLight.aol = 1;
                 return aoLight;
             }
@@ -411,7 +412,6 @@ namespace MvkClient.Renderer.Block
             id = id & 0xFFF;
             blockCheck = Blocks.blocksInt[id];
             aoLight.aoc = blockCheck.АmbientOcclusion ? 1 : 0;
-            // TODO::2023-06-16 fix в воде AO работает
             aoLight.aol = blockCheck.IsNotTransparent() || (blockCheck.Liquid && block.Liquid) ? 0 : 1;
 
             isDraw = id == 0 || blockCheck.AllSideForcibly;

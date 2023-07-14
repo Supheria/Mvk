@@ -20,6 +20,7 @@ namespace MvkServer.Entity.List
             samplesStep = new AssetsSample[] { AssetsSample.MobPakanStep1, AssetsSample.MobPakanStep2, AssetsSample.MobPakanStep3, AssetsSample.MobPakanStep4 };
             samplesHurt = new AssetsSample[] { AssetsSample.MobPakanDamage1, AssetsSample.MobPakanDamage2 };
             Speed = .1f;
+            persistenceRequired = true;
             if (!world.IsRemote)
             {
                 ((PathNavigateGround)navigator).SetAvoidLavaOrFire(false);
@@ -107,6 +108,10 @@ namespace MvkServer.Entity.List
         //    }
         //}
 
-        public override bool WriteEntityToNBToptional(TagCompound nbt) => false;
+        /// <summary>
+        /// Либо запишите эту сущность в указанный тег NBT и верните true, либо верните false, ничего не делая.
+        /// Если это возвращает false объект не сохраняется на диске.
+        /// </summary>
+        //public override bool WriteEntityToNBToptional(TagCompound nbt) => false;
     }
 }

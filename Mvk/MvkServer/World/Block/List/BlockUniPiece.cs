@@ -1,6 +1,7 @@
 ﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
@@ -29,14 +30,14 @@ namespace MvkServer.World.Block.List
             Particle = numberTexture;
             SetUnique();
             IsReplaceable = true;
-            Material = EnumMaterial.Piece;
+            Material = Materials.GetMaterialCache(EnumMaterial.Piece);
             InitQuads();
         }
 
         /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
-        public override int Hardness(BlockState state) => 1;
+        public override int Hardness(BlockState state) => 10;
 
         /// <summary>
         /// Является ли блок проходимым, т.е. можно ли ходить через него
@@ -51,7 +52,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
         /// </summary>
-        public override ItemBase GetItemDropped(BlockState state, Rand rand, int fortune)
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool)
             => Items.GetItemCache(enumItem);
 
         /// <summary>
@@ -95,7 +96,7 @@ namespace MvkServer.World.Block.List
         {
             if (!CanBlockStay(worldIn, blockPos))
             {
-                DropBlockAsItem(worldIn, blockPos, neighborState, 0);
+                DropBlockAsItem(worldIn, blockPos, neighborState);
                 worldIn.SetBlockToAir(blockPos, 30);
             }
         }

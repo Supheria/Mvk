@@ -9,7 +9,7 @@ namespace MvkServer.World.Block.List
     {
         public BlockAbOre(int numberTexture)
         {
-            Material = EnumMaterial.Ore;
+            Material = Materials.GetMaterialCache(EnumMaterial.Ore);
             Particle = numberTexture;
             Resistance = 5.0f;
             InitQuads();

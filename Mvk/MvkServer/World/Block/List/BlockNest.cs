@@ -23,7 +23,7 @@ namespace MvkServer.World.Block.List
         public BlockNest()
         {
             SetUnique();
-            Material = EnumMaterial.Interior;
+            Material = Materials.GetMaterialCache(EnumMaterial.Interior);
             Particle = 960;
             Combustibility = true;
             IgniteOddsSunbathing = 30;

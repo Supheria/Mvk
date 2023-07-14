@@ -98,17 +98,17 @@
         /// </summary>
         FlintAndSteel = 22,
         /// <summary>
-        /// Топор
+        /// Топор железный
         /// </summary>
-        Axe = 23,
+        AxeIron = 23,
         /// <summary>
-        /// Лопата
+        /// Лопата железная
         /// </summary>
-        Shovel = 24,
+        ShovelIron = 24,
         /// <summary>
-        /// Кирка
+        /// Кирка железная
         /// </summary>
-        Pickaxe = 25,
+        PickaxeIron = 25,
         /// <summary>
         /// Земляной кусочек
         /// </summary>
@@ -193,6 +193,38 @@
         /// Половина кокоса
         /// </summary>
         HalfCoconut = 46,
+        /// <summary>
+        /// Топор стальной
+        /// </summary>
+        AxeSteel = 47,
+        /// <summary>
+        /// Топор каменный
+        /// </summary>
+        AxeStone = 48,
+        /// <summary>
+        /// Палка-копалка
+        /// </summary>
+        DiggingStick = 49,
+        /// <summary>
+        /// Лопата стальная
+        /// </summary>
+        ShovelSteel = 50,
+        /// <summary>
+        /// Палка
+        /// </summary>
+        Stick = 51,
+        /// <summary>
+        /// Щепа
+        /// </summary>
+        WoodChips = 52,
+        /// <summary>
+        /// Сухая трава
+        /// </summary>
+        DryGrass = 53,
+        /// <summary>
+        /// Кирка стальная
+        /// </summary>
+        PickaxeSteel = 54,
     }
 
     /// <summary>
@@ -200,6 +232,6 @@
     /// </summary>
     public class ItemsCount
     {
-        public const int COUNT = 46;
+        public const int COUNT = 54;
     }
 }

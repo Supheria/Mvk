@@ -1,6 +1,7 @@
 ﻿using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.World.Block.List;
+using MvkServer.World.Gen.Feature;
 
 namespace MvkServer.World.Block
 {
@@ -53,26 +54,26 @@ namespace MvkServer.World.Block
                 case EnumBlock.Oil: return new BlockOil();
                 case EnumBlock.OilFlowing: return new BlockOilFlowing();
                 case EnumBlock.Fire: return new BlockFire();
-                case EnumBlock.LogOak: return new BlockUniLog(129, 128, 8);
-                case EnumBlock.LogBirch: return new BlockUniLog(136, 135, 3);
-                case EnumBlock.LogSpruce: return new BlockUniLog(143, 142, 5);
-                case EnumBlock.LogFruit: return new BlockUniLog(150, 149, 6);
+                case EnumBlock.LogOak: return new BlockUniLog(129, 128, new WorldGenTreeOak2(), 8);
+                case EnumBlock.LogBirch: return new BlockUniLog(136, 135, new WorldGenTreeBirch2(), 3);
+                case EnumBlock.LogSpruce: return new BlockUniLog(143, 142, null, 5);
+                case EnumBlock.LogFruit: return new BlockUniLog(150, 149, new WorldGenTreeFruit2(), 6);
                 case EnumBlock.LogPalm: return new BlockLogPalm();
                 case EnumBlock.PlanksOak: return new BlockUniWood(131, 130);
                 case EnumBlock.PlanksBirch: return new BlockUniWood(138, 137);
                 case EnumBlock.PlanksSpruce: return new BlockUniWood(145, 144);
                 case EnumBlock.PlanksFruit: return new BlockUniWood(152, 151);
                 case EnumBlock.PlanksPalm: return new BlockUniWood(160, 159);
-                case EnumBlock.LeavesOak: return new BlockUniLeaves(1024, EnumBlock.LogOak);//1024
-                case EnumBlock.LeavesBirch: return new BlockUniLeaves(1030, EnumBlock.LogBirch);// new BlockUniLeaves(140);
-                case EnumBlock.LeavesSpruce: return new BlockUniLeaves(1036, EnumBlock.LogSpruce); // 1036
-                case EnumBlock.LeavesFruit: return new BlockUniLeaves(1042, EnumBlock.LogFruit, true);
-                case EnumBlock.LeavesPalm: return new BlockLeavesPalm();// BlockUniLeavesOld(162, true);
-                case EnumBlock.SaplingOak: return new BlockSaplingOak();
-                case EnumBlock.SaplingBirch: return new BlockSaplingBirch();
-                case EnumBlock.SaplingSpruce: return new BlockSaplingSpruce();
-                case EnumBlock.SaplingFruit: return new BlockSaplingFruit();
-                case EnumBlock.SaplingPalm: return new BlockSaplingPalm();
+                case EnumBlock.LeavesOak: return new BlockUniLeaves(1024, EnumBlock.LogOak, EnumBlock.SaplingOak);
+                case EnumBlock.LeavesBirch: return new BlockUniLeaves(1030, EnumBlock.LogBirch, EnumBlock.SaplingBirch);
+                case EnumBlock.LeavesSpruce: return new BlockUniLeaves(1036, EnumBlock.LogSpruce, EnumBlock.SaplingSpruce);
+                case EnumBlock.LeavesFruit: return new BlockUniLeaves(1042, EnumBlock.LogFruit, EnumBlock.SaplingFruit, true);
+                case EnumBlock.LeavesPalm: return new BlockLeavesPalm();
+                case EnumBlock.SaplingOak: return new BlockUniSapling(132, new WorldGenTreeOak2());
+                case EnumBlock.SaplingBirch: return new BlockUniSapling(139, new WorldGenTreeBirch2());
+                case EnumBlock.SaplingSpruce: return new BlockUniSapling(146, new WorldGenTreeSpruce2());
+                case EnumBlock.SaplingFruit: return new BlockUniSapling(153, new WorldGenTreeFruit2());
+                case EnumBlock.SaplingPalm: return new BlockUniSapling(161, new WorldGenTreePalm2());
                 case EnumBlock.Cactus: return new BlockCactus();
                 case EnumBlock.Grass: return new BlockGrass();
                 case EnumBlock.FlowerDandelion: return new BlockFlowerDandelion();
@@ -119,6 +120,8 @@ namespace MvkServer.World.Block
         /// </summary>
         public static void Initialized()
         {
+            // Инициализировать все материалы
+            Materials.Initialized();
             int count = BlocksCount.COUNT + 1;
             blocksInt = new BlockBase[count];
             blocksLightOpacity = new byte[count];

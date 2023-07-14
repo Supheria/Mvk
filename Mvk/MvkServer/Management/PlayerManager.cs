@@ -406,15 +406,6 @@ namespace MvkServer.Management
             // Тут проверяем место положение персонажа, и заносим при запуске
             World.SpawnEntityInWorld(entityPlayer);
             //entityPlayer.FlagSpawn = false;
-
-            // TODO::отладка 5 кур
-
-            //for (int i = 0; i < 3; i++)
-            //{
-            //    EntityChicken entityChicken = new EntityChicken(World);
-            //    entityChicken.SetPosition(entityPlayer.Position + new vec3(3, 100 + World.Rnd.Next(24), 0));
-            //    World.SpawnEntityInWorld(entityChicken);
-            //}
         }
 
         /// <summary>

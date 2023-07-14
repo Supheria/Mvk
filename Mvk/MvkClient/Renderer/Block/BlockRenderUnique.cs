@@ -21,7 +21,7 @@ namespace MvkClient.Renderer.Block
         /// <returns>сетка</returns>
         public override void RenderMesh()
         {
-            material = block.Material;
+            material = block.Material.EMaterial;
             xc = chunk.Position.x;
             zc = chunk.Position.y;
             yc = posChunkY >> 4;

@@ -1,6 +1,7 @@
 ﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Item;
+using MvkServer.Item.List;
 using MvkServer.Sound;
 using MvkServer.Util;
 
@@ -24,7 +25,7 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public BlockApple()
         {
-            Material = EnumMaterial.VegetableProtein;
+            Material = Materials.GetMaterialCache(EnumMaterial.VegetableProtein);
             Particle = 156;
             SetUnique(true);
             IsCollidable = false;
@@ -55,8 +56,8 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Получите предмет, который должен выпасть из этого блока при сборе.
         /// </summary>
-        public override ItemBase GetItemDropped(BlockState state, Rand rand, int fortune) 
-            => Items.GetItemCache(EnumItem.Coconut);
+        protected override ItemBase GetItemDropped(BlockState state, Rand rand, ItemAbTool itemTool) 
+            => Items.GetItemCache(EnumItem.Apple);
 
         /// <summary>
         /// Смена соседнего блока
@@ -68,7 +69,7 @@ namespace MvkServer.World.Block.List
                 if (worldIn.Rnd.Next(4) == 0)
                 {
                     // 25% шанса, что дропнется яблоко при разрушении листвы
-                    DropBlockAsItem(worldIn, blockPos, neighborState, 0);
+                    DropBlockAsItem(worldIn, blockPos, neighborState);
                 }
                 worldIn.SetBlockToAir(blockPos, 15);
             }
@@ -79,10 +80,10 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public override bool OnBlockActivated(WorldBase worldIn, EntityPlayer entityPlayer, BlockPos pos, BlockState state, Pole side, vec3 facing)
         {
+            worldIn.SetBlockToAir(pos);
             if (!worldIn.IsRemote)
             {
                 int met = state.met;
-                worldIn.SetBlockToAir(pos, 30);
                 if (met == 1 || met == 2)
                 {
                     // Берём

@@ -1354,7 +1354,7 @@ namespace MvkServer.Entity
                 // Звук в воде
                 SoundEffectWater(World.SampleSoundInTheWater(), .35f);
             }
-            else if (!IsSneaking() && blockDown.Material != EnumMaterial.Water && IsSampleStep(blockDown))
+            else if (!IsSneaking() && blockDown.Material.EMaterial != EnumMaterial.Water && IsSampleStep(blockDown))
             {
                 // Звук шага
                 World.PlaySound(this, SampleStep(World, blockDown), Position, .25f, 1f);
@@ -1462,7 +1462,12 @@ namespace MvkServer.Entity
         /// <summary>
         /// Скакой скоростью анимируется удар рукой, в тактах, менять можно от инструмента, чар и навыков
         /// </summary>
-        public int GetArmSwingAnimationEnd() => 6; 
+        public int GetArmSwingAnimationEnd() => 6;
+
+        /// <summary>
+        /// Время паузы между разрушениями блоков в тактах
+        /// </summary>
+        public virtual int PauseTimeBetweenBlockDestruction() => 6;
 
         /// <summary>
         /// Размахивает предметом, который держит игрок
@@ -1829,7 +1834,7 @@ namespace MvkServer.Entity
             BlockState blockState = World.GetBlockState(blockPos);
             BlockBase block = blockState.GetBlock();
 
-            if (block.Material == materialIn)
+            if (block.Material.EMaterial == materialIn)
             {
                 // нужна проверка течении воды, у неё блок не целый
                 if (block.EBlock == EnumBlock.WaterFlowing || block.EBlock == EnumBlock.OilFlowing || block.EBlock == EnumBlock.LavaFlowing)
@@ -2024,6 +2029,11 @@ namespace MvkServer.Entity
         /// Изменить вектор смещения
         /// </summary>
         public void AddVelocity(vec3 motion) => Motion += motion;
+
+        /// <summary>
+        /// Вернуть тип действия предмета
+        /// </summary>
+        public virtual EnumItemAction GetItemUseAction() => EnumItemAction.None;
 
         public override void WriteEntityToNBT(TagCompound nbt)
         {

@@ -221,26 +221,34 @@ namespace MvkServer.World.Gen.Feature
                 //stopwatch.Restart();
                 BlockState blockState = world.GetBlockState(blockPos);
                 world.SetBlockToAir(blockPos);
-                int i;
-                int count = blockCaches.Count;
-                BlockPos pos;
-                BlockCache blockCache;
-                for (i = 0; i < count; i++)
-                {
-                    blockCache = blockCaches[i];
-                    pos.X = blockCache.x;
-                    pos.Y = blockCache.y;
-                    pos.Z = blockCache.z;
-                    if (pos.IsValid())
-                    {
-                        if (blockCache.body || world.GetBlockState(pos).IsAir())
-                        world.SetBlockState(pos, new BlockState(blockCache.id, blockCache.met), 14);
-                    }
-                }
+                SetBlocksToWorld(world);
                 //world.Log.Log("GenTree2B[{1}]: {0:0.000} ms", stopwatch.ElapsedTicks / (float)MvkStatic.TimerFrequency, blockPos);
                 return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// Внести блоки с кеша в мир
+        /// </summary>
+        private void SetBlocksToWorld(WorldBase world)
+        {
+            int i;
+            int count = blockCaches.Count;
+            BlockPos pos;
+            BlockCache blockCache;
+            for (i = 0; i < count; i++)
+            {
+                blockCache = blockCaches[i];
+                pos.X = blockCache.x;
+                pos.Y = blockCache.y;
+                pos.Z = blockCache.z;
+                if (pos.IsValid())
+                {
+                    if (blockCache.body || world.GetBlockState(pos).IsAir())
+                        world.SetBlockState(pos, new BlockState(blockCache.id, blockCache.met), 14);
+                }
+            }
         }
 
         /// <summary>
@@ -431,7 +439,7 @@ namespace MvkServer.World.Gen.Feature
                 checkPos.Y = y;
                 checkPos.Z = z;
                 checkEnumBlock = world.GetBlockState(checkPos).GetEBlock();
-                checkEnumMaterial = Blocks.GetBlockCache(checkEnumBlock).Material;
+                checkEnumMaterial = Blocks.GetBlockCache(checkEnumBlock).Material.EMaterial;
                 if (!(checkEnumBlock == EnumBlock.Air || checkEnumMaterial == EnumMaterial.Leaves || checkEnumMaterial == EnumMaterial.Sapling)
                     && checkEnumBlock != log)
                 {
@@ -534,6 +542,17 @@ namespace MvkServer.World.Gen.Feature
                 // South
                 blockCaches.Add(new BlockCache(x, y, z + 1, idLeaves, (byte)(5 + NextInt(2) * 6)));
             }
+        }
+
+        /// <summary>
+        /// Генерация веток вокруг блока
+        /// </summary>
+        public void GenerateFoliageBranch(WorldBase world, BlockPos blockPos, int side)
+        {
+            isGen = false;
+            blockCaches.Clear();
+            FoliageBranch(blockPos.X, blockPos.Y, blockPos.Z, side);
+            SetBlocksToWorld(world);
         }
     }
 }

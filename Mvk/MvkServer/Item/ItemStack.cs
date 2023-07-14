@@ -3,6 +3,7 @@ using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.NBT;
 using MvkServer.Network;
+using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
 using MvkServer.Util;
 using MvkServer.World;
@@ -145,7 +146,10 @@ namespace MvkServer.Item
             }
         }
 
-        public void DamageItem(int amount, EntityLiving entity, BlockPos blockPos)
+        /// <summary>
+        /// Наносим урон предмету (инструменту), вернёт true если инструмент сломался
+        /// </summary>
+        public bool DamageItem(WorldBase world, int amount, EntityPlayer entity, BlockPos blockPos)
         {
             if (entity is EntityPlayer entityPlayer && !entityPlayer.IsCreativeMode)
             {
@@ -154,9 +158,19 @@ namespace MvkServer.Item
                     ItemDamage = 0;
                     Zero();
                     // Сломался предмет
-                    entity.World.PlaySound(entity, AssetsSample.Break, blockPos.ToVec3() + .5f, 1f, entity.World.Rnd.NextFloat() * .4f + .8f);
+                    if (!world.IsRemote && world is WorldServer worldServer)
+                    {
+                        // всем звуковой эффект поломки из сервера, так-как на клиенте этот метод работает через тик,
+                        // и сервер раньше может обнулить и звука не будет
+                        worldServer.Tracker.SendToAllTrackingEntityCurrent(entity, new PacketS29SoundEffect(
+                            AssetsSample.Break, blockPos.ToVec3() + .5f, 1, world.Rnd.NextFloat() * .4f + .8f));
+                        // Отправить изменение инвентаря, без этого предмет не исчезает
+                        entity.Inventory.SendSetSlotPlayer();
+                    }
+                    return true;
                 }
             }
+            return false;
         }
 
         /// <summary>
@@ -212,7 +226,7 @@ namespace MvkServer.Item
         /// <summary>
         /// Вернуть тип действия предмета
         /// </summary>
-        public EnumItemAction GetItemUseAction() => Item != null && Amount > 0 ? Item.GetItemUseAction(this) : EnumItemAction.None;
+        public EnumItemAction GetItemUseAction() => Item != null && Amount > 0 ? Item.ItemUseAction : EnumItemAction.None;
 
         /// <summary>
         /// Записать стак в буффер пакета
