@@ -31,6 +31,7 @@ namespace MvkServer.World.Block.List
         public BlockUniGlassPane(int numberTextureSide, int numberTextureButt, vec3 color, bool translucent = true)
         {
             Translucent = translucent;
+            IsDamagedBlockBlack = !translucent;
             this.numberTextureButt = numberTextureButt;
             this.numberTextureSide = numberTextureSide;
             SetUnique();

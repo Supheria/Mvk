@@ -79,9 +79,10 @@ namespace MvkClient.Actions
                 if (++Debug.IsDrawOrto > 5) Debug.IsDrawOrto = 0; // F7
             }
             else if (key == 119) Debug.IsDrawVoxelLine = !Debug.IsDrawVoxelLine; // F8
-            else if (key == 69) World.ClientMain.Screen.InGameConteiner(); // E
+            else if (key == 69) World.ClientMain.Screen.InGameConteinerCreative(); // E
             // тут нельзя, так-как сразу срабатывает KeyPress
             //else if (key == 84) World.ClientMain.Screen.InGameChat(); // T 
+            else if (key == 81) ClientMain.Player.ThrowOutCurrentItem(); // Q
             else if (key == 82)
             {
                 ChunkBase chunk = World.GetChunk(ClientMain.Player.GetChunkPos());

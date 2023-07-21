@@ -75,49 +75,47 @@ namespace MvkServer.World.Block.List
                 if (blockStateUp.lightSky >= 9)
                 {
                     EnumTimeYear enumTimeYear = world.GetTimeYear();
-                    if (enumTimeYear == EnumTimeYear.Summer)
+                    if (enumTimeYear == EnumTimeYear.Summer && blockStateUp.IsAir() 
+                        && world.GetMoonPhase() == EnumMoonPhase.NewMoon && random.Next(32) == 0)
                     {
-                        if (blockStateUp.IsAir() && world.GetMoonPhase() == EnumMoonPhase.NewMoon && random.Next(12) == 0)
-                        {
-                            // Только летом в новолунее растёт трава 
-                            int rnd = random.Next(20);
-                            EnumBlock enumBlock = EnumBlock.Grass;
-                            if (rnd == 0) enumBlock = EnumBlock.FlowerClover;
-                            else if (rnd == 1) enumBlock = EnumBlock.FlowerDandelion;
-                            world.SetBlockState(blockPosUp, new BlockState(enumBlock), 12);
-                        }
-                        if (enumTimeYear == EnumTimeYear.Spring)
-                        {
-                            // Распространение дёрна
-                            BlockPos blockPos2;
-                            EnumBlock enumBlock2;
-                            BlockState blockState2;
-                            BlockState blockState2up;
-                            BlockBase blockBase2up;
-                            BlockPos blockPos2up;
+                        // Только летом в новолунее растёт трава 
+                        int rnd = random.Next(20);
+                        EnumBlock enumBlock = EnumBlock.Grass;
+                        if (rnd == 0) enumBlock = EnumBlock.FlowerClover;
+                        else if (rnd == 1) enumBlock = EnumBlock.FlowerDandelion;
+                        world.SetBlockState(blockPosUp, new BlockState(enumBlock), 12);
+                    }
+                    if (enumTimeYear == EnumTimeYear.Summer || enumTimeYear == EnumTimeYear.Spring)
+                    {
+                        // Распространение дёрна
+                        BlockPos blockPos2;
+                        EnumBlock enumBlock2;
+                        BlockState blockState2;
+                        BlockState blockState2up;
+                        BlockBase blockBase2up;
+                        BlockPos blockPos2up;
 
-                            for (int i = 0; i < 4; i++)
+                        for (int i = 0; i < 4; i++)
+                        {
+                            blockPos2 = blockPos.Offset(random.Next(3) - 1, random.Next(5) - 3, random.Next(3) - 1);
+                            blockPos2up = blockPos2.OffsetUp();
+                            blockState2up = world.GetBlockState(blockPos2up);
+                            blockBase2up = blockState2up.GetBlock();
+                            blockState2 = world.GetBlockState(blockPos2);
+                            enumBlock2 = blockState2.GetEBlock();
+
+                            if (enumBlock2 == EnumBlock.Dirt
+                                && blockState2up.lightSky >= 7 && blockBase2up.LightOpacity <= 2)
                             {
-                                blockPos2 = blockPos.Offset(random.Next(3) - 1, random.Next(5) - 3, random.Next(3) - 1);
-                                blockPos2up = blockPos2.OffsetUp();
-                                blockState2up = world.GetBlockState(blockPos2up);
-                                blockBase2up = blockState2up.GetBlock();
-                                blockState2 = world.GetBlockState(blockPos2);
-                                enumBlock2 = blockState2.GetEBlock();
-
-                                if (enumBlock2 == EnumBlock.Dirt
-                                    && blockState2up.lightSky >= 7 && blockBase2up.LightOpacity <= 2)
-                                {
-                                    // Дёрн
-                                    world.SetBlockState(blockPos2, new BlockState(EnumBlock.Turf), 12);
-                                }
-                                else if (BlockTina.IsGrows(world, blockPos2) && random.Next(8) == 0
-                                    && enumBlock2 == EnumBlock.Water && blockState2up.lightSky >= 7
-                                    && blockState2up.IsAir())
-                                {
-                                    // Тина
-                                    world.SetBlockState(blockPos2up, new BlockState(EnumBlock.Tina), 12);
-                                }
+                                // Дёрн
+                                world.SetBlockState(blockPos2, new BlockState(EnumBlock.Turf), 12);
+                            }
+                            else if (BlockTina.IsGrows(world, blockPos2) && random.Next(8) == 0
+                                && enumBlock2 == EnumBlock.Water && blockState2up.lightSky >= 7
+                                && blockState2up.IsAir())
+                            {
+                                // Тина
+                                world.SetBlockState(blockPos2up, new BlockState(EnumBlock.Tina), 12);
                             }
                         }
                     }

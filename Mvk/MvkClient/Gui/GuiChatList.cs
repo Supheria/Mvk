@@ -180,6 +180,7 @@ namespace MvkClient.Gui
                 }
 
                 GLRender.PopMatrix();
+                FontRenderer.ResetFont();
             }
         }
     }

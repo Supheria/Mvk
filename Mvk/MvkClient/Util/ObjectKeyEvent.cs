@@ -60,6 +60,10 @@
         /// <summary>
         /// В игре
         /// </summary>
-        InGame
+        InGame,
+        /// <summary>
+        /// В игре запуск окна
+        /// </summary>
+        GameWindow
     }
 }

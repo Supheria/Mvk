@@ -44,4 +44,12 @@
         PlayerInvisible = 9
 
     }
+
+    /// <summary>
+    /// Количество разновидностей сущностей
+    /// </summary>
+    public class EntitiesCount
+    {
+        public const int COUNT = 9;
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using MvkClient.Renderer;
 using MvkClient.Setitings;
+using MvkServer.Network;
 using SharpGL;
 
 namespace MvkClient.Gui
@@ -62,6 +63,11 @@ namespace MvkClient.Gui
             Height = GLWindow.WindowHeight;
             SizeInterface = Setting.SizeInterface;
         }
+
+        /// <summary>
+        /// Получить сетевой пакет
+        /// </summary>
+        public virtual void AcceptNetworkPackage(IPacket packet) { }
 
         /// <summary>
         /// Матрица проекции камеры для 2д, GUI

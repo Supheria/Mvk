@@ -12,6 +12,7 @@ namespace MvkServer.World.Block.List
         public BlockUniGlass(int numberTexture, vec3 color, bool translucent = true)
         {
             Translucent = translucent;
+            IsDamagedBlockBlack = !translucent;
             LightOpacity = (byte)(translucent ? 2 : 0);
             АmbientOcclusion = false;
             BlocksNotSame = false;

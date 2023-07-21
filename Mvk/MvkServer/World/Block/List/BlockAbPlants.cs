@@ -19,8 +19,8 @@ namespace MvkServer.World.Block.List
             IsCollidable = false;
             Combustibility = true;
             this.biomeColor = biomeColor;
-            IgniteOddsSunbathing = 60;
-            BurnOdds = 100;
+            IgniteOddsSunbathing = 5;
+            BurnOdds = 5;// 100;
             Resistance = 0f;
             samplesPut = samplesBreak = new AssetsSample[] { AssetsSample.DigGrass1, AssetsSample.DigGrass2, AssetsSample.DigGrass3, AssetsSample.DigGrass4 };
             InitQuads();

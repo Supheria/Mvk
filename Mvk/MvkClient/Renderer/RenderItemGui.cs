@@ -15,7 +15,7 @@ namespace MvkClient.Renderer
 
         public RenderItemGui(EnumItem enumItem) => this.enumItem = enumItem;
 
-        public void Render(int x, int y, float scale)
+        public void Render(int x, int y)
         {
             GLRender.PushMatrix();
             GLRender.Translate(x, y, 0);

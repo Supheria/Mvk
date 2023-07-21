@@ -101,7 +101,7 @@ namespace MvkClient.Gui
         /// <summary>
         /// Прорисовка
         /// </summary>
-        public void Draw()
+        public void Draw(float timeIndex)
         {
             if (isRender)
             {
@@ -118,10 +118,13 @@ namespace MvkClient.Gui
                 }
             }
             GLRender.ListCall(dList);
-            DrawAdd();
+            DrawAdd(timeIndex);
         }
 
-        protected virtual void DrawAdd()
+        /// <summary>
+        /// Дополнительная прорисовка сверх основной
+        /// </summary>
+        protected virtual void DrawAdd(float timeIndex)
         {
             if (toolTip != "")
             {
@@ -152,7 +155,7 @@ namespace MvkClient.Gui
                 GLRender.PushMatrix();
                 GLRender.Translate(control.Position.x, control.Position.y, 0);
                 GLRender.Scale(SizeInterface, SizeInterface, 1);
-                control.Draw();
+                control.Render();
                 GLRender.PopMatrix();
             }
         }
@@ -304,13 +307,22 @@ namespace MvkClient.Gui
         public virtual void KeyDown(int key) { }
 
         public void Dispose() => Delete();
-        public void Delete() => GLRender.ListDelete(dList);
+        public void Delete()
+        {
+            OnFinishing();
+            GLRender.ListDelete(dList);
+        }
 
         public void AddControls(Control control)
         {
             control.Init(this);
             Controls.Add(control);
         }
+
+        /// <summary>
+        /// Происходит перед закрытием окна
+        /// </summary>
+        protected virtual void OnFinishing() { }
 
         /// <summary>
         /// Закончен скрин

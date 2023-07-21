@@ -36,6 +36,10 @@ namespace MvkServer.Inventory
         /// Объект игрока
         /// </summary>
         public EntityPlayer Player { get; private set; }
+        /// <summary>
+        /// Слот который используется в перемещении из слотов, образно он в указателе мыши
+        /// </summary>
+        public ItemStack StackAir { get; private set; }
 
         /// <summary>
         /// Инвентарь, пока 8 ячеек
@@ -45,6 +49,28 @@ namespace MvkServer.Inventory
         /// Ячейки брони
         /// </summary>
         private readonly ItemStack[] armorInventory = new ItemStack[COUNT_ARMOR];
+
+        #region Craft
+
+        /// <summary>
+        /// Статус идёт ли крафт
+        /// </summary>
+        private bool isCraft = false;
+        /// <summary>
+        /// Время крафта
+        /// </summary>
+        private int timeCraft = 0;
+        /// <summary>
+        /// Какой предмет крафтим
+        /// </summary>
+        private ItemBase itemCraft;
+        /// <summary>
+        /// Количество предметов в крафте
+        /// </summary>
+        private int amountCraft = 1;
+
+        #endregion
+
 
         public InventoryPlayer(EntityPlayer entityPlayer) => Player = entityPlayer;
 
@@ -137,10 +163,16 @@ namespace MvkServer.Inventory
 
         /// <summary>
         /// Устанавливает данный стек предметов в указанный слот в инвентаре (может быть раздел крафта или брони).
+        /// Если номер слота 255 то это стек который в воздухе, что возле курсора
         /// </summary>
         public void SetInventorySlotContents(int slotIn, ItemStack stack)
         {
-            if (slotIn >= COUNT)
+            if (slotIn == 255)
+            {
+                StackAir = stack;
+                OnChanged(255);
+            }
+            else if (slotIn >= COUNT)
             {
                 slotIn -= COUNT;
                 armorInventory[slotIn] = stack;
@@ -271,6 +303,18 @@ namespace MvkServer.Inventory
         }
 
         /// <summary>
+        /// Отправить изменение размера воздушного стака игроку
+        /// </summary>
+        private void SendSetAirPlayer()
+        {
+            if (Player is EntityPlayerServer entityPlayerServer)
+            {
+                entityPlayerServer.SendPacket(new PacketS2FSetSlot(255, StackAir));
+                OnChanged(255);
+            }
+        }
+
+        /// <summary>
         /// Эта функция сохраняет как можно больше элементов ItemStack в соответствующем 
         /// слоте и возвращает количество оставшихся элементов.
         /// </summary>
@@ -327,13 +371,16 @@ namespace MvkServer.Inventory
         /// </summary>
         private int StoreItemStack(ItemStack itemStack)
         {
-            for (int i = 0; i < mainInventory.Length; i++)
+            int count = mainInventory.Length;
+            ItemStack stack;
+            for (int i = 0; i < count; i++)
             {
-                if (mainInventory[i] != null && mainInventory[i].Item.Id == itemStack.Item.Id 
-                    && mainInventory[i].IsStackable() && mainInventory[i].Amount < mainInventory[i].GetMaxStackSize() 
-                    && mainInventory[i].Amount < INVENTORY_STACK_LIMIT
-                    && mainInventory[i].ItemDamage == itemStack.ItemDamage 
-                    && ItemStack.AreItemsEqual(mainInventory[i], itemStack))
+                stack = mainInventory[i];
+                if (stack != null && stack.Item.Id == itemStack.Item.Id 
+                    && stack.IsStackable() && stack.Amount < stack.GetMaxStackSize() 
+                    && stack.Amount < INVENTORY_STACK_LIMIT
+                    && stack.ItemDamage == itemStack.ItemDamage 
+                    && ItemStack.AreItemsEqual(stack, itemStack))
                 {
                     return i;
                 }
@@ -548,6 +595,387 @@ namespace MvkServer.Inventory
             OnChanged(-1);
         }
 
+        /// <summary>
+        /// Выбросить предмет который в руке, только для сервера
+        /// </summary>
+        public void ThrowOutCurrentItem()
+        {
+            ItemStack stack = GetCurrentItem();
+            if (stack != null)
+            {
+                Player.DropItem(stack, true);
+                SetCurrentItem(null);
+                SendSetSlotPlayer();
+            }
+        }
+
+        #region ClickSlot
+
+        /// <summary>
+        /// Выкинуть предмет из рук который в воздухе
+        /// </summary>
+        public void ThrowOutAir()
+        {
+            if (StackAir != null)
+            {
+                Player.DropItem(StackAir, true);
+                SetSendAirContents();
+            }
+        }
+
+        /// <summary>
+        /// Клик по указанному слоту в инвентаре, isRight указывает флаг правый ли клик мыши
+        /// </summary>
+        public void ClickInventorySlotContents(int slotIn, bool isRight)
+        {
+            ItemStack stackAir = StackAir?.Copy();
+            ItemStack stackSlot = GetStackInSlot(slotIn)?.Copy();
+            if (stackSlot == null)
+            {
+                if (stackAir != null)
+                {
+                    // Если в воздухе есть так будем укладывать в ячейку
+                    if (isRight && stackAir.Amount > 1)
+                    {
+                        // Если был клик правой клавишей, то укладываем только одну единицу
+                        SetSendSlotContents(slotIn, stackAir.Copy().SetAmount(1));
+                        SetSendAirContents(stackAir.ReduceAmount(1));
+                    }
+                    else
+                    {
+                        // Перекладываем всё из воздуха в ячейку
+                        SetSendAirContents();
+                        SetSendSlotContents(slotIn, stackAir);
+                    }
+                }
+            }
+            else
+            {
+                // Имеется что-то в ячейке
+                if (stackAir == null)
+                {
+                    // В воздухе нет ничего
+                    if (isRight && stackSlot.Amount > 1)
+                    {
+                        // Берём половину в воздух
+                        int amount = stackSlot.Amount / 2;
+                        SetSendAirContents(stackSlot.Copy().SetAmount(amount));
+                        SetSendSlotContents(slotIn, stackSlot.ReduceAmount(amount));
+                    }
+                    else
+                    {
+                        // Перекладываем всё из ячейку в воздух
+                        SetSendAirContents(stackSlot);
+                        SetSendSlotContents(slotIn);
+                    }
+                }
+                else
+                {
+                    // В воздухе имеется и в ячейке имеется
+                    if (stackSlot.Item.Id == stackAir.Item.Id)
+                    {
+                        // Если предметы одинаковые
+                        if (isRight && stackAir.Amount > 1)
+                        {
+                            if (stackSlot.Item.MaxStackSize > stackSlot.Amount)
+                            {
+                                // Если был клик правой клавишей, то добавляем только одну единицу
+                                SetSendSlotContents(slotIn, stackSlot.AddAmount(1));
+                                SetSendAirContents(stackAir.ReduceAmount(1));
+                            }
+                        }
+                        else
+                        {
+                            int aw = stackSlot.Amount + stackAir.Amount;
+                            if (aw > stackSlot.Item.MaxStackSize)
+                            {
+                                // сумма больше слота значит не весь перекладываем в руке останется
+                                SetSendSlotContents(slotIn, stackSlot.SetAmount(stackSlot.Item.MaxStackSize));
+                                SetSendAirContents(stackAir.SetAmount(aw - stackSlot.Item.MaxStackSize));
+                            }
+                            else
+                            {
+                                // весь можно переложить
+                                SetSendSlotContents(slotIn, stackSlot.SetAmount(aw));
+                                SetSendAirContents();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Если разные, меняем местами
+                        SetSendAirContents(stackSlot);
+                        SetSendSlotContents(slotIn, stackAir);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Задать потом отправить игроку изменения слота со стакам.
+        /// </summary>
+        private void SetSendSlotContents(int slotIn, ItemStack stack = null)
+        {
+            SetInventorySlotContents(slotIn, stack);
+            SendSetSlotPlayer(slotIn);
+        }
+
+        /// <summary>
+        /// Задать потом отправить игроку изменения воздушного стака.
+        /// </summary>
+        private void SetSendAirContents(ItemStack stack = null)
+        {
+            SetInventorySlotContents(255, stack);
+            SendSetAirPlayer();
+        }
+
+        #endregion
+
+        #region Craft
+
+        /// <summary>
+        /// Обновления в инвентаре, используется для крафта, только на сервере
+        /// </summary>
+        public void UpdateServer()
+        {
+            if (isCraft)
+            {
+                if (--timeCraft <= 0)
+                {
+                    isCraft = false;
+                    CraftEnd();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Получить количество тиков времени на крафт этого предмета
+        /// </summary>
+        public int GetCountTimeCraft(ItemBase item, bool isMax, bool amountFix = false)
+        {
+            int time;
+            int amountOne = item.GetCraft().Amount;
+            int amount = isMax ? item.MaxStackSize : amountOne;
+            int amountComp = amount / amountOne;
+            // Знаем количество комплектов
+            if (amountComp > 1)
+            {
+                // определяем сколько максимум можем
+                int amountCache = MaxAmountItemCraft(item);
+                if (amountCache < amountComp) amountComp = amountCache;
+            }
+            amount = amountOne * amountComp;
+            if (amount > amountOne)
+            {
+                // если крафтим много, увеличиваем время
+                time = item.GetCraft().CraftTime * amountComp;
+                if (time == 0)
+                {
+                    // если время ноль, всё равно указываем время для количества
+                    time = amount / (4 * amountOne);
+                }
+            }
+            else
+            {
+                time = item.GetCraft().CraftTime;
+            }
+            if (amountFix) amountCraft = amount;
+            return time;
+        }
+
+        /// <summary>
+        /// Остановить крафт
+        /// </summary>
+        public void CraftStop()
+        {
+            isCraft = false;
+        }
+
+        /// <summary>
+        /// Начинаем делать крафт на сервере
+        /// </summary>
+        public void CraftBeginServer(int itemId, bool isMax)
+        {
+            itemCraft = Items.GetItemCache(itemId);
+            timeCraft = GetCountTimeCraft(itemCraft, isMax, true);
+            
+            if (timeCraft == 0)
+            {
+                CraftEnd();
+            }
+            else
+            {
+                isCraft = true;
+            }
+        }
+
+        /// <summary>
+        /// Сделан крафт
+        /// </summary>
+        private void CraftEnd()
+        {
+            if (itemCraft != null)
+            {
+                // Тратим предметы из инвентаря на крафт
+                if (SpendItemsOnCrafting(itemCraft, amountCraft / itemCraft.GetCraft().Amount))
+                {
+
+                    // Берём предмет в руку
+                    if (StackAir != null)
+                    {
+                        if (StackAir.Item.Id == itemCraft.Id && StackAir.Amount + amountCraft <= itemCraft.MaxStackSize)
+                        {
+                            // Один и тот же предмет что в руке, добавляем количество
+                            SetSendAirContents(StackAir.AddAmount(amountCraft));
+                        }
+                        else
+                        {
+                            // Дропаем что в руке
+                            ThrowOutAir();
+                            // Укладываем то что сделали в руки
+                            SetSendAirContents(new ItemStack(itemCraft, amountCraft));
+                        }
+                    }
+                    else
+                    {
+                        // Укладываем то что сделали в руки
+                        SetSendAirContents(new ItemStack(itemCraft, amountCraft));
+                    }
+                }
+            }
+            // Закончить крафт, чтоб включить кнопку
+            if (Player is EntityPlayerServer entityPlayerServer)
+            {
+                entityPlayerServer.SendPacket(new PacketS31WindowProperty(PacketS31WindowProperty.EnumAction.CraftStop));
+            }
+        }
+
+        /// <summary>
+        /// Крафт закончен, на стороне клиента запрос
+        /// </summary>
+        public void CraftedClient() => OnCrafted();
+
+        /// <summary>
+        /// Проверка можем ли мы сделать этот предмет
+        /// </summary>
+        public bool CheckItemCraft(ItemBase itemCheck)
+        {
+            Element[] elements = itemCheck.GetCraft().CraftRecipe;
+            int count = elements.Length;
+            if (count > 0)
+            {
+                Element element;
+                for (int i = 0; i < count; i++)
+                {
+                    element = elements[i];
+                    if (GetInventoryItemCount(element.GetItem()) < element.GetAmount())
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Максимальное количество комплектов можем сделать
+        /// </summary>
+        private int MaxAmountItemCraft(ItemBase itemCheck)
+        {
+            Element[] elements = itemCheck.GetCraft().CraftRecipe;
+            int amount = itemCheck.MaxStackSize / itemCheck.GetCraft().Amount;
+            int count = elements.Length;
+            if (count > 0)
+            {
+                int amountCache;
+                Element element;
+                for (int i = 0; i < count; i++)
+                {
+                    element = elements[i];
+                    amountCache = GetInventoryItemCount(element.GetItem()) / element.GetAmount();
+                    if (amountCache < amount)
+                    {
+                        amount = amountCache;
+                    }
+                }
+            }
+            return amount;
+        }
+
+        /// <summary>
+        /// Вернуть количество такого предмета
+        /// </summary>
+        private int GetInventoryItemCount(ItemBase item)
+        {
+            int count = mainInventory.Length;
+            int amount = 0;
+            ItemStack stack;
+            for (int i = 0; i < count; i++)
+            {
+                stack = mainInventory[i];
+                if (stack != null && stack.Item.Id == item.Id)
+                {
+                    amount += stack.Amount;
+                }
+            }
+            return amount;
+        }
+
+        /// <summary>
+        /// Тратим предметы из инвентаря на крафт, возвращает false, если это невозможно.
+        /// </summary>
+        private bool SpendItemsOnCrafting(ItemBase item, int amount)
+        {
+            Element[] elements = item.GetCraft().CraftRecipe;
+            int count = elements.Length;
+            if (count > 0)
+            {
+                Element element;
+                for (int i = 0; i < count; i++)
+                {
+                    element = elements[i];
+                    if (!SpendItemToInventory(element.GetItem(), element.GetAmount() * amount))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Тратим предметы в инвентаре, возвращает false, если это невозможно.
+        /// </summary>
+        private bool SpendItemToInventory(ItemBase item, int amount)
+        {
+            int count = mainInventory.Length;
+            ItemStack stack;
+            for (int i = 0; i < count; i++)
+            {
+                stack = mainInventory[i];
+                if (stack != null && stack.Item.Id == item.Id)
+                {
+                    if (stack.Amount <= amount)
+                    {
+                        // удаляем этот стак
+                        amount -= stack.Amount;
+                        mainInventory[i] = null;
+                        SetSendSlotContents(i);
+                    }
+                    else
+                    {
+                        stack.ReduceAmount(amount);
+                        amount = 0;
+                        SetSendSlotContents(i, stack);
+                    }
+                }
+                if (amount == 0) return true;
+            }
+            return amount == 0;
+        }
+
+
+        #endregion
+
         public void WriteToNBT(TagList nbt)
         {
             ItemStack[] items = GetMainAndArmor();
@@ -597,6 +1025,12 @@ namespace MvkServer.Inventory
         /// </summary>
         public event SlotEventHandler Changed;
         private void OnChanged(int indexSlot) => Changed?.Invoke(this, new SlotEventArgs(indexSlot));
+
+        /// <summary>
+        /// Событие крафт сделан
+        /// </summary>
+        public event EventHandler Crafted;
+        private void OnCrafted() => Crafted?.Invoke(this, new EventArgs());
 
         #endregion
     }

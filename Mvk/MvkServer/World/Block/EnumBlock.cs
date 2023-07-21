@@ -312,7 +312,15 @@
         /// <summary>
         /// Яблоко
         /// </summary>
-        Apple = 75
+        Apple = 75,
+        /// <summary>
+        /// Столярный верстак
+        /// </summary>
+        CraftingTableCarpentry = 76,
+        /// <summary>
+        /// Стол инструментальщика
+        /// </summary>
+        ToolmakerTable = 77
     }
 
     /// <summary>
@@ -320,6 +328,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 75;
+        public const int COUNT = 77;
     }
 }

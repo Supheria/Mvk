@@ -46,6 +46,11 @@ namespace MvkServer.Item
         /// Вернуть тип действия предмета
         /// </summary>
         public EnumItemAction ItemUseAction { get; protected set; } = EnumItemAction.None;
+        
+        /// <summary>
+        /// Объект крафта
+        /// </summary>
+        protected CraftItem craft = new CraftItem();
 
         public ItemBase(EnumItem enumItem, int numberTexture, int maxStackSize)
         {
@@ -104,7 +109,7 @@ namespace MvkServer.Item
                 return (int)itemBlock.Block.EBlock;
             }
             // Остальное предметы
-            return (int)itemIn.EItem + 4096;
+            return (int)itemIn.EItem + 5000;
         }
 
         /// <summary>
@@ -169,6 +174,11 @@ namespace MvkServer.Item
         public ItemAbTool GetTool() => this is ItemAbTool ? (ItemAbTool)this : null;
 
         /// <summary>
+        /// Является ли предмет инструментом
+        /// </summary>
+        public bool IsTool() => this is ItemAbTool;
+
+        /// <summary>
         /// Проверка, может ли блок устанавливаться в этом месте
         /// </summary>
         /// <param name="blockPos">Координата блока, по которому щелкают правой кнопкой мыши</param>
@@ -229,6 +239,11 @@ namespace MvkServer.Item
         /// </summary>
         /// <param name="block">блок который разрушаем</param>
         public virtual bool CanHarvestBlock(BlockBase block) => false;
+
+        /// <summary>
+        /// Объект крафта
+        /// </summary>
+        public virtual CraftItem GetCraft() => craft;
 
         public override string ToString() => Id.ToString();
 

@@ -94,6 +94,7 @@ namespace MvkClient.Gui
         public virtual void SetText(string text)
         {
             Text = text;
+            sizeInterface = Setting.SizeInterface;
             IsRender = true;
         }
 
@@ -106,9 +107,14 @@ namespace MvkClient.Gui
         }
 
         /// <summary>
+        /// рендер контрола
+        /// </summary>
+        public virtual void Render() => IsRender = false;
+
+        /// <summary>
         /// Прорисовка контрола
         /// </summary>
-        public virtual void Draw() => IsRender = false;
+        public virtual void Draw(float timeIndex) { }
 
         /// <summary>
         /// В облости ли мышь курсора

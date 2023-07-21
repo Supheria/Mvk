@@ -42,6 +42,9 @@ gui.respawn:Возродиться
 gui.conteiner.chat:Чат
 gui.conteiner.console:Консоль
 gui.conteiner.inventory:Инвентарь
+gui.conteiner.craft.1:Простой крафт
+gui.conteiner.craft.2:Столярный верстак
+gui.button.craft:Изготовить
 
 world.player.duplicate:Игрок с таким именем уже в игре!
 
@@ -109,6 +112,8 @@ block.Nest:Гнездо
 block.Tina:Тина
 
 item.Apple:Яблоко
+item.AxeStone:Каменный топор
+item.AxeStone.dis:§lКаменный топор§r это самый §4афигенский§r инструмент, древних времён, но если надо мы можем и сейчас им воспользоваться.§uИм можно не только рубить дерево, но и сломать камень. А так же попробовать выбить §n§7железную§r руду.
 item.DoorOak:Дверь дубовая
 item.DoorBirch:Дверь берёзовая
 item.DoorSpruce:Дверь еловая
@@ -119,6 +124,8 @@ item.Bucket:Ведро
 item.BucketWater:Ведро с водой
 item.BucketLava:Ведро с лавой
 item.BucketOil:Ведро с нефтью
+item.CraftingTableCarpentry:Столярный верстак
+item.CraftingTableCarpentry.dis:Столярный верстак пригодится для изготовления различных изделий из древесины.
 item.FlintAndSteel:Кремень и сталь
 item.PieceDirt:Комок земли
 item.PieceStone:Камушек

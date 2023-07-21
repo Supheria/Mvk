@@ -1,11 +1,10 @@
-﻿using MvkClient.Entity;
-using MvkClient.Renderer.Model;
+﻿using MvkClient.Renderer.Model;
 using MvkClient.World;
 using MvkServer.Entity;
 using MvkServer.Glm;
 using MvkServer.Util;
 using SharpGL;
-using System.Collections;
+using System;
 
 namespace MvkClient.Renderer.Entity
 {
@@ -37,26 +36,27 @@ namespace MvkClient.Renderer.Entity
         /// Рендер всех придметов
         /// </summary>
         public RenderItems Item { get; private set; }
-
+        
         /// <summary>
-        /// Перечень рендер объектов сущьностей
+        /// Массив рендер объектов сущьностей
         /// </summary>
-        private Hashtable entities = new Hashtable();
+        private readonly RenderEntityBase[] entities;
 
         public RenderManager(WorldClient world)
         {
             World = world;
             ClientMain = world.ClientMain;
             Item = new RenderItems();
-            entities.Add(EnumEntities.Player, new RenderPlayer(this, new ModelPlayer(), false));
-            entities.Add(EnumEntities.PlayerHand, new RenderHead(this, new ModelPlayerHand()));
-            entities.Add(EnumEntities.Chicken, new RenderChicken(this, new ModelChicken()));
-            entities.Add(EnumEntities.Item, new RenderEntityItem(this, Item));
-            entities.Add(EnumEntities.Piece, new RenderEntityItem(this, Item));
-            entities.Add(EnumEntities.Chemoglot, new RenderChemoglot(this, new ModelChemoglot()));
-            entities.Add(EnumEntities.Pakan, new RenderPakan(this, new ModelPakan()));
-            entities.Add(EnumEntities.Book, new RenderBook(this, new ModelBook()));
-            entities.Add(EnumEntities.PlayerInvisible, new RenderPlayer(this, new ModelPlayer(), true));
+            entities = new RenderEntityBase[EntitiesCount.COUNT + 1];
+            entities[(int)EnumEntities.Player] = new RenderPlayer(this, new ModelPlayer(), false);
+            entities[(int)EnumEntities.PlayerHand] = new RenderHead(this, new ModelPlayerHand());
+            entities[(int)EnumEntities.Chicken] = new RenderChicken(this, new ModelChicken());
+            entities[(int)EnumEntities.Item] = new RenderEntityItem(this, Item);
+            entities[(int)EnumEntities.Piece] = new RenderEntityItem(this, Item);
+            entities[(int)EnumEntities.Chemoglot] = new RenderChemoglot(this, new ModelChemoglot());
+            entities[(int)EnumEntities.Pakan] = new RenderPakan(this, new ModelPakan());
+            entities[(int)EnumEntities.Book] = new RenderBook(this, new ModelBook());
+            entities[(int)EnumEntities.PlayerInvisible] = new RenderPlayer(this, new ModelPlayer(), true);
         }
 
         /// <summary>
@@ -70,13 +70,20 @@ namespace MvkClient.Renderer.Entity
             CameraOffset = new vec3(pos.x, pos.y, pos.z);
         }
 
-        protected RenderEntityBase GetEntityRenderObject(EntityBase entity)
+        /// <summary>
+        /// Получить объект рендера сущности по объекту сущности
+        /// </summary>
+        public RenderEntityBase GetEntityRenderObject(EntityBase entity)
         {
-            if (entities.ContainsKey(entity.GetEntityType()))
+            try
             {
-                return entities[entity.GetEntityType()] as RenderEntityBase;
+                return entities[(int)entity.GetEntityType()] as RenderEntityBase;
             }
-            return null;
+            catch (Exception ex)
+            {
+                World.Log.Error(ex);
+                return null;
+            }
         }
 
         /// <summary>

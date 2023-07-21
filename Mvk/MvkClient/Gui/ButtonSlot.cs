@@ -60,9 +60,9 @@ namespace MvkClient.Gui
         /// <summary>
         /// Прорисовка контрола
         /// </summary>
-        public override void Draw()
+        public override void Render()
         {
-            base.Draw();
+            base.Render();
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             GLWindow.Texture.BindTexture(AssetsTexture.Widgets);
             gl.Color(1f, 1f, 1f, 1f);
@@ -71,7 +71,7 @@ namespace MvkClient.Gui
 
             if (!slot.Empty())
             {
-                if (slot.Item.EItem == EnumItem.Block && slot.Item is ItemBlock itemBlock)
+                if (slot.Stack.Item.EItem == EnumItem.Block && slot.Stack.Item is ItemBlock itemBlock)
                 {
                     // Прорисовка блока
                     screen.ClientMain.World.WorldRender.GetBlockGui(itemBlock.Block.EBlock).Render(25, 25, 26);
@@ -79,13 +79,13 @@ namespace MvkClient.Gui
                 else
                 {
                     // Прорисовка предмета
-                    screen.ClientMain.World.WorldRender.GetItemGui(slot.Item.EItem).Render(25, 25, 26);
+                    screen.ClientMain.World.WorldRender.GetItemGui(slot.Stack.Item.EItem).Render(25, 25);
                 }
 
-                if (slot.Amount > 1)
+                if (slot.Stack.Amount > 1)
                 {
                     GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
-                    Text = slot.Amount.ToString();
+                    Text = slot.Stack.Amount.ToString();
                     int x = GetXAlight(Text, 12) + 6;
                     vec3 color = Enabled ? enter ? new vec3(1, 1, .5f) : new vec3(1) : new vec3(.5f);
                     FontRenderer.RenderString(x, 34, Text, size, color, Alpha, Enabled, .1f);
@@ -112,9 +112,9 @@ namespace MvkClient.Gui
         /// </summary>
         public override string GetToolTip()
         {
-            if (enter && slot != null && slot.Item != null)
+            if (enter && slot != null && !slot.Empty())
             {
-                return Language.T(slot.Item.GetName());
+                return Language.T(slot.Stack.GetItemName());
             }
             return "";
         }
@@ -128,7 +128,7 @@ namespace MvkClient.Gui
         public override string ToString()
         {
             if (slot == null) return "null";
-            return string.Format("id:{0} a:{1} i:{2}", slot.Index, slot.Amount, slot.Item == null ? "null" : slot.Item.Id.ToString());
+            return string.Format("id:{0} a:{1} i:{2}", slot.Index, slot.Stack.Amount, slot.Empty() ? "null" : slot.Stack.Item.Id.ToString());
         }
 
     }

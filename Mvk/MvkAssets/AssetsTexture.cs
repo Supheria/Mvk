@@ -94,6 +94,10 @@
         /// <summary>
         /// Книга
         /// </summary>
-        Book
+        Book,
+        /// <summary>
+        /// Контейнер для крафта выживание
+        /// </summary>
+        ConteinerCraft,
     }
 }

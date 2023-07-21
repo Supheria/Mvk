@@ -414,6 +414,7 @@ namespace MvkClient
                 case ObjectKey.RenderDebug: Debug.RenderDebug(); break;
                 case ObjectKey.GameMode: CursorShow(false); break;
                 case ObjectKey.GameOver: Screen.GameOver(e.Tag.ToString()); break;
+                case ObjectKey.GameWindow: Screen.InGameCraft((int)e.Tag); break;
             }
         }
 

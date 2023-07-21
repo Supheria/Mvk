@@ -64,9 +64,9 @@ namespace MvkClient.Gui
         /// <summary>
         /// Прорисовка контрола
         /// </summary>
-        public override void Draw()
+        public override void Render()
         {
-            base.Draw();
+            base.Render();
 
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             GLWindow.Texture.BindTexture(AssetsTexture.Widgets);

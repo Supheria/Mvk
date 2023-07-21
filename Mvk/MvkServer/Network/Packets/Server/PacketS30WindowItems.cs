@@ -7,16 +7,12 @@ namespace MvkServer.Network.Packets.Server
     /// </summary>
     public struct PacketS30WindowItems : IPacket
     {
-
-        //private int windowId;  (byte)
         private ItemStack[] stacks;
 
-        //public int GetWindowId() => windowId;
         public ItemStack[] GetStacks() => stacks;
 
         public PacketS30WindowItems(ItemStack[] stacks)
         {
-            //this.windowId = windowId;
             this.stacks = stacks;
         }
 

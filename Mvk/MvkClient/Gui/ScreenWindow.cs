@@ -29,6 +29,10 @@ namespace MvkClient.Gui
         /// Цвет окна
         /// </summary>
         protected vec3 color = new vec3(1);
+        /// <summary>
+        /// Текстура контейнера
+        /// </summary>
+        protected AssetsTexture assetsTexture = AssetsTexture.ConteinerItems;
 
         public ScreenWindow(Client client) : base(client) { }
 
@@ -39,12 +43,27 @@ namespace MvkClient.Gui
         {
             if (IsOutsideWindow(x, y))
             {
-                // Если за пределами окна закрываем окно
-                ClientMain.Screen.GameMode();
+                OnClickOutsideWindow();
             }
             else
             {
                 base.MouseDown(button, x, y);
+            }
+        }
+
+        /// <summary>
+        /// Клик за пределами окна
+        /// </summary>
+        protected virtual void OnClickOutsideWindow() => ClientMain.Screen.GameMode();
+
+        /// <summary>
+        /// Нажата клавиша
+        /// </summary>
+        public override void KeyDown(int key)
+        {
+            if (key == 27 || key == 69) // ESC || E
+            {
+                ClientMain.Screen.GameMode();
             }
         }
 
@@ -62,7 +81,7 @@ namespace MvkClient.Gui
         {
             GLRender.PushMatrix();
             GLRender.Texture2DEnable();
-            GLWindow.Texture.BindTexture(AssetsTexture.ConteinerItems);
+            GLWindow.Texture.BindTexture(assetsTexture);
             GLRender.Translate(position.x, position.y, 0);
             GLRender.Scale(SizeInterface);
             GLRender.Color(color.x, color.y, color.z, alpha);

@@ -36,6 +36,7 @@ namespace MvkServer.Item.List
             }
             else
             {
+                craft.SetRecipe(new Element(EnumItem.Stick, 2));
                 Quads = new ItemQuadSide[]
                 {
                     // Палка

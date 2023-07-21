@@ -78,6 +78,7 @@ namespace MvkServer.Network
                 case 0x09: Handle09HeldItemChange(socket, (PacketC09HeldItemChange)packet); break;
                 case 0x0A: Handle0AAnimation(socket, (PacketC0AAnimation)packet); break;
                 case 0x0C: Handle0CPlayerAction(socket, (PacketC0CPlayerAction)packet); break;
+                case 0x0E: Handle0EPacketClickWindow(socket, (PacketC0EPacketClickWindow)packet); break;
                 case 0x10: Handle10CreativeInventoryAction(socket, (PacketC10CreativeInventoryAction)packet); break;
                 case 0x14: HandleC14Message(socket, (PacketC14Message)packet); break;
                 case 0x15: Handle15ClientSetting(socket, (PacketC15ClientSetting)packet); break;
@@ -337,6 +338,52 @@ namespace MvkServer.Network
                 {
                     // Прекратили действие предмета
                     entityPlayer.StopUsingItem();
+                }
+                else if (action == PacketC0CPlayerAction.EnumAction.ThrowOutCurrentItem)
+                {
+                    // Выбросить текущий предмет
+                    entityPlayer.Inventory.ThrowOutCurrentItem();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Пакет кликов по окну инвентаря, крафта и других подобных окон
+        /// </summary>
+        private void Handle0EPacketClickWindow(Socket socket, PacketC0EPacketClickWindow packet)
+        {
+            EntityPlayerServer entityPlayer = ServerMain.World.Players.GetPlayerSocket(socket);
+            if (entityPlayer != null)
+            {
+                PacketC0EPacketClickWindow.EnumAction action = packet.GetAction();
+
+                if (action == PacketC0EPacketClickWindow.EnumAction.Open)
+                {
+                    entityPlayer.SendAccessRecipe(packet.GetNumber());
+                }
+                else if (action == PacketC0EPacketClickWindow.EnumAction.Close)
+                {
+                    entityPlayer.Inventory.CraftStop();
+                }
+                else if (action == PacketC0EPacketClickWindow.EnumAction.ThrowOutAir)
+                {
+                    entityPlayer.Inventory.ThrowOutAir();
+                }
+                else if (action == PacketC0EPacketClickWindow.EnumAction.ClickLeftSlot)
+                {
+                    entityPlayer.Inventory.ClickInventorySlotContents(packet.GetNumber(), false);
+                }
+                else if (action == PacketC0EPacketClickWindow.EnumAction.ClickRightSlot)
+                {
+                    entityPlayer.Inventory.ClickInventorySlotContents(packet.GetNumber(), true);
+                }
+                else if (action == PacketC0EPacketClickWindow.EnumAction.CraftOne)
+                {
+                    entityPlayer.Inventory.CraftBeginServer(packet.GetNumber(), false);
+                }
+                else if (action == PacketC0EPacketClickWindow.EnumAction.CraftMax)
+                {
+                    entityPlayer.Inventory.CraftBeginServer(packet.GetNumber(), true);
                 }
             }
         }

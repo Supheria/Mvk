@@ -20,6 +20,18 @@ namespace MvkServer.Item
         /// Массив всех предметов которые попадают в креативный инвентарь 
         /// </summary>
         public static int[] inventory;
+        /// <summary>
+        /// Массив предметов для первого крафта
+        /// </summary>
+        public static int[] craftFirst;
+        /// <summary>
+        /// Массив предметов для столярного верстака
+        /// </summary>
+        public static int[] craftCarpentry;
+        /// <summary>
+        /// Массив предметов для инструментальщика
+        /// </summary>
+        public static int[] craftToolmaker;
 
         private static ItemBase ToItem(EnumItem eItem, BlockBase block = null)
         {
@@ -60,8 +72,8 @@ namespace MvkServer.Item
                 case EnumItem.Coconut: return new ItemUniPiece(EnumItem.Coconut, 202, .16f);
                 case EnumItem.HalfCoconut: return new ItemUniFood(EnumItem.HalfCoconut, 2, 6, 96, 16);
                 case EnumItem.AxeStone: return new ItemAxeStone(132, 133, 1, 500, .5f, 2.5f, 6);
-                case EnumItem.AxeIron: return new ItemAxe(EnumItem.AxeIron, 128, 129, 2, 1000, 2, 4, 5);
-                case EnumItem.AxeSteel: return new ItemAxe(EnumItem.AxeSteel, 130, 131, 3, 5000, 5, 5, 4);
+                case EnumItem.AxeIron: return new ItemAxe(EnumItem.AxeIron, 145, 147, 2, 1000, 2, 4, 5); // 128 129
+                case EnumItem.AxeSteel: return new ItemAxe(EnumItem.AxeSteel, 144, 146, 3, 5000, 5, 5, 4); // 130 131
                 case EnumItem.DiggingStick: return new ItemShovel(EnumItem.DiggingStick, 134, 135, 1, 500, .25f, 1.5f, 6, false);
                 case EnumItem.ShovelIron: return new ItemShovel(EnumItem.ShovelIron, 136, 137, 2, 1000, 2, 2.5f, 5);
                 case EnumItem.ShovelSteel: return new ItemShovel(EnumItem.ShovelSteel, 138, 139, 3, 5000, 5, 3.5f, 0);
@@ -70,6 +82,8 @@ namespace MvkServer.Item
                 case EnumItem.DryGrass: return new ItemBase(EnumItem.DryGrass, 289, 128);
                 case EnumItem.PickaxeIron: return new ItemPickaxe(EnumItem.PickaxeIron, 140, 141, 2, 1000, 2, 3, 6);
                 case EnumItem.PickaxeSteel: return new ItemPickaxe(EnumItem.PickaxeSteel, 142, 143, 3, 5000, 5, 4, 5);
+                case EnumItem.CraftingTableCarpentry: return new ItemUniCraftingTable(EnumItem.CraftingTableCarpentry, 44, EnumBlock.CraftingTableCarpentry, EnumBlock.LogBirch);
+                case EnumItem.ToolmakerTable: return new ItemUniCraftingTable(EnumItem.ToolmakerTable, 45, EnumBlock.ToolmakerTable, EnumBlock.LogOak);
             }
             
             return null;
@@ -104,16 +118,23 @@ namespace MvkServer.Item
                 20, 21, 22, 23, 24, 12, 54, 55, 56, 44,
                 25, 26, 27, 28, 29, 40, 72, 41, 42, 43,
                 30, 31, 32, 33, 34, 46, 47, 48, 49, 50,
-                35, 36, 37, 38, 39, 4140, 45, 51, 52, 53, 
+                35, 36, 37, 38, 39, 5044, 45, 51, 52, 53, 
 
                 57, 59, 60, 61, 70, 71, 62, 63, 74, 75,
-                4097, 4142, 4118, 4114, 4115, 4116, 4117, 4125, 4126, 4127, 
-                4098, 4099, 4100, 4101, 4102, 4103, 4149, 4147, 4148, 4141, 
-                4122, 4123, 4131, 4132, 4133, 4134, 4135, 4136, 4137, 4138,
-                4124, 4128, 4129, 4139, 0, 0, 0, 0, 0, 0,
+                5001, 5046, 5034, 5018, 5019, 5020, 5021, 5029, 5030, 5031, 
+                5002, 5003, 5004, 5005, 5006, 5007, 5053, 5051, 5052, 5045, 
+                5026, 5027, 5035, 5036, 5037, 5038, 5039, 5040, 5041, 5042,
+                5028, 5032, 5033, 5043, 5055, 5056, 0, 0, 0, 0,
 
-                4144, 4119, 4143, 4145, 4120, 4146, 4121, 4150
+                5022, 5048, 5023, 5047, 5049, 5024, 5050, 5025, 5054
             };
+
+            craftFirst = new int[] { 5049, 5048, 5055, 71 };
+            //{ 4144, 4119, 4143, 4145, 4120, 4146, 4121, 4150, 44, 25, 26, 27 };
+
+            craftCarpentry = new int[] { 25, 26, 27, 28, 29, 5002, 5003, 5004, 5005, 5006, 5056, 5046 };
+
+            craftToolmaker = new int[] { 5022, 5018, 5023, 5024, 5025, 5047, 5050, 5054, 5049, 5048 };
         }
 
         /// <summary>
@@ -127,7 +148,16 @@ namespace MvkServer.Item
         /// <summary>
         /// Получить объект предмета с кеша, для получения информационных данных
         /// </summary>
-        public static ItemBase GetItemCache(int index) 
-            => index < 4096 ? itemsBlockInt[index] : itemsInt[index - 4096];
+        public static ItemBase GetItemCache(int index)
+        //=> index < 5000 ? itemsBlockInt[index] : itemsInt[index - 5000];
+        // TODO::2023-07-21 через пару месяцев убрать
+        {
+            if (index > 4000)
+            {
+                if (index < 5001) return itemsInt[1];
+                return itemsInt[index - 5000];
+            }
+            return itemsBlockInt[index];
+        }
     }
 }

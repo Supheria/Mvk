@@ -16,14 +16,17 @@
             switch (eMaterial)
             {
                 case EnumMaterial.Air: return material.SetTurfDoesNotDry();
+                case EnumMaterial.Solid: return material.SetSimpleCraft();
                 case EnumMaterial.Water: return material.Liquid();
                 case EnumMaterial.Lava: return material.Liquid().SetIgnites();
                 case EnumMaterial.Oil: return material.Liquid();
                 case EnumMaterial.Fire: return material.SetRequiresNoTool().SetIgnites();
+                case EnumMaterial.Wood: return material.SetSimpleCraft();
                 case EnumMaterial.Leaves: return material.SetRequiresNoTool();
                 case EnumMaterial.Sapling: return material.SetRequiresNoTool().SetTurfDoesNotDry();
                 case EnumMaterial.Glass: return material.SetGlass();
                 case EnumMaterial.GlassPane: return material.SetGlass().SetTurfDoesNotDry();
+                case EnumMaterial.Door: return material.SetTurfDoesNotDry();
                 case EnumMaterial.Piece: return material.SetTurfDoesNotDry();
             }
             return material;

@@ -1,5 +1,6 @@
 ﻿using MvkClient.Actions;
 using MvkClient.Setitings;
+using MvkServer.Network;
 using System;
 
 namespace MvkClient.Gui
@@ -50,9 +51,9 @@ namespace MvkClient.Gui
         /// <summary>
         /// Прорисовка нужного скрина если это надо
         /// </summary>
-        public void DrawScreen()
+        public void DrawScreen(float timeIndex)
         {
-            if (screen != null) screen.Draw();
+            if (screen != null) screen.Draw(timeIndex);
         }
 
         /// <summary>
@@ -115,6 +116,14 @@ namespace MvkClient.Gui
         }
 
         /// <summary>
+        /// Получить сетевой пакет
+        /// </summary>
+        public void AcceptNetworkPackage(IPacket packet)
+        {
+            if (screen != null) screen.AcceptNetworkPackage(packet);
+        }
+
+        /// <summary>
         /// Заменить экран на другое меню
         /// </summary>
         public void Exchange(Screen screenNew)
@@ -131,7 +140,17 @@ namespace MvkClient.Gui
         /// <summary>
         /// Активация контейнера во время игры
         /// </summary>
-        public void InGameConteiner() => Exchange(new ScreenConteiner(ClientMain));
+        public void InGameConteinerCreative()
+        {
+            if (ClientMain.Player.IsCreativeMode)
+            {
+                Exchange(new ScreenConteinerCreative(ClientMain));
+            }
+        }
+        /// <summary>
+        /// Активация крафта во время игры
+        /// </summary>
+        public void InGameCraft(int window) => Exchange(new ScreenCraft(ClientMain, window));
         /// <summary>
         /// Активация меню во время игры
         /// </summary>

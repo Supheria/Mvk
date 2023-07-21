@@ -31,6 +31,7 @@ namespace MvkServer.Item.List
         protected ItemAbTool(EnumItem enumItem, int numberTexture, int level, int maxDamage, float force, float damage, int pause)
             : base(enumItem, numberTexture, 1)
         {
+            craft.SetTime(20);
             IsRenderQuadSide = true;
             MaxDamage = maxDamage;
             this.force = force;

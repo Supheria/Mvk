@@ -874,7 +874,7 @@ namespace MvkClient.Entity
         public void OnStoppedUsingItem()
         {
             StopUsingItem();
-            ClientWorld.ClientMain.TrancivePacket(new PacketC0CPlayerAction(PacketC0CPlayerAction.EnumAction.StopUsingItem));
+            ClientMain.TrancivePacket(new PacketC0CPlayerAction(PacketC0CPlayerAction.EnumAction.StopUsingItem));
         }
 
         /// <summary>
@@ -901,7 +901,8 @@ namespace MvkClient.Entity
             if (start && moving.IsBlock() && !IsSneaking())
             {
                 // клик по блоку
-                click = moving.Block.GetBlock().OnBlockActivated(World, this, moving.BlockPosition, moving.Block, moving.Side, moving.Facing);
+                BlockBase block = moving.Block.GetBlock();
+                click = block.OnBlockActivated(World, this, moving.BlockPosition, moving.Block, moving.Side, moving.Facing);
                 if (click)
                 {
                     ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(moving.BlockPosition));
@@ -909,11 +910,19 @@ namespace MvkClient.Entity
                 else
                 {
                     itemStack = Inventory.GetCurrentItem();
-                    if (itemStack == null)
+                    if ((itemStack == null || (itemStack != null && itemStack.Item.IsTool())) && block.Material.SimpleCraft
+                        && ClientMain.World.GetBlockState(moving.BlockPosition.OffsetUp()).IsAir())
                     {
-                        // нужна проверка, на инструмент или кулак, сейчас кулак. И проверка твёрдого блока
+                        // Проверка, на инструмент или кулак и проверка твёрдого блока и сверху небо
                         //TODO::2023-07-09 Открываем верстак выживания
-                        ClientMain.Screen.InGameConteiner();
+                        if (ClientMain.Player.IsCreativeMode)
+                        {
+                            ClientMain.Screen.InGameConteinerCreative();
+                        }
+                        else
+                        {
+                            ClientMain.Screen.InGameCraft(1);
+                        }
                         return;
                     }
                 }
@@ -1116,6 +1125,18 @@ namespace MvkClient.Entity
         /// В менеджере работы с разрушениями блока, делаем отмену разрушения
         /// </summary>
         public void ItemInWorldManagerDestroyAbout() => itemInWorldManager.DestroyAbout();
+
+        /// <summary>
+        /// Выбросить предмет который в руке, только для клиента
+        /// </summary>
+        public void ThrowOutCurrentItem()
+        {
+            if (Inventory.GetCurrentItem() != null)
+            {
+                ClientMain.TrancivePacket(new PacketC0CPlayerAction(PacketC0CPlayerAction.EnumAction.ThrowOutCurrentItem));
+            }
+        }
+
 
         #region Frame
 

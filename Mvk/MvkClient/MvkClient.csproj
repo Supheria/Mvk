@@ -82,6 +82,8 @@
     <Compile Include="Entity\Particle\EntityTestFX.cs" />
     <Compile Include="Entity\Particle\EntityPartFX.cs" />
     <Compile Include="Entity\Particle\EntityFX.cs" />
+    <Compile Include="Gui\ScreenConteinerItems.cs" />
+    <Compile Include="Gui\ViewItem.cs" />
     <Compile Include="Gui\ButtonSlot.cs" />
     <Compile Include="Gui\ButtonBox.cs" />
     <Compile Include="Gui\CursorIcon.cs" />
@@ -93,9 +95,10 @@
     <Compile Include="Gui\EnumScreenKey.cs" />
     <Compile Include="Gui\GuiScreen.cs" />
     <Compile Include="Gui\ScreenBase.cs" />
+    <Compile Include="Gui\ScreenCraft.cs" />
     <Compile Include="Gui\ScreenGameOver.cs" />
     <Compile Include="Gui\ScreenInGame.cs" />
-    <Compile Include="Gui\ScreenConteiner.cs" />
+    <Compile Include="Gui\ScreenConteinerCreative.cs" />
     <Compile Include="Gui\ScreenInGameMenu.cs" />
     <Compile Include="Gui\ScreenLoading.cs" />
     <Compile Include="Gui\ScreenMultiplayer.cs" />

@@ -225,6 +225,14 @@
         /// Кирка стальная
         /// </summary>
         PickaxeSteel = 54,
+        /// <summary>
+        /// Столярный верстак
+        /// </summary>
+        CraftingTableCarpentry = 55,
+        /// <summary>
+        /// Стол инструментальщика
+        /// </summary>
+        ToolmakerTable = 56
     }
 
     /// <summary>
@@ -232,6 +240,6 @@
     /// </summary>
     public class ItemsCount
     {
-        public const int COUNT = 54;
+        public const int COUNT = 56;
     }
 }

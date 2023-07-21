@@ -59,8 +59,8 @@ namespace MvkServer.World.Block
                 case EnumBlock.LogSpruce: return new BlockUniLog(143, 142, null, 5);
                 case EnumBlock.LogFruit: return new BlockUniLog(150, 149, new WorldGenTreeFruit2(), 6);
                 case EnumBlock.LogPalm: return new BlockLogPalm();
-                case EnumBlock.PlanksOak: return new BlockUniWood(131, 130);
-                case EnumBlock.PlanksBirch: return new BlockUniWood(138, 137);
+                case EnumBlock.PlanksOak: return new BlockUniWood(131, 130).SetCraftRecipe(5, 3, new Element(EnumBlock.LogOak), new Element(EnumItem.Stick));
+                case EnumBlock.PlanksBirch: return new BlockUniWood(138, 137).SetCraftRecipe(10, new Element(EnumBlock.LogBirch));
                 case EnumBlock.PlanksSpruce: return new BlockUniWood(145, 144);
                 case EnumBlock.PlanksFruit: return new BlockUniWood(152, 151);
                 case EnumBlock.PlanksPalm: return new BlockUniWood(160, 159);
@@ -110,6 +110,8 @@ namespace MvkServer.World.Block
                 case EnumBlock.TallGrass: return new BlockTallGrass();
                 case EnumBlock.Coconut: return new BlockCoconut();
                 case EnumBlock.Apple: return new BlockApple();
+                case EnumBlock.CraftingTableCarpentry: return new BlockCraftingTableCarpentry();
+                case EnumBlock.ToolmakerTable: return new BlockToolmakerTable();
             }
 
             return new BlockAir(true);

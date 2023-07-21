@@ -310,7 +310,7 @@ namespace MvkServer.World.Block.List
             if (random.Next(16) == 0)
             {
                 EnumTimeYear enumTimeYear = world.GetTimeYear();
-                if (enumTimeYear == EnumTimeYear.Spring && enumTimeYear == EnumTimeYear.Summer)
+                if (enumTimeYear == EnumTimeYear.Spring || enumTimeYear == EnumTimeYear.Summer)
                 {
                     int met = blockState.met;
                     int side = 0;

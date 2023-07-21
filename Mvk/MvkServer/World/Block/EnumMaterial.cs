@@ -88,7 +88,11 @@
         /// <summary>
         /// Интерьер
         /// </summary>
-        Interior = 20
+        Interior = 20,
+        /// <summary>
+        /// Деревяные столы
+        /// </summary>
+        WoodTable = 21
     }
 
     /// <summary>
@@ -96,6 +100,6 @@
     /// </summary>
     public class MaterialsCount
     {
-        public const int COUNT = 20;
+        public const int COUNT = 21;
     }
 }

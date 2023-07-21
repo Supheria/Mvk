@@ -1,5 +1,4 @@
-﻿using MvkServer.Entity;
-using MvkServer.Entity.List;
+﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.NBT;
 using MvkServer.Network;
@@ -28,6 +27,8 @@ namespace MvkServer.Item
         /// Количество вещей в стаке
         /// </summary>
         public int Amount { get; private set; }
+
+        public ItemStack() { }
 
         public ItemStack(BlockBase block) : this(block, 1, 0) { }
         public ItemStack(BlockBase block, int amount) : this(block, amount, 0) { }
@@ -68,15 +69,27 @@ namespace MvkServer.Item
         /// <summary>
         /// Добавить к количеству
         /// </summary>
-        public void AddAmount(int amount) => Amount += amount;
+        public ItemStack AddAmount(int amount)
+        {
+            Amount += amount;
+            return this;
+        }
         /// <summary>
         /// Уменьшить количество на amount
         /// </summary>
-        public void ReduceAmount(int amount) => Amount -= amount;
+        public ItemStack ReduceAmount(int amount)
+        {
+            Amount -= amount;
+            return this;
+        }
         /// <summary>
         /// Задать новое количество
         /// </summary>
-        public void SetAmount(int amount) => Amount = amount;
+        public ItemStack SetAmount(int amount)
+        {
+            Amount = amount;
+            return this;
+        }
 
         /// <summary>
         /// Копия стака
@@ -285,6 +298,8 @@ namespace MvkServer.Item
             }
             return null;
         }
+
+        public string GetItemName() => Item.GetName();
 
         public override string ToString() => Item.GetName() + " " + Amount;
 

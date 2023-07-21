@@ -53,7 +53,7 @@ namespace MvkServer.Entity.List
                                 if (!isBreak && blockBase.Material.EMaterial == EnumMaterial.Solid)
                                 {
                                     // Разбивается кокос на две половинки
-                                    itemStack = new ItemStack(Items.GetItemCache(EnumItem.HalfCoconut), 2);
+                                    itemStack = new ItemStack(Items.GetItemCache(EnumItem.HalfCoconut), World.Rnd.Next(5) == 0 ? 2 : 1);
                                     World.PlaySoundPop(pos);
                                     World.SetBlockState(moving.BlockPosition.Offset(moving.Norm), new BlockState(EnumBlock.WaterFlowing, 7), 14);
                                 }

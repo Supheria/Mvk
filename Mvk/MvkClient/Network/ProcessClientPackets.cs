@@ -1,5 +1,6 @@
 ﻿using MvkClient.Entity;
 using MvkClient.Setitings;
+using MvkClient.Util;
 using MvkServer.Entity;
 using MvkServer.Entity.List;
 using MvkServer.Network;
@@ -8,7 +9,6 @@ using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
 using MvkServer.Util;
 using System.Collections;
-using System.Threading.Tasks;
 
 namespace MvkClient.Network
 {
@@ -96,6 +96,7 @@ namespace MvkClient.Network
                 case 0x2A: Handle29Particles((PacketS2AParticles)packet); break;
                 case 0x2F: Handle2FSetSlot((PacketS2FSetSlot)packet); break;
                 case 0x30: Handle30WindowItems((PacketS30WindowItems)packet); break;
+                case 0x31: Handle31WindowProperty((PacketS31WindowProperty)packet); break;
                 case 0x39: Handle39PlayerAbilities((PacketS39PlayerAbilities)packet); break;
                 case 0x3A: Handle3AMessage((PacketS3AMessage)packet); break;
 
@@ -422,8 +423,9 @@ namespace MvkClient.Network
         /// </summary>
         private void Handle2FSetSlot(PacketS2FSetSlot packet)
         {
-            ClientMain.Player.Inventory.SetInventorySlotContents(packet.GetSlot(), packet.GetItemStack());
-            if (packet.GetSlot() == ClientMain.Player.Inventory.CurrentItem)
+            int slot = packet.GetSlot();
+            ClientMain.Player.Inventory.SetInventorySlotContents(slot, packet.GetItemStack());
+            if (slot == ClientMain.Player.Inventory.CurrentItem)
             {
                 ClientMain.Player.ItemInWorldManagerDestroyAbout();
             }
@@ -432,6 +434,23 @@ namespace MvkClient.Network
         private void Handle30WindowItems(PacketS30WindowItems packet)
         {
             ClientMain.Player.Inventory.SetMainAndArmor(packet.GetStacks());
+        }
+
+        private void Handle31WindowProperty(PacketS31WindowProperty packet)
+        {
+            PacketS31WindowProperty.EnumAction action = packet.GetAction();
+            if (action == PacketS31WindowProperty.EnumAction.CraftStop)
+            {
+                ClientMain.Player.Inventory.CraftedClient();
+            }
+            else if (action == PacketS31WindowProperty.EnumAction.ArrayRecipe)
+            {
+                ClientMain.Screen.AcceptNetworkPackage(packet);
+            }
+            else if (action == PacketS31WindowProperty.EnumAction.CraftOpen)
+            {
+                ClientMain.SetScreen(ObjectKey.GameWindow, packet.GetWindow());
+            }
         }
 
         /// <summary>

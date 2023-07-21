@@ -99,7 +99,7 @@ namespace MvkClient.Renderer.Block
                         blockUV.colorsr = colorsFF;
                         blockUV.colorsg = colorsFF;
                         blockUV.colorsb = colorsFF;
-                        blockUV.BuildingDamaged(3968 + damagedBlocksValue * 2);
+                        blockUV.BuildingDamaged((block.IsDamagedBlockBlack ? 3840 : 3968) + damagedBlocksValue * 2);
                     }
                 }
             }

@@ -36,6 +36,7 @@ namespace MvkServer.World.Block.List
             this.eBlockLog = eBlockLog;
             this.eBlockSapling = eBlockSapling;
             Material = Materials.GetMaterialCache(EnumMaterial.Leaves);
+            IsDamagedBlockBlack = true;
             UseNeighborBrightness = true;
             IsCollidable = false;
             NeedsRandomTick = fetus;
@@ -86,7 +87,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Сколько ударов требуется, чтобы сломать блок в тактах (20 тактов = 1 секунда)
         /// </summary>
-        //public override int Hardness(BlockState state) => 2;
+        public override int Hardness(BlockState state) => 10;
 
         /// <summary>
         /// Коробки для рендера 

@@ -23,6 +23,7 @@ namespace MvkServer.World.Block.List
         public BlockNest()
         {
             SetUnique();
+            Craft.SetRecipe(40, new Element(EnumItem.WoodChips, 4), new Element(EnumItem.DryGrass, 8), new Element(EnumBlock.FlowerClover), new Element(EnumBlock.FlowerDandelion));
             Material = Materials.GetMaterialCache(EnumMaterial.Interior);
             Particle = 960;
             Combustibility = true;

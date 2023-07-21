@@ -13,6 +13,7 @@ namespace MvkServer.Item.List
             : base(EnumItem.AxeStone, numberTexture, level, maxDamage, force, damage, pause)
         {
             ItemUseAction = EnumItemAction.Axe;
+            craft.SetRecipe(40, new Element(EnumItem.Stick), new Element(EnumItem.PieceStone), new Element(EnumItem.DryGrass, 3));
             Quads = new ItemQuadSide[]
             {
                 // Палка
@@ -40,7 +41,8 @@ namespace MvkServer.Item.List
         {
             MaterialBase material = block.Material;
             EnumMaterial eMaterial = material.EMaterial;
-            return eMaterial == EnumMaterial.Wood || eMaterial == EnumMaterial.Leaves || material.Glass 
+            return eMaterial == EnumMaterial.Wood || eMaterial == EnumMaterial.Leaves
+                || eMaterial == EnumMaterial.WoodTable || material.Glass 
                 || block.EBlock == EnumBlock.Brol || eMaterial == EnumMaterial.Solid || eMaterial == EnumMaterial.Ore
                 || eMaterial == EnumMaterial.Door;
         }
@@ -53,7 +55,8 @@ namespace MvkServer.Item.List
         {
             EnumMaterial eMaterial = block.Material.EMaterial;
             EnumBlock eBlock = block.EBlock;
-            return eMaterial == EnumMaterial.Wood || eMaterial == EnumMaterial.Leaves || eBlock == EnumBlock.Stone || eBlock == EnumBlock.OreCoal 
+            return eMaterial == EnumMaterial.Wood || eMaterial == EnumMaterial.Leaves
+                || eMaterial == EnumMaterial.WoodTable || eBlock == EnumBlock.Stone || eBlock == EnumBlock.OreCoal 
                 || eBlock == EnumBlock.OreIron || eMaterial == EnumMaterial.Door;
         }
     }

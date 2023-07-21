@@ -5,6 +5,7 @@ using MvkServer.NBT;
 using MvkServer.Sound;
 using MvkServer.World;
 using MvkServer.World.Block;
+using System.Collections.Generic;
 
 namespace MvkServer.Entity.List
 {
@@ -523,6 +524,39 @@ namespace MvkServer.Entity.List
             ItemStack itemStack = Inventory.GetCurrentItem();
             return itemStack != null ? itemStack.GetItemUseAction() : EnumItemAction.None;
         }
+
+        #region Recipe
+
+        /// <summary>
+        /// Проверка доступа к этому предмету для рецептов, у игрока
+        /// </summary>
+        private bool AccessRecipe(ItemBase item)
+        {
+            if (item != null)// && item.Id > 1000)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Фильтр по доступу рецептов предметов игрока
+        /// </summary>
+        protected int[] FiltrAccessArrayItems(int[] array)
+        {
+            List<int> list = new List<int>();
+            int count = array.Length;
+            for (int i = 0; i < count; i++)
+            {
+                if (AccessRecipe(ItemBase.GetItemById(array[i])))
+                {
+                    list.Add(array[i]);
+                }
+            }
+            return list.ToArray();
+        }
+
+        #endregion
 
         /// <summary>
         /// Либо запишите эту сущность в указанный тег NBT и верните true, либо верните false, ничего не делая.

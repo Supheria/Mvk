@@ -123,6 +123,16 @@ namespace MvkAssets {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ConteinerCraft {
+            get {
+                object obj = ResourceManager.GetObject("ConteinerCraft", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap ConteinerItems {
             get {
                 object obj = ResourceManager.GetObject("ConteinerItems", resourceCulture);

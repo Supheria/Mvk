@@ -150,6 +150,10 @@ namespace MvkServer.World.Block
         /// Из-за долго жизни огня, 60 как правило сгорит
         /// </summary>
         public byte BurnOdds { get; protected set; } = 0;
+        /// <summary>
+        /// Цвет трещины разрушения чисто чёрный без альфы
+        /// </summary>
+        public bool IsDamagedBlockBlack { get; protected set; } = false;
 
         /// <summary>
         /// Присутствует дроп у блока
@@ -191,6 +195,10 @@ namespace MvkServer.World.Block
         /// Материал блока
         /// </summary>
         public MaterialBase Material { get; protected set; }
+        /// <summary>
+        /// Объект крафта
+        /// </summary>
+        public CraftItem Craft { get; private set; } = new CraftItem();
 
         /// <summary>
         /// Цвет для подмешевания блока, для гуи или частичек
@@ -650,6 +658,23 @@ namespace MvkServer.World.Block
         /// Блок который замедляет сущность в перемещении на ~30%
         /// </summary>
         public virtual bool IsSlow(BlockState state) => false;
+
+        /// <summary>
+        /// Задать рецепт
+        /// </summary>
+        public BlockBase SetCraftRecipe(int time, params Element[] recipe)
+        {
+            Craft.SetRecipe(time, recipe);
+            return this;
+        }
+        /// <summary>
+        /// Задать рецепт
+        /// </summary>
+        public BlockBase SetCraftRecipe(int amount, int time, params Element[] recipe)
+        {
+            Craft.SetRecipe(amount, time, recipe);
+            return this;
+        }
 
         /// <summary>
         /// Строка

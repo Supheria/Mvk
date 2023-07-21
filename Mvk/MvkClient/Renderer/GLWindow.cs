@@ -95,17 +95,17 @@ namespace MvkClient.Renderer
             try
             {
                 DrawBegin();
+                // коэффициент интерполяции
+                float timeIndex = 0;
                 // тут мир
                 if (client.World != null)
                 {
-                    // коэффициент интерполяции
-                    float timeIndex = client.World.Interpolation();
-
+                    timeIndex = client.World.Interpolation();
                     // Мир
                     client.World.WorldRender.Draw(timeIndex);
                 }
                 // тут gui
-                client.Screen.DrawScreen();
+                client.Screen.DrawScreen(timeIndex);
 
                 DrawEnd();
             }

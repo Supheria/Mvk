@@ -29,7 +29,10 @@
         /// Воспламеняет (лава или огонь)
         /// </summary>
         public bool Ignites { get; protected set; } = false;
-        
+        /// <summary>
+        /// На каких блоках можно делать простой крафт
+        /// </summary>
+        public bool SimpleCraft { get; protected set; } = false;
 
         public MaterialBase(EnumMaterial enumMaterial) => EMaterial = enumMaterial;
 
@@ -75,6 +78,15 @@
         public MaterialBase SetIgnites()
         {
             Ignites = true;
+            return this;
+        }
+
+        /// <summary>
+        /// Задать на каких блоках можно делать простой крафт
+        /// </summary>
+        public MaterialBase SetSimpleCraft()
+        {
+            SimpleCraft = true;
             return this;
         }
 

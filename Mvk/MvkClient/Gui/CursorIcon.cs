@@ -32,29 +32,30 @@ namespace MvkClient.Gui
         public void SetSlot(Slot slot)
         {
             this.slot = slot;
-            Render();
+            RenderSlot();
         }
+
+        /// <summary>
+        /// Перерендер
+        /// </summary>
+        public void PereRender() => RenderSlot();
 
         /// <summary>
         /// Прорисовка контрола
         /// </summary>
-        public override void Draw() => GLRender.ListCall(dList);
+        public override void Draw(float timeIndex) => GLRender.ListCall(dList);
 
-        private void Render()
+        private void RenderSlot()
         {
             if (slot == null) return;
 
             uint list = GLRender.ListBegin();
 
-            gl.Enable(OpenGL.GL_TEXTURE_2D);
-            GLWindow.Texture.BindTexture(AssetsTexture.Widgets);
-            gl.Color(1f, 1f, 1f, 1f);
-            float v1 = Enabled ? enter ? .390625f : .1953125f : 0;
-            GLRender.Rectangle(0, 0, Width, Height, v1, .8046875f, v1 + .1953125f, 1);
-
+            GLRender.Texture2DEnable();
+            GLRender.Color(1);
             if (!slot.Empty())
             {
-                if (slot.Item.EItem == EnumItem.Block && slot.Item is ItemBlock itemBlock)
+                if (slot.Stack.Item.EItem == EnumItem.Block && slot.Stack.Item is ItemBlock itemBlock)
                 {
                     // Прорисовка блока
                     screen.ClientMain.World.WorldRender.GetBlockGui(itemBlock.Block.EBlock).Render(0, 0, 26);
@@ -62,12 +63,12 @@ namespace MvkClient.Gui
                 else
                 {
                     // Прорисовка предмета
-                    screen.ClientMain.World.WorldRender.GetItemGui(slot.Item.EItem).Render(0, 0, 26);
+                    screen.ClientMain.World.WorldRender.GetItemGui(slot.Stack.Item.EItem).Render(0, 0);
                 }
-                if (slot.Amount > 1)
+                if (slot.Stack.Amount > 1)
                 {
                     GLWindow.Texture.BindTexture(Assets.ConvertFontToTexture(size));
-                    Text = slot.Amount.ToString();
+                    Text = slot.Stack.Amount.ToString();
                     int x = GetXAlight(Text, 12) + 6;
                     vec3 color = Enabled ? enter ? new vec3(1, 1, .5f) : new vec3(1) : new vec3(.5f);
                     FontRenderer.RenderString(x, 9, Text, size, color, Alpha, Enabled, .1f);

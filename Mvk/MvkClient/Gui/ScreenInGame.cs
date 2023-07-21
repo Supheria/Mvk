@@ -243,7 +243,6 @@ namespace MvkClient.Gui
             int h = -size - 8;
             vec4 colorText = new vec4(1);
             FontSize fontSize = FontSize.Font12;
-            FontRenderer.ResetFont();
 
             for (int i = 0; i < 8; i++)
             {
@@ -276,7 +275,7 @@ namespace MvkClient.Gui
                     else
                     {
                         // Прорисовка предмета
-                        ClientMain.World.WorldRender.GetItemGui(itemStack.Item.EItem).Render(w1, h1, scale);
+                        ClientMain.World.WorldRender.GetItemGui(itemStack.Item.EItem).Render(w1, h1);
                     }
                     if (itemStack.Amount > 1)
                     {

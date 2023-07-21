@@ -1,4 +1,5 @@
 ﻿using MvkServer.Glm;
+using MvkServer.Item;
 using MvkServer.Management;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Server;
@@ -176,6 +177,9 @@ namespace MvkServer.Entity.List
             profiler.StartSection("TheItemInWorldManager.UpdateBlock");
             TheItemInWorldManager.UpdateBlock();
             profiler.EndSection();
+
+            // обновления в инвентаре, используется для крафта, только на сервере
+            Inventory.UpdateServer();
 
             // если нет хп обновлям смертельную картинку
             if (GetHealth() <= 0f) DeathUpdate();
@@ -381,6 +385,22 @@ namespace MvkServer.Entity.List
         /// Задаём положение игрока на земле ли для сервера
         /// </summary>
         public void SetOnGroundServer(bool onGround) => OnGround = onGround;
+
+        /// <summary>
+        /// Отправить массив рецептов клиенту, номер это категория рецептов
+        /// </summary>
+        public void SendAccessRecipe(int category)
+        {
+            int[] ar = new int[0];
+            if (category == 1) ar = FiltrAccessArrayItems(Items.craftFirst);
+            else if (category == 2) ar = FiltrAccessArrayItems(Items.craftCarpentry);
+            else if (category == 3) ar = FiltrAccessArrayItems(Items.craftToolmaker);
+
+            if (ar.Length > 0)
+            {
+                SendPacket(new PacketS31WindowProperty(ar));
+            }
+        }
 
         public override string ToString()
         {

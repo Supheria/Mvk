@@ -42,6 +42,7 @@ namespace MvkServer.Network
                     case 0x09: return new PacketC09HeldItemChange();
                     case 0x0A: return new PacketC0AAnimation();
                     case 0x0C: return new PacketC0CPlayerAction();
+                    case 0x0E: return new PacketC0EPacketClickWindow();
                     case 0x10: return new PacketC10CreativeInventoryAction();
                     case 0x14: return new PacketC14Message();
                     case 0x15: return new PacketC15ClientSetting();
@@ -81,6 +82,7 @@ namespace MvkServer.Network
                     case 0x2A: return new PacketS2AParticles();
                     case 0x2F: return new PacketS2FSetSlot();
                     case 0x30: return new PacketS30WindowItems();
+                    case 0x31: return new PacketS31WindowProperty();
                     case 0x39: return new PacketS39PlayerAbilities();
                     case 0x3A: return new PacketS3AMessage();
 

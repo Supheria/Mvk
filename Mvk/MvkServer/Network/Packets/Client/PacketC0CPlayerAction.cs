@@ -51,7 +51,11 @@
             /// <summary>
             /// Прекратили действие предмета
             /// </summary>
-            StopUsingItem = 2
+            StopUsingItem = 2,
+            /// <summary>
+            /// Выбросить текущий предмет
+            /// </summary>
+            ThrowOutCurrentItem = 3
         }
     }
 }

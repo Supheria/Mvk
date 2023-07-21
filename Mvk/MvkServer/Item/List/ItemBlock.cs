@@ -22,6 +22,11 @@ namespace MvkServer.Item.List
         public override string GetName() => "block." + Block.EBlock;
 
         /// <summary>
+        /// Объект крафта
+        /// </summary>
+        public override CraftItem GetCraft() => Block.Craft;
+
+        /// <summary>
         ///  Вызывается, когда блок щелкают правой кнопкой мыши с этим элементом
         /// </summary>
         /// <param name="stack"></param>

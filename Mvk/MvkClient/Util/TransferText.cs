@@ -44,7 +44,7 @@ namespace MvkClient.Util
         {
             this.sizeInterface = sizeInterface;
             this.size = size;
-            inWidth = width;
+            inWidth = width * sizeInterface;
         }
 
         public void Run(string text)
@@ -57,35 +57,38 @@ namespace MvkClient.Util
         {
             OutWidth = 0;
             NumberLines = 1;
-            string[] strs = inText.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-
-            List<string> symbols = new List<string>();
-            foreach (string str in strs)
-            {
-                symbols.AddRange(str.Split(' '));
-            }
+            string[] strs = inText.Split(new string[] { "\r\n", "§u" }, StringSplitOptions.None);
 
             int wspase = FontRenderer.WidthString(" ", size) * sizeInterface;
-            int w = 0;
+            int w;
             string text = "";
-            foreach (string symbol in symbols)
+            string[] symbols;
+            bool first = true;
+            foreach (string str in strs)
             {
-                int ws = FontRenderer.WidthString(symbol, size, false) * sizeInterface;
-                if (w + wspase + ws > inWidth)
+                symbols = str.Split(' ');
+                w = 0;
+                if (!first) text += "\r\n"; else first = false;
+
+                foreach (string symbol in symbols)
                 {
-                    if (w > OutWidth) OutWidth = w;
-                    NumberLines++;
-                    w = ws;
-                    text += "\r\n" + symbol;
+                    int ws = FontRenderer.WidthString(symbol, size, false) * sizeInterface;
+                    if (w + wspase + ws > inWidth)
+                    {
+                        if (w > OutWidth) OutWidth = w;
+                        NumberLines++;
+                        w = ws;
+                        text += "\r\n" + symbol;
+                    }
+                    else
+                    {
+                        if (w > 0) text += " ";
+                        text += symbol;
+                        w += wspase + ws;
+                    }
                 }
-                else
-                {
-                    if (w > 0) text += " ";
-                    text += symbol;
-                    w += wspase + ws;
-                }
+                if (w > OutWidth) OutWidth = w;
             }
-            if (w > OutWidth) OutWidth = w;
             OutText = text;
             OutWidth /= sizeInterface;
         }
