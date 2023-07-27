@@ -1,0 +1,148 @@
+gui.singleplayer:Одиночна гра
+gui.multiplayer:Мережева гра
+gui.options:Налаштування
+gui.exit:Вийти
+gui.exit.world:Вийти з світу
+gui.seed:Випадкове насіння
+gui.nikname:Ім'я гравця
+gui.fps:FPS
+gui.maxfps:Максимальний FPS
+gui.overview.chunks:Огляд чанків
+gui.volume.sound:Загальна гучність
+gui.volume.music:Гучність музики
+gui.volume.off:Вимкнути звук
+gui.smooth.lighting.on:Плавне освітлення увімкнено
+gui.smooth.lighting.off:Плавне освітлення вимкнено
+gui.size.interface:Інтерфейс
+gui.apply:Застосувати
+gui.cancel:Скасувати
+gui.no:Ні
+gui.yes:Так
+gui.connect:З'єднатися
+gui.world.empty:- Порожньо -
+gui.world.name.robinson:Світ робінзона
+gui.world.name.robinson.empty:Світ робінзона. Створити?
+gui.world.name.sandbox:Пісочниця
+gui.world.name.sandbox.empty:Пісочниця. Створити?
+gui.world.broken:Світ пошкоджено!
+gui.world.delete:Ви дійсно хочете видалити світ?
+gui.saving:Збереження...
+gui.process:Процес...
+gui.loading.world:Завантаження світу {0:0.0} %
+gui.ip:IP-адреса
+gui.back.game:Повернутися до гри
+gui.language:Мова
+gui.error:Помилка
+gui.menu:В меню
+gui.error.server.disconnect:Сервер розірвав з'єднання
+gui.net:Відкрити мережу
+gui.net.on:Мережу відкрито
+gui.game.over:Ви померли!
+gui.respawn:Відродитися
+gui.conteiner.chat:Чат
+gui.conteiner.console:Консоль
+gui.conteiner.inventory:Інвентар
+gui.conteiner.craft.1:Простий крафт
+gui.conteiner.craft.2:Столярний верстак
+gui.button.craft:Виготовити
+
+world.player.duplicate:Гравець з таким ім'ям вже в грі!
+
+block.Debug:Відлагодження блок
+block.Bedrock:Коренева порода
+block.Stone:Камінь
+block.Cobblestone:Булінь
+block.Limestone:Вапняк
+block.Granite:Граніт
+block.Sandstone:Пісковик
+block.Dirt:Земля
+block.Turf:Дерн
+block.Sand:Пісок
+block.Gravel:Гравій
+block.Clay:Глина
+block.Water:Вода
+block.Lava:Лава
+block.Oil:Нафта
+block.Fire:Вогонь
+block.LogOak:Брусок дуба
+block.LogBirch:Брусок берези
+block.LogSpruce:Брусок ялини
+block.LogFruit:Брусок яблуні
+block.LogPalm:Брусок пальми
+block.PlanksOak:Дошки дуба
+block.PlanksBirch:Дошки берези
+block.PlanksSpruce:Дошки ялини
+block.PlanksFruit:Дошки яблуні
+block.PlanksPalm:Дошки пальми
+block.LeavesOak:Листя дуба
+block.LeavesBirch:Листя берези
+block.LeavesSpruce:Листя ялини
+block.LeavesFruit:Листя яблуні
+block.LeavesPalm:Листя пальми
+block.SaplingOak:Саджанець дуба
+block.SaplingBirch:Саджанець берези
+block.SaplingSpruce:Саджанець ялини
+block.SaplingFruit:Саджанець яблуні
+block.SaplingPalm:Саджанець пальми
+block.Cactus:Кактус
+block.OreCoal:Вугільна руда
+block.OreIron:Залізна руда
+block.OreGold:Золота руда
+block.Brol:Брол
+block.Grass:Трава
+block.FlowerDandelion:Квітка одуванчика
+block.FlowerClover:Квітка клевера білого
+block.Glass:Скло прозоре
+block.GlassWhite:Скло біле
+block.GlassRed:Скло червоне
+block.GlassPane:Скляна панель прозора
+block.GlassPaneWhite:Скляна панель біла
+block.GlassPaneRed:Скляна панель червона
+block.Terracotta:Кераміка
+block.Basalt:Базальт
+block.Obsidian:Обсидіан
+block.ElWire:Дріт електричний
+block.ElLampOff:Електрична лампа
+block.ElBattery:Батарея електрична
+block.ElSwitch:Вимикач електричний
+block.Tnt:TNT
+block.TntClock:TNT з годинником детонації
+block.SmallStone:Маленький камінь
+block.Nest:Гніздо
+block.Tina:Тина
+
+item.Apple:Яблуко
+item.AxeStone:Кам'яний топір
+item.AxeStone.dis:§lКам'яний топір§r це най§4крутіший§r інструмент, давніх часів, але якщо потрібно, ми можемо і зараз ним скористатися.§uЗ його допомогою можна не тільки рубати дерево, а й ламати камінь. А також спробувати вибити §n§7залізну§r руду.
+item.DoorOak:Двері дубові
+item.DoorBirch:Двері березові
+item.DoorSpruce:Двері ялинові
+item.DoorFruit:Двері плодові
+item.DoorPalm:Двері з пальми
+item.DoorIron:Двері залізні
+item.Bucket:Відро
+item.BucketWater:Відро з водою
+item.BucketLava:Відро з лавою
+item.BucketOil:Відро з нафтою
+item.CraftingTableCarpentry:Столярний верстак
+item.CraftingTableCarpentry.dis:Столярний верстак знадобиться для виготовлення різних виробів з деревини.
+item.FlintAndSteel:Кремінь і сталь
+item.PieceDirt:Грудка землі
+item.PieceStone:Камінець
+item.SpawnChicken:Спавн курки
+item.ExplosivesMin:Мала вибуховина
+item.Explosives:Вибуховина
+item.ExplosivesMax:Велика вибуховина
+item.SpawnChemoglot:Спавн чемоглота
+item.SpawnPakan:Спавн пакана
+item.Egg:Яйце
+item.PieceSand:Трохи піску
+item.PieceSandstone:Шматочок пісковика
+item.PieceClay:Грудка глини
+item.PieceTerracotta:Відламок кераміки
+item.PieceBasalt:Шматочок базальту
+item.PieceLimestone:Шматочок вапняку
+item.PieceGravel:Мелені камінчики
+item.PieceGranite:Шматочок граніту
+item.SpawnBook:Спавн книги
+item.TallGrass:Висока трава
