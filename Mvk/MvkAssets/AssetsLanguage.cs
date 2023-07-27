@@ -16,6 +16,10 @@
         /// <summary>
         /// Белорусский язык
         /// </summary>
-        Belarusian
+        Belarusian,
+        /// <summary>
+        /// Українська мова
+        /// </summary>
+        Ukranian
     }
 }
