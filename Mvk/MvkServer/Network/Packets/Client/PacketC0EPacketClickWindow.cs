@@ -5,28 +5,57 @@
     /// </summary>
     public struct PacketC0EPacketClickWindow : IPacket
     {
-        private int number;
         private EnumAction action;
+        private bool one;
+        private int number;
+        private bool isShift;
+        private bool isRight;
 
-        public int GetNumber() => number;
         public EnumAction GetAction() => action;
+        public int GetNumber() => number;
+        public bool IsShift() => isShift;
+        public bool IsRight() => isRight;
 
-        public PacketC0EPacketClickWindow(EnumAction action, int number = 0)
+        public PacketC0EPacketClickWindow(EnumAction action)
         {
-            this.number = number;
+            one = true;
             this.action = action;
+            isShift = false;
+            isRight = false;
+            number = 0;
+        }
+
+        public PacketC0EPacketClickWindow(EnumAction action, bool isShift, bool isRight, int number)
+        {
+            one = false;
+            this.action = action;
+            this.isShift = isShift;
+            this.isRight = isRight;
+            this.number = number;
         }
 
         public void ReadPacket(StreamBase stream)
         {
-            number = stream.ReadShort();
             action = (EnumAction)stream.ReadByte();
+            one = stream.ReadBool();
+            if (!one)
+            {
+                isShift = stream.ReadBool();
+                isRight = stream.ReadBool();
+                number = stream.ReadShort();
+            }
         }
 
         public void WritePacket(StreamBase stream)
         {
-            stream.WriteShort((short)number);
             stream.WriteByte((byte)action);
+            stream.WriteBool(one);
+            if (!one)
+            {
+                stream.WriteBool(isShift);
+                stream.WriteBool(isRight);
+                stream.WriteShort((short)number);
+            }
         }
 
         /// <summary>
@@ -47,21 +76,13 @@
             /// </summary>
             ThrowOutAir = 2,
             /// <summary>
-            /// Левый кликнули на слот инвентаря
+            /// Кликнули на слот инвентаря
             /// </summary>
-            ClickLeftSlot = 3,
+            ClickSlot = 3,
             /// <summary>
-            /// Правый кликнули на слот инвентаря
+            /// Запрос на сделать крафт предмета(ов)
             /// </summary>
-            ClickRightSlot = 4,
-            /// <summary>
-            /// Запрос на сделать крафт одного предмета
-            /// </summary>
-            CraftOne = 5,
-            /// <summary>
-            /// Запрос на сделать крафт стака предметов
-            /// </summary>
-            CraftMax = 6,
+            Craft = 4
         }
     }
 }

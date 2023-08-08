@@ -4,7 +4,7 @@
     public class SlotEventArgs
     {
         /// <summary>
-        /// Объект измёнённого слота
+        /// Индекс измёнённого слота
         /// </summary>
         public int IndexSlot { get; private set; }
 

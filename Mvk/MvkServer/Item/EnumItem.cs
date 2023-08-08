@@ -232,7 +232,11 @@
         /// <summary>
         /// Стол инструментальщика
         /// </summary>
-        ToolmakerTable = 56
+        ToolmakerTable = 56,
+        /// <summary>
+        /// Кремень
+        /// </summary>
+        Flint = 57
     }
 
     /// <summary>
@@ -240,6 +244,6 @@
     /// </summary>
     public class ItemsCount
     {
-        public const int COUNT = 56;
+        public const int COUNT = 57;
     }
 }

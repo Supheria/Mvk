@@ -4,6 +4,7 @@ using MvkServer.NBT;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
+using MvkServer.TileEntity;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
@@ -162,9 +163,10 @@ namespace MvkServer.Item
         /// <summary>
         /// Наносим урон предмету (инструменту), вернёт true если инструмент сломался
         /// </summary>
-        public bool DamageItem(WorldBase world, int amount, EntityPlayer entity, BlockPos blockPos)
+        /// <param name="sendNotDamage">true - если действие отрабатывается только на сервере!</param>
+        public bool DamageItem(WorldBase world, int amount, EntityPlayer entityPlayer, BlockPos blockPos, bool sendNotDamage = false)
         {
-            if (entity is EntityPlayer entityPlayer && !entityPlayer.IsCreativeMode)
+            if (!entityPlayer.IsCreativeMode)
             {
                 if (AttemptDamageItem(amount))
                 {
@@ -175,15 +177,45 @@ namespace MvkServer.Item
                     {
                         // всем звуковой эффект поломки из сервера, так-как на клиенте этот метод работает через тик,
                         // и сервер раньше может обнулить и звука не будет
-                        worldServer.Tracker.SendToAllTrackingEntityCurrent(entity, new PacketS29SoundEffect(
+                        worldServer.Tracker.SendToAllTrackingEntityCurrent(entityPlayer, new PacketS29SoundEffect(
                             AssetsSample.Break, blockPos.ToVec3() + .5f, 1, world.Rnd.NextFloat() * .4f + .8f));
                         // Отправить изменение инвентаря, без этого предмет не исчезает
-                        entity.Inventory.SendSetSlotPlayer();
+                        entityPlayer.Inventory.SendSetSlotPlayer();
                     }
                     return true;
                 }
+                else if (sendNotDamage)
+                {
+                    // Отправить изменение инвентаря, без этого предмет не исчезает
+                    entityPlayer.Inventory.SendSetSlotPlayer();
+                }
             }
             return false;
+        }
+
+        /// <summary>
+        /// Наносим урон предмету (инструменту) на стале крафта, вернёт true если инструмент сломался
+        /// </summary>
+        public void DamageItemCraftTable(WorldServer worldServer, int amount, EntityPlayerServer entityPlayer, TileEntityBase tileEntity)
+        {
+            if (!entityPlayer.IsCreativeMode)
+            {
+                if (AttemptDamageItem(amount))
+                {
+                    // Сломался предмет
+                    // всем звуковой эффект поломки из сервера
+                    worldServer.Tracker.SendToAllTrackingEntityCurrent(entityPlayer, new PacketS29SoundEffect(
+                        AssetsSample.Break, entityPlayer.Position, 1, worldServer.Rnd.NextFloat() * .4f + .8f));
+                    // Отправить отсутствие ячейки инструмента
+                    tileEntity.SetStackInSlot(0, null);
+                }
+                else
+                {
+                    // Отправить изменение ячейки инструмента
+                    tileEntity.SetStackInSlot(0, this);
+                }
+                entityPlayer.SendToAllPlayersUseTileEntity(100);
+            }
         }
 
         /// <summary>
@@ -320,5 +352,26 @@ namespace MvkServer.Item
         /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
         /// </returns>
         public override int GetHashCode() => Item.Id.GetHashCode() ^ Amount.GetHashCode() ^ ItemDamage.GetHashCode();
+
+        /// <summary>
+        /// Создает данный ItemStack как EntityItem в мире в заданной позиции 
+        /// </summary>
+        /// <param name="worldIn"></param>
+        /// <param name="pos"></param>
+        /// <param name="itemStack"></param>
+        public static void SpawnAsEntity(WorldBase worldIn, BlockPos blockPos, ItemStack itemStack)
+        {
+            if (!worldIn.IsRemote)
+            {
+                vec3 pos = new vec3(
+                    blockPos.X + worldIn.Rnd.NextFloat() * .5f + .25f,
+                    blockPos.Y + worldIn.Rnd.NextFloat() * .5f + .25f,
+                    blockPos.Z + worldIn.Rnd.NextFloat() * .5f + .25f
+                );
+                EntityItem entityItem = new EntityItem(worldIn, pos, itemStack);
+                entityItem.SetDefaultPickupDelay();
+                worldIn.SpawnEntityInWorld(entityItem);
+            }
+        }
     }
 }

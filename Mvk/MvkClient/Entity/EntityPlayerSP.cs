@@ -903,11 +903,13 @@ namespace MvkClient.Entity
                 // клик по блоку
                 BlockBase block = moving.Block.GetBlock();
                 click = block.OnBlockActivated(World, this, moving.BlockPosition, moving.Block, moving.Side, moving.Facing);
-                if (click)
+                // Отправляем на сервер клик по блоку
+                //TODO::2023-08-07 если убрать коммент click то не открывается первый крафт, а ранее добавли, из-за кремния, вроде
+                //     if (click) 
                 {
                     ClientMain.TrancivePacket(new PacketC08PlayerBlockPlacement(moving.BlockPosition));
                 }
-                else
+                if (!click)
                 {
                     itemStack = Inventory.GetCurrentItem();
                     if ((itemStack == null || (itemStack != null && itemStack.Item.IsTool())) && block.Material.SimpleCraft
@@ -921,7 +923,7 @@ namespace MvkClient.Entity
                         }
                         else
                         {
-                            ClientMain.Screen.InGameCraft(1);
+                            ClientMain.Screen.InGameWindow(EnumWindowType.CraftFirst);
                         }
                         return;
                     }

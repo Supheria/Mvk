@@ -1,6 +1,8 @@
 ﻿using MvkServer.Entity;
 using MvkServer.Entity.List;
 using MvkServer.Glm;
+using MvkServer.Network;
+using MvkServer.TileEntity;
 using MvkServer.Util;
 using MvkServer.World.Biome;
 using MvkServer.World.Block;
@@ -20,7 +22,7 @@ namespace MvkServer.World
         /// Радиус активных чанков во круг игрока
         /// </summary>
         private const int RADIUS_ACTION_CHUNK = 9;
-        
+
 
         /// <summary>
         /// Объект лога
@@ -146,8 +148,8 @@ namespace MvkServer.World
             UnloadedEntityList.Clear();
 
             profiler.EndStartSection("EntityTick");
-            
-            
+
+
             // Пробегаем по всем сущностям и обрабатываеи их такт
             for (int i = 0; i < LoadedEntityList.Count; i++)
             {
@@ -288,7 +290,7 @@ namespace MvkServer.World
             if (block != null && block.IsParticle)
             {
                 SpawnParticle(EnumParticle.BlockPart, count,
-                    new vec3(blockPos.X + .5f, blockPos.Y + .625f, blockPos.Z + .5f), 
+                    new vec3(blockPos.X + .5f, blockPos.Y + .625f, blockPos.Z + .5f),
                     new vec3(1f, .75f, 1f), 0, (int)block.EBlock);
             }
         }
@@ -311,6 +313,12 @@ namespace MvkServer.World
         /// Получить чанк по координатам блока
         /// </summary>
         public ChunkBase GetChunk(BlockPos pos) => ChunkPr.GetChunk(new vec2i(pos.X >> 4, pos.Z >> 4));
+
+        /// <summary>
+        /// Пометка что чанк надо будет перезаписать
+        /// </summary>
+        public virtual void ChunkModified(BlockPos blockPos) { }
+
         /// <summary>
         /// Проверить наличие чанка
         /// </summary>
@@ -320,7 +328,7 @@ namespace MvkServer.World
         /// Получить блок
         /// </summary>
         /// <param name="bpos">глобальная позиция блока</param>
-       // public BlockBase GetBlock(BlockPos bpos) => GetBlock(bpos.X, bpos.Y, bpos.Z);
+        // public BlockBase GetBlock(BlockPos bpos) => GetBlock(bpos.X, bpos.Y, bpos.Z);
         /// <summary>
         /// Получить блок
         /// </summary>
@@ -463,7 +471,7 @@ namespace MvkServer.World
                 blockState = GetBlockState(blockPos);
                 block = blockState.GetBlock();
                 enumBlock = blockState.GetEBlock();
-                
+
                 if (isLiquid && !liquid && block.Material.IsLiquid)
                 {
                     liquid = true;
@@ -478,7 +486,7 @@ namespace MvkServer.World
                     end.x = px + t * dx;
                     end.y = py + t * dy;
                     end.z = pz + t * dz;
-                    
+
                     norm.x = norm.y = norm.z = 0;
                     if (steppedIndex == 0)
                     {
@@ -533,8 +541,8 @@ namespace MvkServer.World
                     }
                 }
             }
-           
-            if (isLiquid) 
+
+            if (isLiquid)
             {
                 moving.SetLiquid(enumBlockLiquid, blockPosLiquid);
             }
@@ -586,7 +594,7 @@ namespace MvkServer.World
             }
             // Уведомление соседей и на сервере и на клиенте
             if ((flag & 2) != 0) NotifyNeighborsOfStateChange(blockPos, blockState.GetBlock());
-            
+
             //BlockBase block = blockState.GetBlock();
             //BlockBase blockNew = blockStateTrue.GetBlock();
 
@@ -793,7 +801,7 @@ namespace MvkServer.World
             {
                 EntityPlayer entity = PlayerEntities.GetAt(i) as EntityPlayer;
                 float distanceCache = entity.GetDistanceSq(x, y, z);
-                if ((distance < 0 || distanceCache < distance * distance) 
+                if ((distance < 0 || distanceCache < distance * distance)
                     && (distanceMin == -1f || distanceMin > distanceCache))
                 {
                     distanceMin = distance;
@@ -1136,8 +1144,38 @@ namespace MvkServer.World
         /// <param name="distance">дистанция</param>
         public virtual void CreateExplosion(vec3 pos, float power, float distance) { }
 
-        
-
         public virtual void DebugString(string logMessage, params object[] args) { }
+
+        #region TileEntity
+
+        /// <summary>
+        /// Получить сущность плитки по глобальным координатам
+        /// </summary>
+        public TileEntityBase GetTileEntity(BlockPos pos) => GetChunk(pos).GetTileEntity(pos.X & 15, pos.Y, pos.Z & 15);
+        /// <summary>
+        /// Создать и добавить сущность плитки
+        /// </summary>
+        public void CreateTileEntity(EnumTileEntities enumTile, BlockPos blockPos, BlockState state)
+        {
+            TileEntityBase tileEntity = TileEntities.CreateTileEntityByEnum(this, enumTile);
+            tileEntity.SetBlockPosition(state, state.GetBlock(), blockPos);
+            GetChunk(tileEntity.Position).SetTileEntity(tileEntity);
+        }
+        
+        /// <summary>
+        /// Удалить сущность плитки
+        /// </summary>
+        public virtual void RemoveTileEntity(BlockPos pos) { }
+        /// <summary>
+        /// Отправить всем игрокам пакет, которые используют этот TileEntity
+        /// </summary>
+        public virtual void SendToAllPlayersUseTileEntity(IPacket packet, BlockPos blockPos) { }
+
+        /// <summary>
+        /// Отправить всем игрокам список крафта, которые используют этот TileEntity
+        /// </summary>
+        public virtual void SendToAllPlayersUseTileEntityListCraft(BlockPos blockPos) { }
+
+        #endregion
     }
 }

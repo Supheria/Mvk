@@ -64,6 +64,10 @@
         /// <summary>
         /// В игре запуск окна
         /// </summary>
-        GameWindow
+        GameWindowOpen,
+        /// <summary>
+        /// В игре закрыть окна
+        /// </summary>
+        GameWindowClose
     }
 }

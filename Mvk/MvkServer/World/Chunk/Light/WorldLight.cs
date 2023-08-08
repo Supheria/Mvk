@@ -1116,5 +1116,127 @@ namespace MvkServer.World.Chunk.Light
         }
 
         #endregion
+
+        /// <summary>
+        /// Починить чанк блочного освещения по позиции чанка, вернуть ответ количество блоков с ошибкой
+        /// Покуда только те, где остался светится, но не должен
+        /// </summary>
+        public int FixChunkLightBlock(vec2i pos)
+        {
+            ChunkBase chunk = World.GetChunk(pos);
+            ActionChunk(chunk);
+            if (!UpChunks()) return -1;
+
+            int x, y, z, ys, xx, yy, zz, index;
+            // яркость от блока
+            byte lb;
+            // излучаемая яркость блока
+            int lo;
+            // яркость от соседних блоков
+            byte lightBeside;
+            int count = 0;
+            int xb = pos.x << 4;
+            int zb = pos.y << 4;
+            bool begin = true;
+            countBlock = 0;
+            ChunkStorage chunkStorage;
+            indexBegin = indexEnd = 0;
+            List<vec3i> list = new List<vec3i>();
+            for (ys = 0; ys < ChunkBase.COUNT_HEIGHT; ys++)
+            {
+                chunkStorage = chunk.StorageArrays[ys];
+                for (y = 0; y < 16; y++)
+                {
+                    yy = (ys << 4) | y;
+                    for (x = 0; x < 16; x++)
+                    {
+                        xx = xb | x;
+                        for (z = 0; z < 16; z++)
+                        {
+                            index = y << 8 | z << 4 | x;
+                            lb = chunkStorage.lightBlock[index];
+                            if (lb > 0) // у блока имеется яркость от блока
+                            {
+                                zz = zb | z;
+                                // яркость от соседних блоков
+                                lightBeside = GetLevelBrightBlock(xx, yy, zz);
+                                if (lb >= lightBeside) // яркость блока ярче соседних
+                                {
+                                    // проверяем блок на яркость, совпадает с lb или нет
+                                    lo = chunkStorage.IsEmptyData() ? 0
+                                        : (Blocks.blocksLightOpacity[chunkStorage.data[index] & 0xFFF] & 0xF);
+                                    if (lo != lb)
+                                    {
+                                        // затемняем
+                                        count++;
+                                        if (begin)
+                                        {
+                                            begin = false;
+                                            axisX0 = axisX1 = xx;
+                                            axisY0 = axisY1 = yy;
+                                            axisZ0 = axisZ1 = zz;
+                                            indexBegin = indexEnd = 0;
+                                        } 
+                                        else
+                                        {
+                                            if (xx < axisX0) axisX0 = xx; else if (xx > axisX1) axisX1 = xx;
+                                            if (yy < axisY0) axisY0 = yy; else if (yy > axisY1) axisY1 = yy;
+                                            if (zz < axisZ0) axisZ0 = zz; else if (zz > axisZ1) axisZ1 = zz;
+                                        }
+                                        list.Add(new vec3i(ys, index, lo));
+                                        arCache[indexEnd++] = (xx - bOffsetX + 32 | yy << 6 | zz - bOffsetZ + 32 << 14 | lb << 20);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (indexEnd > 0)
+            {
+                vec3i cache;
+                for (x = 0; x < list.Count; x++)
+                {
+                    cache = list[x];
+                    chunk.StorageArrays[cache.x].lightBlock[cache.y] = (byte)cache.z;
+                }
+                DarkenLightBlock();
+                BrighterLightBlock();
+                if (World is WorldServer worldServer)
+                {
+                    worldServer.MarkBlockRangeForModified(axisX0, axisZ0, axisX1, axisZ1);
+                    worldServer.ServerMarkChunkRangeForRenderUpdate(axisX0 >> 4, axisY0 >> 4, axisZ0 >> 4, axisX1 >> 4, axisY1 >> 4, axisZ1 >> 4);
+                }
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Возращает наивысший уровень яркости, глобальные координаты
+        /// </summary>
+        private byte GetLevelBrightBlock(int x, int y, int z)
+        {
+            // обрабатываем соседние блоки, вдруг рядом плафон ярче, чтоб не затемнить
+            vec3i vec;
+            int i, y2;
+            byte lightResult = 0;
+            byte lightCache;
+            for (i = 0; i < 6; i++)
+            {
+                vec = MvkStatic.ArraOne3d6[i];
+                y2 = y + vec.y;
+                if (y2 >= 0 && y2 <= ChunkBase.COUNT_HEIGHT_BLOCK)
+                {
+                    lightCache = GetLightBlock(x + vec.x, y2, z + vec.z);
+                    // Если соседний блок ярче текущего блока
+                    if (lightCache > lightResult) lightResult = lightCache;
+                    // Если блок яркий выводим значение
+                    if (lightResult == 15) return 15;
+                }
+            }
+            return lightResult;
+        }
+
     }
 }

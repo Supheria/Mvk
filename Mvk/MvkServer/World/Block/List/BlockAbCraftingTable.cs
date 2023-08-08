@@ -25,9 +25,9 @@ namespace MvkServer.World.Block.List
          */
 
         /// <summary>
-        /// Номер окна крафта
+        /// Тип окна крафта
         /// </summary>
-        protected int window;
+        protected EnumWindowType window;
 
         public BlockAbCraftingTable()
         {
@@ -63,8 +63,8 @@ namespace MvkServer.World.Block.List
         {
             if (!worldIn.IsRemote && entityPlayer is EntityPlayerServer entityPlayerServer)
             {
-                // Открыть окно крафта 2
-                entityPlayerServer.SendPacket(new PacketS31WindowProperty(window));
+                // Открыть окно крафта
+                entityPlayerServer.SendPacket(new PacketS2DOpenWindow(window));
             }
             return true;
         }
@@ -74,11 +74,8 @@ namespace MvkServer.World.Block.List
         /// </summary>
         public override void OnBreakBlock(WorldBase worldIn, BlockPos blockPos, BlockState state)
         {
-            // Ламаем всю дверь
-            int met = state.met;
-            int level = met & 1;
-            int boxX = (met & 2) != 0 ? 1 : 0;
-            int boxZ = (met & 4) != 0 ? 1 : 0;
+            // Ламаем весь стол
+            blockPos = GetBlockStartPosition(blockPos, state);
             int x, y, z;
             for (x = 0; x < 2; x++)
             {
@@ -86,10 +83,32 @@ namespace MvkServer.World.Block.List
                 {
                     for (y = 0; y < 2; y++)
                     {
-                        worldIn.SetBlockToAir(blockPos.Offset(x - boxX, y - level, z - boxZ), 12);
+                        worldIn.SetBlockToAir(blockPos.Offset(x, y, z), 12);
                     }
                 }
             }
+            worldIn.RemoveTileEntity(blockPos);
+        }
+
+        /// <summary>
+        /// Получить начальную позицию блока, если блок принадлежит структуре и используется бля TileEntity (пример верстаки)
+        /// </summary>
+        public override BlockPos GetBlockStartPosition(BlockPos blockPos, BlockState blockState)
+        {
+            int met = blockState.met;
+            int level = met & 1;
+            int boxX = (met & 2) != 0 ? 1 : 0;
+            int boxZ = (met & 4) != 0 ? 1 : 0;
+            return blockPos.Offset(-boxX, -level, -boxZ);
+        }
+
+        /// <summary>
+        /// Открыли окно, вызывается объектом EntityPlayerServer
+        /// </summary>
+        public override void OpenWindow(WorldServer worldServer, EntityPlayerServer entityPlayer, BlockPos blockPos)
+        {
+            OpenWindowTileEntity(worldServer, entityPlayer, blockPos);
+            entityPlayer.SendPacket(new PacketS31WindowProperty(entityPlayer.FiltrAccessArrayItems(GetListItemsCraft())));
         }
 
         /// <summary>

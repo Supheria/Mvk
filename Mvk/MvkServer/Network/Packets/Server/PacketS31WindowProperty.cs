@@ -6,30 +6,20 @@
     public struct PacketS31WindowProperty : IPacket
     {
         private int[] recipe;
-        private int window;
         private EnumAction action;
 
         public EnumAction GetAction() => action;
         public int[] GetRecipe() => recipe;
-        public int GetWindow() => window;
 
         public PacketS31WindowProperty(EnumAction action)
         {
             this.action = action;
             recipe = new int[0];
-            window = 0;
         }
         public PacketS31WindowProperty(int[] recipe)
         {
             action = EnumAction.ArrayRecipe;
             this.recipe = recipe;
-            window = 0;
-        }
-        public PacketS31WindowProperty(int window)
-        {
-            action = EnumAction.CraftOpen;
-            recipe = new int[0];
-            this.window = window;
         }
 
         public void ReadPacket(StreamBase stream)
@@ -43,10 +33,6 @@
                 {
                     recipe[i] = stream.ReadShort();
                 }
-            }
-            else if (action == EnumAction.CraftOpen)
-            {
-                window = stream.ReadByte();
             }
         }
 
@@ -62,10 +48,6 @@
                     stream.WriteShort((short)recipe[i]);
                 }
             }
-            else if (action == EnumAction.CraftOpen)
-            {
-                stream.WriteByte((byte)window);
-            }
         }
 
         /// <summary>
@@ -74,19 +56,17 @@
         public enum EnumAction
         {
             /// <summary>
+            /// Закрыть окно, сервер требует
+            /// </summary>
+            CloseWindow = 1,
+            /// <summary>
             /// Остановить крафт
             /// </summary>
-            CraftStop = 1,
-            /// <summary>
-            /// Открыть крафт
-            /// </summary>
-            CraftOpen = 2,
+            CraftStop = 2,
             /// <summary>
             /// Передать массив доступных рецептов для крафта
             /// </summary>
-            ArrayRecipe = 3
-            
+            ArrayRecipe = 3,
         }
-
     }
 }

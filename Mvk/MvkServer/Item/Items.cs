@@ -39,17 +39,17 @@ namespace MvkServer.Item
             {
                 case EnumItem.Block: return new ItemBlock(block, EnumItem.Block, 0, -1);
                 case EnumItem.Apple: return new ItemUniFood(EnumItem.Apple, 0, 4, 32, 16);
-                case EnumItem.DoorOak: return new ItemDoor(EnumItem.DoorOak, 32, EnumBlock.DoorOak);
-                case EnumItem.DoorBirch: return new ItemDoor(EnumItem.DoorBirch, 33, EnumBlock.DoorBirch);
-                case EnumItem.DoorSpruce: return new ItemDoor(EnumItem.DoorSpruce, 34, EnumBlock.DoorSpruce);
-                case EnumItem.DoorFruit: return new ItemDoor(EnumItem.DoorFruit, 35, EnumBlock.DoorFruit);
-                case EnumItem.DoorPalm: return new ItemDoor(EnumItem.DoorPalm, 36, EnumBlock.DoorPalm);
+                case EnumItem.DoorOak: return new ItemDoor(EnumItem.DoorOak, 32, EnumBlock.DoorOak).SetCraftRecipe(50, new Element(EnumBlock.PlanksOak, 4)).SetCraftTools(EnumItem.AxeIron, EnumItem.AxeSteel);
+                case EnumItem.DoorBirch: return new ItemDoor(EnumItem.DoorBirch, 33, EnumBlock.DoorBirch).SetCraftRecipe(50, new Element(EnumBlock.PlanksBirch, 4)).SetCraftTools(EnumItem.AxeIron, EnumItem.AxeSteel);
+                case EnumItem.DoorSpruce: return new ItemDoor(EnumItem.DoorSpruce, 34, EnumBlock.DoorSpruce).SetCraftRecipe(50, new Element(EnumBlock.PlanksSpruce, 4)).SetCraftTools(EnumItem.AxeIron, EnumItem.AxeSteel);
+                case EnumItem.DoorFruit: return new ItemDoor(EnumItem.DoorFruit, 35, EnumBlock.DoorFruit).SetCraftRecipe(50, new Element(EnumBlock.PlanksFruit, 4)).SetCraftTools(EnumItem.AxeIron, EnumItem.AxeSteel);
+                case EnumItem.DoorPalm: return new ItemDoor(EnumItem.DoorPalm, 36, EnumBlock.DoorPalm).SetCraftRecipe(50, new Element(EnumBlock.PlanksPalm, 4)).SetCraftTools(EnumItem.AxeIron, EnumItem.AxeSteel);
                 case EnumItem.DoorIron: return new ItemDoor(EnumItem.DoorIron, 37, EnumBlock.DoorIron);
                 case EnumItem.Bucket: return new ItemBucket();
                 case EnumItem.BucketWater: return new ItemBucketWater();
                 case EnumItem.BucketLava: return new ItemBucketLava();
                 case EnumItem.BucketOil: return new ItemBucketOil();
-                case EnumItem.FlintAndSteel: return new ItemFlintAndSteel();
+                case EnumItem.FlintAndSteel: return new ItemFlintAndSteel().SetCraftRecipe(10, new Element(EnumItem.Flint, 2), new Element(EnumItem.PieceStone));
                 case EnumItem.PieceDirt: return new ItemBase(EnumItem.PieceDirt, 192, 128);
                 case EnumItem.PieceStone: return new ItemUniPiece(EnumItem.PieceStone, 193, .5f);
                 case EnumItem.SpawnChicken: return new ItemUniSpawn(EnumItem.SpawnChicken, 224);
@@ -70,11 +70,11 @@ namespace MvkServer.Item
                 case EnumItem.SpawnBook: return new ItemUniSpawn(EnumItem.SpawnBook, 227);
                 case EnumItem.TallGrass: return new ItemTallGrass(EnumItem.TallGrass, 288);
                 case EnumItem.Coconut: return new ItemUniPiece(EnumItem.Coconut, 202, .16f);
-                case EnumItem.HalfCoconut: return new ItemUniFood(EnumItem.HalfCoconut, 2, 6, 96, 16);
-                case EnumItem.AxeStone: return new ItemAxeStone(132, 133, 1, 500, .5f, 2.5f, 6);
+                case EnumItem.HalfCoconut: return new ItemUniFood(EnumItem.HalfCoconut, 2, 6, 96, 16).SetCraftRecipe(2, 10, new Element(EnumItem.Coconut));
+                case EnumItem.AxeStone: return new ItemAxeStone(132, 133, 1, 500, .5f, 2.5f, 6).SetCraftRecipe(40, new Element(EnumItem.Stick), new Element(EnumItem.PieceStone), new Element(EnumItem.DryGrass, 3));
                 case EnumItem.AxeIron: return new ItemAxe(EnumItem.AxeIron, 145, 147, 2, 1000, 2, 4, 5); // 128 129
                 case EnumItem.AxeSteel: return new ItemAxe(EnumItem.AxeSteel, 144, 146, 3, 5000, 5, 5, 4); // 130 131
-                case EnumItem.DiggingStick: return new ItemShovel(EnumItem.DiggingStick, 134, 135, 1, 500, .25f, 1.5f, 6, false);
+                case EnumItem.DiggingStick: return new ItemShovel(EnumItem.DiggingStick, 134, 135, 1, 500, .25f, 1.5f, 6, false).SetCraftRecipe(20, new Element(EnumItem.Stick, 2));
                 case EnumItem.ShovelIron: return new ItemShovel(EnumItem.ShovelIron, 136, 137, 2, 1000, 2, 2.5f, 5);
                 case EnumItem.ShovelSteel: return new ItemShovel(EnumItem.ShovelSteel, 138, 139, 3, 5000, 5, 3.5f, 0);
                 case EnumItem.Stick: return new ItemBase(EnumItem.Stick, 160, 32);
@@ -82,8 +82,9 @@ namespace MvkServer.Item
                 case EnumItem.DryGrass: return new ItemBase(EnumItem.DryGrass, 289, 128);
                 case EnumItem.PickaxeIron: return new ItemPickaxe(EnumItem.PickaxeIron, 140, 141, 2, 1000, 2, 3, 6);
                 case EnumItem.PickaxeSteel: return new ItemPickaxe(EnumItem.PickaxeSteel, 142, 143, 3, 5000, 5, 4, 5);
-                case EnumItem.CraftingTableCarpentry: return new ItemUniCraftingTable(EnumItem.CraftingTableCarpentry, 44, EnumBlock.CraftingTableCarpentry, EnumBlock.LogBirch);
-                case EnumItem.ToolmakerTable: return new ItemUniCraftingTable(EnumItem.ToolmakerTable, 45, EnumBlock.ToolmakerTable, EnumBlock.LogOak);
+                case EnumItem.CraftingTableCarpentry: return new ItemUniCraftingTable(EnumItem.CraftingTableCarpentry, 44, EnumBlock.CraftingTableCarpentry).SetCraftRecipe(80, new Element(EnumItem.Stick, 8), new Element(EnumBlock.LogBirch, 4));
+                case EnumItem.ToolmakerTable: return new ItemUniCraftingTable(EnumItem.ToolmakerTable, 45, EnumBlock.ToolmakerTable).SetCraftRecipe(80, new Element(EnumItem.Stick, 8), new Element(EnumBlock.LogOak, 4));
+                case EnumItem.Flint: return new ItemUniPiece(EnumItem.Flint, 204, .4f);
             }
             
             return null;
@@ -124,7 +125,7 @@ namespace MvkServer.Item
                 5001, 5046, 5034, 5018, 5019, 5020, 5021, 5029, 5030, 5031, 
                 5002, 5003, 5004, 5005, 5006, 5007, 5053, 5051, 5052, 5045, 
                 5026, 5027, 5035, 5036, 5037, 5038, 5039, 5040, 5041, 5042,
-                5028, 5032, 5033, 5043, 5055, 5056, 0, 0, 0, 0,
+                5028, 5032, 5033, 5043, 5055, 5056, 78, 5057, 0, 0,
 
                 5022, 5048, 5023, 5047, 5049, 5024, 5050, 5025, 5054
             };

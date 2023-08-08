@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Item;
+﻿using MvkServer.Item;
 using MvkServer.Item.List;
 using MvkServer.Util;
 
@@ -13,7 +12,7 @@ namespace MvkServer.World.Block.List
         private readonly int hardness;
         private readonly EnumItem dropItem;
 
-        public BlockUniSolid(int numberTexture, vec3 color, EnumItem dropItem, int hardness = 25, float resistance = 10f)
+        public BlockUniSolid(int numberTexture, EnumItem dropItem, int hardness = 25, float resistance = 10f)
         {
             this.hardness = hardness;
             this.dropItem = dropItem;

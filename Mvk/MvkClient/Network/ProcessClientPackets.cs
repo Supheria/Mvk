@@ -93,7 +93,8 @@ namespace MvkClient.Network
                 case 0x25: Handle25BlockBreakAnim((PacketS25BlockBreakAnim)packet); break;
                 case 0x27: Handle27Explosion((PacketS27Explosion)packet); break;
                 case 0x29: Handle29SoundEffect((PacketS29SoundEffect)packet); break;
-                case 0x2A: Handle29Particles((PacketS2AParticles)packet); break;
+                case 0x2A: Handle2AParticles((PacketS2AParticles)packet); break;
+                case 0x2D: Handle2DOpenWindow((PacketS2DOpenWindow)packet); break;
                 case 0x2F: Handle2FSetSlot((PacketS2FSetSlot)packet); break;
                 case 0x30: Handle30WindowItems((PacketS30WindowItems)packet); break;
                 case 0x31: Handle31WindowProperty((PacketS31WindowProperty)packet); break;
@@ -401,7 +402,7 @@ namespace MvkClient.Network
                 packet.GetPosition(), packet.GetVolume(), packet.GetPitch());
         }
 
-        private void Handle29Particles(PacketS2AParticles packet)
+        private void Handle2AParticles(PacketS2AParticles packet)
         {
             ClientMain.World.SpawnParticle(packet.GetParticle(), packet.GetCount(), packet.GetPosition(), packet.GetOffset(), packet.GetMotion(), packet.GetItems());
             //int count = packet.GetCount();
@@ -418,38 +419,58 @@ namespace MvkClient.Network
             //}
         }
 
+        private void Handle2DOpenWindow(PacketS2DOpenWindow packet)
+        {
+            ClientMain.SetScreen(ObjectKey.GameWindowOpen, packet.GetWindowType());
+        }
+
         /// <summary>
         /// Редактирование слота игрока
         /// </summary>
         private void Handle2FSetSlot(PacketS2FSetSlot packet)
         {
             int slot = packet.GetSlot();
-            ClientMain.Player.Inventory.SetInventorySlotContents(slot, packet.GetItemStack());
-            if (slot == ClientMain.Player.Inventory.CurrentItem)
+            if (slot < 100 || slot == 255)
             {
-                ClientMain.Player.ItemInWorldManagerDestroyAbout();
+                ClientMain.Player.Inventory.SetInventorySlotContents(slot, packet.GetItemStack());
+                if (slot == ClientMain.Player.Inventory.CurrentItem)
+                {
+                    ClientMain.Player.ItemInWorldManagerDestroyAbout();
+                }
+            }
+            else
+            {
+                // Пришёл стак для склада
+                ClientMain.Screen.AcceptNetworkPackage(packet);
             }
         }
 
         private void Handle30WindowItems(PacketS30WindowItems packet)
         {
-            ClientMain.Player.Inventory.SetMainAndArmor(packet.GetStacks());
+            if (packet.IsInventory())
+            {
+                ClientMain.Player.Inventory.SetMainAndArmor(packet.GetStacks());
+            }
+            else
+            {
+                ClientMain.Screen.AcceptNetworkPackage(packet);
+            }
         }
 
         private void Handle31WindowProperty(PacketS31WindowProperty packet)
         {
             PacketS31WindowProperty.EnumAction action = packet.GetAction();
-            if (action == PacketS31WindowProperty.EnumAction.CraftStop)
+            if (action == PacketS31WindowProperty.EnumAction.CloseWindow)
+            {
+                ClientMain.SetScreen(ObjectKey.GameWindowClose);
+            }
+            else if (action == PacketS31WindowProperty.EnumAction.CraftStop)
             {
                 ClientMain.Player.Inventory.CraftedClient();
             }
             else if (action == PacketS31WindowProperty.EnumAction.ArrayRecipe)
             {
                 ClientMain.Screen.AcceptNetworkPackage(packet);
-            }
-            else if (action == PacketS31WindowProperty.EnumAction.CraftOpen)
-            {
-                ClientMain.SetScreen(ObjectKey.GameWindow, packet.GetWindow());
             }
         }
 

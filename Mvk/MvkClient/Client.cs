@@ -14,6 +14,7 @@ using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Client;
+using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
@@ -414,7 +415,8 @@ namespace MvkClient
                 case ObjectKey.RenderDebug: Debug.RenderDebug(); break;
                 case ObjectKey.GameMode: CursorShow(false); break;
                 case ObjectKey.GameOver: Screen.GameOver(e.Tag.ToString()); break;
-                case ObjectKey.GameWindow: Screen.InGameCraft((int)e.Tag); break;
+                case ObjectKey.GameWindowOpen: Screen.InGameWindow((EnumWindowType)e.Tag); break;
+                case ObjectKey.GameWindowClose: Screen.GameMode(); break;
             }
         }
 

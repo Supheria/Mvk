@@ -254,7 +254,7 @@ namespace MvkServer.Entity
         /// <summary>
         /// Будет уничтожен следующим тиком
         /// </summary>
-        public void SetDead() => IsDead = true;
+        public virtual void SetDead() => IsDead = true;
 
         /// <summary>
         /// Задать индекс

@@ -82,7 +82,9 @@
     <Compile Include="Entity\Particle\EntityTestFX.cs" />
     <Compile Include="Entity\Particle\EntityPartFX.cs" />
     <Compile Include="Entity\Particle\EntityFX.cs" />
+    <Compile Include="Gui\ScreenConteinerBox.cs" />
     <Compile Include="Gui\ScreenConteinerItems.cs" />
+    <Compile Include="Gui\ScreenConteinerItemsPage.cs" />
     <Compile Include="Gui\ViewItem.cs" />
     <Compile Include="Gui\ButtonSlot.cs" />
     <Compile Include="Gui\ButtonBox.cs" />

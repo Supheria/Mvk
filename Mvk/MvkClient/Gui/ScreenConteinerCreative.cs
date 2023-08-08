@@ -7,7 +7,7 @@ namespace MvkClient.Gui
     /// <summary>
     /// У гульні запушчана меню кантэйнера
     /// </summary>
-    public class ScreenConteinerCreative : ScreenConteinerItems
+    public class ScreenConteinerCreative : ScreenConteinerItemsPage
     {
         public ScreenConteinerCreative(Client client) : base(client)
         {

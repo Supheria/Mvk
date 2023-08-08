@@ -349,10 +349,11 @@ namespace MvkServer.Entity.List
                 //}
 
                 //if (!this.isSlient())
-                {
+               // {
                     // Звук
+                   // entityIn.PlaySound(Sound.AssetsSample.Pop, .2f, ((rand.NextFloat() - rand.NextFloat()) * .7f + 1f) * 2f);
                     //this.worldObj.playSoundAtEntity(entityIn, "random.pop", 0.2F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.7F + 1.0F) * 2.0F);
-                }
+                //}
 
                 // Вызывается всякий раз, когда предмет поднимается при наступлении на него. 
                 entityIn.ItemPickup(this, var3);

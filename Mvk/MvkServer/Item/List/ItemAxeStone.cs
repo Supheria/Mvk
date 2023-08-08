@@ -13,7 +13,6 @@ namespace MvkServer.Item.List
             : base(EnumItem.AxeStone, numberTexture, level, maxDamage, force, damage, pause)
         {
             ItemUseAction = EnumItemAction.Axe;
-            craft.SetRecipe(40, new Element(EnumItem.Stick), new Element(EnumItem.PieceStone), new Element(EnumItem.DryGrass, 3));
             Quads = new ItemQuadSide[]
             {
                 // Палка

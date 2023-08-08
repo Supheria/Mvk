@@ -20,7 +20,7 @@ namespace MvkServer.Item.List
         public ItemFlintAndSteel() : base(EnumItem.FlintAndSteel, 100, 1)
         {
             blockFire = Blocks.GetBlockCache(EnumBlock.Fire);
-            MaxDamage = 5;
+            MaxDamage = 100;
         }
 
         /// <summary>
@@ -34,35 +34,44 @@ namespace MvkServer.Item.List
         /// <param name="facing">Значение в пределах 0..1, образно фиксируем пиксел клика на стороне</param>
         public override bool OnItemUse(ItemStack stack, EntityPlayer playerIn, WorldBase worldIn, BlockPos blockPos, Pole side, vec3 facing)
         {
-            if (!worldIn.GetBlockState(blockPos).GetBlock().IsReplaceable)
+            if (!worldIn.IsRemote)
             {
-                blockPos = blockPos.Offset(side);
-            }
-            
-            if (worldIn.GetBlockState(blockPos).IsAir() 
-                && CanPlaceBlockOnSide(stack, playerIn, worldIn, blockPos, blockFire, side, facing))
-            {
-                BlockState blockState = blockFire.OnBlockPlaced(worldIn, blockPos, new BlockState(blockFire.EBlock), side, facing);
-                if (blockFire.CanBlockStay(worldIn, blockPos, blockState.met))
+                if (!worldIn.GetBlockState(blockPos).GetBlock().IsReplaceable)
                 {
-                    BlockState blockStateOld = worldIn.GetBlockState(blockPos);
-                    bool result = worldIn.SetBlockState(blockPos, blockState, 15);
-                    if (result)
-                    {
-                        if (!playerIn.IsCreativeMode)
-                        {
-                            blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld);
-                            if (stack.Item != null)
-                            {
-                                stack.DamageItem(worldIn, 1, playerIn, blockPos);
-                            }
-                        }
-                        worldIn.PlaySound(playerIn, AssetsSample.FireIgnite, blockPos.ToVec3() + .5f, 1f, worldIn.Rnd.NextFloat() * .4f + .8f);
-                    }
-                    return result;
+                    blockPos = blockPos.Offset(side);
                 }
+
+                if (worldIn.GetBlockState(blockPos).IsAir() && stack.Item != null
+                    && CanPlaceBlockOnSide(stack, playerIn, worldIn, blockPos, blockFire, side, facing))
+                {
+                    BlockState blockState = blockFire.OnBlockPlaced(worldIn, blockPos, new BlockState(blockFire.EBlock), side, facing);
+                    if (blockFire.CanBlockStay(worldIn, blockPos, blockState.met))
+                    {
+                        if (worldIn.Rnd.Next(10) != 0)
+                        {
+                            // Только урон, без зажигания
+                            stack.DamageItem(worldIn, 1, playerIn, blockPos, true);
+                            worldIn.PlaySound(AssetsSample.FireIgnite, blockPos.ToVec3() + .5f, 1f, worldIn.Rnd.NextFloat() * .2f + .4f);
+                            return false;
+                        }
+                        // Вероятность зажигания всего 10%
+                        BlockState blockStateOld = worldIn.GetBlockState(blockPos);
+                        bool result = worldIn.SetBlockState(blockPos, blockState, 15);
+                        if (result)
+                        {
+                            if (!playerIn.IsCreativeMode)
+                            {
+                                blockStateOld.GetBlock().DropBlockAsItem(worldIn, blockPos, blockStateOld);
+                                stack.DamageItem(worldIn, 1, playerIn, blockPos, true);
+                            }
+                            worldIn.PlaySound(AssetsSample.FireIgnite, blockPos.ToVec3() + .5f, 1f, worldIn.Rnd.NextFloat() * .4f + .8f);
+                        }
+                        return result;
+                    }
+                }
+                return false;
             }
-            return false;
+            return true;
         }
 
     }

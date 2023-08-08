@@ -1,5 +1,7 @@
-﻿using MvkServer.Item;
+﻿using MvkServer.Entity.List;
+using MvkServer.Item;
 using MvkServer.Item.List;
+using MvkServer.Network.Packets.Server;
 using MvkServer.Util;
 
 namespace MvkServer.World.Block.List
@@ -11,7 +13,7 @@ namespace MvkServer.World.Block.List
     {
         public BlockToolmakerTable() : base()
         {
-            window = 3;
+            window = EnumWindowType.Toolmaker;
             Particle = 520;
             InitQuads(520, 520, 519, 519);
         }
@@ -27,5 +29,10 @@ namespace MvkServer.World.Block.List
             if (r < 8) return Items.GetItemCache(EnumItem.WoodChips);
             return null;
         }
+
+        /// <summary>
+        /// Получить список предметов для крафта, используется для верстаков
+        /// </summary>
+        public override int[] GetListItemsCraft() => Items.craftToolmaker;
     }
 }

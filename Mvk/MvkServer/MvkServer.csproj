@@ -34,6 +34,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Command\CommandBase.cs" />
+    <Compile Include="Command\CommandFix.cs" />
     <Compile Include="Command\CommandTeleport.cs" />
     <Compile Include="Command\CommandGameMode.cs" />
     <Compile Include="Command\CommandTime.cs" />
@@ -92,10 +93,12 @@
     <Compile Include="Entity\List\EntityChicken.cs" />
     <Compile Include="Entity\List\EntityThrowable.cs" />
     <Compile Include="Glm\GlmMvk.cs" />
+    <Compile Include="Inventory\ConteinerManagement.cs" />
     <Compile Include="Inventory\IInventory.cs" />
     <Compile Include="Inventory\InventoryPlayer.cs" />
     <Compile Include="Inventory\Slot.cs" />
     <Compile Include="Inventory\SlotEvent.cs" />
+    <Compile Include="Inventory\StackEvent.cs" />
     <Compile Include="Item\CraftItem.cs" />
     <Compile Include="Item\EnumItem.cs" />
     <Compile Include="Item\EnumItemAction.cs" />
@@ -165,6 +168,7 @@
     <Compile Include="Network\Packets\Server\PacketS2AParticles.cs" />
     <Compile Include="Network\Packets\Server\PacketS29SoundEffect.cs" />
     <Compile Include="Network\Packets\Server\PacketS27Explosion.cs" />
+    <Compile Include="Network\Packets\Server\PacketS2DOpenWindow.cs" />
     <Compile Include="Network\Packets\Server\PacketS2FSetSlot.cs" />
     <Compile Include="Network\Packets\Server\PacketS04EntityEquipment.cs" />
     <Compile Include="Network\Packets\Server\PacketS07Respawn.cs" />
@@ -185,10 +189,18 @@
     <Compile Include="Network\Packets\Server\PacketS25BlockBreakAnim.cs" />
     <Compile Include="Network\Packets\Server\PacketS23BlockChange.cs" />
     <Compile Include="Sound\AssetsSample.cs" />
+    <Compile Include="TileEntity\EnumTileEntities.cs" />
+    <Compile Include="TileEntity\List\TileEntityChest.cs" />
+    <Compile Include="TileEntity\List\TileEntityCrafting.cs" />
+    <Compile Include="TileEntity\List\TileEntityStorage.cs" />
+    <Compile Include="TileEntity\TileEntities.cs" />
+    <Compile Include="TileEntity\TileEntityBase.cs" />
+    <Compile Include="TileEntity\List\TileEntityFurnace.cs" />
     <Compile Include="Util\BlockCache.cs" />
     <Compile Include="Util\ChatStyle.cs" />
     <Compile Include="Util\EnumMoonPhase.cs" />
     <Compile Include="Util\EnumTimeYear.cs" />
+    <Compile Include="Util\EnumWindowType.cs" />
     <Compile Include="Util\ListMessy.cs" />
     <Compile Include="Util\DoubleList.cs" />
     <Compile Include="Util\EnumDamageSource.cs" />
@@ -253,6 +265,7 @@
     <Compile Include="World\Block\EnumBlock.cs" />
     <Compile Include="World\Block\EnumMaterial.cs" />
     <Compile Include="World\Block\Liquid.cs" />
+    <Compile Include="World\Block\List\BlockBox.cs" />
     <Compile Include="World\Block\List\BlockToolmakerTable.cs" />
     <Compile Include="World\Block\List\BlockCraftingTableCarpentry.cs" />
     <Compile Include="World\Block\List\BlockAbElectricity.cs" />
@@ -263,6 +276,7 @@
     <Compile Include="World\Block\List\BlockNest.cs" />
     <Compile Include="World\Block\List\BlockLeavesPalm.cs" />
     <Compile Include="World\Block\List\BlockAbCraftingTable.cs" />
+    <Compile Include="World\Block\List\BlockGravel.cs" />
     <Compile Include="World\Block\List\BlockUniPiece.cs" />
     <Compile Include="World\Block\List\BlockUniGlassPane.cs" />
     <Compile Include="World\Block\List\BlockAbLiquidFlowing.cs" />
@@ -401,5 +415,6 @@
     <Compile Include="World\WorldInfo.cs" />
     <Compile Include="World\WorldServer.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,5 +1,4 @@
-﻿using MvkServer.Glm;
-using MvkServer.Item;
+﻿using MvkServer.Item;
 
 namespace MvkServer.World.Block.List
 {
@@ -11,7 +10,7 @@ namespace MvkServer.World.Block.List
         /// <summary>
         /// Блок Базальт
         /// </summary>
-        public BlockBasalt() : base(10, new vec3(.7f), EnumItem.PieceBasalt, 15) { }
+        public BlockBasalt() : base(10, EnumItem.PieceBasalt, 15) { }
 
         /// <summary>
         /// Инициализация коробок

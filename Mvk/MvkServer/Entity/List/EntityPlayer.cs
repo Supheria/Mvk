@@ -525,39 +525,6 @@ namespace MvkServer.Entity.List
             return itemStack != null ? itemStack.GetItemUseAction() : EnumItemAction.None;
         }
 
-        #region Recipe
-
-        /// <summary>
-        /// Проверка доступа к этому предмету для рецептов, у игрока
-        /// </summary>
-        private bool AccessRecipe(ItemBase item)
-        {
-            if (item != null)// && item.Id > 1000)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Фильтр по доступу рецептов предметов игрока
-        /// </summary>
-        protected int[] FiltrAccessArrayItems(int[] array)
-        {
-            List<int> list = new List<int>();
-            int count = array.Length;
-            for (int i = 0; i < count; i++)
-            {
-                if (AccessRecipe(ItemBase.GetItemById(array[i])))
-                {
-                    list.Add(array[i]);
-                }
-            }
-            return list.ToArray();
-        }
-
-        #endregion
-
         /// <summary>
         /// Либо запишите эту сущность в указанный тег NBT и верните true, либо верните false, ничего не делая.
         /// Если это возвращает false объект не сохраняется на диске.
@@ -572,9 +539,7 @@ namespace MvkServer.Entity.List
             nbt.SetBool("AllowFlying", AllowFlying);
             nbt.SetBool("DisableDamage", DisableDamage);
             nbt.SetBool("Invisible", IsInvisible());
-            TagList list = new TagList();
-            Inventory.WriteToNBT(list);
-            nbt.SetTag("Inventory", list);
+            Inventory.WriteToNBT(nbt);
         }
 
         public override void ReadEntityFromNBT(TagCompound nbt)
@@ -585,7 +550,7 @@ namespace MvkServer.Entity.List
             AllowFlying = nbt.GetBool("AllowFlying");
             DisableDamage = nbt.GetBool("DisableDamage");
             SetInvisible(nbt.GetBool("Invisible"));
-            Inventory.ReadFromNBT(nbt.GetTagList("Inventory", 10));
+            Inventory.ReadFromNBT(nbt);
         }
     }
 }

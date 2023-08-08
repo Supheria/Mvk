@@ -32,6 +32,7 @@ namespace MvkClient.Util
             }
             else
             {
+                //TODO::2023-07-30 заменить и потестить с замером времени Marshal.UnsafeAddrOfPinnedArrayElement()
                 size = data.Length * sizeof(byte);
                 this.data = Marshal.AllocHGlobal(size);
                 Marshal.Copy(data, 0, this.data, data.Length);

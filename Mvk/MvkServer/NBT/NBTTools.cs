@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MvkServer.Item;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
@@ -155,6 +157,54 @@ namespace MvkServer.NBT
             {
                 throw ex;
             }
+        }
+
+        /// <summary>
+        /// Сохранить список стаков в группу под именем
+        /// </summary>
+        /// <param name="name">имя группы</param>
+        /// <param name="stacks">массив стаков</param>
+        public static void ItemStacksWriteToNBT(TagCompound nbt, string name, ItemStack[] stacks)
+        {
+            TagCompound compound;
+            TagList list = new TagList();
+            ItemStack itemStack;
+            for (int i = 0; i < stacks.Length; i++)
+            {
+                itemStack = stacks[i];
+                if (itemStack != null && itemStack.Amount > 0)
+                {
+                    compound = new TagCompound();
+                    compound.SetByte("Slot", (byte)i);
+                    itemStack.WriteToNBT(compound);
+                    list.AppendTag(compound);
+                }
+            }
+            if (list.TagCount() > 0)
+            {
+                nbt.SetTag(name, list);
+            }
+        }
+
+        /// <summary>
+        /// Прочесть список стаков из группы под именем и заполнить справочник
+        /// </summary>
+        /// <param name="name">имя группы</param>
+        public static Dictionary<int, ItemStack> ItemStacksReadFromNBT(TagCompound nbt, string name)
+        {
+            TagList list = nbt.GetTagList(name, 10);
+            int count = list.TagCount();
+            Dictionary<int, ItemStack> map = new Dictionary<int, ItemStack>();
+            NBTBase nbtBase;
+            for (int i = 0; i < count; i++)
+            {
+                nbtBase = list.Get(i);
+                if (nbtBase.GetId() == 10 && nbtBase is TagCompound compound)
+                {
+                    map.Add(compound.GetByte("Slot"), ItemStack.ReadFromNBT(compound));
+                }
+            }
+            return map;
         }
     }
 }

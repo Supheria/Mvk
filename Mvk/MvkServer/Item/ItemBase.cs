@@ -50,7 +50,7 @@ namespace MvkServer.Item
         /// <summary>
         /// Объект крафта
         /// </summary>
-        protected CraftItem craft = new CraftItem();
+        private CraftItem craft = new CraftItem();
 
         public ItemBase(EnumItem enumItem, int numberTexture, int maxStackSize)
         {
@@ -244,6 +244,36 @@ namespace MvkServer.Item
         /// Объект крафта
         /// </summary>
         public virtual CraftItem GetCraft() => craft;
+
+        #region Craft
+
+        /// <summary>
+        /// Задать рецепт
+        /// </summary>
+        public ItemBase SetCraftRecipe(int time, params Element[] recipe)
+        {
+            craft.SetRecipe(time, recipe);
+            return this;
+        }
+        /// <summary>
+        /// Задать рецепт
+        /// </summary>
+        public ItemBase SetCraftRecipe(int amount, int time, params Element[] recipe)
+        {
+            craft.SetRecipe(amount, time, recipe);
+            return this;
+        }
+
+        /// <summary>
+        /// Задать любой из требуемых инструментов для крафта
+        /// </summary>
+        public ItemBase SetCraftTools(params EnumItem[] tools)
+        {
+            craft.SetTools(tools);
+            return this;
+        }
+
+        #endregion
 
         public override string ToString() => Id.ToString();
 

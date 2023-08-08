@@ -1,7 +1,7 @@
 ﻿using MvkServer.Item;
 
 namespace MvkServer.Inventory
-{
+{/*
     public interface IInventory
     {
         /// <summary>
@@ -28,5 +28,5 @@ namespace MvkServer.Inventory
         /// Удаляет из слота инвентаря (первый аргумент) до указанного количества (второй аргумент) предметов и возвращает их в новый стек.
         /// </summary>
         ItemStack DecrStackSize(int index, int count);
-    }
+    }*/
 }

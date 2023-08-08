@@ -26,10 +26,6 @@ namespace MvkServer.Item.List
         public ItemUniFood(EnumItem enumItem, int numberTexture, int amount = 1, int duration = 32, int maxStackSize = 16)
             : base(enumItem, numberTexture, maxStackSize)
         {
-            if (enumItem == EnumItem.HalfCoconut)
-            {
-                craft.SetRecipe(2, 10, new Element(EnumItem.Coconut));
-            }
             this.amount = amount;
             this.duration = duration;
             ItemUseAction = EnumItemAction.Eat;

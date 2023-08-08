@@ -320,7 +320,11 @@
         /// <summary>
         /// Стол инструментальщика
         /// </summary>
-        ToolmakerTable = 77
+        ToolmakerTable = 77,
+        /// <summary>
+        /// Ящик
+        /// </summary>
+        Box = 78
     }
 
     /// <summary>
@@ -328,6 +332,6 @@
     /// </summary>
     public class BlocksCount
     {
-        public const int COUNT = 77;
+        public const int COUNT = 78;
     }
 }

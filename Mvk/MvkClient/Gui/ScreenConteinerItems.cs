@@ -1,5 +1,4 @@
-﻿using MvkAssets;
-using MvkClient.Renderer;
+﻿using MvkClient.Renderer;
 using MvkServer.Glm;
 using MvkServer.Inventory;
 using MvkServer.Item;
@@ -8,14 +7,11 @@ using System;
 namespace MvkClient.Gui
 {
     /// <summary>
-    /// У гульні запушчана меню кантэйнера
+    /// Абстрактный класс контейнера с ячейками
     /// </summary>
     public abstract class ScreenConteinerItems : ScreenWindow
     {
-        protected Label labelPage;
         protected Button buttonClose;
-        protected ButtonBox buttonBack;
-        protected ButtonBox buttonNext;
         protected ButtonSlot[] buttonStorage;
         protected ButtonSlot[] buttonInventory;
 
@@ -36,37 +32,11 @@ namespace MvkClient.Gui
         /// </summary>
         protected bool isRenderIcon = false;
 
-        /// <summary>
-        /// Массив предметов склада
-        /// </summary>
-        private int[] arrayItems = new int[0];
-        /// <summary>
-        /// Количество предметов склада
-        /// </summary>
-        private int countItemsStorage = 0;
-
-        /// <summary>
-        /// Бягучая старонка
-        /// </summary>
-        private int page = 0;
-
         public ScreenConteinerItems(Client client) : base(client)
         {
-            textTitle = "gui.conteiner.inventory";
             IsFpsMin = false;
             background = EnumBackground.GameWindow;
             client.Player.Inventory.Changed += InventoryChanged;
-        }
-
-        /// <summary>
-        /// Задать массив склада предметов
-        /// </summary>
-        protected void SetArrayItems(int[] array)
-        {
-            countItemsStorage = array.Length;
-            arrayItems = array;
-
-            UpdateButtonStorage(0);
         }
 
         protected override void Init()
@@ -79,24 +49,14 @@ namespace MvkClient.Gui
             
             buttonStorage = new ButtonSlot[pageCount];
             buttonInventory = new ButtonSlot[8];
-            labelPage = new Label("", FontSize.Font12) { Alight = EnumAlight.Center, Width = 50 };
-            AddControls(labelPage);
             
             buttonClose = new Button(EnumScreenKey.World, "X") { Width = 42 };
             AddControls(buttonClose);
             InitButtonClick(buttonClose);
 
-            buttonBack = new ButtonBox("<") { Enabled = false };
-            buttonBack.Click += (sender, e) => ButtonBackNextClick(false);
-            AddControls(buttonBack);
-            buttonNext = new ButtonBox(">");
-            buttonNext.Click += (sender, e) => ButtonBackNextClick(true);
-            AddControls(buttonNext);
-
-            PageUpdate();
             for (int i = 0; i < pageCount; i++)
             {
-                buttonStorage[i] = new ButtonSlot(new Slot(99));
+                buttonStorage[i] = new ButtonSlot(new Slot(i));
                 buttonStorage[i].Click += ButtonSlotClick;
                 buttonStorage[i].ClickRight += ButtonSlotClickRight;
                 AddControls(buttonStorage[i]);
@@ -111,27 +71,6 @@ namespace MvkClient.Gui
         }
 
         /// <summary>
-        /// Обновить кнопки склада от какой страницы
-        /// </summary>
-        private void UpdateButtonStorage(int c)
-        {
-            for (int i = 0; i < pageCount; i++)
-            {
-                if (c < countItemsStorage)
-                {
-                    buttonStorage[i].GetSlot().SetIndex(c + 100);
-                    buttonStorage[i].GetSlot().Set(GetItemStackById(arrayItems[c++]));
-                }
-                else
-                {
-                    buttonStorage[i].GetSlot().SetIndex(99);
-                    buttonStorage[i].GetSlot().Set();
-                }
-            }
-            PageUpdate();
-        }
-
-        /// <summary>
         /// По id предмета получить стак
         /// </summary>
         protected ItemStack GetItemStackById(int id)
@@ -140,7 +79,7 @@ namespace MvkClient.Gui
             return item != null ? new ItemStack(item) : null;
         }
 
-        private ItemStack CloneItemStackPlayer(int id)
+        protected ItemStack CloneItemStackPlayer(int id)
         {
             ItemStack stack = ClientMain.Player.Inventory.GetStackInSlot(id);
             return stack?.Copy(); // stack != null ? stack.Copy() : null
@@ -152,10 +91,15 @@ namespace MvkClient.Gui
         private void InventoryChanged(object sender, SlotEventArgs e)
         {
             int slot = e.IndexSlot;
+
             if (slot == 255)
             {
                 theSlot.Set(ClientMain.Player.Inventory.StackAir);
                 isRenderIcon = true;
+            }
+            else if (slot > 99)
+            {
+                // тут ненадо, это склад TileEntity блока
             }
             else if (slot >= 0 && slot < 8)
             {
@@ -182,15 +126,29 @@ namespace MvkClient.Gui
             int h = position.y;
 
             buttonClose.Position = new vec2i(w + 470 * SizeInterface, h - 8 * SizeInterface);
-            labelPage.Position = new vec2i(w + 306 * SizeInterface, h);
-            buttonBack.Position = new vec2i(w + 274 * SizeInterface, h);
-            buttonNext.Position = new vec2i(w + 356 * SizeInterface, h);
-            int x0 = w + 6 * SizeInterface;
-            int y0 = h + 38 * SizeInterface;
-            int x = x0;
-            int y = y0;
-            int c = 0;
-            for (int i = 0; i < pageCount; i++)
+
+            int i, x, y;
+            y = h + 298 * SizeInterface;
+            x = w + 56 * SizeInterface;
+            for (i = 0; i < 8; i++)
+            {
+                buttonInventory[i].Position = new vec2i(x, y);
+                x += 50 * SizeInterface;
+            }
+            // Расположение на окне склада
+            ResizedScreenStorage(w, h);
+        }
+
+        /// <summary>
+        /// Расположение на окне склада
+        /// </summary>
+        protected virtual void ResizedScreenStorage(int w, int h)
+        {
+            int i, x, y, x0, c;
+            x = x0 = w + 6 * SizeInterface;
+            y = h + 38 * SizeInterface;
+            c = 0;
+            for (i = 0; i < pageCount; i++)
             {
                 if (buttonStorage[i] != null)
                 {
@@ -204,13 +162,6 @@ namespace MvkClient.Gui
                         x = x0;
                     }
                 }
-            }
-            y = h + 298 * SizeInterface;
-            x = w + 56 * SizeInterface;
-            for (int i = 0; i < 8; i++)
-            {
-                buttonInventory[i].Position = new vec2i(x, y);
-                x += 50 * SizeInterface;
             }
         }
 
@@ -239,25 +190,16 @@ namespace MvkClient.Gui
         protected override void OnFinishing() => ThrowTheSlot();
 
         /// <summary>
-        /// Вращение колёсика мыши
-        /// </summary>
-        /// <param name="delta">смещение</param>
-        public override void MouseWheel(int delta, int x, int y)
-        {
-            bool next = delta < 0;
-            if ((next && countItemsStorage > page + pageCount - 1)
-                || (!next && page > 0))
-            {
-                ButtonBackNextClick(next);
-                isRender = true;
-            }
-        }
-
-        /// <summary>
         /// Дополнительная прорисовка сверх основной
         /// </summary>
         protected override void DrawAdd(float timeIndex)
         {
+            if (isRenderIcon)
+            {
+                isRenderIcon = false;
+                icon.PereRender();
+            }
+
             base.DrawAdd(timeIndex);
             // Иконка
             GLRender.PushMatrix();
@@ -265,21 +207,6 @@ namespace MvkClient.Gui
             GLRender.Scale(SizeInterface, SizeInterface, 1);
             icon.Draw(timeIndex);
             GLRender.PopMatrix();
-        }
-
-        private void ButtonBackNextClick(bool next)
-        {
-            page += next ? pageCount : -pageCount;
-            UpdateButtonStorage(page);
-        }
-
-        private void PageUpdate()
-        {
-            labelPage.SetText((page / pageCount + 1).ToString() + " / " + (countItemsStorage / pageCount + 1).ToString());
-            if (page <= 0) buttonBack.Enabled = false;
-            else buttonBack.Enabled = true;
-            if (countItemsStorage > page + pageCount) buttonNext.Enabled = true;
-            else buttonNext.Enabled = false;
         }
 
         private void ButtonSlotClick(object sender, EventArgs e)

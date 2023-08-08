@@ -30,6 +30,7 @@ namespace MvkServer.Command
             Registration(new CommandTime(world));
             Registration(new CommandGameMode(world));
             Registration(new CommandTeleport(world));
+            Registration(new CommandFix(world));
         }
 
         /// <summary>

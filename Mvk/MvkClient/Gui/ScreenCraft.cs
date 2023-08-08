@@ -2,11 +2,13 @@
 using MvkClient.Renderer;
 using MvkClient.Renderer.Font;
 using MvkServer.Glm;
+using MvkServer.Inventory;
 using MvkServer.Item;
 using MvkServer.Item.List;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Client;
 using MvkServer.Network.Packets.Server;
+using MvkServer.Util;
 using System;
 
 namespace MvkClient.Gui
@@ -14,17 +16,18 @@ namespace MvkClient.Gui
     /// <summary>
     /// У гульні запушчана меню кантэйнера
     /// </summary>
-    public class ScreenCraft : ScreenConteinerItems
+    public class ScreenCraft : ScreenConteinerItemsPage
     {
         protected Label labelItemTitle;
         protected Label labelItemDis;
         protected Button buttonCraft;
+        protected ButtonSlot buttonTool;
         private ViewItem viewItem;
 
         /// <summary>
-        /// Номер окна крафта
+        /// Тип окна крафта
         /// </summary>
-        private int window;
+        private readonly EnumWindowType window;
 
         /// <summary>
         /// Статус идёт ли крафт
@@ -39,7 +42,7 @@ namespace MvkClient.Gui
         /// </summary>
         private int timeCraft = 0;
         
-        public ScreenCraft(Client client, int window) : base(client)
+        public ScreenCraft(Client client, EnumWindowType window) : base(client)
         {
             this.window = window;
             client.Player.Inventory.Crafted += InventoryCrafted;
@@ -53,9 +56,28 @@ namespace MvkClient.Gui
         /// </summary>
         public override void AcceptNetworkPackage(IPacket packet)
         {
-            if (packet is PacketS31WindowProperty packetWP)
+            if (packet is PacketS2FSetSlot packetS2F)
             {
-                SetArrayItems(packetWP.GetRecipe());
+                // Изменился один слот
+                if (packetS2F.GetSlot() == 100)
+                {
+                    buttonTool.SetSlot(new Slot(0, packetS2F.GetItemStack()));
+                    isRender = true;
+                }
+            }
+            else if (packet is PacketS30WindowItems packetS30)
+            {
+                // загрузить все слоты
+                ItemStack[] stacks = packetS30.GetStacks();
+                if (stacks.Length == 1)
+                {
+                    buttonTool.SetSlot(new Slot(0, stacks[0]));
+                    isRender = true;
+                }
+            }
+            else if (packet is PacketS31WindowProperty packetS31)
+            {
+                SetArrayItems(packetS31.GetRecipe());
                 isRender = true;
             }
         }
@@ -72,7 +94,14 @@ namespace MvkClient.Gui
             buttonCraft = new Button(Language.T("gui.button.craft")) { Width = 112, Enabled = false };
             buttonCraft.Click += ButtonCraftClick;
             AddControls(buttonCraft);
-            ClientMain.TrancivePacket(new PacketC0EPacketClickWindow(PacketC0EPacketClickWindow.EnumAction.Open, window));
+            if (window != EnumWindowType.CraftFirst)
+            {
+                labelItemDis.Width = 324;
+                buttonTool = new ButtonSlot(new Slot(0));
+                buttonTool.Click += ButtonToolClick;
+                AddControls(buttonTool);
+            }
+            ClientMain.TrancivePacket(new PacketC0EPacketClickWindow(PacketC0EPacketClickWindow.EnumAction.Open));
         }
 
         /// <summary>
@@ -90,6 +119,11 @@ namespace MvkClient.Gui
             labelItemDis.Position = new vec2i(w + 118 * SizeInterface, h + 164 * SizeInterface);
             labelItemDis.Transfer();
             buttonCraft.Position = new vec2i(w + 393 * SizeInterface, h + 248 * SizeInterface);
+            //TODO::2023-08-06 buttonTool
+            if (window != EnumWindowType.CraftFirst)
+            {
+                buttonTool.Position = new vec2i(w + 455 * SizeInterface, h + 198 * SizeInterface);
+            }
         }
 
         /// <summary>
@@ -97,12 +131,6 @@ namespace MvkClient.Gui
         /// </summary>
         protected override void DrawAdd(float timeIndex)
         {
-            if (isRenderIcon)
-            {
-                isRenderIcon = false;
-                icon.PereRender();
-            }
-
             base.DrawAdd(timeIndex);
             // 3д предмет
             GLRender.PushMatrix();
@@ -133,11 +161,10 @@ namespace MvkClient.Gui
             ItemBase item = viewItem.Item;
             if (item != null)
             {
-                ClientMain.TrancivePacket(new PacketC0EPacketClickWindow(ClientMain.World.Key.KeyShift 
-                    ? PacketC0EPacketClickWindow.EnumAction.CraftMax
-                    : PacketC0EPacketClickWindow.EnumAction.CraftOne, item.Id));
+                ClientMain.TrancivePacket(new PacketC0EPacketClickWindow(
+                    PacketC0EPacketClickWindow.EnumAction.Craft, ClientMain.World.Key.KeyShift, false, item.Id));
 
-                timeCraft = ClientMain.Player.Inventory.GetCountTimeCraft(item, ClientMain.World.Key.KeyShift);
+                timeCraft = ClientMain.Player.Inventory.GetCountTimeCraft(item, buttonTool?.GetSlot().Stack, ClientMain.World.Key.KeyShift);
                 buttonCraft.Enabled = false;
                 isRender = true;
 
@@ -197,11 +224,20 @@ namespace MvkClient.Gui
         /// </summary>
         protected override void InventoryClick(ButtonSlot button, bool isShift, bool isRight)
         {
-            if (!isCraft)
+            ClientMain.TrancivePacket(new PacketC0EPacketClickWindow(
+                PacketC0EPacketClickWindow.EnumAction.ClickSlot, isShift, isRight, button.GetSlot().Index));
+        }
+
+        /// <summary>
+        /// Клик по инструменту
+        /// </summary>
+        private void ButtonToolClick(object sender, EventArgs e)
+        {
+            if (!isCraft && sender.GetType() == typeof(ButtonSlot))
             {
-                ClientMain.TrancivePacket(new PacketC0EPacketClickWindow(isRight
-                    ? PacketC0EPacketClickWindow.EnumAction.ClickRightSlot
-                    : PacketC0EPacketClickWindow.EnumAction.ClickLeftSlot, button.GetSlot().Index));
+                SetSelectItem(null);
+                ClientMain.TrancivePacket(new PacketC0EPacketClickWindow(
+                    PacketC0EPacketClickWindow.EnumAction.ClickSlot, ClientMain.World.Key.KeyShift, false, 100));
             }
         }
 

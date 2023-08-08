@@ -1,5 +1,6 @@
 ﻿using MvkServer.Entity.List;
 using MvkServer.Glm;
+using MvkServer.TileEntity;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Block;
@@ -16,10 +17,9 @@ namespace MvkServer.Item.List
         /// </summary>
         private readonly BlockBase blockTable;
 
-        public ItemUniCraftingTable(EnumItem enumItem, int numberTexture, EnumBlock enumBlock, EnumBlock enumBlockRecipe) : base(enumItem, numberTexture, 1)
+        public ItemUniCraftingTable(EnumItem enumItem, int numberTexture, EnumBlock enumBlock) : base(enumItem, numberTexture, 1)
         {
             blockTable = Blocks.GetBlockCache(enumBlock);
-            craft.SetRecipe(80, new Element(EnumItem.Stick, 8), new Element(enumBlockRecipe, 4));
         }
 
         /// <summary>
@@ -64,7 +64,8 @@ namespace MvkServer.Item.List
             if (CanPlaceBlocksOnSide(stack, playerIn, worldIn, blockPos, side, facing))
             {
                 // Можно ставить
-
+                BlockState blockState;
+                BlockState blockState0 = new BlockState();
                 BlockPos blockPosCheck;
                 bool result = true;
                 int x, y, z;
@@ -79,7 +80,12 @@ namespace MvkServer.Item.List
                                 blockPosCheck = blockPos.Offset(x, y, z);
                                 BlockState blockStateOld = worldIn.GetBlockState(blockPosCheck);
                                 ushort met = (ushort)(z << 2 | x << 1 | y);
-                                if (!worldIn.SetBlockState(blockPosCheck, new BlockState(blockTable.EBlock, met), 15))
+                                blockState = new BlockState(blockTable.EBlock, met);
+                                if (x == 0 && z == 0 && y == 0) 
+                                {
+                                    blockState0 = blockState;
+                                }
+                                if (!worldIn.SetBlockState(blockPosCheck, blockState, 15))
                                 {
                                     result = false;
                                 }
@@ -106,6 +112,12 @@ namespace MvkServer.Item.List
                     }
                     worldIn.PlaySound(playerIn, blockTable.SamplePut(worldIn), blockPos.ToVec3(), 1f, 1f);
                     
+                    if (!worldIn.IsRemote)
+                    {
+                        // создаём тайл
+                        worldIn.CreateTileEntity(EnumTileEntities.Crafting, blockPos, blockState0);
+                    }
+
                     return true;
                 }
                 // Откатать на воздух!

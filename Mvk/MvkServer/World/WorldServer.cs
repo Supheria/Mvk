@@ -2,8 +2,10 @@
 using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Management;
+using MvkServer.Network;
 using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
+using MvkServer.TileEntity;
 using MvkServer.Util;
 using MvkServer.World.Block;
 using MvkServer.World.Chunk;
@@ -209,32 +211,82 @@ namespace MvkServer.World
         /// Отметить блок для обновления 
         /// </summary>
         public override void MarkBlockForRenderUpdate(int x, int y, int z) => Players.FlagBlockForUpdate(x, y, z);
+
+        /// <summary>
+        /// Отметить блоки на обновления, сервер. Координаты чанков
+        /// </summary>
+        //public void ServerMarkBlockRangeForRenderUpdate(int x0, int y0, int z0, int x1, int y1, int z1)
+        //{
+        //    int x, y, z;
+        //    for (x = x0; x <= x1; x++)
+        //    {
+        //        for (z = z0; z <= z1; z++)
+        //        {
+        //            for (y = y0; y <= y1; y++)
+        //            {
+        //                Players.FlagBlockForUpdate(x, y, z);
+        //            }
+        //        }
+        //    }
+        //}
+
+        /// <summary>
+        /// Отметить псевдочанки на обновления, сервер. Координаты чанков
+        /// </summary>
+        public void ServerMarkChunkRangeForRenderUpdate(int x0, int y0, int z0, int x1, int y1, int z1)
+        {
+            int x, y, z;
+            vec2i ch;
+            for (x = x0; x <= x1; x++)
+            {
+                for (z = z0; z <= z1; z++)
+                {
+                    ch = new vec2i(x, z);
+                    for (y = y0; y <= y1; y++)
+                    {
+                        Players.FlagChunkForUpdate(ch, y);
+                    }
+                }
+            }
+        }
         /// <summary>
         /// Отметить  блоки для обновления
         /// </summary>
         //public override void MarkBlockRangeForRenderUpdate(int x0, int y0, int z0, int x1, int y1, int z1)
         //{
-        //    int c0x = (x0) >> 4;
-        //    int c0y = (y0) >> 4;
-        //    if (c0y < 0) c0y = 0;
-        //    int c0z = (z0) >> 4;
-        //    int c1x = (x1) >> 4;
-        //    int c1y = (y1) >> 4;
-        //    if (c1y > ChunkBase.COUNT_HEIGHT15) c1y = ChunkBase.COUNT_HEIGHT15;
-        //    int c1z = (z1) >> 4;
-        //    vec2i ch;
         //    int x, y, z;
-        //    for (x = c0x; x <= c1x; x++)
+        //    for (x = x0; x <= x1; x++)
         //    {
-        //        for (z = c0z; z <= c1z; z++)
+        //        for (z = z0; z <= z1; z++)
         //        {
-        //            ch = new vec2i(x, z);
-        //            for (y = c0y; y <= c1y; y++)
+        //            for (y = y0; y <= y1; y++)
         //            {
-        //                Players.FlagChunkForUpdate(ch, y);
+        //                Players.FlagBlockForUpdate(x, y, z);
         //            }
         //        }
         //    }
+
+        //    //int c0x = (x0) >> 4;
+        //    //int c0y = (y0) >> 4;
+        //    //if (c0y < 0) c0y = 0;
+        //    //int c0z = (z0) >> 4;
+        //    //int c1x = (x1) >> 4;
+        //    //int c1y = (y1) >> 4;
+        //    //if (c1y > ChunkBase.COUNT_HEIGHT15) c1y = ChunkBase.COUNT_HEIGHT15;
+        //    //int c1z = (z1) >> 4;
+        //    //vec2i ch;
+        //    //int x, y, z;
+        //    //for (x = c0x; x <= c1x; x++)
+        //    //{
+        //    //    for (z = c0z; z <= c1z; z++)
+        //    //    {
+        //    //        ch = new vec2i(x, z);
+        //    //        for (y = c0y; y <= c1y; y++)
+        //    //        {
+        //    //            Players.FlagBlockForUpdate(ch, y);
+        //    //        }
+        //    //    }
+        //    //}
         //}
 
         /// <summary>
@@ -362,6 +414,49 @@ namespace MvkServer.World
                 ((EntityPlayerServer)entity.Key).SendPacket(new PacketS27Explosion(pos, strength, distance, entity.Value));
             }
         }
+
+        /// <summary>
+        /// Удалить сущность плитки
+        /// </summary>
+        public override void RemoveTileEntity(BlockPos pos)
+        {
+            TileEntityBase tileEntity = GetTileEntity(pos);
+            if (tileEntity != null)
+            {
+                tileEntity.SpawnAsEntityOnBreakBlock();
+                GetChunk(pos).RemoveTileEntity(pos.X & 15, pos.Y, pos.Z & 15);
+                // надо закрыть окна у игроков которые смотрят этот блок
+                Players.SendToAllPlayersUseTileEntity(
+                    new PacketS31WindowProperty(PacketS31WindowProperty.EnumAction.CloseWindow),
+                    //TODO::2023-08-03 можно подумать окно оповещения типа блок был разрушен! Чтоб курсор не менялся.
+                    //new PacketS2DOpenWindow(EnumWindowType.CraftFirst),
+                    pos, true);
+            }
+        }
+
+        /// <summary>
+        /// Пометка что чанк надо будет перезаписать
+        /// </summary>
+        public override void ChunkModified(BlockPos blockPos)
+        {
+            ChunkBase chunk = GetChunk(blockPos);
+            if (chunk != null)
+            {
+                chunk.Modified();
+            }
+        }
+
+        /// <summary>
+        /// Отправить всем игрокам пакет, которые используют этот TileEntity
+        /// </summary>
+        public override void SendToAllPlayersUseTileEntity(IPacket packet, BlockPos blockPos) 
+            => Players.SendToAllPlayersUseTileEntity(packet, blockPos);
+
+        /// <summary>
+        /// Отправить всем игрокам список крафта, которые используют этот TileEntity
+        /// </summary>
+        public override void SendToAllPlayersUseTileEntityListCraft(BlockPos blockPos)
+            => Players.SendToAllPlayersUseTileEntityListCraft(blockPos);
 
         /// <summary>
         /// Строка для дебага

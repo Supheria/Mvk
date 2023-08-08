@@ -3,6 +3,7 @@ using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.NBT;
 using MvkServer.Network.Packets.Server;
+using MvkServer.TileEntity;
 using MvkServer.Util;
 using MvkServer.World.Biome;
 using MvkServer.World.Block;
@@ -127,6 +128,10 @@ namespace MvkServer.World.Chunk
         /// Блоки которые должны тикать мгновенно в чанке
         /// </summary>
         private List<TickBlock> tickBlocks = new List<TickBlock>();
+        /// <summary>
+        /// Сущности плитки блока. y << 8 | z << 4 | x
+        /// </summary>
+        private Dictionary<ushort, TileEntityBase> tileEntityMap = new Dictionary<ushort, TileEntityBase>();
 
         protected ChunkBase() { }
         public ChunkBase(WorldBase worldIn, vec2i pos)
@@ -469,6 +474,14 @@ namespace MvkServer.World.Chunk
                         biome[i] = (EnumBiome)buffer[count++];
                     }
                 }
+                else
+                {
+                    // не первая закгрузка, помечаем что надо отрендерить весь столб
+                    for (int y = 0; y < COUNT_HEIGHT; y++)
+                    {
+                        ModifiedToRender(y);
+                    }
+                }
                 IsChunkPresent = true;
             }
             catch (Exception ex)
@@ -790,6 +803,8 @@ namespace MvkServer.World.Chunk
             //Light.CheckLightSetBlock(blockNew.Position, blockNew.LightOpacity, blockOld.LightOpacity,
             //    blockNew.LightValue != blockOld.LightValue);
 
+            //TODO::Тайлы
+            // 2023-07-27 надо сделать чтоб было только на сервере работа с тайлами.
             //TileEntity var15;
 
             //if (blockOld instanceof ITileEntityProvider)
@@ -1162,6 +1177,41 @@ namespace MvkServer.World.Chunk
         /// </summary>
         public int GetTickBlockCount() => tickBlocks.Count;
 
+        #region TileEntity
+
+        /// <summary>
+        /// Получить сущность плитки по локальным координатам xz 0..15 y 0..127
+        /// </summary>
+        public TileEntityBase GetTileEntity(int x, int y, int z)
+        {
+            ushort key = (ushort)(y << 8 | z << 4 | x);
+            return tileEntityMap.ContainsKey(key) ? tileEntityMap[key] : null;
+        }
+
+        /// <summary>
+        /// Добавить сущность плитки
+        /// </summary>
+        public void SetTileEntity(TileEntityBase tileEntity)
+        {
+            BlockPos pos = tileEntity.Position;
+            ushort key = (ushort)(pos.Y << 8 | (pos.Z & 15) << 4 | (pos.X & 15));
+            if (tileEntityMap.ContainsKey(key))
+            {
+                tileEntityMap[key] = tileEntity;
+            }
+            else
+            {
+                tileEntityMap.Add(key, tileEntity);
+            }
+        }
+
+        /// <summary>
+        /// Удалить сущность плитки
+        /// </summary>
+        public void RemoveTileEntity(int x, int y, int z) => tileEntityMap.Remove((ushort)(y << 8 | z << 4 | x));
+
+        #endregion
+
         #region NBT
 
         /// <summary>
@@ -1182,6 +1232,8 @@ namespace MvkServer.World.Chunk
             for (int i = 0; i < 256; i++) biomes[i] = (byte)biome[i];
             nbt.SetByteArray("Biomes", biomes);
 
+            // ---Sections
+
             TagList tagListSections = new TagList();
             
             for (int ys = 0; ys < COUNT_HEIGHT; ys++)
@@ -1189,6 +1241,8 @@ namespace MvkServer.World.Chunk
                 StorageArrays[ys].WriteDataToNBT(tagListSections);
             }
             nbt.SetTag("Sections", tagListSections);
+
+            // ---TileTicks
 
             if (tickBlocks.Count > 0)
             {
@@ -1207,6 +1261,27 @@ namespace MvkServer.World.Chunk
                 }
                 nbt.SetTag("TileTicks", tagListTickBlocks);
             }
+
+            // ---TileEntities
+
+            if (tileEntityMap.Count > 0)
+            {
+                TagList tagListTileEntities = new TagList();
+                TileEntityBase tileEntity;
+                foreach (KeyValuePair<ushort, TileEntityBase> keyTileEntity in tileEntityMap)
+                {
+                    tileEntity = keyTileEntity.Value;
+                    TagCompound tagCompound = new TagCompound();
+                    tileEntity.WriteToNBT(tagCompound);
+                    tagListTileEntities.AppendTag(tagCompound);
+                }
+                if (tagListTileEntities.TagCount() > 0)
+                {
+                    nbt.SetTag("TileEntities", tagListTileEntities);
+                }
+            }
+
+            // ---Entities
 
             // проверяю есть ли сущность, если есть то true;
             hasEntities = false;
@@ -1248,6 +1323,8 @@ namespace MvkServer.World.Chunk
             byte[] biomes = nbt.GetByteArray("Biomes");
             for (int i = 0; i < 256; i++) biome[i] = (EnumBiome)biomes[i];
 
+            // ---Sections
+
             TagList tagListSections = nbt.GetTagList("Sections", 10);
             int count = tagListSections.TagCount();
             if (tagListSections.GetTagType() == 10)
@@ -1274,6 +1351,8 @@ namespace MvkServer.World.Chunk
                 }
             }
 
+            // ---TileTicks
+
             tickBlocks.Clear();
             TagList tagListTickBlocks = nbt.GetTagList("TileTicks", 10);
             count = tagListTickBlocks.TagCount();
@@ -1293,6 +1372,32 @@ namespace MvkServer.World.Chunk
                 }
             }
 
+            // ---TileEntities
+
+            TagList tagListTileEntities = nbt.GetTagList("TileEntities", 10);
+            count = tagListTileEntities.TagCount();
+            if (tagListTileEntities.GetTagType() == 10)
+            {
+                for (   int i = 0; i < count; i++)
+                {
+                    try
+                    {
+                        TagCompound tagCompound = tagListTileEntities.Get(i) as TagCompound;
+                        EnumTileEntities enumTileEntities = (EnumTileEntities)tagCompound.GetByte("Id");
+                        TileEntityBase tileEntity = TileEntities.CreateTileEntityByEnum(World, enumTileEntities);
+                        tileEntity.ReadFromNBT(tagCompound);
+                        tileEntity.InitBlock(this);
+                        SetTileEntity(tileEntity);
+                    }
+                    catch (Exception ex)
+                    {
+                        World.Log.Error(ex);
+                    }
+                }
+            }
+
+            // ---Entities
+
             // Скорее всего будет добавление сущности AddEntity, а там hasEntities = true;
             TagList tagListEntities = nbt.GetTagList("Entities", 10);
             count = tagListEntities.TagCount();
@@ -1301,11 +1406,18 @@ namespace MvkServer.World.Chunk
                 hasEntities = true;
                 for (int i = 0; i < count; i++)
                 {
-                    TagCompound tagCompound = tagListEntities.Get(i) as TagCompound;
-                    EnumEntities enumEntities = (EnumEntities)tagCompound.GetByte("Id");
-                    EntityBase entity = Entities.CreateEntityByEnum(World, enumEntities);
-                    entity.ReadEntityFromNBT(tagCompound);
-                    World.SpawnEntityInWorld(entity);
+                    try
+                    {
+                        TagCompound tagCompound = tagListEntities.Get(i) as TagCompound;
+                        EnumEntities enumEntities = (EnumEntities)tagCompound.GetByte("Id");
+                        EntityBase entity = Entities.CreateEntityByEnum(World, enumEntities);
+                        entity.ReadEntityFromNBT(tagCompound);
+                        World.SpawnEntityInWorld(entity);
+                    }
+                    catch (Exception ex)
+                    {
+                        World.Log.Error(ex);
+                    }
                 }
             }
             return;

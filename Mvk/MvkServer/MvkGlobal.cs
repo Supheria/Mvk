@@ -76,7 +76,7 @@
         /// <summary>
         /// Активация при смещении количество чанков, для расчёта новых чанков в обзоре
         /// </summary>
-        public const int MOVING_CHUNK_BIAS = 1;
+        public const int MOVING_CHUNK_BIAS = 2;
         
         /// <summary>
         /// Время жизни строки чата, в тиках

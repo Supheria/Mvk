@@ -3,7 +3,9 @@ using MvkServer.Entity.List;
 using MvkServer.Glm;
 using MvkServer.Item;
 using MvkServer.Item.List;
+using MvkServer.Network.Packets.Server;
 using MvkServer.Sound;
+using MvkServer.TileEntity;
 using MvkServer.Util;
 
 namespace MvkServer.World.Block
@@ -407,27 +409,6 @@ namespace MvkServer.World.Block
         //public bool IsTranslucent() => Material == EnumMaterial.Air || Material == EnumMaterial.Glass 
         //    || Material == EnumMaterial.Water || Material == EnumMaterial.Debug;
 
-        /// <summary>
-        /// Создает данный ItemStack как EntityItem в мире в заданной позиции 
-        /// </summary>
-        /// <param name="worldIn"></param>
-        /// <param name="pos"></param>
-        /// <param name="itemStack"></param>
-        public static void SpawnAsEntity(WorldBase worldIn, BlockPos blockPos, ItemStack itemStack)
-        {
-            if (!worldIn.IsRemote)
-            {
-                vec3 pos = new vec3(
-                    blockPos.X + worldIn.Rnd.NextFloat() * .5f + .25f,
-                    blockPos.Y + worldIn.Rnd.NextFloat() * .5f + .25f,
-                    blockPos.Z + worldIn.Rnd.NextFloat() * .5f + .25f
-                );
-                EntityItem entityItem = new EntityItem(worldIn, pos, itemStack);
-                entityItem.SetDefaultPickupDelay();
-                worldIn.SpawnEntityInWorld(entityItem);
-            }
-        }
-
         #region Drop
 
         /// <summary>
@@ -446,7 +427,7 @@ namespace MvkServer.World.Block
                     item = GetItemDropped(state, worldIn.Rnd, itemTool);
                     if (item != null)
                     {
-                        SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDropped(state)));
+                        ItemStack.SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDropped(state)));
                     }
                 }
                 // Дополнительный
@@ -456,7 +437,7 @@ namespace MvkServer.World.Block
                     item = GetItemDroppedAdditional(state, worldIn.Rnd, itemTool);
                     if (item != null)
                     {
-                        SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDroppedAdditional(state)));
+                        ItemStack.SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDroppedAdditional(state)));
                     }
                 }
             }
@@ -481,7 +462,7 @@ namespace MvkServer.World.Block
                         item = GetItemDropped(state, worldIn.Rnd, null);
                         if (item != null)
                         {
-                            SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDropped(state)));
+                            ItemStack.SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDropped(state)));
                         }
                     }
                 }
@@ -494,7 +475,7 @@ namespace MvkServer.World.Block
                         item = GetItemDroppedAdditional(state, worldIn.Rnd, null);
                         if (item != null)
                         {
-                            SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDroppedAdditional(state)));
+                            ItemStack.SpawnAsEntity(worldIn, blockPos, new ItemStack(item, 1, DamageDroppedAdditional(state)));
                         }
                     }
                 }
@@ -548,7 +529,7 @@ namespace MvkServer.World.Block
             => state.NewMet(0);
 
         /// <summary>
-        /// Действие блока после его установки
+        /// Действие блока после его установки только на сервере
         /// </summary>
         public virtual void OnBlockAdded(WorldBase worldIn, BlockPos blockPos, BlockState state) { }
 
@@ -561,6 +542,11 @@ namespace MvkServer.World.Block
         /// Активация блока, клик правой клавишей мыши по блоку, true - был клик, false - нет такой возможности
         /// </summary>
         public virtual bool OnBlockActivated(WorldBase worldIn, EntityPlayer entityPlayer, BlockPos pos, BlockState state, Pole side, vec3 facing) => false;
+
+        /// <summary>
+        /// Получить начальную позицию блока, если блок принадлежит структуре и используется бля TileEntity (пример верстаки)
+        /// </summary>
+        public virtual BlockPos GetBlockStartPosition(BlockPos blockPos, BlockState blockState) => blockPos;
 
         /// <summary> 
         /// Проверка установи блока, можно ли его установить тут
@@ -659,6 +645,8 @@ namespace MvkServer.World.Block
         /// </summary>
         public virtual bool IsSlow(BlockState state) => false;
 
+        #region Craft
+
         /// <summary>
         /// Задать рецепт
         /// </summary>
@@ -675,6 +663,45 @@ namespace MvkServer.World.Block
             Craft.SetRecipe(amount, time, recipe);
             return this;
         }
+
+        /// <summary>
+        /// Задать любой из требуемых инструментов для крафта
+        /// </summary>
+        public BlockBase SetCraftTools(params EnumItem[] tools)
+        {
+            Craft.SetTools(tools);
+            return this;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Открыли окно, вызывается объектом EntityPlayerServer
+        /// </summary>
+        public virtual void OpenWindow(WorldServer worldServer, EntityPlayerServer entityPlayer, BlockPos blockPos)
+        {
+            if (Material.SimpleCraft)
+            {
+                entityPlayer.SendPacket(new PacketS31WindowProperty(entityPlayer.FiltrAccessArrayItems(Items.craftFirst)));
+            }
+        }
+
+        /// <summary>
+        /// Открыли окно у объекта TileEntity если он имеется в данной позиции блока
+        /// </summary>
+        protected void OpenWindowTileEntity(WorldServer worldServer, EntityPlayerServer entityPlayer, BlockPos blockPos)
+        {
+            TileEntityBase tileEntity = worldServer.GetTileEntity(blockPos);
+            if (tileEntity != null)
+            {
+                tileEntity.OpenWindow(worldServer, entityPlayer);
+            }
+        }
+
+        /// <summary>
+        /// Получить список предметов для крафта, используется для верстаков
+        /// </summary>
+        public virtual int[] GetListItemsCraft() => new int[0];
 
         /// <summary>
         /// Строка

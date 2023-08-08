@@ -19,6 +19,15 @@
         public Element[] CraftRecipe { get; private set; } = new Element[0];
 
         /// <summary>
+        /// Нужен ли инструмент для крафта
+        /// </summary>
+        public bool IsToolForCraft { get; private set; } = false;
+        /// <summary>
+        /// Перечень инструментов с которым можно сделать
+        /// </summary>
+        public EnumItem[] EnumItemTools { get; private set; } = new EnumItem[0];
+
+        /// <summary>
         /// Задать время крафта
         /// </summary>
         public CraftItem SetTime(int time)
@@ -62,6 +71,36 @@
             CraftTime = time;
             CraftRecipe = recipe;
             return this;
+        }
+
+        /// <summary>
+        /// Задать требуемые инструменты
+        /// </summary>
+        public CraftItem SetTools(params EnumItem[] tools)
+        {
+            IsToolForCraft = true;
+            EnumItemTools = tools;
+            return this;
+        }
+
+        /// <summary>
+        /// Проверить может ли этот предмет скрафтится, с enumItemTool инструментом
+        /// </summary>
+        public bool CheckTool(ItemStack itemStackTool)
+        {
+            if (IsToolForCraft)
+            {
+                if (itemStackTool != null && itemStackTool.Item != null)
+                {
+                    EnumItem enumItem = itemStackTool.Item.EItem;
+                    foreach (EnumItem tool in EnumItemTools)
+                    {
+                        if (tool == enumItem) return true;
+                    }
+                }
+                return false;
+            }
+            return true;
         }
     }
 }

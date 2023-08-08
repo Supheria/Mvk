@@ -267,7 +267,9 @@ namespace MvkServer.Network
                     // Действие на блок, клик правой клавишей мыши
                     BlockPos blockPos = packet.GetBlockPos();
                     BlockState blockState = ServerMain.World.GetBlockState(blockPos);
-                    blockState.GetBlock().OnBlockActivated(ServerMain.World, entityPlayer, blockPos, blockState, packet.GetSide(), packet.GetFacing());
+                    BlockBase block = blockState.GetBlock();
+                    entityPlayer.SetActionBlockPos(block.GetBlockStartPosition(blockPos, blockState));
+                    block.OnBlockActivated(ServerMain.World, entityPlayer, blockPos, blockState, packet.GetSide(), packet.GetFacing());
                 }
                 else if (flag == 2)
                 {
@@ -359,31 +361,24 @@ namespace MvkServer.Network
 
                 if (action == PacketC0EPacketClickWindow.EnumAction.Open)
                 {
-                    entityPlayer.SendAccessRecipe(packet.GetNumber());
+                    entityPlayer.OpenWindow(ServerMain.World);
                 }
                 else if (action == PacketC0EPacketClickWindow.EnumAction.Close)
                 {
+                    entityPlayer.DoesNotUseActionBlock();
                     entityPlayer.Inventory.CraftStop();
                 }
                 else if (action == PacketC0EPacketClickWindow.EnumAction.ThrowOutAir)
                 {
                     entityPlayer.Inventory.ThrowOutAir();
                 }
-                else if (action == PacketC0EPacketClickWindow.EnumAction.ClickLeftSlot)
+                else if (action == PacketC0EPacketClickWindow.EnumAction.ClickSlot)
                 {
-                    entityPlayer.Inventory.ClickInventorySlotContents(packet.GetNumber(), false);
+                    entityPlayer.Inventory.ClickInventorySlotContents(packet.GetNumber(), packet.IsRight(), packet.IsShift());
                 }
-                else if (action == PacketC0EPacketClickWindow.EnumAction.ClickRightSlot)
+                else if (action == PacketC0EPacketClickWindow.EnumAction.Craft)
                 {
-                    entityPlayer.Inventory.ClickInventorySlotContents(packet.GetNumber(), true);
-                }
-                else if (action == PacketC0EPacketClickWindow.EnumAction.CraftOne)
-                {
-                    entityPlayer.Inventory.CraftBeginServer(packet.GetNumber(), false);
-                }
-                else if (action == PacketC0EPacketClickWindow.EnumAction.CraftMax)
-                {
-                    entityPlayer.Inventory.CraftBeginServer(packet.GetNumber(), true);
+                    entityPlayer.Inventory.CraftBeginServer(packet.GetNumber(), packet.IsShift());
                 }
             }
         }

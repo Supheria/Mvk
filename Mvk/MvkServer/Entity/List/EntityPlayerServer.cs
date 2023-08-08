@@ -3,6 +3,7 @@ using MvkServer.Item;
 using MvkServer.Management;
 using MvkServer.Network;
 using MvkServer.Network.Packets.Server;
+using MvkServer.TileEntity;
 using MvkServer.Util;
 using MvkServer.World;
 using MvkServer.World.Chunk;
@@ -59,6 +60,15 @@ namespace MvkServer.Entity.List
         /// </summary>
         public bool FlagBeginSpawn { get; set; } = false;
 
+        /// <summary>
+        /// Позиция блока который использует игрок (TileEntity)
+        /// </summary>
+        private BlockPos actionBlockPos = new BlockPos();
+        /// <summary>
+        /// В данный момент использует ли игрок блок TileEntity
+        /// </summary>
+        private bool isActionBlock = false;
+
         private Profiler profiler;
 
         /// <summary>
@@ -69,12 +79,7 @@ namespace MvkServer.Entity.List
         /// <summary>
         /// Почледнее активное время игрока
         /// </summary>
-        protected long playerLastActiveTime = 0;
-
-        //private List<vec2i> LoadingChunks = new List<vec2i>();
-
-        // должен быть список чанков которые может видеть игрок
-        // должен быть список чанков которые надо догрузить игроку
+        private long playerLastActiveTime = 0;
 
         public EntityPlayerServer(Server server, Socket socket, string name, WorldServer world) : base(world)
         {
@@ -124,6 +129,7 @@ namespace MvkServer.Entity.List
         {
             base.Respawn();
             destroyedItemsNetCache.Clear();
+            isActionBlock = false;
         }
 
         /// <summary>
@@ -188,7 +194,7 @@ namespace MvkServer.Entity.List
             UpdateItems();
 
             // Обработка соприкосновении игрока с другими сущностями
-            if (GetHealth() > 0 && !World.IsRemote && !IsInvisible())
+            if (GetHealth() > 0 && !IsInvisible())
             {
                 AxisAlignedBB axis = BoundingBox.Expand(new vec3(1.5f, .8f, 1.5f));
                 List<EntityBase> list = World.GetEntitiesWithinAABB(ChunkBase.EnumEntityClassAABB.All, axis, Id);
@@ -357,7 +363,32 @@ namespace MvkServer.Entity.List
         /// <summary>
         /// Обновить инвентарь игрока
         /// </summary>
-        public void SendUpdateInventory() => SendPacket(new PacketS30WindowItems(Inventory.GetMainAndArmor()));
+        public void SendUpdateInventory() => SendPacket(new PacketS30WindowItems(true, Inventory.GetMainAndArmor()));
+
+        /// <summary>
+        /// Отправить всем игрокам пакет, которые используют этот TileEntity
+        /// </summary>
+        public void SendToAllPlayersUseTileEntity(IPacket packet)
+        {
+            if (isActionBlock) World.SendToAllPlayersUseTileEntity(packet, actionBlockPos);
+        }
+
+        /// <summary>
+        /// Отправить пакет всем игрокам изменения ячейки в TileEntity
+        /// </summary>
+        public void SendToAllPlayersUseTileEntity(int slot)
+        {
+            TileEntityBase tileEntity = GetTileEntityAction();
+            if (tileEntity != null)
+            {
+                SendToAllPlayersUseTileEntity(new PacketS2FSetSlot(slot, tileEntity.GetStackInSlot(slot - 100)));
+                if (isActionBlock && tileEntity.Type == EnumTileEntities.Crafting)
+                {
+                    // Отправить список крафта
+                    World.SendToAllPlayersUseTileEntityListCraft(actionBlockPos);
+                }
+            }
+        }
 
         /// <summary>
         /// Задать режим игры игрока
@@ -387,20 +418,129 @@ namespace MvkServer.Entity.List
         public void SetOnGroundServer(bool onGround) => OnGround = onGround;
 
         /// <summary>
-        /// Отправить массив рецептов клиенту, номер это категория рецептов
+        /// Открыли окно с взаимодействием окон
         /// </summary>
-        public void SendAccessRecipe(int category)
+        public void OpenWindow(WorldServer worldServer)
         {
-            int[] ar = new int[0];
-            if (category == 1) ar = FiltrAccessArrayItems(Items.craftFirst);
-            else if (category == 2) ar = FiltrAccessArrayItems(Items.craftCarpentry);
-            else if (category == 3) ar = FiltrAccessArrayItems(Items.craftToolmaker);
-
-            if (ar.Length > 0)
+            if (isActionBlock)
             {
-                SendPacket(new PacketS31WindowProperty(ar));
+                World.GetBlockState(actionBlockPos).GetBlock().OpenWindow(worldServer, this, actionBlockPos);
             }
         }
+
+        /// <summary>
+        /// Получить активный объект блока TileEntity
+        /// </summary>
+        public TileEntityBase GetTileEntityAction() => isActionBlock ? World.GetTileEntity(actionBlockPos) : null;
+
+        /// <summary>
+        /// Задать активную позицию блока игрока
+        /// </summary>
+        public void SetActionBlockPos(BlockPos blockPos)
+        {
+            actionBlockPos = blockPos;
+            isActionBlock = true;
+        }
+        /// <summary>
+        /// Не использует активный блок
+        /// </summary>
+        public void DoesNotUseActionBlock() => isActionBlock = false;
+
+        /// <summary>
+        /// Будет уничтожен следующим тиком
+        /// </summary>
+        public override void SetDead()
+        {
+            base.SetDead();
+            isActionBlock = false;
+        }
+
+        /// <summary>
+        /// Проверить одинаковые ли блоки активности
+        /// </summary>
+        public bool CheckActionBlockPos(BlockPos blockPos) => isActionBlock && actionBlockPos.Equals(blockPos);
+
+        /// <summary>
+        /// Получить стак инструмента активного блока крафта
+        /// </summary>
+        public ItemStack GetToolCrafting()
+        {
+            TileEntityBase tileEntity = GetTileEntityAction();
+            if (tileEntity != null && tileEntity.Type == EnumTileEntities.Crafting)
+            {
+                return tileEntity.GetStackInSlot(0);
+            }
+            return null;
+        }
+
+        #region Recipe
+
+        /// <summary>
+        /// Проверка доступа к этому предмету для рецептов, у игрока
+        /// </summary>
+        private bool AccessRecipe(ItemBase item, ItemStack itemStackTool)
+        {
+            if (item != null)// && item.Id > 1000)
+            {
+                if (item.GetCraft().CheckTool(itemStackTool))
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Фильтр по доступу рецептов предметов игрока
+        /// </summary>
+        public int[] FiltrAccessArrayItems(int[] array)
+        {
+            List<int> list = new List<int>();
+            TileEntityBase tileEntity = GetTileEntityAction();
+            ItemStack itemStackTool = null;
+            if (tileEntity != null)
+            {
+                itemStackTool = tileEntity.GetStackInSlot(0);
+            }
+            int count = array.Length;
+            for (int i = 0; i < count; i++)
+            {
+                if (AccessRecipe(ItemBase.GetItemById(array[i]), itemStackTool))
+                {
+                    list.Add(array[i]);
+                }
+            }
+            return list.ToArray();
+        }
+
+        /// <summary>
+        /// Фильтр по доступу рецептов предметов игрока
+        /// </summary>
+        public int[] FiltrAccessArrayItems()
+        {
+            int[] array;
+            List<int> list = new List<int>();
+            TileEntityBase tileEntity = GetTileEntityAction();
+            ItemStack itemStackTool = null;
+            if (tileEntity != null)
+            {
+                itemStackTool = tileEntity.GetStackInSlot(0);
+                array = tileEntity.Block.GetListItemsCraft();
+            }
+            else
+            {
+                array = Items.craftFirst;
+            }
+            int count = array.Length;
+            for (int i = 0; i < count; i++)
+            {
+                if (AccessRecipe(ItemBase.GetItemById(array[i]), itemStackTool))
+                {
+                    list.Add(array[i]);
+                }
+            }
+            return list.ToArray();
+        }
+
+        #endregion
 
         public override string ToString()
         {

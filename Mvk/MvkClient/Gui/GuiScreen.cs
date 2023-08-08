@@ -1,6 +1,7 @@
 ﻿using MvkClient.Actions;
 using MvkClient.Setitings;
 using MvkServer.Network;
+using MvkServer.Util;
 using System;
 
 namespace MvkClient.Gui
@@ -148,9 +149,19 @@ namespace MvkClient.Gui
             }
         }
         /// <summary>
-        /// Активация крафта во время игры
+        /// Активация окна во время игры типа крафта, ящика и прочего
         /// </summary>
-        public void InGameCraft(int window) => Exchange(new ScreenCraft(ClientMain, window));
+        public void InGameWindow(EnumWindowType windowType)
+        {
+            if (windowType == EnumWindowType.Box)
+            {
+                Exchange(new ScreenConteinerBox(ClientMain));
+            }
+            else
+            {
+                Exchange(new ScreenCraft(ClientMain, windowType));
+            }
+        }
         /// <summary>
         /// Активация меню во время игры
         /// </summary>
@@ -181,9 +192,12 @@ namespace MvkClient.Gui
         /// </summary>
         protected void Delete()
         {
-            screen.Delete();
-            screen = null;
-            OnChanged();
+            if (screen != null)
+            {
+                screen.Delete();
+                screen = null;
+                OnChanged();
+            }
         }
 
         /// <summary>

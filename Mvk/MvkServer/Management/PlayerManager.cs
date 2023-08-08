@@ -370,6 +370,40 @@ namespace MvkServer.Management
         }
 
         /// <summary>
+        /// Отправить всем игрокам пакет, которые используют этот TileEntity
+        /// </summary>
+        /// <param name="isNotUse">true, надо сделать неактивным блок TileEntity для выбранного игрока</param>
+        public void SendToAllPlayersUseTileEntity(IPacket packet, BlockPos blockPos, bool isNotUse = false)
+        {
+            foreach(EntityPlayerServer player in players)
+            {
+                if (player.CheckActionBlockPos(blockPos))
+                {
+                    player.SendPacket(packet);
+                    if (isNotUse)
+                    {
+                        player.DoesNotUseActionBlock();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Отправить всем игрокам список крафта, которые используют этот TileEntity
+        /// </summary>
+        public void SendToAllPlayersUseTileEntityListCraft(BlockPos blockPos)
+        {
+            foreach (EntityPlayerServer player in players)
+            {
+                if (player.CheckActionBlockPos(blockPos))
+                {
+                    PacketS31WindowProperty packet = new PacketS31WindowProperty(player.FiltrAccessArrayItems());
+                    player.SendPacket(packet);
+                }
+            }
+        }
+
+        /// <summary>
         /// Проверка на игрока с таким же именем в игре
         /// </summary>
         /// <returns>false - игрок уже играет</returns>
@@ -897,19 +931,19 @@ namespace MvkServer.Management
             }
         }
 
-        ///// <summary>
-        ///// Флаг псевдочанка который был изменён
-        ///// </summary>
-        ///// <param name="ch">координаты чанка</param>
-        ///// <param name="y">координата псевдочанка</param>
-        //public void FlagChunkForUpdate(vec2i ch, int y)
-        //{
-        //    PlayerInstance playerInstance = GetPlayerInstance(ch, false);
-        //    if (playerInstance != null)
-        //    {
-        //        playerInstance.FlagChunkForUpdate(y);
-        //    }
-        //}
+        /// <summary>
+        /// Флаг псевдочанка который был изменён
+        /// </summary>
+        /// <param name="ch">координаты чанка</param>
+        /// <param name="y">координата псевдочанка</param>
+        public void FlagChunkForUpdate(vec2i ch, int y)
+        {
+            PlayerInstance playerInstance = GetPlayerInstance(ch, false);
+            if (playerInstance != null)
+            {
+                playerInstance.FlagChunkForUpdate(y);
+            }
+        }
 
         /// <summary>
         /// Отправить процесс разрущения блока
